@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Medic-Ome V12 - EDN Edition</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🩺</text></svg>">
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="50" cy="50" r="45" stroke="#1e90ff" stroke-width="4"/>
+      <path d="M50 20V80M20 50H80" stroke="#1e90ff" stroke-width="8" stroke-linecap="round" opacity="0.5"/>
+      <path d="M15 50 L30 50 L40 30 L50 70 L60 40 L70 50 L85 50" stroke="#00ffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="50" cy="50" r="35" stroke="#1e90ff" stroke-width="1" stroke-dasharray="4 4" opacity="0.8"/>
+    </svg>
+    Medic-Ome
+  </div>
+  <div class="top-right">
+    <span id="pseudoBox" class="pseudo clickable" style="display:none;"></span>
+    <button id="homeBtn" class="link" style="display:none;">Accueil</button>
+    <button id="logoutBtn" class="link" style="display:none;">Déconnexion</button>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<footer>
+  <div class="small">Medic-Ome V12 — Entraînement EDN / ECOS</div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

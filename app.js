@@ -15,7 +15,7 @@ const PATHOLOGIES = [
   { name:"Hypothyroïdie", short:"Déficit en hormones thyroïdiennes", pdf:"#", signes:{prise_de_poids:12, asthenie:10, frilosite:14, constipation:8, bradycardie:8}, facteurs:{femme:4, plus_de_30ans:3} }
 ];
 
-const ACCESS_CODES = [ { code: "EDN-2025", pseudo:"Etudiant_EDN" } ];
+const ACCESS_CODES = [ { code: "SuperCode1", pseudo:"Admin" } ];
 
 // Gestion Persistance Données (LocalStorage)
 let USERS = [];

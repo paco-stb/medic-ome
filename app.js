@@ -333,7 +333,7 @@ function renderLogin() {
   // --- 2. CONNEXION PAR CODE D'ACCÈS (NOUVEAU) ---
   const sepCode = document.createElement('div'); sepCode.textContent='— ou Accès Rapide —'; sepCode.className='small'; sepCode.style.margin='16px 0'; card.appendChild(sepCode);
   
-  const inputCode = document.createElement('input'); inputCode.placeholder='Entrer une clé d\'accès (ex: EDN-2025)'; inputCode.className='input';
+  const inputCode = document.createElement('input'); inputCode.placeholder='Entrer une clé d\'accès'; inputCode.className='input';
   const btnCode = document.createElement('button'); btnCode.className='btn'; btnCode.style.backgroundColor = 'var(--navy)'; btnCode.style.border = '1px solid var(--accent)'; btnCode.style.color = 'var(--accent)'; btnCode.textContent='Utiliser une clé';
   
   btnCode.onclick = () => {

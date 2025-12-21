@@ -1,11 +1,9 @@
-// =================== 1. IMPORTS (NE PAS TOUCHER) ===================
-// On utilise les liens directs vers les serveurs de Google pour que ça marche sans installation
+// =================== 1. IMPORTS ===================
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// =================== 2. CONFIGURATION (ZONE A REMPLACER) ===================
-// C'est ICI que tu colles les codes de ta capture d'écran n°3
+// =================== 2. CONFIGURATION (Tes clés sont incluses) ===================
 const firebaseConfig = {
     apiKey: "AIzaSyCig9G4gYHU5h642YV1IZxthYm_IXp6vZU",
     authDomain: "medicome-paco.firebaseapp.com",
@@ -14,9 +12,9 @@ const firebaseConfig = {
     messagingSenderId: "332171806096",
     appId: "1:332171806096:web:36889325196a7a718b5f15",
     measurementId: "G-81HJ9DWBMX"
-  };
+};
 
-// Initialisation de Firebase
+// Initialisation
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -65,13 +63,10 @@ function showAlert(message,type){
 
 // =================== 5. GESTION UTILISATEUR (CLOUD) ===================
 
-// Surveillance automatique de la connexion
 onAuthStateChanged(auth, async (user) => {
     if (user) {
         state.currentUser = user;
         state.isGuest = false;
-        
-        // On va chercher les données dans le Cloud
         const docRef = doc(db, "users", user.uid);
         try {
             const docSnap = await getDoc(docRef);
@@ -82,36 +77,23 @@ onAuthStateChanged(auth, async (user) => {
             } else {
                 state.pseudo = user.email.split('@')[0];
             }
-        } catch(e) {
-            console.error("Erreur lecture DB:", e);
-        }
-        
-        updateHeader();
-        renderHome();
+        } catch(e) { console.error("Erreur lecture DB:", e); }
+        updateHeader(); renderHome();
     } else {
         if(!state.isGuest) {
-            state.currentUser = null;
-            state.pseudo = null;
+            state.currentUser = null; state.pseudo = null;
             state.progression = { correct: 0, incorrect: 0 };
-            renderLogin();
-            updateHeader();
+            renderLogin(); updateHeader();
         }
     }
 });
 
-// Fonction pour sauvegarder
 async function saveProgression() {
-    if(state.isGuest) return; 
-    if(!state.currentUser) return;
-
+    if(state.isGuest || !state.currentUser) return;
     try {
         const userRef = doc(db, "users", state.currentUser.uid);
-        await updateDoc(userRef, {
-            progression: state.progression
-        });
-    } catch (e) {
-        console.error("Erreur sauvegarde", e);
-    }
+        await updateDoc(userRef, { progression: state.progression });
+    } catch (e) { console.error("Erreur sauvegarde", e); }
 }
 
 // =================== 6. INTERFACE & NAV ===================
@@ -128,7 +110,6 @@ function updateHeader(){
     q("#homeBtn").style.display='none';
     q("#logoutBtn").style.display='none';
   }
-  
   q("#homeBtn").onclick=renderHome;
   q("#logoutBtn").onclick = () => {
       if(state.isGuest) {
@@ -152,15 +133,11 @@ function renderLogin() {
       try {
           await signInWithEmailAndPassword(auth, inputUser.value, inputPass.value);
           showAlert("Connexion réussie !", "success");
-      } catch (error) {
-          showAlert("Erreur: " + error.message, "error");
-      }
+      } catch (error) { showAlert("Erreur: " + error.message, "error"); }
   };
-
   card.appendChild(inputUser); card.appendChild(inputPass); card.appendChild(btnLogin);
 
   const sep = document.createElement('div'); sep.textContent='— Pas encore de compte ? —'; sep.className='small'; sep.style.margin='16px 0'; card.appendChild(sep);
-
   const inRegEmail = document.createElement('input'); inRegEmail.placeholder='Nouvel Email'; inRegEmail.className='input';
   const inRegPass = document.createElement('input'); inRegPass.placeholder='Nouveau Mot de passe'; inRegPass.className='input'; inRegPass.type='password';
   const inPseudo = document.createElement('input'); inPseudo.placeholder='Votre Pseudo'; inPseudo.className='input';
@@ -176,26 +153,20 @@ function renderLogin() {
             progression: { correct: 0, incorrect: 0 }, createdAt: new Date()
         });
         showAlert("Compte créé et connecté !", "success");
-    } catch (error) {
-        showAlert("Erreur création: " + error.message, "error");
-    }
+    } catch (error) { showAlert("Erreur création: " + error.message, "error"); }
   };
-  
   card.appendChild(inRegEmail); card.appendChild(inRegPass); card.appendChild(inPseudo); card.appendChild(btnReg);
 
   const sepCode = document.createElement('div'); sepCode.textContent='— ou Accès Rapide (Sans Sauvegarde) —'; sepCode.className='small'; sepCode.style.margin='16px 0'; card.appendChild(sepCode);
   const inputCode = document.createElement('input'); inputCode.placeholder='Clé d\'accès'; inputCode.className='input';
   const btnCode = document.createElement('button'); btnCode.className='btn'; btnCode.style.backgroundColor = 'var(--navy)'; btnCode.textContent='Utiliser une clé';
-  
   btnCode.onclick = () => {
       const codeFound = ACCESS_CODES.find(ac => ac.code === inputCode.value);
       if(codeFound) {
           state.isGuest = true; state.pseudo = codeFound.pseudo;
           state.progression = {correct:0, incorrect:0};
           updateHeader(); renderHome(); showAlert(`Mode Invité: ${codeFound.pseudo}`, 'success');
-      } else {
-          showAlert('Clé invalide', 'error');
-      }
+      } else { showAlert('Clé invalide', 'error'); }
   };
   card.appendChild(inputCode); card.appendChild(btnCode);
   app.appendChild(card);
@@ -205,19 +176,15 @@ function renderHome() {
   const app = q('#app'); app.innerHTML='';
   const prog = state.progression;
   const card = document.createElement('div'); card.className='card center';
-  
   let cloudBadge = state.isGuest ? 
       '<span style="color:orange; font-size:0.8em">⚠️ Mode Local (Non sauvegardé)</span>' : 
       '<span style="color:green; font-size:0.8em">☁️ Sauvegarde Cloud Active</span>';
-
-  card.innerHTML = `<h2>👋 Bonjour ${state.pseudo || 'Invité'}</h2>
-                    ${cloudBadge}
+  card.innerHTML = `<h2>👋 Bonjour ${state.pseudo || 'Invité'}</h2>${cloudBadge}
                     <div class="stat-box"><div class="stat-number">${prog.correct + prog.incorrect}</div><div class="stat-label">Cas résolus</div></div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-top:12px;">
                       <div class="stat-box" style="text-align:center"><div class="stat-number" style="color:var(--success);">${prog.correct}</div><div class="stat-label">Corrects</div></div>
                       <div class="stat-box" style="text-align:center"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">Incorrects</div></div>
                     </div>`;
-  
   const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.textContent='🩺 Diagnostic'; btnDiag.style.marginTop='20px'; btnDiag.onclick=renderDemographics;
   const btnGloss = document.createElement('button'); btnGloss.className='link'; btnGloss.textContent='📚 Glossaire'; btnGloss.style.marginTop='12px'; btnGloss.onclick=renderGlossary;
   const btnProf = document.createElement('button'); btnProf.className='link'; btnProf.textContent='👤 Profil'; btnProf.style.marginTop='12px'; btnProf.onclick=renderProfile;
@@ -229,36 +196,29 @@ function renderProfile() {
     const prog = state.progression;
     const total = prog.correct + prog.incorrect;
     const successRate = total > 0 ? Math.round((prog.correct / total) * 100) : 0;
-    
     const card = document.createElement('div'); card.className='card center';
     const title = document.createElement('h2'); title.textContent=`👤 Profil de ${state.pseudo}`; card.appendChild(title);
-    
     const info = document.createElement('div');
     info.style.marginBottom='15px'; info.style.fontSize='0.9em'; info.style.color='#666';
     if(state.isGuest) info.textContent = "Compte invité : Les données seront perdues à la fermeture.";
     else info.textContent = `Compte Cloud : ${state.currentUser.email}`;
     card.appendChild(info);
-    
     const statTotal = document.createElement('div'); statTotal.className='stat-box';
     statTotal.innerHTML=`<div class="stat-number">${total}</div><div class="stat-label">Cas cliniques traités</div>`;
     card.appendChild(statTotal);
-    
     const gridDiv = document.createElement('div');
     gridDiv.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-top:12px;';
     gridDiv.innerHTML=`<div class="stat-box" style="text-align:center"><div class="stat-number" style="color:var(--success);">${prog.correct}</div><div class="stat-label">✓ Corrects</div></div>
                         <div class="stat-box" style="text-align:center"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">✗ Incorrects</div></div>`;
     card.appendChild(gridDiv);
-    
     const statRate = document.createElement('div');
     statRate.className='stat-box';
     statRate.style.cssText='margin-top:12px;background:rgba(16,185,129,0.1);border-color:var(--success);';
     statRate.innerHTML=`<div class="stat-number" style="color:var(--success);">${successRate}%</div><div class="stat-label">Taux de réussite</div>`;
     card.appendChild(statRate);
-    
     const btnBack = document.createElement('button'); btnBack.className='btn'; btnBack.textContent='🏠 Retour';
     btnBack.style.marginTop='20px'; btnBack.onclick=renderHome;
-    card.appendChild(btnBack);
-    app.appendChild(card);
+    card.appendChild(btnBack); app.appendChild(card);
 }
 
 // =================== 7. JEU (DIAGNOSTIC) ===================
@@ -267,7 +227,6 @@ function renderDemographics() {
     const app = q('#app'); app.innerHTML='';
     const card = document.createElement('div'); card.className='card';
     card.innerHTML=`<h3>📋 Données démographiques</h3><p class="small" style="margin-bottom:16px">Cochez les facteurs de risque.</p>`;
-    
     const createSel = (lbl, id, opts) => {
       const l = document.createElement('label'); l.textContent=lbl;
       const s = document.createElement('select'); s.id=id; s.className='input';
@@ -293,7 +252,7 @@ function renderDemographics() {
     };
     const btnCancel = document.createElement('button'); btnCancel.className='link'; btnCancel.textContent='Annuler'; btnCancel.onclick=renderHome;
     btnGroup.appendChild(btnStart); btnGroup.appendChild(btnCancel); card.appendChild(btnGroup); app.appendChild(card);
-  }
+}
 
 function prepareSigns() {
     let allSignsSet = new Set();
@@ -312,4 +271,140 @@ function rankPathologies() {
       }
       return {patho:p, score: Math.max(0, score)};
     });
-    const totalScore
+    const totalScore = scores.reduce((sum, s) => sum + s.score, 0);
+    state.ranked = scores.map(s => ({
+      ...s, prob: totalScore > 0 ? ((s.score / totalScore) * 100).toFixed(1) : 0
+    })).sort((a,b)=>b.prob - a.prob);
+}
+
+function getNextSmartSign(rankedPathos, remainingSigns) {
+    if (rankedPathos.length < 2) return remainingSigns[Math.floor(Math.random() * remainingSigns.length)];
+    const top1 = rankedPathos[0].patho, top2 = rankedPathos[1].patho;
+    let best=null, maxD=-1;
+    remainingSigns.forEach(s => {
+      const w1 = top1.signes[s] || 0, w2 = top2.signes[s] || 0;
+      const d = Math.abs(w1 - w2);
+      if (d > maxD) { maxD = d; best = s; }
+    });
+    return (best && maxD > 0) ? best : remainingSigns[Math.floor(Math.random() * remainingSigns.length)];
+}
+
+function canShowDiagnostic() {
+    const qNum = state.asked.length;
+    if(state.ranked.length===0) return false;
+    const topProb = parseFloat(state.ranked[0].prob);
+    const topName = state.ranked[0].patho.name;
+    if(state.previousDiagnostics.includes(topName)) return false;
+    if(qNum >= 8 && topProb >= 90) return true;
+    if(qNum >= 14 && topProb >= 85) return true;
+    if(qNum >= 17 && topProb >= 75) return true;
+    return false;
+}
+
+function askNextQuestion() {
+    prepareSigns(); rankPathologies();
+    if(canShowDiagnostic()){ showDiagnostic(); return; }
+    const remaining = state.allSigns.filter(s => !state.asked.includes(s));
+    if(remaining.length===0){ showDiagnostic(); return; }
+    const signe = getNextSmartSign(state.ranked, remaining);
+    state.currentSign = signe; state.asked.push(signe);
+    const app = q('#app'); app.innerHTML='';
+    const card = document.createElement('div'); card.className='card center';
+    card.innerHTML=`<div class="small" style="margin-bottom:12px">Question ${state.asked.length}</div>
+                    <div class="question-text">Le patient présente-t-il : ${formatSigneName(signe)} ?</div>`;
+    const btnGroup = document.createElement('div'); btnGroup.className='button-group';
+    const mkBtn = (txt, cls, val) => {
+      const b = document.createElement('button'); b.className=cls; b.textContent=txt;
+      b.onclick=()=>{ state.answers[signe]=val; askNextQuestion(); };
+      btnGroup.appendChild(b);
+    };
+    mkBtn('✓ Oui', 'btn btn-success', true);
+    mkBtn('✗ Non', 'btn btn-error', false);
+    mkBtn('🤷 Je sais pas', 'link', null);
+    card.appendChild(btnGroup);
+    const btnAb = document.createElement('button'); btnAb.className='link'; btnAb.textContent='Abandonner'; btnAb.style.marginTop='12px'; btnAb.onclick=renderHome;
+    card.appendChild(btnAb); app.appendChild(card);
+}
+
+function showDiagnostic() {
+    rankPathologies();
+    const top = state.ranked[0];
+    state.diagnosticShown = true;
+    state.previousDiagnostics.push(top.patho.name);
+    const app = q('#app'); app.innerHTML = '';
+    const card = document.createElement('div'); card.className='card center';
+    const title = document.createElement('h2'); title.textContent='💡 Diagnostic proposé'; card.appendChild(title);
+    let pdfButton = '';
+    if(top.patho.pdf && top.patho.pdf !== '#') {
+        pdfButton = `<a class="pdf-link" href="${top.patho.pdf}" target="_blank">📄 Voir fiche PDF</a>`;
+    } else {
+        pdfButton = `<span class="pdf-link" style="opacity:0.5; cursor:not-allowed">📄 Pas de fiche PDF</span>`;
+    }
+    const diagDiv = document.createElement('div'); diagDiv.className='diagnostic-result';
+    diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div>
+                         <div class="patho-desc" style="margin-top:8px">${top.patho.short}</div>
+                         <div class="score-badge">Probabilité estimée : ${top.prob}%</div>
+                         ${pdfButton}`;
+    card.appendChild(diagDiv);
+    const btnGroup = document.createElement('div'); btnGroup.className='button-group';
+    const btnTrue = document.createElement('button'); btnTrue.className='btn btn-success'; btnTrue.textContent='✅ Diagnostic correct';
+    btnTrue.onclick = async () => { 
+        state.progression.correct++;
+        await saveProgression(); 
+        showAlert('Excellent !','success'); showDiagnosticDetails(top);
+    };
+    const btnFalse = document.createElement('button'); btnFalse.className='btn btn-error'; btnFalse.textContent='❌ Diagnostic incorrect';
+    btnFalse.onclick = async () => { 
+        state.progression.incorrect++;
+        await saveProgression(); 
+        showAlert('Continuons...','error'); state.diagnosticShown=false; setTimeout(()=>askNextQuestion(), 800);
+    };
+    btnGroup.appendChild(btnTrue); btnGroup.appendChild(btnFalse); card.appendChild(btnGroup); app.appendChild(card);
+}
+
+function showDiagnosticDetails(top) {
+    const app = q('#app'); app.innerHTML = '';
+    const card = document.createElement('div'); card.className='card';
+    const title = document.createElement('h2'); title.textContent = `✅ Diagnostic confirmé : ${top.patho.name}`; card.appendChild(title);
+    const desc = document.createElement('div'); desc.className='patho-desc'; desc.textContent = top.patho.short; desc.style.marginBottom='12px'; card.appendChild(desc);
+    const pathoSigns = Object.keys(top.patho.signes);
+    const correctSigns = [], missingSigns = [], erroneousSigns = [], unknownSigns = [];
+    pathoSigns.forEach(s => {
+      const val = state.answers[s];
+      if(val === true) correctSigns.push(s); else if(val === false) missingSigns.push(s); else unknownSigns.push(s);
+    });
+    state.allSigns.forEach(s => { if(state.answers[s] === true && !pathoSigns.includes(s)) erroneousSigns.push(s); });
+    const resultsDiv = document.createElement('div'); resultsDiv.className='result-list';
+    const createList = (title, items, type, typeLabel) => {
+      const h = document.createElement('h4'); h.textContent = `${title} (${items.length})`; resultsDiv.appendChild(h);
+      if(items.length===0) { const p = document.createElement('div'); p.className='result-item result-unknown'; p.textContent='Néant'; resultsDiv.appendChild(p); }
+      items.forEach(s => {
+        const r = document.createElement('div'); r.className='result-item result-'+type;
+        r.innerHTML = `<div>${formatSigneName(s)}</div><div style="opacity:0.8">${typeLabel}</div>`;
+        resultsDiv.appendChild(r);
+      });
+    };
+    createList("Signes corrects", correctSigns, "correct", "OK");
+    createList("Signes attendus manquants", missingSigns, "missing", "Manqué");
+    createList("Signes cochés par erreur", erroneousSigns, "error", "Erreur");
+    card.appendChild(resultsDiv);
+    const btnGroup = document.createElement('div'); btnGroup.className='button-group';
+    const btnHome = document.createElement('button'); btnHome.className='btn'; btnHome.textContent = '🏠 Accueil'; btnHome.onclick = renderHome;
+    btnGroup.appendChild(btnHome); card.appendChild(btnGroup); app.appendChild(card);
+}
+
+function renderGlossary() {
+    const app = q('#app'); app.innerHTML='';
+    const titleCard = document.createElement('div'); titleCard.className='card center'; titleCard.innerHTML='<h2>📚 Glossaire</h2>'; app.appendChild(titleCard);
+    const grid = document.createElement('div'); grid.className='glossary-grid';
+    PATHOLOGIES.forEach(p=>{
+      const card = document.createElement('div'); card.className='patho-card clickable';
+      card.innerHTML=`<div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>`;
+      card.onclick=()=>{ 
+          if(p.pdf && p.pdf !== '#') window.open(p.pdf,'_blank'); 
+          else showAlert('PDF bientôt disponible','error'); 
+      };
+      grid.appendChild(card);
+    });
+    app.appendChild(grid);
+}

@@ -289,10 +289,22 @@ function renderGlossary() {
   const app = q('#app'); app.innerHTML='';
   const titleCard = document.createElement('div'); titleCard.className='card center'; titleCard.innerHTML='<h2>📚 Glossaire</h2>'; app.appendChild(titleCard);
   const grid = document.createElement('div'); grid.className='glossary-grid';
+  
   PATHOLOGIES.forEach(p=>{
     const card = document.createElement('div'); card.className='patho-card clickable';
     card.innerHTML=`<div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>`;
-    card.onclick=()=>{ if(p.pdf && p.pdf.startsWith('http')) window.open(p.pdf,'_blank'); else showAlert('PDF bientôt disponible','error'); };
+    
+    // --- CORRECTION ICI ---
+    card.onclick=()=>{ 
+        // On vérifie juste que le PDF existe et qu'il n'est pas égal à "#"
+        if(p.pdf && p.pdf !== '#') {
+            window.open(p.pdf,'_blank'); 
+        } else {
+            showAlert('PDF bientôt disponible','error'); 
+        }
+    };
+    // ----------------------
+    
     grid.appendChild(card);
   });
   app.appendChild(grid);

@@ -319,6 +319,7 @@ function renderLogin() {
   const app = q('#app'); app.innerHTML='';
   const card = document.createElement('div'); card.className='card center'; card.innerHTML='<h2>🔑 Connexion</h2>';
   
+  // --- 1. CONNEXION CLASSIQUE ---
   const inputUser = document.createElement('input'); inputUser.placeholder='Email ou Pseudo'; inputUser.className='input';
   const inputPass = document.createElement('input'); inputPass.placeholder='Mot de passe'; inputPass.className='input'; inputPass.type='password';
   const btnLogin = document.createElement('button'); btnLogin.className='btn'; btnLogin.textContent='Se connecter';
@@ -329,6 +330,31 @@ function renderLogin() {
   };
   card.appendChild(inputUser); card.appendChild(inputPass); card.appendChild(btnLogin);
 
+  // --- 2. CONNEXION PAR CODE D'ACCÈS (NOUVEAU) ---
+  const sepCode = document.createElement('div'); sepCode.textContent='— ou Accès Rapide —'; sepCode.className='small'; sepCode.style.margin='16px 0'; card.appendChild(sepCode);
+  
+  const inputCode = document.createElement('input'); inputCode.placeholder='Entrer une clé d\'accès (ex: EDN-2025)'; inputCode.className='input';
+  const btnCode = document.createElement('button'); btnCode.className='btn'; btnCode.style.backgroundColor = 'var(--navy)'; btnCode.style.border = '1px solid var(--accent)'; btnCode.style.color = 'var(--accent)'; btnCode.textContent='Utiliser une clé';
+  
+  btnCode.onclick = () => {
+      const codeFound = ACCESS_CODES.find(ac => ac.code === inputCode.value);
+      if(codeFound) {
+          state.pseudo = codeFound.pseudo; 
+          state.email = null; // Pas d'email pour les invités par code
+          // On crée un faux profil utilisateur temporaire dans USERS s'il n'existe pas pour sauvegarder la progression de la session
+          if(!USERS.find(u => u.pseudo === codeFound.pseudo)) {
+              USERS.push({ email: null, password: null, pseudo: codeFound.pseudo, progression:{correct:0, incorrect:0} });
+          }
+          updateHeader(); 
+          renderHome();
+          showAlert(`Bienvenue ${codeFound.pseudo}`, 'success');
+      } else {
+          showAlert('Clé d\'accès invalide', 'error');
+      }
+  };
+  card.appendChild(inputCode); card.appendChild(btnCode);
+
+  // --- 3. CRÉATION DE COMPTE ---
   const sep = document.createElement('div'); sep.textContent='— ou Nouveau Compte —'; sep.className='small'; sep.style.margin='16px 0'; card.appendChild(sep);
   
   const inRegEmail = document.createElement('input'); inRegEmail.placeholder='Email'; inRegEmail.className='input';

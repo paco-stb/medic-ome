@@ -6,7 +6,11 @@ const PATHOLOGIES = [
   { name:"Insuffisance Cardiaque Gauche", short:"Incapacité du cœur à assurer un débit sanguin suffisant", pdf:"#", signes:{dyspnee_effort:14, orthopnee:16, crepitants_bilateraux:15, toux_nocturne:8}, facteurs:{plus_de_65ans:6, atcd_famille:2} },
   { name:"AVC Ischémique", short:"Déficit neurologique focal soudain par occlusion artérielle", pdf:"#", signes:{hemiplegie_brutale:20, aphasie:18, asymetrie_faciale:15, troubles_visuels:10}, facteurs:{plus_de_65ans:6, tabac:3, atcd_famille:2, homme:1} },
   { name:"Méningite Aiguë", short:"Inflammation des méninges (urgence infectieuse)", pdf:"#", signes:{raideur_de_nuque:20, photophobie:15, cephalees_intenses:14, fievre:12, vomissements_en_jet:10}, facteurs:{plus_de_30ans:1} },
+  
+  // --- MODIFICATION ICI : Lien vers le PDF local ---
   { name:"Appendicite Aiguë", short:"Inflammation de l'appendice iléo-cæcal", pdf:"fiches/appendicite.pdf", signes:{douleur_fosse_iliaque_droite:20, defense_abdominale:16, fievre_moderee:8, nausees:8}, facteurs:{homme:1, femme:1} },
+  // -------------------------------------------------
+
   { name:"Cholécystite Aiguë", short:"Infection de la vésicule biliaire", pdf:"#", signes:{douleur_hypochondre_droit:18, signe_de_murphy:20, fievre:10, nausees:8}, facteurs:{femme:3, plus_de_30ans:3} },
   { name:"Gastro-entérite", short:"Infection virale fréquente du système digestif", pdf:"#", signes:{diarrhee_aigue:18, vomissements:15, douleurs_abdominales_diffuses:10, fievre_moderee:6}, facteurs:{plus_de_30ans:0} },
   { name:"Colique Néphrétique", short:"Obstruction de la voie excrétrice urinaire (calcul)", pdf:"#", signes:{douleur_lombaire_brutale:20, irradiation_organes_genitaux:15, agitation_anxiete:12, pas_de_fievre:5}, facteurs:{homme:2, plus_de_30ans:2} },
@@ -92,7 +96,7 @@ function renderProfile() {
   const gridDiv = document.createElement('div');
   gridDiv.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-top:12px;';
   gridDiv.innerHTML=`<div class="stat-box" style="text-align:center"><div class="stat-number" style="color:var(--success);">${prog.correct}</div><div class="stat-label">✓ Corrects</div></div>
-                     <div class="stat-box" style="text-align:center"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">✗ Incorrects</div></div>`;
+                      <div class="stat-box" style="text-align:center"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">✗ Incorrects</div></div>`;
   card.appendChild(gridDiv);
   
   const statRate = document.createElement('div');
@@ -188,11 +192,20 @@ function showDiagnostic() {
   const card = document.createElement('div'); card.className='card center';
   const title = document.createElement('h2'); title.textContent='💡 Diagnostic proposé'; card.appendChild(title);
   
+  // --- GESTION DU LIEN PDF DANS LE DIAGNOSTIC ---
+  // On affiche le bouton seulement si le PDF existe et n'est pas "#"
+  let pdfButton = '';
+  if(top.patho.pdf && top.patho.pdf !== '#') {
+      pdfButton = `<a class="pdf-link" href="${top.patho.pdf}" target="_blank">📄 Voir fiche PDF</a>`;
+  } else {
+      pdfButton = `<span class="pdf-link" style="opacity:0.5; cursor:not-allowed">📄 Pas de fiche PDF</span>`;
+  }
+
   const diagDiv = document.createElement('div'); diagDiv.className='diagnostic-result';
   diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div>
                        <div class="patho-desc" style="margin-top:8px">${top.patho.short}</div>
                        <div class="score-badge">Probabilité estimée : ${top.prob}%</div>
-                       <a class="pdf-link" href="${top.patho.pdf}" target="_blank">📄 Voir fiche PDF</a>`;
+                       ${pdfButton}`;
   card.appendChild(diagDiv);
   
   const btnGroup = document.createElement('div'); btnGroup.className='button-group';
@@ -285,25 +298,20 @@ function askNextQuestion() {
   card.appendChild(btnAb); app.appendChild(card);
 }
 
+// --- CORRECTION MAJEURE ICI : FONCTION GLOSSAIRE ---
 function renderGlossary() {
   const app = q('#app'); app.innerHTML='';
   const titleCard = document.createElement('div'); titleCard.className='card center'; titleCard.innerHTML='<h2>📚 Glossaire</h2>'; app.appendChild(titleCard);
   const grid = document.createElement('div'); grid.className='glossary-grid';
-  
   PATHOLOGIES.forEach(p=>{
     const card = document.createElement('div'); card.className='patho-card clickable';
     card.innerHTML=`<div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>`;
     
-    // --- CORRECTION ICI ---
+    // Modification: on vérifie juste que ce n'est pas '#' (plus de restriction 'http')
     card.onclick=()=>{ 
-        // On vérifie juste que le PDF existe et qu'il n'est pas égal à "#"
-        if(p.pdf && p.pdf !== '#') {
-            window.open(p.pdf,'_blank'); 
-        } else {
-            showAlert('PDF bientôt disponible','error'); 
-        }
+        if(p.pdf && p.pdf !== '#') window.open(p.pdf,'_blank'); 
+        else showAlert('PDF bientôt disponible','error'); 
     };
-    // ----------------------
     
     grid.appendChild(card);
   });
@@ -342,7 +350,7 @@ function renderLogin() {
   };
   card.appendChild(inputUser); card.appendChild(inputPass); card.appendChild(btnLogin);
 
-  // --- 2. CONNEXION PAR CODE D'ACCÈS (NOUVEAU) ---
+  // --- 2. CONNEXION PAR CODE D'ACCÈS ---
   const sepCode = document.createElement('div'); sepCode.textContent='— ou Accès Rapide —'; sepCode.className='small'; sepCode.style.margin='16px 0'; card.appendChild(sepCode);
   
   const inputCode = document.createElement('input'); inputCode.placeholder='Entrer une clé d\'accès'; inputCode.className='input';
@@ -352,8 +360,7 @@ function renderLogin() {
       const codeFound = ACCESS_CODES.find(ac => ac.code === inputCode.value);
       if(codeFound) {
           state.pseudo = codeFound.pseudo; 
-          state.email = null; // Pas d'email pour les invités par code
-          // On crée un faux profil utilisateur temporaire dans USERS s'il n'existe pas pour sauvegarder la progression de la session
+          state.email = null;
           if(!USERS.find(u => u.pseudo === codeFound.pseudo)) {
               USERS.push({ email: null, password: null, pseudo: codeFound.pseudo, progression:{correct:0, incorrect:0} });
           }

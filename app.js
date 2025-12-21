@@ -1,22 +1,17 @@
-// =================== DONNÉES ENRICHIES (EDN) ===================
 const PATHOLOGIES = [
-  { name:"Infarctus du myocarde", short:"Nécrose ischémique du muscle cardiaque (SCA)", pdf:"#", signes:{douleur_thoracique_constrictive:20, irradiation_bras_gauche:15, sueurs:8, nausees:6, dyspnee:5}, facteurs:{homme:3, plus_de_65ans:5, tabac:4, atcd_famille:3, plus_de_30ans:2} },
-  { name:"Embolie pulmonaire", short:"Obstruction d'une artère pulmonaire par un thrombus", pdf:"#", signes:{dyspnee_aigue:18, douleur_basithoracique:12, hemoptysie:10, tachycardie:8, signes_phlebite:15}, facteurs:{tabac:2, plus_de_65ans:4, atcd_famille:2, femme:1} },
-  { name:"Pneumopathie franche lobaire", short:"Infection bactérienne du parenchyme pulmonaire", pdf:"#", signes:{fievre_elevee:16, frissons:12, toux_productive:10, douleur_thoracique:8, crepitants_auscultation:14}, facteurs:{plus_de_65ans:4, tabac:3} },
-  { name:"Insuffisance Cardiaque Gauche", short:"Incapacité du cœur à assurer un débit sanguin suffisant", pdf:"#", signes:{dyspnee_effort:14, orthopnee:16, crepitants_bilateraux:15, toux_nocturne:8}, facteurs:{plus_de_65ans:6, atcd_famille:2} },
-  { name:"AVC Ischémique", short:"Déficit neurologique focal soudain par occlusion artérielle", pdf:"#", signes:{hemiplegie_brutale:20, aphasie:18, asymetrie_faciale:15, troubles_visuels:10}, facteurs:{plus_de_65ans:6, tabac:3, atcd_famille:2, homme:1} },
-  { name:"Méningite Aiguë", short:"Inflammation des méninges (urgence infectieuse)", pdf:"#", signes:{raideur_de_nuque:20, photophobie:15, cephalees_intenses:14, fievre:12, vomissements_en_jet:10}, facteurs:{plus_de_30ans:1} },
-  
-  // --- MODIFICATION ICI : Lien vers le PDF local ---
+  { name:"Infarctus du myocarde", short:"Nécrose ischémique du muscle cardiaque (SCA)", pdf:"fiches/infarctus_du_myocarde.pdf", signes:{douleur_thoracique_constrictive:20, irradiation_bras_gauche:15, sueurs:8, nausees:6, dyspnee:5}, facteurs:{homme:3, plus_de_65ans:5, tabac:4, atcd_famille:3, plus_de_30ans:2} },
+  { name:"Embolie pulmonaire", short:"Obstruction d'une artère pulmonaire par un thrombus", pdf:"fiches/embolie_pulmonaire.pdf", signes:{dyspnee_aigue:18, douleur_basithoracique:12, hemoptysie:10, tachycardie:8, signes_phlebite:15}, facteurs:{tabac:2, plus_de_65ans:4, atcd_famille:2, femme:1} },
+  { name:"Pneumopathie franche lobaire", short:"Infection bactérienne du parenchyme pulmonaire", pdf:"fiches/pneumopathie_franche_lobaire.pdf", signes:{fievre_elevee:16, frissons:12, toux_productive:10, douleur_thoracique:8, crepitants_auscultation:14}, facteurs:{plus_de_65ans:4, tabac:3} },
+  { name:"Insuffisance Cardiaque Gauche", short:"Incapacité du cœur à assurer un débit sanguin suffisant", pdf:"fiches/insuffisance_cardiaque_gauche.pdf", signes:{dyspnee_effort:14, orthopnee:16, crepitants_bilateraux:15, toux_nocturne:8}, facteurs:{plus_de_65ans:6, atcd_famille:2} },
+  { name:"AVC Ischémique", short:"Déficit neurologique focal soudain par occlusion artérielle", pdf:"fiches/avc_ischemique.pdf", signes:{hemiplegie_brutale:20, aphasie:18, asymetrie_faciale:15, troubles_visuels:10}, facteurs:{plus_de_65ans:6, tabac:3, atcd_famille:2, homme:1} },
+  { name:"Méningite Aiguë", short:"Inflammation des méninges (urgence infectieuse)", pdf:"fiches/meningite_aigue.pdf", signes:{raideur_de_nuque:20, photophobie:15, cephalees_intenses:14, fievre:12, vomissements_en_jet:10}, facteurs:{plus_de_30ans:1} },
   { name:"Appendicite Aiguë", short:"Inflammation de l'appendice iléo-cæcal", pdf:"fiches/appendicite.pdf", signes:{douleur_fosse_iliaque_droite:20, defense_abdominale:16, fievre_moderee:8, nausees:8}, facteurs:{homme:1, femme:1} },
-  // -------------------------------------------------
-
-  { name:"Cholécystite Aiguë", short:"Infection de la vésicule biliaire", pdf:"#", signes:{douleur_hypochondre_droit:18, signe_de_murphy:20, fievre:10, nausees:8}, facteurs:{femme:3, plus_de_30ans:3} },
-  { name:"Gastro-entérite", short:"Infection virale fréquente du système digestif", pdf:"#", signes:{diarrhee_aigue:18, vomissements:15, douleurs_abdominales_diffuses:10, fievre_moderee:6}, facteurs:{plus_de_30ans:0} },
-  { name:"Colique Néphrétique", short:"Obstruction de la voie excrétrice urinaire (calcul)", pdf:"#", signes:{douleur_lombaire_brutale:20, irradiation_organes_genitaux:15, agitation_anxiete:12, pas_de_fievre:5}, facteurs:{homme:2, plus_de_30ans:2} },
-  { name:"Pyélonéphrite Aiguë", short:"Infection bactérienne du rein et du bassinet", pdf:"#", signes:{fievre_elevee:16, frissons:12, douleur_lombaire_unilaterale:18, brulures_mictionnelles:10}, facteurs:{femme:4} },
-  { name:"Anémie Ferriprive", short:"Carence en fer entraînant une baisse de l'hémoglobine", pdf:"#", signes:{fatigue_chronique:14, paleur_cutaneo_muqueuse:16, dyspnee_effort:10, tachycardie:8}, facteurs:{femme:4} },
-  { name:"Hypothyroïdie", short:"Déficit en hormones thyroïdiennes", pdf:"#", signes:{prise_de_poids:12, asthenie:10, frilosite:14, constipation:8, bradycardie:8}, facteurs:{femme:4, plus_de_30ans:3} }
+  { name:"Cholécystite Aiguë", short:"Infection de la vésicule biliaire", pdf:"fiches/cholecystite_aigue.pdf", signes:{douleur_hypochondre_droit:18, signe_de_murphy:20, fievre:10, nausees:8}, facteurs:{femme:3, plus_de_30ans:3} },
+  { name:"Gastro-entérite", short:"Infection virale fréquente du système digestif", pdf:"fiches/gastro_enterite.pdf", signes:{diarrhee_aigue:18, vomissements:15, douleurs_abdominales_diffuses:10, fievre_moderee:6}, facteurs:{plus_de_30ans:0} },
+  { name:"Colique Néphrétique", short:"Obstruction de la voie excrétrice urinaire (calcul)", pdf:"fiches/colique_nephretique.pdf", signes:{douleur_lombaire_brutale:20, irradiation_organes_genitaux:15, agitation_anxiete:12, pas_de_fievre:5}, facteurs:{homme:2, plus_de_30ans:2} },
+  { name:"Pyélonéphrite Aiguë", short:"Infection bactérienne du rein et du bassinet", pdf:"fiches/pyelonephrite_aigue.pdf", signes:{fievre_elevee:16, frissons:12, douleur_lombaire_unilaterale:18, brulures_mictionnelles:10}, facteurs:{femme:4} },
+  { name:"Anémie Ferriprive", short:"Carence en fer entraînant une baisse de l'hémoglobine", pdf:"fiches/anemie_ferriprive.pdf", signes:{fatigue_chronique:14, paleur_cutaneo_muqueuse:16, dyspnee_effort:10, tachycardie:8}, facteurs:{femme:4} },
+  { name:"Hypothyroïdie", short:"Déficit en hormones thyroïdiennes", pdf:"fiches/hypothyroidie.pdf", signes:{prise_de_poids:12, asthenie:10, frilosite:14, constipation:8, bradycardie:8}, facteurs:{femme:4, plus_de_30ans:3} }
 ];
 
 const ACCESS_CODES = [ { code: "SuperCode1", pseudo:"Admin" } ];
@@ -192,8 +187,6 @@ function showDiagnostic() {
   const card = document.createElement('div'); card.className='card center';
   const title = document.createElement('h2'); title.textContent='💡 Diagnostic proposé'; card.appendChild(title);
   
-  // --- GESTION DU LIEN PDF DANS LE DIAGNOSTIC ---
-  // On affiche le bouton seulement si le PDF existe et n'est pas "#"
   let pdfButton = '';
   if(top.patho.pdf && top.patho.pdf !== '#') {
       pdfButton = `<a class="pdf-link" href="${top.patho.pdf}" target="_blank">📄 Voir fiche PDF</a>`;
@@ -298,7 +291,6 @@ function askNextQuestion() {
   card.appendChild(btnAb); app.appendChild(card);
 }
 
-// --- CORRECTION MAJEURE ICI : FONCTION GLOSSAIRE ---
 function renderGlossary() {
   const app = q('#app'); app.innerHTML='';
   const titleCard = document.createElement('div'); titleCard.className='card center'; titleCard.innerHTML='<h2>📚 Glossaire</h2>'; app.appendChild(titleCard);
@@ -307,7 +299,6 @@ function renderGlossary() {
     const card = document.createElement('div'); card.className='patho-card clickable';
     card.innerHTML=`<div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>`;
     
-    // Modification: on vérifie juste que ce n'est pas '#' (plus de restriction 'http')
     card.onclick=()=>{ 
         if(p.pdf && p.pdf !== '#') window.open(p.pdf,'_blank'); 
         else showAlert('PDF bientôt disponible','error'); 
@@ -339,7 +330,6 @@ function renderLogin() {
   const app = q('#app'); app.innerHTML='';
   const card = document.createElement('div'); card.className='card center'; card.innerHTML='<h2>🔑 Connexion</h2>';
   
-  // --- 1. CONNEXION CLASSIQUE ---
   const inputUser = document.createElement('input'); inputUser.placeholder='Email ou Pseudo'; inputUser.className='input';
   const inputPass = document.createElement('input'); inputPass.placeholder='Mot de passe'; inputPass.className='input'; inputPass.type='password';
   const btnLogin = document.createElement('button'); btnLogin.className='btn'; btnLogin.textContent='Se connecter';
@@ -350,7 +340,6 @@ function renderLogin() {
   };
   card.appendChild(inputUser); card.appendChild(inputPass); card.appendChild(btnLogin);
 
-  // --- 2. CONNEXION PAR CODE D'ACCÈS ---
   const sepCode = document.createElement('div'); sepCode.textContent='— ou Accès Rapide —'; sepCode.className='small'; sepCode.style.margin='16px 0'; card.appendChild(sepCode);
   
   const inputCode = document.createElement('input'); inputCode.placeholder='Entrer une clé d\'accès'; inputCode.className='input';
@@ -373,7 +362,6 @@ function renderLogin() {
   };
   card.appendChild(inputCode); card.appendChild(btnCode);
 
-  // --- 3. CRÉATION DE COMPTE ---
   const sep = document.createElement('div'); sep.textContent='— ou Nouveau Compte —'; sep.className='small'; sep.style.margin='16px 0'; card.appendChild(sep);
   
   const inRegEmail = document.createElement('input'); inRegEmail.placeholder='Email'; inRegEmail.className='input';

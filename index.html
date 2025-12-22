@@ -1,42 +1,39 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    
-    <title>MedicOme</title>
-    
-    <meta name="description" content="MedicOme est la plateforme permettant aux étudiants en Médecine de s'exercer sur des stéréotypes de pathologies pour préparer les EDN et ECOS. ">
-    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicome - Diagnostic Médical</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 stroke=%22%231e90ff%22 stroke-width=%228%22 fill=%22none%22/><path d=%22M15 50 L30 50 L40 30 L50 70 L60 40 L70 50 L85 50%22 stroke=%22%2300ffff%22 stroke-width=%226%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22 fill=%22none%22/></svg>">
 </head>
 <body>
 
-<header>
-  <div class="brand">
-    <svg class="logo-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="50" cy="50" r="45" stroke="#1e90ff" stroke-width="4"/>
-      <path d="M50 20V80M20 50H80" stroke="#1e90ff" stroke-width="8" stroke-linecap="round" opacity="0.5"/>
-      <path d="M15 50 L30 50 L40 30 L50 70 L60 40 L70 50 L85 50" stroke="#00ffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-      <circle cx="50" cy="50" r="35" stroke="#1e90ff" stroke-width="1" stroke-dasharray="4 4" opacity="0.8"/>
-    </svg>
-    Medic-Ome
-  </div>
-  <div class="top-right">
-    <span id="pseudoBox" class="pseudo clickable" style="display:none;"></span>
-    <button id="homeBtn" class="link" style="display:none;">Accueil</button>
-    <button id="logoutBtn" class="link" style="display:none;">Déconnexion</button>
-  </div>
-</header>
+    <header>
+        <div class="brand">
+            <svg class="logo-svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19,3H5C3.9,3 3,3.9 3,5V19C3,20.1 3.9,21 5,21H19C20.1,21 21,20.1 21,19V5C21,3.9 20.1,3 19,3M19,19H5V5H19V19M11,17H13V13H17V11H13V7H11V11H7V13H11V17Z" />
+            </svg>
+            Medicome
+        </div>
+        
+        <div class="top-right">
+            <button id="homeBtn" class="link" style="display:none;">Accueil</button>
+            <div id="pseudoBox" class="pseudo" style="display:none;">Utilisateur</div>
+            <button id="logoutBtn" class="link" style="display:none;">Déconnexion</button>
+        </div>
+    </header>
 
-<main id="app"></main>
+    <main id="app">
+        <div class="center">
+            <div class="small">Chargement de l'application...</div>
+        </div>
+    </main>
 
-<footer>
-  <div class="small">MedicOme</div>
-</footer>
+    <footer>
+        Medicome © 2024 - Outil pédagogique médical
+    </footer>
 
-<script type="module" src="app.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>

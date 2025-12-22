@@ -147,8 +147,9 @@
 
     <script type="module">
         // =================== 1. IMPORTS ===================
+        // On importe updateProfile pour sauvegarder le pseudo immédiatement dans l'auth
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // =================== 2. CONFIGURATION ===================
@@ -228,34 +229,48 @@
                 // UTILISATEUR CONNECTÉ
                 state.currentUser = user;
                 state.isGuest = false;
-                const docRef = doc(db, "users", user.uid);
                 
-                // On affiche "Chargement" le temps de récupérer le pseudo
-                const pseudoBox = q("#pseudoBox");
-                if(pseudoBox) pseudoBox.textContent = "Chargement...";
+                // 1. D'abord on essaie de prendre le pseudo qui est dans le profil Auth (plus fiable/rapide)
+                let displayPseudo = user.displayName;
+                if (!displayPseudo && user.email) {
+                    // Si pas de displayName, on prend la partie avant @
+                    displayPseudo = user.email.split('@')[0];
+                }
+                // On l'assigne tout de suite
+                state.pseudo = displayPseudo;
 
+                updateHeader(); 
+                renderHome(); // On affiche l'accueil tout de suite
+
+                // 2. Ensuite on essaie de lire la base de données pour récupérer la progression
+                const docRef = doc(db, "users", user.uid);
                 try {
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
                         const data = docSnap.data();
-                        state.pseudo = data.pseudo;
+                        // Si la DB a un pseudo spécifique, on peut le mettre à jour
+                        if (data.pseudo) {
+                            state.pseudo = data.pseudo;
+                            // On rafraichit l'entête
+                            updateHeader();
+                            // Si on est sur l'accueil, on rafraichit le "Bonjour X"
+                            const helloTitle = q('.card h2');
+                            if(helloTitle && helloTitle.textContent.includes('Bonjour')) {
+                                helloTitle.innerHTML = `👋 Bonjour ${state.pseudo}`;
+                            }
+                        }
                         state.progression = data.progression || { correct: 0, incorrect: 0 };
-                    } else {
-                        // Fallback si pas de pseudo en base
-                        state.pseudo = user.email.split('@')[0];
+                        // Si la progression a changé, on peut re-rendre la home
+                        renderHome();
                     }
                 } catch(e) { 
                     console.error("Erreur lecture DB:", e); 
-                    state.pseudo = "Utilisateur";
+                    // Si la DB plante, on garde le pseudo qu'on a déjà trouvé (displayName ou email)
+                    // On ne force plus "Utilisateur" ici.
                 }
-                
-                // Une fois le pseudo chargé, on met à jour l'interface
-                updateHeader(); 
-                renderHome();
                 
             } else {
                 // PAS DE USER OU DÉCONNECTÉ
-                // Vérifions si c'est un invité avec sauvegarde locale
                 const savedGuest = localStorage.getItem('medicome_guest_progression');
                 const savedPseudo = localStorage.getItem('medicome_guest_pseudo');
                 
@@ -268,7 +283,7 @@
                     renderHome();
                     setTimeout(() => showAlert(`Bon retour, ${state.pseudo} !`, 'success'), 500);
                 } else {
-                    // Vraiment déconnecté -> Login Screen
+                    // Vraiment déconnecté
                     state.currentUser = null; 
                     state.pseudo = null;
                     state.progression = { correct: 0, incorrect: 0 };
@@ -314,20 +329,17 @@
             homeBtn.onclick=renderHome;
             
             logoutBtn.onclick = () => {
-                // LOGOUT TOTAL : On vide tout pour éviter les bugs d'affichage
                 localStorage.removeItem('medicome_guest_progression');
                 localStorage.removeItem('medicome_guest_pseudo');
                 state.isGuest = false; 
                 state.pseudo = null;
                 state.currentUser = null;
                 
-                // Déconnexion Firebase si besoin
                 signOut(auth).then(() => {
                     renderLogin(); 
                     updateHeader();
                     showAlert("Déconnecté", "success");
                 }).catch((error) => {
-                    // Si on était juste invité, signOut peut ne rien faire, on force le render
                     renderLogin(); 
                     updateHeader();
                 });
@@ -361,11 +373,24 @@
                 try {
                     const userCredential = await createUserWithEmailAndPassword(auth, inRegEmail.value, inRegPass.value);
                     const user = userCredential.user;
+                    
+                    // PRO TIP : On sauvegarde le pseudo directement dans le profil Auth pour qu'il soit dispo tout de suite
+                    await updateProfile(user, { displayName: inPseudo.value });
+
+                    // Ensuite en base de données
                     await setDoc(doc(db, "users", user.uid), {
                         pseudo: inPseudo.value, email: inRegEmail.value,
                         progression: { correct: 0, incorrect: 0 }, createdAt: new Date()
                     });
+                    
+                    // Mise à jour de l'état local immédiatement
+                    state.pseudo = inPseudo.value;
+                    
                     showAlert("Compte créé et connecté !", "success");
+                    // updateProfile est asynchrone, mais on force l'affichage ici
+                    updateHeader();
+                    renderHome();
+
                 } catch (error) { showAlert("Erreur création: " + error.message, "error"); }
             };
             card.appendChild(inRegEmail); card.appendChild(inRegPass); card.appendChild(inPseudo); card.appendChild(btnReg);
@@ -373,7 +398,6 @@
             const sepCode = document.createElement('div'); sepCode.textContent='— ou Accès Rapide (Local) —'; sepCode.className='small'; sepCode.style.margin='16px 0'; card.appendChild(sepCode);
             const inputCode = document.createElement('input'); inputCode.placeholder='Clé d\'accès'; inputCode.className='input';
             
-            // MODIFICATION DU BOUTON ICI (Classe btn-code ajoutée)
             const btnCode = document.createElement('button'); 
             btnCode.className='btn btn-code'; 
             btnCode.textContent='Utiliser une clé';
@@ -382,7 +406,6 @@
                 const codeFound = ACCESS_CODES.find(ac => ac.code === inputCode.value);
                 if(codeFound) {
                     state.isGuest = true; state.pseudo = codeFound.pseudo;
-                    // Reset pour nouvel invité
                     state.progression = {correct:0, incorrect:0};
                     saveProgression(); 
                     updateHeader(); renderHome(); showAlert(`Mode Invité: ${codeFound.pseudo}`, 'success');
@@ -399,7 +422,11 @@
             let cloudBadge = state.isGuest ? 
                 '<span style="color:orange; font-size:0.8em">💾 Mode Local (Navigateur)</span>' : 
                 '<span style="color:green; font-size:0.8em">☁️ Sauvegarde Cloud Active</span>';
-            card.innerHTML = `<h2>👋 Bonjour ${state.pseudo || 'Invité'}</h2>${cloudBadge}
+            
+            // Si le pseudo n'est pas encore chargé, on met un placeholder
+            const displayName = state.pseudo || '...';
+
+            card.innerHTML = `<h2>👋 Bonjour ${displayName}</h2>${cloudBadge}
                                 <div class="stat-box"><div class="stat-number">${prog.correct + prog.incorrect}</div><div class="stat-label">Cas résolus</div></div>
                                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-top:12px;">
                                 <div class="stat-box" style="text-align:center"><div class="stat-number" style="color:var(--success);">${prog.correct}</div><div class="stat-label">Corrects</div></div>
@@ -417,11 +444,11 @@
             const total = prog.correct + prog.incorrect;
             const successRate = total > 0 ? Math.round((prog.correct / total) * 100) : 0;
             const card = document.createElement('div'); card.className='card center';
-            const title = document.createElement('h2'); title.textContent=`👤 Profil de ${state.pseudo}`; card.appendChild(title);
+            const title = document.createElement('h2'); title.textContent=`👤 Profil de ${state.pseudo || 'Utilisateur'}`; card.appendChild(title);
             const info = document.createElement('div');
             info.style.marginBottom='15px'; info.style.fontSize='0.9em'; info.style.color='#666';
             if(state.isGuest) info.textContent = "Compte invité : Données sauvegardées dans ce navigateur.";
-            else info.textContent = `Compte Cloud : ${state.currentUser.email}`;
+            else info.textContent = `Compte Cloud : ${state.currentUser ? state.currentUser.email : ''}`;
             card.appendChild(info);
             const statTotal = document.createElement('div'); statTotal.className='stat-box';
             statTotal.innerHTML=`<div class="stat-number">${total}</div><div class="stat-label">Cas cliniques traités</div>`;

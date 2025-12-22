@@ -70,6 +70,14 @@
         .btn-success:hover { background:#059669; }
         .btn-error { background: var(--error); color:white; }
         .btn-error:hover { background:#dc2626; }
+        /* Style spécifique pour le bouton Code */
+        .btn-code { 
+            background-color: var(--navy) !important; 
+            color: white !important; 
+            border: 1px solid var(--accent) !important; 
+        }
+        .btn-code:hover { background-color: var(--card) !important; }
+
         .center { text-align:center; display:flex; flex-direction:column; align-items:center; }
         .question-text { font-size:20px; text-align:center; line-height:1.6; padding:20px; background: rgba(30,144,255,0.1); border-radius:12px; border-left:4px solid var(--accent); word-break:break-word; width: 100%; }
         .button-group { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:12px; }
@@ -128,7 +136,7 @@
         <div class="center">
             <div class="small">Chargement de l'application...</div>
             <div class="small" style="color:orange; margin-top:10px; display:none;" id="slowLoad">
-                Le chargement semble long. Vérifiez votre connexion.
+                Le chargement semble long. Vérifiez votre connexion ou actualisez.
             </div>
         </div>
     </main>
@@ -154,20 +162,18 @@
             measurementId: "G-81HJ9DWBMX"
         };
 
-        // Initialisation
-        // Ajout d'un try/catch pour diagnostiquer si Firebase plante
+        // Initialisation avec gestion d'erreurs
         let app, auth, db;
         try {
             app = initializeApp(firebaseConfig);
             auth = getAuth(app);
             db = getFirestore(app);
-            console.log("Firebase initialisé avec succès");
         } catch (error) {
             console.error("Erreur Firebase:", error);
             document.querySelector('#app').innerHTML = `<div class="alert alert-error">Erreur de configuration : ${error.message}</div>`;
         }
 
-        // Timer de sécurité si le chargement bloque
+        // Timer de sécurité
         setTimeout(() => {
             const slowLoad = document.getElementById('slowLoad');
             if(slowLoad) slowLoad.style.display = 'block';
@@ -218,12 +224,16 @@
         // =================== 5. GESTION UTILISATEUR ===================
 
         onAuthStateChanged(auth, async (user) => {
-            console.log("Auth State Changed:", user ? "User connecté" : "Pas de user");
-            
             if (user) {
+                // UTILISATEUR CONNECTÉ
                 state.currentUser = user;
                 state.isGuest = false;
                 const docRef = doc(db, "users", user.uid);
+                
+                // On affiche "Chargement" le temps de récupérer le pseudo
+                const pseudoBox = q("#pseudoBox");
+                if(pseudoBox) pseudoBox.textContent = "Chargement...";
+
                 try {
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
@@ -231,26 +241,39 @@
                         state.pseudo = data.pseudo;
                         state.progression = data.progression || { correct: 0, incorrect: 0 };
                     } else {
+                        // Fallback si pas de pseudo en base
                         state.pseudo = user.email.split('@')[0];
                     }
-                } catch(e) { console.error("Erreur lecture DB:", e); }
-                updateHeader(); renderHome();
+                } catch(e) { 
+                    console.error("Erreur lecture DB:", e); 
+                    state.pseudo = "Utilisateur";
+                }
+                
+                // Une fois le pseudo chargé, on met à jour l'interface
+                updateHeader(); 
+                renderHome();
+                
             } else {
-                // Pas de user connecté, vérifions si c'est un invité avec sauvegarde
+                // PAS DE USER OU DÉCONNECTÉ
+                // Vérifions si c'est un invité avec sauvegarde locale
                 const savedGuest = localStorage.getItem('medicome_guest_progression');
                 const savedPseudo = localStorage.getItem('medicome_guest_pseudo');
                 
                 if(!state.isGuest && savedGuest && savedPseudo) {
+                    // Restauration Session Invité
                     state.isGuest = true;
                     state.pseudo = savedPseudo;
                     state.progression = JSON.parse(savedGuest);
-                    updateHeader(); renderHome();
-                    // Petit délai pour ne pas superposer avec le chargement
+                    updateHeader(); 
+                    renderHome();
                     setTimeout(() => showAlert(`Bon retour, ${state.pseudo} !`, 'success'), 500);
-                } else if(!state.isGuest) {
-                    state.currentUser = null; state.pseudo = null;
+                } else {
+                    // Vraiment déconnecté -> Login Screen
+                    state.currentUser = null; 
+                    state.pseudo = null;
                     state.progression = { correct: 0, incorrect: 0 };
-                    renderLogin(); updateHeader();
+                    renderLogin(); 
+                    updateHeader();
                 }
             }
         });
@@ -289,16 +312,25 @@
                 logoutBtn.style.display='none';
             }
             homeBtn.onclick=renderHome;
+            
             logoutBtn.onclick = () => {
-                if(state.isGuest) {
-                    // Pour un logout explicite invité, on efface le storage
-                    localStorage.removeItem('medicome_guest_progression');
-                    localStorage.removeItem('medicome_guest_pseudo');
-                    state.isGuest = false; state.pseudo = null;
-                    renderLogin(); updateHeader();
-                } else {
-                    signOut(auth).then(() => showAlert("Déconnecté", "success"));
-                }
+                // LOGOUT TOTAL : On vide tout pour éviter les bugs d'affichage
+                localStorage.removeItem('medicome_guest_progression');
+                localStorage.removeItem('medicome_guest_pseudo');
+                state.isGuest = false; 
+                state.pseudo = null;
+                state.currentUser = null;
+                
+                // Déconnexion Firebase si besoin
+                signOut(auth).then(() => {
+                    renderLogin(); 
+                    updateHeader();
+                    showAlert("Déconnecté", "success");
+                }).catch((error) => {
+                    // Si on était juste invité, signOut peut ne rien faire, on force le render
+                    renderLogin(); 
+                    updateHeader();
+                });
             };
         }
 
@@ -340,7 +372,12 @@
 
             const sepCode = document.createElement('div'); sepCode.textContent='— ou Accès Rapide (Local) —'; sepCode.className='small'; sepCode.style.margin='16px 0'; card.appendChild(sepCode);
             const inputCode = document.createElement('input'); inputCode.placeholder='Clé d\'accès'; inputCode.className='input';
-            const btnCode = document.createElement('button'); btnCode.className='btn'; btnCode.style.backgroundColor = 'var(--navy)'; btnCode.textContent='Utiliser une clé';
+            
+            // MODIFICATION DU BOUTON ICI (Classe btn-code ajoutée)
+            const btnCode = document.createElement('button'); 
+            btnCode.className='btn btn-code'; 
+            btnCode.textContent='Utiliser une clé';
+            
             btnCode.onclick = () => {
                 const codeFound = ACCESS_CODES.find(ac => ac.code === inputCode.value);
                 if(codeFound) {

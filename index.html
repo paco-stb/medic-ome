@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Medicome - Site d'entraînement aux cas typiques</title>
     
+    <link rel="canonical" href="https://medicome.fr/" />
+
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🩺</text></svg>">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -151,6 +153,13 @@
     </footer>
 
     <script type="module">
+        // =================== 2. REDIRECTION AUTOMATIQUE (FIX GOOGLE) ===================
+        // Si quelqu'un arrive depuis Google sur l'ancienne adresse github.io, 
+        // on le redirige immédiatement vers medicome.fr pour éviter le bug de chargement.
+        if (window.location.hostname.includes("github.io")) {
+            window.location.href = "https://medicome.fr";
+        }
+
         // =================== 1. IMPORTS ===================
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -234,8 +243,7 @@
                 state.currentUser = user;
                 state.isGuest = false;
                 
-                // --- CORRECTION PSEUDO ---
-                // On essaie d'abord le displayName (plus rapide)
+                // 1. PSEUDO INSTANTANÉ (via l'authentification)
                 let displayPseudo = user.displayName;
                 if (!displayPseudo && user.email) {
                     displayPseudo = user.email.split('@')[0];
@@ -244,47 +252,39 @@
 
                 updateHeader(); 
                 
-                // --- CORRECTION SYNCHRONISATION ---
-                // On télécharge la progression DEPUIS le Cloud
-                const docRef = doc(db, "users", user.uid);
-                
-                // On met "Chargement" visuel pour que l'utilisateur sache qu'on cherche ses données
+                // 2. RECUPERATION DONNÉES (Sync)
                 const pseudoBox = q("#pseudoBox");
                 if(pseudoBox) pseudoBox.textContent = "Sync...";
 
+                const docRef = doc(db, "users", user.uid);
                 try {
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
                         const data = docSnap.data();
                         
-                        // Si le cloud a un pseudo, il est prioritaire
+                        // Si un pseudo différent est en base, on le prend
                         if (data.pseudo) {
                             state.pseudo = data.pseudo;
                         }
-                        
-                        // RECUPERATION DE LA PROGRESSION
-                        // C'est ici que la magie opère pour récupérer les données d'un autre appareil
+                        // Récupération des scores
                         state.progression = data.progression || { correct: 0, incorrect: 0 };
                         
-                        console.log("Données récupérées du Cloud:", state.progression);
                         updateHeader();
                         renderHome();
                     } else {
-                        // Si pas de doc (nouveau device), on le crée pour la prochaine fois
-                        console.log("Pas de doc cloud, création...");
-                        saveProgression(); // Crée le doc initial
+                        // Nouveau compte ou nouvelle connexion
+                        saveProgression(); // On crée le fichier de sauvegarde
                         updateHeader();
                         renderHome();
                     }
                 } catch(e) { 
                     console.error("Erreur lecture DB:", e); 
-                    // En cas d'erreur, on garde ce qu'on a et on affiche
                     updateHeader();
                     renderHome();
                 }
                 
             } else {
-                // PAS DE USER
+                // INVITE OU DECONNECTÉ
                 const savedGuest = localStorage.getItem('medicome_guest_progression');
                 const savedPseudo = localStorage.getItem('medicome_guest_pseudo');
                 
@@ -310,11 +310,10 @@
             if (!state.isGuest && state.currentUser) {
                 try {
                     const userRef = doc(db, "users", state.currentUser.uid);
-                    // IMPORTANT : on utilise setDoc avec merge:true. 
-                    // Cela crée le document s'il n'existe pas sur cet appareil, ou le met à jour.
+                    // MERGE: TRUE est la clé pour la synchronisation multi-appareils
                     await setDoc(userRef, { 
                         progression: state.progression,
-                        pseudo: state.pseudo, // On resauvegarde le pseudo au cas où
+                        pseudo: state.pseudo,
                         lastUpdate: new Date()
                     }, { merge: true });
                 } catch (e) { console.error("Erreur sauvegarde Cloud", e); }
@@ -352,7 +351,7 @@
                 state.isGuest = false; 
                 state.pseudo = null;
                 state.currentUser = null;
-                state.progression = { correct: 0, incorrect: 0 }; // Reset local
+                state.progression = { correct: 0, incorrect: 0 }; 
                 
                 signOut(auth).then(() => {
                     renderLogin(); 
@@ -393,10 +392,10 @@
                     const userCredential = await createUserWithEmailAndPassword(auth, inRegEmail.value, inRegPass.value);
                     const user = userCredential.user;
                     
-                    // Sauvegarde Pseudo Immédiate
+                    // 1. On fixe le pseudo sur le compte AUTH
                     await updateProfile(user, { displayName: inPseudo.value });
 
-                    // Sauvegarde DB
+                    // 2. On fixe le pseudo sur la DB
                     await setDoc(doc(db, "users", user.uid), {
                         pseudo: inPseudo.value, email: inRegEmail.value,
                         progression: { correct: 0, incorrect: 0 }, createdAt: new Date()

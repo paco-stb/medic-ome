@@ -31,7 +31,6 @@
         
         body {
           font-family: 'Inter', sans-serif;
-          /* Fond radial profond style "Espace/Abysses" */
           background: radial-gradient(circle at 50% 0%, var(--bg-light), var(--bg-dark) 80%);
           background-attachment: fixed;
           color: var(--text-main);
@@ -70,7 +69,7 @@
             border-radius:20px; cursor:pointer; font-size: 14px; 
         }
 
-        /* BOUTONS & LINKS STYLE "CHROME" */
+        /* BOUTONS & LINKS */
         .link {
           background: rgba(255,255,255,0.03);
           border:1px solid rgba(255,255,255,0.1);
@@ -88,7 +87,7 @@
             box-shadow: 0 0 10px var(--accent-glow);
         }
 
-        /* CARDS AVEC EFFET DE PROFONDEUR */
+        /* CARDS */
         main { flex:1; max-width:1000px; width:100%; margin:0 auto; padding:30px 20px; display:flex; flex-direction:column; align-items:center; }
         
         .card { 
@@ -105,7 +104,7 @@
         .card h2 { margin-bottom:20px; font-size:26px; text-align:center; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         .card h3 { margin-bottom:16px; font-size:22px; text-align:center; color: var(--accent); }
 
-        /* INPUTS MODERNES */
+        /* INPUTS */
         .input, select { 
             width:100%; padding:14px; border-radius:10px; 
             border:1px solid rgba(255,255,255,0.15); 
@@ -120,7 +119,7 @@
             box-shadow: 0 0 15px var(--accent-glow);
         }
 
-        /* BOUTONS PRINCIPAUX (GRADIENT) */
+        /* BOUTONS */
         .btn { 
             background: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%);
             border:none; padding:14px 24px; border-radius:12px; 
@@ -149,7 +148,24 @@
         }
         .btn-code:hover { background: rgba(0, 210, 255, 0.1) !important; box-shadow: 0 0 15px var(--accent-glow) !important; }
 
-        /* ELEMENTS SPECIFIQUES */
+        /* BOUTON RETOUR */
+        .btn-back {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ccc;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        /* ELEMENTS */
         .center { text-align:center; display:flex; flex-direction:column; align-items:center; }
         
         .question-text { 
@@ -247,17 +263,14 @@
     </footer>
 
     <script type="module">
-        // =================== REDIRECTION FIX ===================
         if (window.location.hostname.includes("github.io")) {
             window.location.href = "https://medicome.fr";
         }
 
-        // =================== IMPORTS FIREBASE ===================
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // =================== CONFIG FIREBASE ===================
         const firebaseConfig = {
             apiKey: "AIzaSyCig9G4gYHU5h642YV1IZxthYm_IXp6vZU",
             authDomain: "medicome-paco.firebaseapp.com",
@@ -268,7 +281,6 @@
             measurementId: "G-81HJ9DWBMX"
         };
 
-        // Init Firebase
         let app, auth, db;
         try {
             app = initializeApp(firebaseConfig);
@@ -279,31 +291,22 @@
             document.querySelector('#app').innerHTML = `<div class="alert alert-error">Erreur de configuration : ${error.message}</div>`;
         }
 
-        // =================== DONNÉES DYNAMIQUES ===================
-        // Variable globale qui recevra les données du JSON
         let PATHOLOGIES = [];
-        
         const ACCESS_CODES = [ { code: "SuperCode1", pseudo:"Admin" } ];
 
-        // =================== STATE ===================
+        // AJOUT DE L'HISTORIQUE DANS LE STATE
         let state = {
-            currentUser: null, 
-            pseudo: null, 
-            progression: { correct: 0, incorrect: 0 },
-            isGuest: false,
-            demo:{}, currentSign:null, answers:{}, asked:[], allSigns:[], ranked: [], diagnosticShown:false, previousDiagnostics:[]
+            currentUser: null, pseudo: null, progression: { correct: 0, incorrect: 0 },
+            isGuest: false, demo:{}, currentSign:null, answers:{}, asked:[], allSigns:[], ranked: [], diagnosticShown:false, previousDiagnostics:[],
+            history: [] // Nouvelle pile pour le bouton Retour
         };
 
-        // =================== INITIALISATION ===================
-        // On charge d'abord le JSON, ensuite on lance l'app
         async function initApp() {
             try {
                 const response = await fetch('./pathologies.json');
                 if (!response.ok) throw new Error("Impossible de lire le fichier de données");
                 PATHOLOGIES = await response.json();
                 console.log("Données médicales chargées:", PATHOLOGIES.length, "pathologies");
-                
-                // Une fois chargé, on écoute l'auth
                 startAuthListener();
             } catch (err) {
                 console.error(err);
@@ -311,27 +314,20 @@
                     <div class="card center">
                         <h2 style="color:var(--error)">Erreur de chargement</h2>
                         <p>Impossible de charger 'pathologies.json'.</p>
-                        <p class="small">Si vous êtes en local, utilisez un serveur local (Live Server).</p>
                         <div class="small" style="color:orange">${err.message}</div>
                     </div>
                 `;
             }
         }
-
-        // Lance le chargement
         initApp();
 
-        // =================== LOGIQUE UTILISATEUR ===================
         function startAuthListener() {
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
-                    state.currentUser = user;
-                    state.isGuest = false;
+                    state.currentUser = user; state.isGuest = false;
                     let displayPseudo = user.displayName;
                     if (!displayPseudo && user.email) displayPseudo = user.email.split('@')[0];
-                    state.pseudo = displayPseudo;
-                    updateHeader(); 
-                    
+                    state.pseudo = displayPseudo; updateHeader(); 
                     const docRef = doc(db, "users", user.uid);
                     try {
                         const docSnap = await getDoc(docRef);
@@ -339,25 +335,16 @@
                             const data = docSnap.data();
                             if (data.pseudo) state.pseudo = data.pseudo;
                             state.progression = data.progression || { correct: 0, incorrect: 0 };
-                        } else {
-                            saveProgression(); 
-                        }
-                        updateHeader();
-                        renderHome();
-                    } catch(e) { 
-                        console.error("Erreur DB:", e); 
-                        renderHome();
-                    }
+                        } else { saveProgression(); }
+                        updateHeader(); renderHome();
+                    } catch(e) { renderHome(); }
                 } else {
                     const savedGuest = localStorage.getItem('medicome_guest_progression');
                     const savedPseudo = localStorage.getItem('medicome_guest_pseudo');
-                    
                     if(!state.isGuest && savedGuest && savedPseudo) {
-                        state.isGuest = true;
-                        state.pseudo = savedPseudo;
+                        state.isGuest = true; state.pseudo = savedPseudo;
                         state.progression = JSON.parse(savedGuest);
-                        updateHeader(); 
-                        renderHome();
+                        updateHeader(); renderHome();
                         setTimeout(() => showAlert(`Bon retour, ${state.pseudo} !`, 'success'), 500);
                     } else {
                         state.currentUser = null; state.pseudo = null; state.progression = { correct: 0, incorrect: 0 };
@@ -367,7 +354,6 @@
             });
         }
 
-        // =================== FONCTIONS UTILITAIRES ===================
         function q(sel){ return document.querySelector(sel); }
         function formatSigneName(sign){ return sign.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
         function showAlert(message,type){
@@ -375,21 +361,14 @@
             alertDiv.className = 'alert alert-' + type;
             alertDiv.textContent = message;
             const app = q('#app');
-            if(app){ 
-                app.insertBefore(alertDiv,app.firstChild);
-                setTimeout(()=>{ if(alertDiv.parentNode) alertDiv.parentNode.removeChild(alertDiv); },3000);
-            }
+            if(app){ app.insertBefore(alertDiv,app.firstChild); setTimeout(()=>{ if(alertDiv.parentNode) alertDiv.parentNode.removeChild(alertDiv); },3000); }
         }
 
         async function saveProgression() {
             if (!state.isGuest && state.currentUser) {
                 try {
                     const userRef = doc(db, "users", state.currentUser.uid);
-                    await setDoc(userRef, { 
-                        progression: state.progression,
-                        pseudo: state.pseudo,
-                        lastUpdate: new Date()
-                    }, { merge: true });
+                    await setDoc(userRef, { progression: state.progression, pseudo: state.pseudo, lastUpdate: new Date() }, { merge: true });
                 } catch (e) { console.error("Erreur sauvegarde Cloud", e); }
             } else if (state.isGuest) {
                 localStorage.setItem('medicome_guest_progression', JSON.stringify(state.progression));
@@ -397,99 +376,67 @@
             }
         }
 
-        // =================== INTERFACE & NAVIGATION ===================
         function updateHeader(){
-            const pseudoBox = q("#pseudoBox");
-            const homeBtn = q("#homeBtn");
-            const logoutBtn = q("#logoutBtn");
-
+            const pseudoBox = q("#pseudoBox"); const homeBtn = q("#homeBtn"); const logoutBtn = q("#logoutBtn");
             if(state.pseudo){ 
                 pseudoBox.textContent = state.pseudo + (state.isGuest ? " (Local)" : ""); 
-                pseudoBox.style.display='inline-block';
-                pseudoBox.onclick=renderProfile;
-                homeBtn.style.display='inline-block';
-                logoutBtn.style.display='inline-block';
+                pseudoBox.style.display='inline-block'; pseudoBox.onclick=renderProfile;
+                homeBtn.style.display='inline-block'; logoutBtn.style.display='inline-block';
             } else { 
-                pseudoBox.style.display='none'; 
-                homeBtn.style.display='none';
-                logoutBtn.style.display='none';
+                pseudoBox.style.display='none'; homeBtn.style.display='none'; logoutBtn.style.display='none';
             }
             homeBtn.onclick=renderHome;
-            
             logoutBtn.onclick = () => {
-                localStorage.removeItem('medicome_guest_progression');
-                localStorage.removeItem('medicome_guest_pseudo');
-                state.isGuest = false; state.pseudo = null; state.currentUser = null;
-                state.progression = { correct: 0, incorrect: 0 }; 
-                signOut(auth).then(() => { renderLogin(); updateHeader(); showAlert("Déconnecté", "success"); })
-                .catch(() => { renderLogin(); updateHeader(); });
+                localStorage.removeItem('medicome_guest_progression'); localStorage.removeItem('medicome_guest_pseudo');
+                state.isGuest = false; state.pseudo = null; state.currentUser = null; state.progression = { correct: 0, incorrect: 0 }; 
+                signOut(auth).then(() => { renderLogin(); updateHeader(); showAlert("Déconnecté", "success"); }).catch(() => { renderLogin(); updateHeader(); });
             };
         }
 
         function renderLogin() {
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card center'; card.innerHTML='<h2>☁️ Connexion Cloud</h2>';
-            
             const inputUser = document.createElement('input'); inputUser.placeholder='Email'; inputUser.className='input';
             const inputPass = document.createElement('input'); inputPass.placeholder='Mot de passe'; inputPass.className='input'; inputPass.type='password';
-            
             const btnLogin = document.createElement('button'); btnLogin.className='btn'; btnLogin.textContent='Se connecter';
             btnLogin.onclick = async () => {
-                try {
-                    await signInWithEmailAndPassword(auth, inputUser.value, inputPass.value);
-                    showAlert("Connexion réussie !", "success");
-                } catch (error) { showAlert("Erreur: " + error.message, "error"); }
+                try { await signInWithEmailAndPassword(auth, inputUser.value, inputPass.value); showAlert("Connexion réussie !", "success"); } catch (error) { showAlert("Erreur: " + error.message, "error"); }
             };
             card.appendChild(inputUser); card.appendChild(inputPass); card.appendChild(btnLogin);
-
             const sep = document.createElement('div'); sep.textContent='— Pas encore de compte ? —'; sep.className='small'; sep.style.margin='16px 0'; card.appendChild(sep);
             const inRegEmail = document.createElement('input'); inRegEmail.placeholder='Nouvel Email'; inRegEmail.className='input';
             const inRegPass = document.createElement('input'); inRegPass.placeholder='Nouveau Mot de passe'; inRegPass.className='input'; inRegPass.type='password';
             const inPseudo = document.createElement('input'); inPseudo.placeholder='Votre Pseudo'; inPseudo.className='input';
-            
             const btnReg = document.createElement('button'); btnReg.className='link'; btnReg.textContent='Créer un compte Cloud';
             btnReg.onclick = async () => {
                 if(!inRegEmail.value || !inRegPass.value || !inPseudo.value) return showAlert('Remplissez tout','error');
                 try {
                     const userCredential = await createUserWithEmailAndPassword(auth, inRegEmail.value, inRegPass.value);
-                    const user = userCredential.user;
-                    await updateProfile(user, { displayName: inPseudo.value });
-                    await setDoc(doc(db, "users", user.uid), {
-                        pseudo: inPseudo.value, email: inRegEmail.value,
-                        progression: { correct: 0, incorrect: 0 }, createdAt: new Date()
-                    }, { merge: true });
-                    state.pseudo = inPseudo.value;
-                    showAlert("Compte créé !", "success"); updateHeader(); renderHome();
+                    const user = userCredential.user; await updateProfile(user, { displayName: inPseudo.value });
+                    await setDoc(doc(db, "users", user.uid), { pseudo: inPseudo.value, email: inRegEmail.value, progression: { correct: 0, incorrect: 0 }, createdAt: new Date() }, { merge: true });
+                    state.pseudo = inPseudo.value; showAlert("Compte créé !", "success"); updateHeader(); renderHome();
                 } catch (error) { showAlert("Erreur création: " + error.message, "error"); }
             };
             card.appendChild(inRegEmail); card.appendChild(inRegPass); card.appendChild(inPseudo); card.appendChild(btnReg);
-
             const sepCode = document.createElement('div'); sepCode.textContent='— ou Accès Rapide (Local) —'; sepCode.className='small'; sepCode.style.margin='16px 0'; card.appendChild(sepCode);
             const inputCode = document.createElement('input'); inputCode.placeholder='Clé d\'accès'; inputCode.className='input';
-            
             const btnCode = document.createElement('button'); btnCode.className='btn btn-code'; btnCode.textContent='Utiliser une clé';
             btnCode.onclick = () => {
                 const codeFound = ACCESS_CODES.find(ac => ac.code === inputCode.value);
                 if(codeFound) {
-                    state.isGuest = true; state.pseudo = codeFound.pseudo;
-                    state.progression = {correct:0, incorrect:0};
+                    state.isGuest = true; state.pseudo = codeFound.pseudo; state.progression = {correct:0, incorrect:0};
                     saveProgression(); updateHeader(); renderHome(); showAlert(`Mode Invité: ${codeFound.pseudo}`, 'success');
                 } else { showAlert('Clé invalide', 'error'); }
             };
-            card.appendChild(inputCode); card.appendChild(btnCode);
-            app.appendChild(card);
+            card.appendChild(inputCode); card.appendChild(btnCode); app.appendChild(card);
         }
 
         function renderHome() {
             const app = q('#app'); app.innerHTML='';
             const prog = state.progression;
             const card = document.createElement('div'); card.className='card center';
-            let cloudBadge = state.isGuest ? 
-                '<span style="color:orange; font-size:0.8em; margin-bottom:10px">💾 Mode Local (Navigateur)</span>' : 
-                '<span style="color:var(--success); font-size:0.8em; margin-bottom:10px">☁️ Sauvegarde Cloud Active</span>';
-            
+            let cloudBadge = state.isGuest ? '<span style="color:orange; font-size:0.8em; margin-bottom:10px">💾 Mode Local (Navigateur)</span>' : '<span style="color:var(--success); font-size:0.8em; margin-bottom:10px">☁️ Sauvegarde Cloud Active</span>';
             const displayName = state.pseudo || '...';
-
             card.innerHTML = `<h2>👋 Bonjour ${displayName}</h2>${cloudBadge}
                             <div class="stat-box" style="width:100%"><div class="stat-number">${prog.correct + prog.incorrect}</div><div class="stat-label">Cas résolus</div></div>
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-top:12px;">
@@ -509,32 +456,25 @@
             const successRate = total > 0 ? Math.round((prog.correct / total) * 100) : 0;
             const card = document.createElement('div'); card.className='card center';
             const title = document.createElement('h2'); title.textContent=`👤 Profil de ${state.pseudo || 'Utilisateur'}`; card.appendChild(title);
-            
             const gridDiv = document.createElement('div');
             gridDiv.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-top:12px;';
             gridDiv.innerHTML=`<div class="stat-box"><div class="stat-number" style="color:var(--success);">${prog.correct}</div><div class="stat-label">✓ Corrects</div></div>
                                <div class="stat-box"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">✗ Incorrects</div></div>`;
             card.appendChild(gridDiv);
-            
             const statRate = document.createElement('div');
-            statRate.className='stat-box';
-            statRate.style.width='100%';
+            statRate.className='stat-box'; statRate.style.width='100%';
             statRate.style.cssText='margin-top:12px;background:rgba(0, 255, 157, 0.1);border-color:var(--success);';
             statRate.innerHTML=`<div class="stat-number" style="color:var(--success);">${successRate}%</div><div class="stat-label">Taux de réussite</div>`;
             card.appendChild(statRate);
-
             const btnReset = document.createElement('button');
-            btnReset.className = 'link'; 
-            btnReset.style.color = 'var(--error)'; btnReset.style.marginTop = '20px'; btnReset.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+            btnReset.className = 'link'; btnReset.style.color = 'var(--error)'; btnReset.style.marginTop = '20px'; btnReset.style.borderColor = 'rgba(239, 68, 68, 0.3)';
             btnReset.textContent = '🗑️ Réinitialiser Stats';
             btnReset.onclick = async () => {
                 if(confirm("Voulez-vous vraiment effacer toutes vos statistiques ?")) {
-                    state.progression = { correct: 0, incorrect: 0 };
-                    await saveProgression(); renderProfile(); showAlert("Statistiques remises à zéro", "success");
+                    state.progression = { correct: 0, incorrect: 0 }; await saveProgression(); renderProfile(); showAlert("Statistiques remises à zéro", "success");
                 }
             };
             card.appendChild(btnReset);
-
             const btnBack = document.createElement('button'); btnBack.className='btn'; btnBack.textContent='🏠 Retour';
             btnBack.style.marginTop='20px'; btnBack.onclick=renderHome;
             card.appendChild(btnBack); app.appendChild(card);
@@ -566,7 +506,7 @@
                 plus_de_30ans: q('#demo-30').value === 'oui', plus_de_65ans: q('#demo-65').value === 'oui',
                 atcd_famille: q('#demo-atcd').value === 'oui', tabac: q('#demo-tabac').value === 'oui'
             };
-            state.answers={}; state.asked=[]; state.diagnosticShown=false; state.previousDiagnostics=[];
+            state.answers={}; state.asked=[]; state.diagnosticShown=false; state.previousDiagnostics=[]; state.history=[];
             askNextQuestion();
             };
             const btnCancel = document.createElement('button'); btnCancel.className='link'; btnCancel.textContent='Annuler'; btnCancel.onclick=renderHome;
@@ -620,29 +560,75 @@
             return false;
         }
 
-        function askNextQuestion() {
-            prepareSigns(); rankPathologies();
-            if(canShowDiagnostic()){ showDiagnostic(); return; }
-            const remaining = state.allSigns.filter(s => !state.asked.includes(s));
-            if(remaining.length===0){ showDiagnostic(); return; }
-            const signe = getNextSmartSign(state.ranked, remaining);
-            state.currentSign = signe; state.asked.push(signe);
+        // --- NOUVELLE FONCTION POUR GERER LE RETOUR ARRIERE ---
+        function renderCurrentQuestion() {
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card center';
+            const signe = state.currentSign;
+            
             card.innerHTML=`<div class="small" style="margin-bottom:12px; color:var(--accent)">QUESTION ${state.asked.length}</div>
                             <div class="question-text">Le patient présente-t-il :<br><strong style="font-size:1.2em; color:white;">${formatSigneName(signe)}</strong> ?</div>`;
             const btnGroup = document.createElement('div'); btnGroup.className='button-group';
+            
             const mkBtn = (txt, cls, val) => {
                 const b = document.createElement('button'); b.className=cls; b.textContent=txt;
-                b.onclick=()=>{ state.answers[signe]=val; askNextQuestion(); };
+                b.onclick=()=>{ 
+                    // SAUVEGARDE ETAT POUR RETOUR
+                    state.history.push(JSON.stringify({
+                        answers: state.answers,
+                        asked: state.asked,
+                        currentSign: state.currentSign
+                    }));
+                    
+                    // REPONSE
+                    state.answers[signe]=val; 
+                    askNextQuestion(); 
+                };
                 btnGroup.appendChild(b);
             };
             mkBtn('OUI', 'btn btn-success', true);
             mkBtn('NON', 'btn btn-error', false);
             mkBtn('Je ne sais pas', 'link', null);
             card.appendChild(btnGroup);
-            const btnAb = document.createElement('button'); btnAb.className='link'; btnAb.textContent='Abandonner'; btnAb.style.marginTop='20px'; btnAb.onclick=renderHome;
-            card.appendChild(btnAb); app.appendChild(card);
+
+            // BOUTONS NAVIGATION
+            const navGroup = document.createElement('div');
+            navGroup.style.display = 'flex';
+            navGroup.style.gap = '15px';
+            navGroup.style.marginTop = '20px';
+
+            // Bouton Retour (si historique existe)
+            if(state.history.length > 0) {
+                const btnBack = document.createElement('button');
+                btnBack.className='btn-back'; btnBack.textContent='⬅️ Retour';
+                btnBack.onclick = () => {
+                    const prevState = JSON.parse(state.history.pop());
+                    state.answers = prevState.answers;
+                    state.asked = prevState.asked;
+                    state.currentSign = prevState.currentSign;
+                    renderCurrentQuestion();
+                };
+                navGroup.appendChild(btnBack);
+            }
+
+            const btnAb = document.createElement('button'); btnAb.className='link'; btnAb.textContent='Abandonner'; 
+            btnAb.onclick=renderHome;
+            navGroup.appendChild(btnAb);
+            card.appendChild(navGroup);
+
+            app.appendChild(card);
+        }
+
+        function askNextQuestion() {
+            prepareSigns(); rankPathologies();
+            if(canShowDiagnostic()){ showDiagnostic(); return; }
+            const remaining = state.allSigns.filter(s => !state.asked.includes(s));
+            if(remaining.length===0){ showDiagnostic(); return; }
+            
+            const signe = getNextSmartSign(state.ranked, remaining);
+            state.currentSign = signe; state.asked.push(signe);
+            
+            renderCurrentQuestion();
         }
 
         function showDiagnostic() {

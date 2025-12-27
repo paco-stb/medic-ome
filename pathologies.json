@@ -1,93 +1,44 @@
 [
-    {
-        "name": "Infarctus du myocarde",
-        "short": "Nécrose ischémique du muscle cardiaque (SCA)",
-        "pdf": "fiches/infarctus_du_myocarde.pdf",
-        "signes": {"douleur_thoracique_constrictive": 20, "irradiation_bras_gauche": 15, "sueurs": 8, "nausees": 6, "dyspnee": 5},
-        "facteurs": {"homme": 3, "plus_de_65ans": 5, "tabac": 4, "atcd_famille": 3, "plus_de_30ans": 2}
-    },
-    {
-        "name": "Embolie pulmonaire",
-        "short": "Obstruction d'une artère pulmonaire par un thrombus",
-        "pdf": "fiches/embolie_pulmonaire.pdf",
-        "signes": {"dyspnee_aigue": 18, "douleur_basithoracique": 12, "hemoptysie": 10, "tachycardie": 8, "signes_phlebite": 15},
-        "facteurs": {"tabac": 2, "plus_de_65ans": 4, "atcd_famille": 2, "femme": 1}
-    },
-    {
-        "name": "Pneumopathie franche lobaire",
-        "short": "Infection bactérienne du parenchyme pulmonaire",
-        "pdf": "fiches/pneumopathie_franche_lobaire.pdf",
-        "signes": {"fievre_elevee": 16, "frissons": 12, "toux_productive": 10, "douleur_thoracique": 8, "crepitants_auscultation": 14},
-        "facteurs": {"plus_de_65ans": 4, "tabac": 3}
-    },
-    {
-        "name": "Insuffisance Cardiaque Gauche",
-        "short": "Incapacité du cœur à assurer un débit sanguin suffisant",
-        "pdf": "fiches/insuffisance_cardiaque_gauche.pdf",
-        "signes": {"dyspnee_effort": 14, "orthopnee": 16, "crepitants_bilateraux": 15, "toux_nocturne": 8},
-        "facteurs": {"plus_de_65ans": 6, "atcd_famille": 2}
-    },
-    {
-        "name": "AVC Ischémique",
-        "short": "Déficit neurologique focal soudain par occlusion artérielle",
-        "pdf": "fiches/avc_ischemique.pdf",
-        "signes": {"hemiplegie_brutale": 20, "aphasie": 18, "asymetrie_faciale": 15, "troubles_visuels": 10},
-        "facteurs": {"plus_de_65ans": 6, "tabac": 3, "atcd_famille": 2, "homme": 1}
-    },
-    {
-        "name": "Méningite Aiguë",
-        "short": "Inflammation des méninges (urgence infectieuse)",
-        "pdf": "fiches/meningite_aigue.pdf",
-        "signes": {"raideur_de_nuque": 20, "photophobie": 15, "cephalees_intenses": 14, "fievre": 12, "vomissements_en_jet": 10},
-        "facteurs": {"plus_de_30ans": 1}
-    },
-    {
-        "name": "Appendicite Aiguë",
-        "short": "Inflammation de l'appendice iléo-cæcal",
-        "pdf": "fiches/appendicite.pdf",
-        "signes": {"douleur_fosse_iliaque_droite": 20, "defense_abdominale": 16, "fievre_moderee": 8, "nausees": 8},
-        "facteurs": {"homme": 1, "femme": 1}
-    },
-    {
-        "name": "Cholécystite Aiguë",
-        "short": "Infection de la vésicule biliaire",
-        "pdf": "fiches/cholecystite_aigue.pdf",
-        "signes": {"douleur_hypochondre_droit": 18, "signe_de_murphy": 20, "fievre": 10, "nausees": 8},
-        "facteurs": {"femme": 3, "plus_de_30ans": 3}
-    },
-    {
-        "name": "Gastro-entérite",
-        "short": "Infection virale fréquente du système digestif",
-        "pdf": "fiches/gastro_enterite.pdf",
-        "signes": {"diarrhee_aigue": 18, "vomissements": 15, "douleurs_abdominales_diffuses": 10, "fievre_moderee": 6},
-        "facteurs": {"plus_de_30ans": 0}
-    },
-    {
-        "name": "Colique Néphrétique",
-        "short": "Obstruction de la voie excrétrice urinaire (calcul)",
-        "pdf": "fiches/colique_nephretique.pdf",
-        "signes": {"douleur_lombaire_brutale": 20, "irradiation_organes_genitaux": 15, "agitation_anxiete": 12, "pas_de_fievre": 5},
-        "facteurs": {"homme": 2, "plus_de_30ans": 2}
-    },
-    {
-        "name": "Pyélonéphrite Aiguë",
-        "short": "Infection bactérienne du rein et du bassinet",
-        "pdf": "fiches/pyelonephrite_aigue.pdf",
-        "signes": {"fievre_elevee": 16, "frissons": 12, "douleur_lombaire_unilaterale": 18, "brulures_mictionnelles": 10},
-        "facteurs": {"femme": 4}
-    },
-    {
-        "name": "Anémie Ferriprive",
-        "short": "Carence en fer entraînant une baisse de l'hémoglobine",
-        "pdf": "fiches/anemie_ferriprive.pdf",
-        "signes": {"fatigue_chronique": 14, "paleur_cutaneo_muqueuse": 16, "dyspnee_effort": 10, "tachycardie": 8},
-        "facteurs": {"femme": 4}
-    },
-    {
-        "name": "Hypothyroïdie",
-        "short": "Déficit en hormones thyroïdiennes",
-        "pdf": "fiches/hypothyroidie.pdf",
-        "signes": {"prise_de_poids": 12, "asthenie": 10, "frilosite": 14, "constipation": 8, "bradycardie": 8},
-        "facteurs": {"femme": 4, "plus_de_30ans": 3}
-    }
+    {"name": "Infarctus du myocarde", "short": "Nécrose ischémique du muscle cardiaque (SCA)", "pdf": "fiches/infarctus.pdf", "signes": {"douleur_thoracique": 20, "irradiation_bras_gauche": 15, "sueurs": 8, "nausees": 6}, "facteurs": {"homme": 3, "plus_de_65ans": 5, "tabac": 4, "atcd_famille": 3}},
+    {"name": "Embolie pulmonaire", "short": "Obstruction artère pulmonaire par thrombus", "pdf": "fiches/embolie.pdf", "signes": {"dyspnee_aigue": 18, "douleur_basithoracique": 12, "hemoptysie": 10, "signes_phlebite": 15}, "facteurs": {"tabac": 2, "plus_de_65ans": 4, "femme": 1}},
+    {"name": "Pneumopathie Franche", "short": "Infection bactérienne du poumon (Pneumocoque)", "pdf": "fiches/pneumopathie.pdf", "signes": {"fievre_40": 16, "frissons": 12, "toux_productive": 10, "crepitants_foyer": 14}, "facteurs": {"plus_de_65ans": 4, "tabac": 3}},
+    {"name": "Insuffisance Cardiaque G.", "short": "Défaillance pompe cardiaque gauche (OAP)", "pdf": "fiches/oap.pdf", "signes": {"dyspnee_effort": 14, "orthopnee": 16, "crepitants_bilateraux": 15, "toux_nocturne": 8}, "facteurs": {"plus_de_65ans": 6, "atcd_famille": 2}},
+    {"name": "AVC Ischémique", "short": "Occlusion artérielle cérébrale", "pdf": "fiches/avc.pdf", "signes": {"hemiplegie_brutale": 20, "aphasie": 18, "asymetrie_faciale": 15, "troubles_visuels": 10}, "facteurs": {"plus_de_65ans": 6, "tabac": 3, "homme": 1}},
+    {"name": "Méningite Aiguë", "short": "Infection des méninges (Urgence)", "pdf": "fiches/meningite.pdf", "signes": {"raideur_nuque": 20, "photophobie": 15, "cephalees_intenses": 14, "fievre": 12}, "facteurs": {"plus_de_30ans": 1}},
+    {"name": "Appendicite Aiguë", "short": "Inflammation appendice iléo-cæcal", "pdf": "fiches/appendicite.pdf", "signes": {"douleur_fid": 20, "defense_mcburney": 16, "fievre_moderee": 8, "nausees": 8}, "facteurs": {"homme": 1, "femme": 1}},
+    {"name": "Cholécystite Aiguë", "short": "Infection vésicule biliaire", "pdf": "fiches/cholecystite.pdf", "signes": {"douleur_hcd": 18, "signe_murphy": 20, "fievre": 10, "pas_ictere": 5}, "facteurs": {"femme": 3, "plus_de_30ans": 3}},
+    {"name": "Gastro-entérite", "short": "Infection digestive virale", "pdf": "fiches/gastro.pdf", "signes": {"diarrhee_aigue": 18, "vomissements": 15, "crampes_abdo": 10, "fievre_moderee": 6}, "facteurs": {"plus_de_30ans": 0}},
+    {"name": "Colique Néphrétique", "short": "Calcul urinaire bloqué", "pdf": "fiches/cn.pdf", "signes": {"douleur_lombaire_brutale": 20, "irradiation_oge": 15, "agitation": 12, "pas_fievre": 5}, "facteurs": {"homme": 2, "plus_de_30ans": 2}},
+    {"name": "Pyélonéphrite Aiguë", "short": "Infection rénale bactérienne", "pdf": "fiches/pna.pdf", "signes": {"fievre_elevee": 16, "frissons": 12, "douleur_lombaire": 18, "brulures_urines": 10}, "facteurs": {"femme": 4}},
+    {"name": "Anémie Ferriprive", "short": "Carence en fer", "pdf": "fiches/anemie.pdf", "signes": {"fatigue": 14, "paleur": 16, "dyspnee_effort": 10, "tachycardie": 8}, "facteurs": {"femme": 4}},
+    {"name": "Hypothyroïdie", "short": "Déficit hormones thyroïdiennes", "pdf": "fiches/hypo.pdf", "signes": {"prise_poids": 12, "asthenie": 10, "frilosite": 14, "constipation": 8}, "facteurs": {"femme": 4, "plus_de_30ans": 3}},
+    {"name": "Dissection Aortique", "short": "Déchirure de l'aorte (Urgence Absolue)", "pdf": "fiches/dissection.pdf", "signes": {"douleur_thoracique_déchirante": 20, "irradiation_dorsale": 18, "asymetrie_pouls": 15, "syncope": 10}, "facteurs": {"homme": 2, "plus_de_65ans": 3, "atcd_famille": 2}},
+    {"name": "Péricardite Aiguë", "short": "Inflammation du péricarde", "pdf": "fiches/pericardite.pdf", "signes": {"douleur_calmee_anteflexion": 18, "frottement_pericardique": 20, "fievre_moderee": 10, "sd_grippal_recent": 8}, "facteurs": {"homme": 2}},
+    {"name": "Pneumothorax", "short": "Air dans la plèvre (décollement)", "pdf": "fiches/pneumothorax.pdf", "signes": {"douleur_pleurale_brutale": 18, "dyspnee": 15, "tympanisme": 12, "silence_auscultatoire": 15}, "facteurs": {"homme": 3, "tabac": 5}},
+    {"name": "Crise d'Asthme Aiguë", "short": "Bronchospasme sévère", "pdf": "fiches/asthme.pdf", "signes": {"dyspnee_expiratoire": 18, "sibilants": 16, "toux_seche": 10, "oppression_thoracique": 12}, "facteurs": {"atcd_famille": 3}},
+    {"name": "Occlusion Intestinale", "short": "Arrêt du transit (Grêle ou Côlon)", "pdf": "fiches/occlusion.pdf", "signes": {"arret_matieres_gaz": 20, "douleur_abdominale": 15, "vomissements": 12, "meteorisme": 10}, "facteurs": {"plus_de_65ans": 3}},
+    {"name": "Pancréatite Aiguë", "short": "Inflammation du pancréas", "pdf": "fiches/pancreatite.pdf", "signes": {"douleur_transfixiante": 18, "vomissements": 12, "position_chien_fusil": 10, "defense_epigastrique": 8}, "facteurs": {"homme": 2, "plus_de_30ans": 3}},
+    {"name": "Hémorragie Digestive Haute", "short": "Saignement (Ulcère/Varices)", "pdf": "fiches/hemorragie_haute.pdf", "signes": {"hematemese": 20, "melena": 18, "paleur": 10, "tachycardie": 12}, "facteurs": {"plus_de_65ans": 3, "homme": 1}},
+    {"name": "Grossesse Extra-Utérine", "short": "Implantation hors utérus (Urgence Gynéco)", "pdf": "fiches/geu.pdf", "signes": {"douleur_pelvienne": 18, "metrorragies_sepia": 16, "retard_regles": 15, "malaise": 10}, "facteurs": {"femme": 10, "tabac": 2}},
+    {"name": "Salpingite Aiguë", "short": "Infection génitale haute", "pdf": "fiches/salpingite.pdf", "signes": {"douleur_hypogastrique": 15, "leucorrhees": 12, "fievre": 10, "douleur_mobilisation_uterus": 18}, "facteurs": {"femme": 10}},
+    {"name": "Torsion du Testicule", "short": "Ischémie testiculaire (Urgence < 6h)", "pdf": "fiches/torsion_testicule.pdf", "signes": {"douleur_bourse_brutale": 20, "testicule_ascensionne": 18, "nausees": 10, "pas_fievre": 5}, "facteurs": {"homme": 10}},
+    {"name": "Rétention Aiguë d'Urine", "short": "Impossibilité d'uriner (Globe)", "pdf": "fiches/rau.pdf", "signes": {"impossibilite_uriner": 20, "globe_vesical": 18, "douleur_hypogastrique": 15, "envie_pressante": 12}, "facteurs": {"homme": 5, "plus_de_65ans": 5}},
+    {"name": "Fracture Col Fémur", "short": "Urgence traumato du sujet âgé", "pdf": "fiches/col_femur.pdf", "signes": {"impossibilite_marche": 18, "raccourcissement_membre": 15, "rotation_externe": 15, "douleur_aine": 12}, "facteurs": {"plus_de_65ans": 8, "femme": 3}},
+    {"name": "Arthrite Septique", "short": "Infection articulaire (Urgence fonctionnelle)", "pdf": "fiches/arthrite.pdf", "signes": {"douleur_articulaire_intense": 18, "impotence_fonctionnelle": 16, "fievre": 14, "articulation_chaude": 12}, "facteurs": {"plus_de_65ans": 3}},
+    {"name": "Sciatique (L5/S1)", "short": "Conflit disco-radiculaire", "pdf": "fiches/sciatique.pdf", "signes": {"douleur_lombaire": 10, "irradiation_fesse_pied": 18, "impulsivite_toux": 12, "lassegue_positif": 15}, "facteurs": {"plus_de_30ans": 2}},
+    {"name": "Crise de Goutte", "short": "Microcristaux (Acide Urique)", "pdf": "fiches/goutte.pdf", "signes": {"douleur_gros_orteil": 20, "inflammation_rouge_vif": 15, "douleur_nocturne": 12, "insomniante": 10}, "facteurs": {"homme": 4, "plus_de_30ans": 4}},
+    {"name": "Hémorragie Méningée", "short": "Rupture anévrisme (Céphalée tonnerre)", "pdf": "fiches/hemorragie_meningee.pdf", "signes": {"cephalee_brutale_explosive": 20, "vomissements": 12, "photophobie": 10, "troubles_conscience": 8}, "facteurs": {"tabac": 2, "plus_de_30ans": 2}},
+    {"name": "Crise d'Épilepsie", "short": "Décharge neuronale (Tonico-clonique)", "pdf": "fiches/epilepsie.pdf", "signes": {"perte_connaissance": 15, "mouvements_convulsifs": 18, "morsure_langue": 12, "perte_urines": 10}, "facteurs": {"atcd_famille": 2}},
+    {"name": "Bronchiolite", "short": "Infection virale (VRS) nourrisson", "pdf": "fiches/bronchiolite.pdf", "signes": {"gene_respiratoire": 15, "sibilants_audibles": 12, "toux": 10, "difficulte_alimentaire": 14}, "facteurs": {"tabac": 0}},
+    {"name": "Invagination Intestinale", "short": "Urgence chirurgicale nourrisson (IIA)", "pdf": "fiches/iia.pdf", "signes": {"crises_pleurs_intermittents": 18, "vomissements": 14, "refus_biberon": 10, "rectorragies_tardives": 8}, "facteurs": {"homme": 1}},
+    {"name": "Érysipèle", "short": "Dermohypodermite bactérienne (Jambe)", "pdf": "fiches/erysipele.pdf", "signes": {"placard_rouge_chaud": 18, "fievre_elevee_frissons": 15, "bourrelet_peripherique": 12, "adenopathie": 8}, "facteurs": {"plus_de_30ans": 2}},
+    {"name": "Zona", "short": "Réactivation VZV (Dermato)", "pdf": "fiches/zona.pdf", "signes": {"eruption_vesiculeuse": 18, "topographie_metamerique": 20, "douleur_brulure": 15, "unilateral": 15}, "facteurs": {"plus_de_65ans": 4}},
+    {"name": "Paludisme", "short": "Accès palustre (Retour voyage)", "pdf": "fiches/paludisme.pdf", "signes": {"fievre_elevee": 15, "frissons_intenses": 12, "sueurs_profuses": 12, "cephalees": 10}, "facteurs": {"plus_de_30ans": 0}},
+    {"name": "Hyperthyroïdie", "short": "Excès hormones (Basedow)", "pdf": "fiches/hyperthyroidie.pdf", "signes": {"perte_poids": 14, "tachycardie": 12, "tremblements": 10, "thermophobie": 10}, "facteurs": {"femme": 4}},
+    {"name": "Diabète type 1 (Découverte)", "short": "Carence insuline (Syndrome cardinal)", "pdf": "fiches/dt1.pdf", "signes": {"polyurie": 15, "polydipsie": 15, "amaigrissement": 12, "asthenie": 8}, "facteurs": {"atcd_famille": 2}},
+    {"name": "Attaque de Panique", "short": "Crise d'angoisse aiguë", "pdf": "fiches/panique.pdf", "signes": {"palpitations": 12, "sensation_etouffement": 15, "peur_mourir": 18, "paresthesies": 10}, "facteurs": {"femme": 2}},
+    {"name": "Dépression Caractérisée", "short": "Episode Dépressif Majeur (EDM)", "pdf": "fiches/depression.pdf", "signes": {"tristesse_humeur": 18, "anhedonie": 18, "ralentissement": 12, "troubles_sommeil": 10}, "facteurs": {"femme": 2, "atcd_famille": 2}},
+    {"name": "Glaucome Aigu (Fermeture)", "short": "Hypertonie oculaire brutale (GAFA)", "pdf": "fiches/glaucome.pdf", "signes": {"douleur_oculaire_intense": 18, "baisse_vision": 15, "oeil_rouge": 12, "pupille_semi_mydriase": 14}, "facteurs": {"femme": 2, "plus_de_65ans": 4}},
+    {"name": "Otite Moyenne Aiguë", "short": "Infection oreille moyenne", "pdf": "fiches/otite.pdf", "signes": {"otalgie": 18, "fievre": 12, "hypoacousie": 10, "tympan_bombe": 15}, "facteurs": {"tabac": 0}},
+    {"name": "Choc Anaphylactique", "short": "Allergie grave immédiate", "pdf": "fiches/choc_ana.pdf", "signes": {"urticaire_geant": 12, "oedeme_quincke": 15, "hypotension": 18, "dyspnee_sifflante": 15}, "facteurs": {"atcd_famille": 1}}
 ]

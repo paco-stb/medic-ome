@@ -12,6 +12,7 @@
     <style>
         /* ================= STYLE CHROME / DARK GLOSS ================= */
         :root {
+          /* Palette Deep Chrome */
           --bg-dark: #020b16;
           --bg-light: #1e3c72;
           --glass-bg: rgba(13, 25, 48, 0.75);
@@ -23,11 +24,11 @@
           
           --success: #00ff9d;
           --error: #ff4d4d;
-          --info: #60a5fa; /* Bleu pour les infos neutres */
+          --info: #60a5fa; /* Blue for neutral info */
         }
 
         /* RESET & BASE */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
         
         body {
           font-family: 'Inter', sans-serif;
@@ -39,12 +40,18 @@
           flex-direction: column;
         }
 
-        /* HEADER */
+        /* HEADER GLASSMORPHISM */
         header {
-          display: flex; justify-content: space-between; padding: 16px 24px;
-          background: rgba(2, 11, 22, 0.8); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
-          align-items: center; border-bottom: 1px solid var(--glass-border);
-          position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+          display: flex;
+          justify-content: space-between;
+          padding: 16px 24px;
+          background: rgba(2, 11, 22, 0.8);
+          backdrop-filter: blur(15px);
+          -webkit-backdrop-filter: blur(15px);
+          align-items: center;
+          border-bottom: 1px solid var(--glass-border);
+          position: sticky; top: 0; z-index: 100;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
 
         .brand { 
@@ -63,23 +70,33 @@
             border-radius:20px; cursor:pointer; font-size: 14px; 
         }
 
-        /* BOUTONS & LINKS */
+        /* BUTTONS & LINKS */
         .link {
-          background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1);
-          color: var(--text-muted); padding:8px 16px; border-radius:8px;
-          cursor:pointer; transition:all 0.3s; font-size:14px;
+          background: rgba(255,255,255,0.03);
+          border:1px solid rgba(255,255,255,0.1);
+          color: var(--text-muted);
+          padding:8px 16px;
+          border-radius:8px;
+          cursor:pointer;
+          transition:all 0.3s;
+          font-size:14px;
         }
         .link:hover { 
-            background: rgba(255,255,255,0.1); color: white; 
-            border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow);
+            background: rgba(255,255,255,0.1); 
+            color: white; 
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
         }
 
         /* CARDS */
         main { flex:1; max-width:1000px; width:100%; margin:0 auto; padding:30px 20px; display:flex; flex-direction:column; align-items:center; }
         
         .card { 
-            background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            padding:32px; border-radius:20px; 
+            background: var(--glass-bg); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding:32px; 
+            border-radius:20px; 
             box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 0 1px var(--glass-border); 
             margin-bottom:16px; width:100%; max-width:600px; 
             transition: transform 0.3s ease;
@@ -91,24 +108,32 @@
         /* INPUTS */
         .input, select { 
             width:100%; padding:14px; border-radius:10px; 
-            border:1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); 
-            color: var(--text-main); margin-top:8px; margin-bottom:12px; font-size:14px; 
+            border:1px solid rgba(255,255,255,0.15); 
+            background: rgba(0,0,0,0.3); 
+            color: var(--text-main); 
+            margin-top:8px; margin-bottom:12px; font-size:14px; 
             transition:all 0.3s; 
         }
         .input:focus, select:focus { 
             outline:none; border-color:var(--accent); 
-            background: rgba(0,0,0,0.5); box-shadow: 0 0 15px var(--accent-glow);
+            background: rgba(0,0,0,0.5); 
+            box-shadow: 0 0 15px var(--accent-glow);
         }
 
-        /* BOUTONS ACTIONS */
+        /* ACTION BUTTONS */
         .btn { 
             background: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%);
             border:none; padding:14px 24px; border-radius:12px; 
             color: #000; cursor:pointer; font-weight:700; font-size:15px; 
-            transition:all 0.3s; box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4);
-            text-transform: uppercase; letter-spacing: 0.5px;
+            transition:all 0.3s; 
+            box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .btn:hover { transform:translateY(-2px); box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6), inset 0 0 0 2px rgba(255,255,255,0.3); }
+        .btn:hover { 
+            transform:translateY(-2px); 
+            box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6), inset 0 0 0 2px rgba(255,255,255,0.3);
+        }
         
         .btn-success { background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%); color: #022015; box-shadow: 0 4px 15px rgba(0, 176, 155, 0.4); }
         .btn-success:hover { box-shadow: 0 6px 20px rgba(0, 176, 155, 0.6); }
@@ -117,18 +142,29 @@
         .btn-error:hover { box-shadow: 0 6px 20px rgba(203, 45, 62, 0.6); }
 
         .btn-code { 
-            background: transparent !important; border: 1px solid var(--accent) !important; color: var(--accent) !important; box-shadow: none !important;
+            background: transparent !important; 
+            border: 1px solid var(--accent) !important; 
+            color: var(--accent) !important;
+            box-shadow: none !important;
         }
         .btn-code:hover { background: rgba(0, 210, 255, 0.1) !important; box-shadow: 0 0 15px var(--accent-glow) !important; }
 
-        /* BOUTON RETOUR */
+        /* BACK BUTTON */
         .btn-back {
-            background: rgba(255, 255, 255, 0.1); color: #ccc;
+            background: rgba(255, 255, 255, 0.1);
+            color: #ccc;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 10px 20px; border-radius: 10px;
-            cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
         }
-        .btn-back:hover { background: rgba(255, 255, 255, 0.2); color: white; }
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
 
         /* ELEMENTS */
         .center { text-align:center; display:flex; flex-direction:column; align-items:center; }
@@ -144,40 +180,110 @@
         .button-group { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:12px; width: 100%; }
         .small { opacity:0.6; font-size:13px; color:var(--text-muted); margin-top:12px; text-align:center; }
         
-        /* GLOSSAIRE */
-        .glossary-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:20px; width:100%; max-width:1000px; }
+        /* === GLOSSARY STYLES === */
+        .glossary-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px;
+            position: relative;
+        }
+
+        /* Sidebar A-Z */
+        .alphabet-sidebar {
+            position: sticky;
+            top: 100px; /* Visible on scroll */
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 10px;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            max-height: 80vh;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .alpha-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .alpha-link:hover { color: white; background: rgba(255,255,255,0.1); }
+        .alpha-link.active { color: var(--accent); background: rgba(0, 210, 255, 0.1); }
+        .alpha-link.disabled { opacity: 0.2; cursor: default; pointer-events: none; }
+
+        /* Main Content */
+        .glossary-content { flex: 1; width: 100%; }
+
+        /* Letter Header (A, B, C...) */
+        .letter-header {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--accent);
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 5px;
+            scroll-margin-top: 110px; /* Prevent header hiding behind sticky nav */
+        }
+        .letter-header:first-child { margin-top: 0; }
+
+        /* Grid for cards */
+        .letter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
         .patho-card { 
-            background: rgba(255, 255, 255, 0.03); padding:24px; border-radius:16px; 
-            border:1px solid rgba(255,255,255,0.05); transition:all 0.3s; cursor:pointer; 
+            background: rgba(255, 255, 255, 0.03); 
+            padding:24px; border-radius:16px; 
+            border:1px solid rgba(255,255,255,0.05); 
+            transition:all 0.3s; cursor:pointer; 
         }
         .patho-card:hover { 
-            transform:translateY(-5px); border-color:var(--accent); 
-            background: rgba(0, 210, 255, 0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px var(--accent-glow);
+            transform:translateY(-5px); 
+            border-color:var(--accent); 
+            background: rgba(0, 210, 255, 0.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px var(--accent-glow);
         }
         .patho-name { font-size:18px; font-weight:700; color:var(--accent); margin-bottom:8px; }
         .patho-desc { font-size:14px; color:rgba(255,255,255,0.7); line-height:1.5; }
 
-        /* RESULTATS & ALERTS */
+        /* RESULTS & ALERTS */
         .alert { padding:14px; border-radius:10px; margin:12px 0; font-size:14px; width: 100%; text-align: center; font-weight: 500;}
         .alert-success { background: rgba(0, 255, 157, 0.1); border:1px solid var(--success); color:var(--success); box-shadow: 0 0 15px rgba(0, 255, 157, 0.2); }
         .alert-error { background: rgba(255, 77, 77, 0.1); border:1px solid var(--error); color:var(--error); box-shadow: 0 0 15px rgba(255, 77, 77, 0.2); }
 
         .stat-box { 
-            background: rgba(0,0,0,0.3); padding:20px; border-radius:12px; margin:10px 0; 
-            border: 1px solid rgba(255,255,255,0.05); text-align:center; 
+            background: rgba(0,0,0,0.3); padding:20px; 
+            border-radius:12px; margin:10px 0; 
+            border: 1px solid rgba(255,255,255,0.05);
+            text-align:center; 
         }
         .stat-number { font-size:36px; font-weight:700; color:white; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
 
         .diagnostic-result { 
-            background: rgba(0, 210, 255, 0.1); padding:30px; border-radius:20px; margin:20px 0; 
-            border:2px solid var(--accent); text-align:center; box-shadow: 0 0 30px var(--accent-glow);
+            background: rgba(0, 210, 255, 0.1); padding:30px; 
+            border-radius:20px; margin:20px 0; 
+            border:2px solid var(--accent); text-align:center; 
+            box-shadow: 0 0 30px var(--accent-glow);
         }
         .diagnostic-name { font-size:32px; font-weight:700; color:white; margin-bottom:12px; text-shadow: 0 0 10px var(--accent); }
         .score-badge { display:inline-block; background: var(--accent); color: #000; font-weight: 700; padding:6px 14px; border-radius:20px; font-size:14px; margin-top:12px; }
         
         .result-item { padding:12px 16px; border-radius:10px; margin-bottom:8px; background: rgba(0,0,0,0.3); display:flex; justify-content:space-between; align-items:center; border: 1px solid rgba(255,255,255,0.05); }
         
-        /* COULEURS DES RÉSULTATS */
+        /* RESULT COLORS */
         .result-correct { border-left:4px solid var(--success); }
         .result-missing { border-left:4px solid #f59e0b; }
         .result-error { border-left:4px solid var(--error); }
@@ -190,7 +296,16 @@
         @media (max-width:600px){
             .button-group{flex-direction:column;width:100%;}
             .btn,.link{width:100%;}
-            .glossary-grid{grid-template-columns:1fr;}
+            .glossary-wrapper { flex-direction: column; }
+            .alphabet-sidebar {
+                flex-direction: row;
+                flex-wrap: wrap;
+                width: 100%;
+                position: static;
+                justify-content: center;
+                margin-bottom: 20px;
+            }
+            .alpha-link { padding: 5px 10px; font-size: 14px; }
         }
     </style>
 </head>
@@ -254,11 +369,11 @@
         let PATHOLOGIES = [];
         const ACCESS_CODES = [ { code: "SuperCode1", pseudo:"Admin" } ];
 
-        // STATE (Avec Historique)
+        // STATE (With History)
         let state = {
             currentUser: null, pseudo: null, progression: { correct: 0, incorrect: 0 },
             isGuest: false, demo:{}, currentSign:null, answers:{}, asked:[], allSigns:[], ranked: [], diagnosticShown:false, previousDiagnostics:[],
-            history: [] // Pour le retour arrière
+            history: [] // For going back
         };
 
         async function initApp() {
@@ -440,7 +555,7 @@
             card.appendChild(btnBack); app.appendChild(card);
         }
 
-        // =================== JEU (DIAGNOSTIC) ===================
+        // =================== GAME (DIAGNOSTIC) ===================
 
         function renderDemographics() {
             const app = q('#app'); app.innerHTML='';
@@ -532,7 +647,7 @@
             const mkBtn = (txt, cls, val) => {
                 const b = document.createElement('button'); b.className=cls; b.textContent=txt;
                 b.onclick=()=>{ 
-                    // SAUVEGARDE ETAT POUR RETOUR
+                    // SAVE STATE FOR HISTORY
                     state.history.push(JSON.stringify({
                         answers: state.answers,
                         asked: state.asked,
@@ -548,13 +663,13 @@
             mkBtn('Je ne sais pas', 'link', null);
             card.appendChild(btnGroup);
 
-            // BOUTONS NAVIGATION
+            // NAV BUTTONS
             const navGroup = document.createElement('div');
             navGroup.style.display = 'flex';
             navGroup.style.gap = '15px';
             navGroup.style.marginTop = '20px';
 
-            // Bouton Retour (si historique existe)
+            // Back Button
             if(state.history.length > 0) {
                 const btnBack = document.createElement('button');
                 btnBack.className='btn-back'; btnBack.textContent='⬅️ Retour';
@@ -683,26 +798,85 @@
             btnGroup.appendChild(btnHome); card.appendChild(btnGroup); app.appendChild(card);
         }
 
+        // =================== GLOSSARY FUNCTION ===================
         function renderGlossary() {
             const app = q('#app'); app.innerHTML='';
-            const titleCard = document.createElement('div'); titleCard.className='card center'; titleCard.innerHTML='<h2>📚 Glossaire Pathologies</h2>'; 
             
+            // 1. Header
+            const titleCard = document.createElement('div'); titleCard.className='card center'; titleCard.innerHTML='<h2>📚 Glossaire A-Z</h2>'; 
             const btnBack = document.createElement('button'); btnBack.className='link'; btnBack.textContent='🏠 Retour';
             btnBack.style.marginBottom='20px'; btnBack.onclick=renderHome;
             titleCard.appendChild(btnBack);
             app.appendChild(titleCard);
 
-            const grid = document.createElement('div'); grid.className='glossary-grid';
-            PATHOLOGIES.forEach(p=>{
-                const card = document.createElement('div'); card.className='patho-card clickable';
-                card.innerHTML=`<div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>`;
-                card.onclick=()=>{ 
-                    if(p.pdf && p.pdf !== '#') window.open(p.pdf,'_blank'); 
-                    else showAlert('Fiche PDF non disponible','error'); 
-                };
-                grid.appendChild(card);
+            // 2. Sort Pathologies A-Z
+            const sortedPathos = [...PATHOLOGIES].sort((a, b) => a.name.localeCompare(b.name));
+            
+            // Get available letters
+            const existingLetters = new Set(sortedPathos.map(p => p.name.charAt(0).toUpperCase()));
+
+            // 3. Wrapper Structure
+            const wrapper = document.createElement('div'); wrapper.className = 'glossary-wrapper';
+            
+            // --- SIDEBAR ---
+            const sidebar = document.createElement('div'); sidebar.className = 'alphabet-sidebar';
+            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+            
+            alphabet.forEach(letter => {
+                const link = document.createElement('a');
+                link.textContent = letter;
+                link.className = 'alpha-link';
+                
+                if (existingLetters.has(letter)) {
+                    link.href = `#letter-${letter}`;
+                    link.classList.add('active');
+                    link.onclick = (e) => {
+                        e.preventDefault();
+                        const target = document.getElementById(`letter-${letter}`);
+                        if(target) target.scrollIntoView({behavior: 'smooth', block: 'start'});
+                    };
+                } else {
+                    link.classList.add('disabled');
+                }
+                sidebar.appendChild(link);
             });
-            app.appendChild(grid);
+            wrapper.appendChild(sidebar);
+
+            // --- CONTENT ---
+            const content = document.createElement('div'); content.className = 'glossary-content';
+            
+            // Loop through alphabet to create sections in order
+            alphabet.forEach(letter => {
+                if(existingLetters.has(letter)) {
+                    // Header for letter
+                    const letterHeader = document.createElement('div');
+                    letterHeader.className = 'letter-header';
+                    letterHeader.id = `letter-${letter}`;
+                    letterHeader.textContent = letter;
+                    content.appendChild(letterHeader);
+
+                    // Grid for cards
+                    const grid = document.createElement('div'); 
+                    grid.className = 'letter-grid';
+                    
+                    // Filter pathologies starting with this letter
+                    const currentPathos = sortedPathos.filter(p => p.name.charAt(0).toUpperCase() === letter);
+                    
+                    currentPathos.forEach(p => {
+                        const card = document.createElement('div'); card.className='patho-card';
+                        card.innerHTML=`<div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>`;
+                        card.onclick=()=>{ 
+                            if(p.pdf && p.pdf !== '#') window.open(p.pdf,'_blank'); 
+                            else showAlert('Fiche PDF non disponible','error'); 
+                        };
+                        grid.appendChild(card);
+                    });
+                    content.appendChild(grid);
+                }
+            });
+            
+            wrapper.appendChild(content);
+            app.appendChild(wrapper);
         }
     </script>
 </body>

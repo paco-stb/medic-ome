@@ -12,7 +12,6 @@
     <style>
         /* ================= STYLE CHROME / DARK GLOSS ================= */
         :root {
-          /* Palette Deep Chrome */
           --bg-dark: #020b16;
           --bg-light: #1e3c72;
           --glass-bg: rgba(13, 25, 48, 0.75);
@@ -24,6 +23,7 @@
           
           --success: #00ff9d;
           --error: #ff4d4d;
+          --info: #60a5fa; /* Bleu pour les infos neutres */
         }
 
         /* RESET & BASE */
@@ -39,18 +39,12 @@
           flex-direction: column;
         }
 
-        /* HEADER GLASSMORPHISM */
+        /* HEADER */
         header {
-          display: flex;
-          justify-content: space-between;
-          padding: 16px 24px;
-          background: rgba(2, 11, 22, 0.8);
-          backdrop-filter: blur(15px);
-          -webkit-backdrop-filter: blur(15px);
-          align-items: center;
-          border-bottom: 1px solid var(--glass-border);
-          position: sticky; top: 0; z-index: 100;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+          display: flex; justify-content: space-between; padding: 16px 24px;
+          background: rgba(2, 11, 22, 0.8); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+          align-items: center; border-bottom: 1px solid var(--glass-border);
+          position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
 
         .brand { 
@@ -71,31 +65,21 @@
 
         /* BOUTONS & LINKS */
         .link {
-          background: rgba(255,255,255,0.03);
-          border:1px solid rgba(255,255,255,0.1);
-          color: var(--text-muted);
-          padding:8px 16px;
-          border-radius:8px;
-          cursor:pointer;
-          transition:all 0.3s;
-          font-size:14px;
+          background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1);
+          color: var(--text-muted); padding:8px 16px; border-radius:8px;
+          cursor:pointer; transition:all 0.3s; font-size:14px;
         }
         .link:hover { 
-            background: rgba(255,255,255,0.1); 
-            color: white; 
-            border-color: var(--accent);
-            box-shadow: 0 0 10px var(--accent-glow);
+            background: rgba(255,255,255,0.1); color: white; 
+            border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow);
         }
 
         /* CARDS */
         main { flex:1; max-width:1000px; width:100%; margin:0 auto; padding:30px 20px; display:flex; flex-direction:column; align-items:center; }
         
         .card { 
-            background: var(--glass-bg); 
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding:32px; 
-            border-radius:20px; 
+            background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding:32px; border-radius:20px; 
             box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 0 1px var(--glass-border); 
             margin-bottom:16px; width:100%; max-width:600px; 
             transition: transform 0.3s ease;
@@ -107,32 +91,24 @@
         /* INPUTS */
         .input, select { 
             width:100%; padding:14px; border-radius:10px; 
-            border:1px solid rgba(255,255,255,0.15); 
-            background: rgba(0,0,0,0.3); 
-            color: var(--text-main); 
-            margin-top:8px; margin-bottom:12px; font-size:14px; 
+            border:1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.3); 
+            color: var(--text-main); margin-top:8px; margin-bottom:12px; font-size:14px; 
             transition:all 0.3s; 
         }
         .input:focus, select:focus { 
             outline:none; border-color:var(--accent); 
-            background: rgba(0,0,0,0.5); 
-            box-shadow: 0 0 15px var(--accent-glow);
+            background: rgba(0,0,0,0.5); box-shadow: 0 0 15px var(--accent-glow);
         }
 
-        /* BOUTONS */
+        /* BOUTONS ACTIONS */
         .btn { 
             background: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%);
             border:none; padding:14px 24px; border-radius:12px; 
             color: #000; cursor:pointer; font-weight:700; font-size:15px; 
-            transition:all 0.3s; 
-            box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            transition:all 0.3s; box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4);
+            text-transform: uppercase; letter-spacing: 0.5px;
         }
-        .btn:hover { 
-            transform:translateY(-2px); 
-            box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6), inset 0 0 0 2px rgba(255,255,255,0.3);
-        }
+        .btn:hover { transform:translateY(-2px); box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6), inset 0 0 0 2px rgba(255,255,255,0.3); }
         
         .btn-success { background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%); color: #022015; box-shadow: 0 4px 15px rgba(0, 176, 155, 0.4); }
         .btn-success:hover { box-shadow: 0 6px 20px rgba(0, 176, 155, 0.6); }
@@ -141,29 +117,18 @@
         .btn-error:hover { box-shadow: 0 6px 20px rgba(203, 45, 62, 0.6); }
 
         .btn-code { 
-            background: transparent !important; 
-            border: 1px solid var(--accent) !important; 
-            color: var(--accent) !important;
-            box-shadow: none !important;
+            background: transparent !important; border: 1px solid var(--accent) !important; color: var(--accent) !important; box-shadow: none !important;
         }
         .btn-code:hover { background: rgba(0, 210, 255, 0.1) !important; box-shadow: 0 0 15px var(--accent-glow) !important; }
 
         /* BOUTON RETOUR */
         .btn-back {
-            background: rgba(255, 255, 255, 0.1);
-            color: #ccc;
+            background: rgba(255, 255, 255, 0.1); color: #ccc;
             border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 10px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.2s;
+            padding: 10px 20px; border-radius: 10px;
+            cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s;
         }
-        .btn-back:hover {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-        }
+        .btn-back:hover { background: rgba(255, 255, 255, 0.2); color: white; }
 
         /* ELEMENTS */
         .center { text-align:center; display:flex; flex-direction:column; align-items:center; }
@@ -182,16 +147,12 @@
         /* GLOSSAIRE */
         .glossary-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:20px; width:100%; max-width:1000px; }
         .patho-card { 
-            background: rgba(255, 255, 255, 0.03); 
-            padding:24px; border-radius:16px; 
-            border:1px solid rgba(255,255,255,0.05); 
-            transition:all 0.3s; cursor:pointer; 
+            background: rgba(255, 255, 255, 0.03); padding:24px; border-radius:16px; 
+            border:1px solid rgba(255,255,255,0.05); transition:all 0.3s; cursor:pointer; 
         }
         .patho-card:hover { 
-            transform:translateY(-5px); 
-            border-color:var(--accent); 
-            background: rgba(0, 210, 255, 0.05);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px var(--accent-glow);
+            transform:translateY(-5px); border-color:var(--accent); 
+            background: rgba(0, 210, 255, 0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px var(--accent-glow);
         }
         .patho-name { font-size:18px; font-weight:700; color:var(--accent); margin-bottom:8px; }
         .patho-desc { font-size:14px; color:rgba(255,255,255,0.7); line-height:1.5; }
@@ -202,26 +163,25 @@
         .alert-error { background: rgba(255, 77, 77, 0.1); border:1px solid var(--error); color:var(--error); box-shadow: 0 0 15px rgba(255, 77, 77, 0.2); }
 
         .stat-box { 
-            background: rgba(0,0,0,0.3); padding:20px; 
-            border-radius:12px; margin:10px 0; 
-            border: 1px solid rgba(255,255,255,0.05);
-            text-align:center; 
+            background: rgba(0,0,0,0.3); padding:20px; border-radius:12px; margin:10px 0; 
+            border: 1px solid rgba(255,255,255,0.05); text-align:center; 
         }
         .stat-number { font-size:36px; font-weight:700; color:white; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
 
         .diagnostic-result { 
-            background: rgba(0, 210, 255, 0.1); padding:30px; 
-            border-radius:20px; margin:20px 0; 
-            border:2px solid var(--accent); text-align:center; 
-            box-shadow: 0 0 30px var(--accent-glow);
+            background: rgba(0, 210, 255, 0.1); padding:30px; border-radius:20px; margin:20px 0; 
+            border:2px solid var(--accent); text-align:center; box-shadow: 0 0 30px var(--accent-glow);
         }
         .diagnostic-name { font-size:32px; font-weight:700; color:white; margin-bottom:12px; text-shadow: 0 0 10px var(--accent); }
         .score-badge { display:inline-block; background: var(--accent); color: #000; font-weight: 700; padding:6px 14px; border-radius:20px; font-size:14px; margin-top:12px; }
         
         .result-item { padding:12px 16px; border-radius:10px; margin-bottom:8px; background: rgba(0,0,0,0.3); display:flex; justify-content:space-between; align-items:center; border: 1px solid rgba(255,255,255,0.05); }
+        
+        /* COULEURS DES RÉSULTATS */
         .result-correct { border-left:4px solid var(--success); }
         .result-missing { border-left:4px solid #f59e0b; }
         .result-error { border-left:4px solid var(--error); }
+        .result-neutral { border-left:4px solid var(--info); background: rgba(96, 165, 250, 0.1); }
         
         footer { text-align:center; padding:20px; background: rgba(0,0,0,0.3); font-size:13px; opacity:0.6; flex-shrink:0; border-top: 1px solid rgba(255,255,255,0.05); }
         
@@ -294,11 +254,11 @@
         let PATHOLOGIES = [];
         const ACCESS_CODES = [ { code: "SuperCode1", pseudo:"Admin" } ];
 
-        // AJOUT DE L'HISTORIQUE DANS LE STATE
+        // STATE (Avec Historique)
         let state = {
             currentUser: null, pseudo: null, progression: { correct: 0, incorrect: 0 },
             isGuest: false, demo:{}, currentSign:null, answers:{}, asked:[], allSigns:[], ranked: [], diagnosticShown:false, previousDiagnostics:[],
-            history: [] // Nouvelle pile pour le bouton Retour
+            history: [] // Pour le retour arrière
         };
 
         async function initApp() {
@@ -560,7 +520,6 @@
             return false;
         }
 
-        // --- NOUVELLE FONCTION POUR GERER LE RETOUR ARRIERE ---
         function renderCurrentQuestion() {
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card center';
@@ -579,8 +538,6 @@
                         asked: state.asked,
                         currentSign: state.currentSign
                     }));
-                    
-                    // REPONSE
                     state.answers[signe]=val; 
                     askNextQuestion(); 
                 };
@@ -684,32 +641,41 @@
         function showDiagnosticDetails(top) {
             const app = q('#app'); app.innerHTML = '';
             const card = document.createElement('div'); card.className='card';
+            
             const title = document.createElement('h2'); title.innerHTML = `✅ ${top.patho.name}`; card.appendChild(title);
             const desc = document.createElement('div'); desc.className='patho-desc'; desc.textContent = top.patho.short; desc.style.marginBottom='20px'; desc.style.textAlign='center'; card.appendChild(desc);
             
             const pathoSigns = Object.keys(top.patho.signes);
-            const correctSigns = [], missingSigns = [], erroneousSigns = [];
+            const correctSigns = [], missingSigns = [], notAskedSigns = [], erroneousSigns = [];
             
             pathoSigns.forEach(s => {
                 const val = state.answers[s];
-                if(val === true) correctSigns.push(s); else if(val === false) missingSigns.push(s);
+                if(val === true) correctSigns.push(s); 
+                else if(val === false) missingSigns.push(s);
+                else notAskedSigns.push(s);
             });
-            state.allSigns.forEach(s => { if(state.answers[s] === true && !pathoSigns.includes(s)) erroneousSigns.push(s); });
+            state.allSigns.forEach(s => { 
+                if(state.answers[s] === true && !pathoSigns.includes(s)) erroneousSigns.push(s); 
+            });
             
             const resultsDiv = document.createElement('div'); resultsDiv.className='result-list';
             const createList = (title, items, type, typeLabel) => {
                 if(items.length > 0) {
-                    const h = document.createElement('h4'); h.textContent = `${title} (${items.length})`; h.style.marginTop='12px'; h.style.color='white'; resultsDiv.appendChild(h);
+                    const h = document.createElement('h4'); 
+                    h.textContent = `${title} (${items.length})`; 
+                    h.style.marginTop='15px'; h.style.marginBottom='5px'; h.style.color='white'; 
+                    resultsDiv.appendChild(h);
                     items.forEach(s => {
                         const r = document.createElement('div'); r.className='result-item result-'+type;
-                        r.innerHTML = `<div>${formatSigneName(s)}</div><div style="opacity:0.8; font-size:0.9em">${typeLabel}</div>`;
+                        r.innerHTML = `<div>${formatSigneName(s)}</div><div style="opacity:0.7; font-size:0.85em; font-weight:600;">${typeLabel}</div>`;
                         resultsDiv.appendChild(r);
                     });
                 }
             };
-            createList("Signes corrects", correctSigns, "correct", "OK");
-            createList("Signes attendus manquants", missingSigns, "missing", "Manqué");
-            createList("Signes cochés par erreur", erroneousSigns, "error", "Erreur");
+            createList("✅ Signes bien identifiés", correctSigns, "correct", "Validé");
+            createList("❌ Signes manqués (Faux Négatifs)", missingSigns, "missing", "Vous avez dit Non");
+            createList("ℹ️ Autres signes du tableau clinique", notAskedSigns, "neutral", "Non demandé");
+            createList("⚠️ Signes cochés à tort (Faux Positifs)", erroneousSigns, "error", "Erreur");
             card.appendChild(resultsDiv);
             
             const btnGroup = document.createElement('div'); btnGroup.className='button-group';

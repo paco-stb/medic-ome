@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Modèle Fiche Medicome</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ==================== NE PAS TOUCHER À CETTE ZONE ==================== */
+        @page { size: A4; margin: 0; }
+        * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        body { margin: 0; padding: 0; background: #eee; font-family: 'Inter', sans-serif; color: #1e293b; }
+        
+        /* PAGE A4 */
+        .sheet {
+            background: white; width: 210mm; height: 296mm; 
+            display: flex; flex-direction: column; 
+            margin: 0 auto 20px auto; padding: 12mm 15mm; 
+            position: relative; overflow: hidden; page-break-after: always; break-after: page;
+        }
+
+        /* HEADER */
+        header { border-bottom: 4px solid #0072ff; padding-bottom: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-end; flex-shrink: 0; }
+        h1 { margin: 0; font-size: 26px; color: #0f172a; text-transform: uppercase; font-weight: 800; line-height: 1; }
+        .subtitle { color: #0072ff; font-weight: 700; font-size: 13px; text-transform: uppercase; margin-top: 5px; }
+        .logo { font-size: 18px; font-weight: 900; color: #cbd5e1; letter-spacing: 2px; text-transform: uppercase; }
+
+        /* CONTENU EXTENSIBLE */
+        .content-stretch { flex-grow: 1; display: flex; flex-direction: column; justify-content: space-between; padding: 10px 0; }
+
+        /* BOITES */
+        .box { border: 2px solid #e2e8f0; border-radius: 10px; padding: 18px; background: #fff; display: flex; flex-direction: column; justify-content: center; }
+        .box-blue { background: #eff6ff; border-color: #bfdbfe; }
+        .box-red { background: #fff1f2; border-color: #fecdd3; color: #9f1239; }
+        
+        .box-title { color: #0072ff; font-weight: 800; font-size: 12px; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px; display: flex; align-items: center; gap: 8px; }
+        .box-red .box-title { color: #be123c; border-color: rgba(190,18,60,0.1); }
+
+        /* TEXTE */
+        ul { padding-left: 18px; margin: 0; }
+        li { margin-bottom: 6px; font-size: 13px; line-height: 1.5; }
+        p { margin: 0; font-size: 13px; line-height: 1.6; text-align: justify; }
+        strong { color: #0f172a; font-weight: 700; }
+
+        /* GRILLES */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+        /* FOOTER */
+        footer { margin-top: 10px; padding-top: 10px; border-top: 1px solid #f1f5f9; text-align: center; font-size: 10px; color: #94a3b8; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; flex-shrink: 0; }
+
+        /* PUCES */
+        .signs-list li::marker { color: #ef4444; content: "➤ "; font-size: 1.2em; }
+        .risk-list li::marker { color: #f59e0b; content: "● "; font-size: 1.2em; }
+        .check-list li::marker { color: #10b981; content: "✓ "; font-size: 1.2em; }
+
+        @media print { body { background: white; } .sheet { margin: 0; border: none; } .no-print { display: none; } }
+        /* ===================================================================== */
+    </style>
+</head>
+<body>
+
+    <div class="no-print" style="text-align:center; padding:30px;">
+        <button onclick="window.print()" style="padding:15px 30px; background:#0072ff; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:16px;">
+            🖨️ IMPRIMER LA FICHE
+        </button>
+    </div>
+
+    <div class="sheet">
+        
+        <header>
+            <div>
+                <h1>[NOM DE LA MALADIE]</h1>
+                <div class="subtitle">[SPÉCIALITÉ / DOMAINE]</div>
+            </div>
+            <div class="logo">MEDICOME</div>
+        </header>
+        
+        <div class="content-stretch">
+            
+            <div class="box box-blue">
+                <div class="box-title">📖 DÉFINITION</div>
+                <p>[Écrire ici la définition courte et précise de la pathologie...]</p>
+            </div>
+
+            <div class="grid-2">
+                <div class="box">
+                    <div class="box-title">🔎 SIGNES CLINIQUES</div>
+                    <ul class="signs-list">
+                        <li><strong>[Signe principal] :</strong> [Détails...]</li>
+                        <li><strong>[Signe 2] :</strong> [Détails...]</li>
+                        <li><strong>[Signe 3] :</strong> [Détails...]</li>
+                        <li><strong>[Signe 4] :</strong> [Détails...]</li>
+                    </ul>
+                </div>
+                <div class="box">
+                    <div class="box-title">⚠️ FACTEURS DE RISQUE</div>
+                    <ul class="risk-list">
+                        <li>[Facteur de risque 1]</li>
+                        <li>[Facteur de risque 2]</li>
+                        <li>[Facteur de risque 3]</li>
+                        <li>[Terrain particulier]</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="box">
+                <div class="box-title">🔬 EXAMENS & TRAITEMENT</div>
+                <ul class="check-list">
+                    <li><strong>[Examen 1] :</strong> [Résultat attendu / Pathognomonique]</li>
+                    <li><strong>[Examen 2] :</strong> [Résultat attendu]</li>
+                    <li><strong>[Traitement] :</strong> [Médicaments ou Chirurgie]</li>
+                    <li><strong>[Urgence] :</strong> [Délai d'intervention / Action immédiate]</li>
+                </ul>
+            </div>
+
+            <div class="box box-red">
+                <div class="box-title">🚨 PIÈGE À ÉVITER</div>
+                <p>[Décrire ici le piège classique, la forme trompeuse ou la contre-indication absolue...]</p>
+            </div>
+
+        </div>
+
+        <footer>© Medicome - Fiches de Révision Officielles - Reproduction Interdite</footer>
+    </div>
+    </body>
+</html>

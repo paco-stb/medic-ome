@@ -101,21 +101,21 @@
         "name": "Péricardite Aiguë",
         "short": "Inflammation du péricarde",
         "pdf": "fiches/pericardite.pdf",
-        "signes": {"douleur_thoracique": 15, "soulage_penche_avant": 20, "fievre": 8, "toux": 6, "dyspnee": 5, "douleur_inspiration": 12, "rhume_recent": 8},
+        "signes": {"douleur_thoracique": 15, "soulage_penche_avant": 20, "fievre": 8, "toux_seche": 6, "dyspnee": 5, "douleur_inspiration": 12, "rhume_recent": 8},
         "facteurs": {"homme": 2, "jeune": 3}
     },
     {
         "name": "Pneumothorax",
         "short": "Air dans la plèvre",
         "pdf": "fiches/pneumothorax.pdf",
-        "signes": {"douleur_thoracique": 5, "douleur_thoracique_coté": 18, "dyspnee_brutale": 15, "toux": 10, "angoisse": 6, "diminution_bruits_respiratoires": 12},
+        "signes": {"douleur_thoracique": 5, "dyspnee": 5, "douleur_thoracique_coté": 18, "dyspnee_brutale": 15, "toux_seche": 10, "angoisse": 6, "diminution_bruits_respiratoires": 12},
         "facteurs": {"homme": 3, "tabac": 5, "grand_mince": 4}
     },
     {
         "name": "Crise d'Asthme",
         "short": "Bronchospasme sévère",
         "pdf": "fiches/asthme.pdf",
-        "signes": {"dyspnee": 5, "dyspnee_expiratoire": 18, "sifflements_respiratoires": 20, "toux": 12, "oppression_thoracique": 12, "angoisse": 8, "tachycardie": 6},
+        "signes": {"dyspnee": 5, "toux": 5, "dyspnee_expiratoire": 18, "sifflements_respiratoires": 20, "toux_seche": 12, "oppression_thoracique": 12, "angoisse": 8, "tachycardie": 6},
         "facteurs": {"atcd_famille": 3, "allergies": 5}
     },
     {
@@ -339,7 +339,7 @@
         "name": "Varicelle",
         "short": "Primo-infection VZV",
         "pdf": "fiches/varicelle.pdf",
-        "signes": {"anomalie_peau": 5, "boutons_bulles_corps": 20, "demangeaisons": 18, "fievre": 8, "boutons_tete": 10, "fatigue": 5},
+        "signes": {"anomalie_peau": 5, "boutons_bulles_corps": 20, "demangeaisons_intenses": 18, "fievre": 8, "boutons_tete": 10, "fatigue": 5},
         "facteurs": {"plus_de_30ans": 0, "enfant": 5, "contage": 8}
     },
     {
@@ -347,7 +347,7 @@
         "short": "Fracture poignet",
         "pdf": "fiches/pouteau.pdf",
         "signes": {"douleur_membre_traumatisme": 5, "poignet_dos_fourchette": 20, "douleur_poignet": 18, "impossibilite_bouger_main": 15, "gonflement": 12, "bleu_ecchymose": 10, "chute_main": 10},
-        "facteurs": {"femme": 3, "plus_de_65ans": 5}
+        "facteurs": {"femme": 3, "plus_de_65ans": 5, "chute_main": 8}
     },
     {
         "name": "Endocardite Infectieuse",

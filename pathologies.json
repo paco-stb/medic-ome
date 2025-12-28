@@ -101,14 +101,14 @@
         "name": "Péricardite Aiguë",
         "short": "Inflammation du péricarde",
         "pdf": "fiches/pericardite.pdf",
-        "signes": {"douleur_thoracique": 15, "soulage_penche_avant": 20, "fievre": 8, "toux_seche": 6, "dyspnee": 5, "douleur_inspiration": 12, "rhume_recent": 8},
+        "signes": {"douleur_thoracique": 15, "soulage_penche_avant": 20, "fievre": 8, "toux": 6, "dyspnee": 5, "douleur_inspiration": 12, "rhume_recent": 8},
         "facteurs": {"homme": 2, "jeune": 3}
     },
     {
         "name": "Pneumothorax",
         "short": "Air dans la plèvre",
         "pdf": "fiches/pneumothorax.pdf",
-        "signes": {"douleur_thoracique": 5, "dyspnee": 5, "douleur_thoracique_coté": 18, "dyspnee_brutale": 15, "toux_seche": 10, "angoisse": 6, "diminution_bruits_respiratoires": 12},
+        "signes": {"douleur_thoracique": 5, "dyspnee": 5, "douleur_thoracique_coté": 18, "dyspnee_brutale": 15, "toux": 10, "angoisse": 6, "diminution_bruits_respiratoires": 12},
         "facteurs": {"homme": 3, "tabac": 5, "grand_mince": 4}
     },
     {
@@ -213,7 +213,7 @@
         "name": "Bronchiolite",
         "short": "Virose respiratoire nourrisson",
         "pdf": "fiches/bronchiolite.pdf",
-        "signes": {"dyspnee": 5, "toux": 5, "gene_respiratoire": 15, "sifflements_respiratoires": 15, "toux_seche": 10, "refus_biberon": 15, "fievre": 6, "creusement_thorax_respiration": 12, "rhume": 8},
+        "signes": {"dyspnee": 5, "toux": 5, "dyspnee": 15, "sifflements_respiratoires": 15, "toux_seche": 10, "refus_biberon": 15, "fievre": 6, "creusement_thorax_respiration": 12, "rhume": 8},
         "facteurs": {"tabac_passif": 3, "hiver": 5, "nourrisson": 10}
     },
     {
@@ -262,7 +262,7 @@
         "name": "Attaque de Panique",
         "short": "Crise d'angoisse aiguë",
         "pdf": "fiches/panique.pdf",
-        "signes": {"trouble_psy": 5, "dyspnee": 5, "tachycardie_palpitations": 15, "gene_respiratoire": 15, "peur_mourir_devenir_fou": 20, "fourmillements": 12, "sueurs": 10, "tremblements": 10, "douleur_thoracique": 8, "sensation_etouffement": 12},
+        "signes": {"trouble_psy": 5, "dyspnee": 5, "tachycardie_palpitations": 15, "dyspnee": 15, "peur_mourir_devenir_fou": 20, "fourmillements": 12, "sueurs": 10, "tremblements": 10, "douleur_thoracique": 8, "sensation_etouffement": 12},
         "facteurs": {"femme": 2, "stress": 5}
     },
     {
@@ -290,7 +290,7 @@
         "name": "Choc Anaphylactique",
         "short": "Allergie grave",
         "pdf": "fiches/choc_ana.pdf",
-        "signes": {"anomalie_peau": 5, "gonflement_visage_gorge": 18, "baisse_tension": 20, "respiration_sifflante": 18, "tachycardie": 10, "malaise": 12, "douleur_abdominale": 8, "demangeaisons_paumes": 10, "plaques_rouges_corps": 12},
+        "signes": {"anomalie_peau": 5, "gonflement_visage_gorge": 18, "baisse_tension": 20, "dyspnee_sifflante": 18, "tachycardie": 10, "malaise": 12, "douleur_abdominale": 8, "demangeaisons_paumes": 10, "plaques_rouges_corps": 12},
         "facteurs": {"atcd_famille": 1, "allergie_connue": 8}
     },
     {
@@ -318,7 +318,7 @@
         "name": "Sigmoïdite",
         "short": "Infection diverticule",
         "pdf": "fiches/sigmoidite.pdf",
-        "signes": {"douleur_abdominale": 5, "douleur_fosse_iliaque_gauche": 20, "fievre": 12, "constipation_ou_diarrhee": 12, "defense_abdominale_gauche": 15, "nausees_vomissements": 8},
+        "signes": {"douleur_abdominale": 5, "douleur_fosse_iliaque_gauche": 20, "fievre": 12, "troubles_transit": 12, "defense_abdominale_gauche": 15, "nausees_vomissements": 8},
         "facteurs": {"plus_de_65ans": 4, "constipation_chronique": 3}
     },
     {
@@ -339,7 +339,7 @@
         "name": "Varicelle",
         "short": "Primo-infection VZV",
         "pdf": "fiches/varicelle.pdf",
-        "signes": {"anomalie_peau": 5, "boutons_bulles_corps": 20, "demangeaisons_intenses": 18, "fievre": 8, "boutons_tete": 10, "fatigue": 5},
+        "signes": {"anomalie_peau": 5, "boutons_bulles_corps": 20, "demangeaisons": 18, "fievre": 8, "boutons_tete": 10, "fatigue": 5},
         "facteurs": {"plus_de_30ans": 0, "enfant": 5, "contage": 8}
     },
     {
@@ -402,7 +402,7 @@
         "name": "Cancer Colorectal",
         "short": "Tumeur côlon/rectum",
         "pdf": "fiches/kc_colon.pdf",
-        "signes": {"douleur_abdominale": 5, "sang_dans_selles": 18, "alternance_diarrhee_constipation": 18, "douleur_abdominale_diffuse": 10, "anemie": 12, "perte_poids": 12, "fatigue": 10},
+        "signes": {"douleur_abdominale": 5, "sang_dans_selles": 18, "troubles_transit": 18, "douleur_abdominale_diffuse": 10, "anemie": 12, "perte_poids": 12, "fatigue": 10},
         "facteurs": {"plus_de_65ans": 6, "atcd_famille": 3, "polypes": 5}
     },
     {
@@ -430,14 +430,14 @@
         "name": "Tumeur Vessie",
         "short": "Carcinome urothélial",
         "pdf": "fiches/kc_vessie.pdf",
-        "signes": {"genes_urinaires": 5, "sang_urines": 20, "brulures_urinaires": 12, "envie_frequente_uriner": 12, "infections_urinaires_repetition": 10, "perte_poids": 6, "fatigue": 6},
+        "signes": {"genes_urinaires": 5, "sang_urines_rouge": 20, "brulures_urinaires": 12, "envie_frequente_uriner": 12, "infections_urinaires_repetition": 10, "perte_poids": 6, "fatigue": 6},
         "facteurs": {"tabac": 8, "homme": 3, "exposition_pro": 4}
     },
     {
         "name": "Insuffisance Rénale Aiguë",
         "short": "Défaillance rénale brutale",
         "pdf": "fiches/ira.pdf",
-        "signes": {"genes_urinaires": 5, "absence_urine": 18, "oedemes_jambes": 12, "nausees_vomissements": 10, "essoufflement": 8, "confusion": 8, "fatigue": 10, "gout_metal_bouche": 6},
+        "signes": {"genes_urinaires": 5, "absence_urine": 18, "oedemes_jambes": 12, "nausees_vomissements": 10, "dyspnee": 8, "confusion": 8, "fatigue": 10, "gout_metal_bouche": 6},
         "facteurs": {"plus_de_65ans": 5, "deshydratation": 5, "medicaments": 4}
     },
     {

@@ -807,14 +807,30 @@
 
         function getNextSmartSign(rankedPathos, remainingSigns) {
             if (rankedPathos.length < 2) return remainingSigns[Math.floor(Math.random() * remainingSigns.length)];
-            const top1 = rankedPathos[0].patho, top2 = rankedPathos[1].patho;
-            let best=null, maxD=-1;
-            remainingSigns.forEach(s => {
-                const w1 = top1.signes[s] || 0, w2 = top2.signes[s] || 0;
-                const d = Math.abs(w1 - w2);
-                if (d > maxD) { maxD = d; best = s; }
+            
+            const top1 = rankedPathos[0].patho;
+            const top2 = rankedPathos[1].patho;
+            
+            // 1. Calcul de pertinence (Différentiel + Aléatoire léger)
+            let candidates = remainingSigns.map(s => {
+                const w1 = top1.signes[s] || 0;
+                const w2 = top2.signes[s] || 0;
+                return { sign: s, score: Math.abs(w1 - w2) + (Math.random() * 0.1) };
             });
-            return (best && maxD > 0) ? best : remainingSigns[Math.floor(Math.random() * remainingSigns.length)];
+
+            // 2. Tri du plus pertinent au moins pertinent
+            candidates.sort((a, b) => b.score - a.score);
+            
+            // 3. Filtrage : on garde ceux qui servent à quelque chose
+            let usefulCandidates = candidates.filter(c => c.score > 0.1);
+            if (usefulCandidates.length === 0) usefulCandidates = candidates;
+
+            // 4. Sélection dans le TOP 5 (Fuzzy Logic)
+            const poolSize = Math.min(usefulCandidates.length, 5);
+            const topPool = usefulCandidates.slice(0, poolSize);
+            const winner = topPool[Math.floor(Math.random() * topPool.length)];
+            
+            return winner.sign;
         }
 
         function canShowDiagnostic() {
@@ -888,27 +904,29 @@
         function askNextQuestion() {
             prepareSigns();
             const remaining = state.allSigns.filter(s => !state.asked.includes(s));
+            if(remaining.length === 0) { showDiagnostic(); return; }
 
-            // --- NOUVELLE LOGIQUE : 3 QUESTIONS ALÉATOIRES AU DÉBUT ---
-            if (state.asked.length < 3) {
-                 if(remaining.length === 0) { showDiagnostic(); return; }
-                 // Pioche purement aléatoire pour les 3 premières
-                 const randomSign = remaining[Math.floor(Math.random() * remaining.length)];
-                 state.currentSign = randomSign;
-                 state.asked.push(randomSign);
-                 renderCurrentQuestion();
-                 return;
+            // --- VÉRIFICATION : A-T-ON DÉJÀ UN "OUI" ? ---
+            // On ignore les facteurs de risque, on cherche un symptôme validé
+            const hasSymptom = Object.keys(state.answers).some(key => state.answers[key] === true);
+
+            // --- PHASE 1 : CHASSEUR (Tant qu'on a que des NON ou RIEN) ---
+            if (!hasSymptom) {
+                // On choisit un signe TOTALEMENT AU HASARD
+                const randomSign = remaining[Math.floor(Math.random() * remaining.length)];
+                state.currentSign = randomSign;
+                state.asked.push(randomSign);
+                renderCurrentQuestion();
+                return;
             }
 
-            // --- ENSUITE : LOGIQUE INTELLIGENTE ---
-            rankPathologies();
+            // --- PHASE 2 : SNIPER (Dès qu'on a un OUI) ---
+            rankPathologies(); 
             if(canShowDiagnostic()){ showDiagnostic(); return; }
-            if(remaining.length===0){ showDiagnostic(); return; }
             
             const signe = getNextSmartSign(state.ranked, remaining);
             state.currentSign = signe; 
             state.asked.push(signe);
-            
             renderCurrentQuestion();
         }
 

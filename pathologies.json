@@ -101,14 +101,14 @@
         "name": "Péricardite Aiguë",
         "short": "Inflammation du péricarde",
         "pdf": "fiches/pericardite.pdf",
-        "signes": {"douleur_thoracique": 15, "soulage_penche_avant": 20, "fievre": 8, "toux": 6, "dyspnee": 5, "douleur_inspiration": 12, "rhume_recent": 8},
+        "signes": {"douleur_thoracique": 15, "soulage_penche_avant": 20, "fievre": 8, "toux_seche": 6, "dyspnee": 5, "douleur_inspiration": 12, "rhume_recent": 8},
         "facteurs": {"homme": 2, "jeune": 3}
     },
     {
         "name": "Pneumothorax",
         "short": "Air dans la plèvre",
         "pdf": "fiches/pneumothorax.pdf",
-        "signes": {"douleur_thoracique": 5, "dyspnee": 5, "douleur_thoracique_coté": 18, "dyspnee_brutale": 15, "toux": 10, "angoisse": 6, "diminution_bruits_respiratoires": 12},
+        "signes": {"douleur_thoracique": 5, "dyspnee": 5, "douleur_thoracique_coté": 18, "dyspnee_brutale": 15, "toux_seche": 10, "angoisse": 6, "diminution_bruits_respiratoires": 12},
         "facteurs": {"homme": 3, "tabac": 5, "grand_mince": 4}
     },
     {
@@ -213,7 +213,7 @@
         "name": "Bronchiolite",
         "short": "Virose respiratoire nourrisson",
         "pdf": "fiches/bronchiolite.pdf",
-        "signes": {"dyspnee": 5, "toux": 5, "dyspnee": 15, "sifflements_respiratoires": 15, "toux_seche": 10, "refus_biberon": 15, "fievre": 6, "creusement_thorax_respiration": 12, "rhume": 8},
+        "signes": {"dyspnee": 5, "toux": 5, "gene_respiratoire": 15, "sifflements_respiratoires": 15, "toux_seche": 10, "refus_biberon": 15, "fievre": 6, "creusement_thorax_respiration": 12, "rhume": 8},
         "facteurs": {"tabac_passif": 3, "hiver": 5, "nourrisson": 10}
     },
     {
@@ -262,7 +262,7 @@
         "name": "Attaque de Panique",
         "short": "Crise d'angoisse aiguë",
         "pdf": "fiches/panique.pdf",
-        "signes": {"trouble_psy": 5, "dyspnee": 5, "tachycardie_palpitations": 15, "dyspnee": 15, "peur_mourir_devenir_fou": 20, "fourmillements": 12, "sueurs": 10, "tremblements": 10, "douleur_thoracique": 8, "sensation_etouffement": 12},
+        "signes": {"trouble_psy": 5, "dyspnee": 5, "tachycardie_palpitations": 15, "gene_respiratoire": 15, "peur_mourir_devenir_fou": 20, "fourmillements": 12, "sueurs": 10, "tremblements": 10, "douleur_thoracique": 8, "sensation_etouffement": 12},
         "facteurs": {"femme": 2, "stress": 5}
     },
     {
@@ -747,5 +747,306 @@
         "pdf": "fiches/co.pdf",
         "signes": {"troubles_visuels": 5, "maux_tete": 18, "nausees_vomissements": 18, "vertiges": 15, "perte_connaissance_coma": 12, "fatigue_soudaine": 12, "troubles_visuels_flou": 10, "peau_rose": 8, "chauffage_defectueux": 10},
         "facteurs": {"hiver": 5, "collectif": 5}
+    },
+    {
+        "name": "Rupture Anévrisme Aorte",
+        "short": "Urgence vasculaire (AAA)",
+        "pdf": "fiches/aaa.pdf",
+        "signes": {"douleur_abdominale": 5, "douleur_abdominale_brutale": 20, "irradiation_dos": 15, "masse_battante_ventre": 20, "malaise_hypotension": 15, "paleur": 10},
+        "facteurs": {"homme": 5, "plus_de_65ans": 8, "tabac": 5, "hta": 5}
+    },
+    {
+        "name": "Choc Septique",
+        "short": "Défaillance circulatoire infectieuse",
+        "pdf": "fiches/choc_septique.pdf",
+        "signes": {"fievre": 10, "malaise_hypotension": 20, "marbrures": 18, "tachycardie": 15, "confusion": 12, "polypnee": 12, "frissons": 10},
+        "facteurs": {"plus_de_65ans": 5, "infection_connue": 10}
+    },
+    {
+        "name": "Coma Hypoglycémique",
+        "short": "Urgence métabolique",
+        "pdf": "fiches/hypoglycemie.pdf",
+        "signes": {"troubles_neuro": 5, "perte_connaissance_coma": 20, "sueurs_froides": 18, "paleur": 10, "tremblements": 10, "faim_douloureuse": 8},
+        "facteurs": {"diabete": 15, "jeune": 5}
+    },
+    {
+        "name": "Hématome Extra-Dural",
+        "short": "Hémorragie intracrânienne artérielle",
+        "pdf": "fiches/hed.pdf",
+        "signes": {"chute_recente": 20, "perte_connaissance_initiale": 18, "intervalle_libre": 20, "aggravation_secondaire": 18, "troubles_visuels": 10},
+        "facteurs": {"jeune": 5, "homme": 2}
+    },
+    {
+        "name": "Ischémie Mésentérique",
+        "short": "Infarctus intestinal",
+        "pdf": "fiches/ischemie_mesenterique.pdf",
+        "signes": {"douleur_abdominale": 5, "douleur_abdominale_brutale": 20, "diarrhee_sanglante": 15, "malaise_hypotension": 15, "ventre_souple_discordance": 18},
+        "facteurs": {"plus_de_65ans": 5, "fibrillation_atriale": 8}
+    },
+    {
+        "name": "Lumbago",
+        "short": "Lombalgie commune aiguë",
+        "pdf": "fiches/lumbago.pdf",
+        "signes": {"douleur_dos": 5, "douleur_lombaire_brutale": 20, "blocage_dos": 18, "douleur_mouvement": 15, "pas_irradiation_jambe": 15},
+        "facteurs": {"effort": 10, "port_charge": 10}
+    },
+    {
+        "name": "Entorse de Cheville",
+        "short": "Lésion ligamentaire (LLE)",
+        "pdf": "fiches/entorse.pdf",
+        "signes": {"douleur_membre_traumatisme": 5, "douleur_cheville": 20, "gonflement_oeuf_pigeon": 18, "hematome": 12, "craquement_audible": 10, "impossibilite_marcher": 10},
+        "facteurs": {"sport": 5, "chute": 5, "jeune": 3}
+    },
+    {
+        "name": "Arthrose",
+        "short": "Usure du cartilage",
+        "pdf": "fiches/arthrose.pdf",
+        "signes": {"douleur_membre_traumatisme": 5, "douleur_articulaire": 15, "douleur_mouvement": 18, "derouillage_matin_court": 15, "craquements": 10, "pas_de_fievre": 10},
+        "facteurs": {"plus_de_65ans": 10, "surpoids": 5}
+    },
+    {
+        "name": "Lupus Érythémateux",
+        "short": "Maladie auto-immune systémique",
+        "pdf": "fiches/lupus.pdf",
+        "signes": {"anomalie_peau": 5, "erytheme_visage_loup": 20, "douleur_articulaire": 15, "fievre": 10, "fatigue": 12, "gene_lumiere_soleil": 15},
+        "facteurs": {"femme": 10, "jeune": 5, "auto_immun": 5}
+    },
+    {
+        "name": "Hernie Discale",
+        "short": "Conflit discal",
+        "pdf": "fiches/hernie_discale.pdf",
+        "signes": {"douleur_dos": 5, "douleur_lombaire": 15, "irradiation_fesse_jambe": 20, "impulsivite_toux": 15, "fourmillements_pied": 10},
+        "facteurs": {"effort": 5, "jeune": 5}
+    },
+    {
+        "name": "Grippe",
+        "short": "Infection virale saisonnière",
+        "pdf": "fiches/grippe.pdf",
+        "signes": {"fievre": 18, "frissons_intenses": 15, "courbatures": 20, "fatigue_intense": 15, "toux_seche": 12, "cephalees": 10, "douleur_dos": 8},
+        "facteurs": {"hiver": 10, "epidemie": 10}
+    },
+    {
+        "name": "Sinusite Aiguë",
+        "short": "Infection des sinus",
+        "pdf": "fiches/sinusite.pdf",
+        "signes": {"maux_tete": 15, "douleur_sous_yeux": 20, "nez_coule_sale": 18, "fievre": 10, "toux_grasse": 8, "mauvaise_odeur_nez": 10},
+        "facteurs": {"rhume_recent": 10}
+    },
+    {
+        "name": "Laryngite Aiguë",
+        "short": "Inflammation du larynx",
+        "pdf": "fiches/laryngite.pdf",
+        "signes": {"toux": 5, "voix_cassee_eteinte": 20, "toux_seche_aboyante": 18, "dyspnee_inspiratoire": 15, "mal_gorge": 10, "fievre": 8},
+        "facteurs": {"enfant": 5, "hiver": 5}
+    },
+    {
+        "name": "Apnée du Sommeil",
+        "short": "SAOS",
+        "pdf": "fiches/apnee.pdf",
+        "signes": {"fatigue_chronique": 15, "ronflements_bruyants": 20, "pauses_respiratoires_nuit": 20, "maux_tete_matin": 12, "endormissement_journee": 15},
+        "facteurs": {"homme": 5, "surpoids": 8, "plus_de_30ans": 5}
+    },
+    {
+        "name": "Pleurésie",
+        "short": "Epanchement pleural liquide",
+        "pdf": "fiches/pleuresie.pdf",
+        "signes": {"douleur_thoracique": 5, "douleur_basithoracique": 18, "toux_seche_changement_position": 15, "dyspnee": 12, "fievre": 10},
+        "facteurs": {"cancer": 5, "insuffisance_cardiaque": 5}
+    },
+    {
+        "name": "Cystite Aiguë",
+        "short": "Infection urinaire basse",
+        "pdf": "fiches/cystite.pdf",
+        "signes": {"genes_urinaires": 5, "brulures_urinaires": 20, "envie_frequente_uriner": 18, "urines_troubles_odorantes": 12, "douleur_sus_pubienne": 10, "pas_de_fievre": 15},
+        "facteurs": {"femme": 10, "rapports_recents": 5}
+    },
+    {
+        "name": "Kyste Ovarien",
+        "short": "Tuméfaction ovarienne",
+        "pdf": "fiches/kyste_ovaire.pdf",
+        "signes": {"douleur_pelvienne": 5, "douleur_pelvienne_unilaterale": 18, "pesanteur_bas_ventre": 15, "troubles_regles": 10, "pas_de_fievre": 10},
+        "facteurs": {"femme": 10, "jeune": 5}
+    },
+    {
+        "name": "Mycose Vaginale",
+        "short": "Candidose",
+        "pdf": "fiches/mycose.pdf",
+        "signes": {"demangeaisons_intimes": 20, "pertes_blanches_lait_caille": 18, "brulures_urinaires": 10, "douleur_rapports": 10},
+        "facteurs": {"femme": 10, "antibiotiques_recents": 5}
+    },
+    {
+        "name": "Cancer du Testicule",
+        "short": "Tumeur germinale",
+        "pdf": "fiches/kc_testicule.pdf",
+        "signes": {"masse_dure_bourse": 20, "indolore": 15, "sensation_lourdeur_bourse": 12, "asymptomatique": 10},
+        "facteurs": {"homme": 10, "jeune": 8}
+    },
+    {
+        "name": "Insuffisance Rénale Chronique",
+        "short": "Maladie rénale chronique",
+        "pdf": "fiches/irc.pdf",
+        "signes": {"fatigue_chronique": 15, "paleur": 10, "crampes_musculaires": 10, "grattage_peau": 8, "asymptomatique": 15, "nausées_matin": 8},
+        "facteurs": {"diabete": 8, "hta": 8, "plus_de_65ans": 5}
+    },
+    {
+        "name": "Ulcère Gastroduodénal",
+        "short": "Perte de substance muqueuse",
+        "pdf": "fiches/ulcere.pdf",
+        "signes": {"douleur_abdominale": 5, "douleur_epigastrique": 20, "faim_douloureuse": 15, "calme_par_repas": 15, "reveils_nuit_douleur": 12},
+        "facteurs": {"ains": 8, "stress": 3, "tabac": 3}
+    },
+    {
+        "name": "Hépatite Aiguë",
+        "short": "Inflammation du foie",
+        "pdf": "fiches/hepatite.pdf",
+        "signes": {"ictere_jaunisse": 20, "urines_foncees": 15, "selles_decolorees": 15, "fatigue_intense": 12, "nausees": 10, "douleur_hypocondre_droit": 8},
+        "facteurs": {"voyage_recent": 5, "alcool": 5, "toxiques": 5}
+    },
+    {
+        "name": "Lithiase Biliaire",
+        "short": "Colique hépatique",
+        "pdf": "fiches/lithiase.pdf",
+        "signes": {"douleur_abdominale": 5, "douleur_hypocondre_droit": 20, "irradiation_epaule_droite": 15, "arret_respi_inspiration": 15, "pas_de_fievre": 12, "nausees": 10},
+        "facteurs": {"femme": 5, "surpoids": 5, "plus_de_30ans": 5}
+    },
+    {
+        "name": "Hernie Hiatale",
+        "short": "Passage estomac dans thorax",
+        "pdf": "fiches/hernie_hiatale.pdf",
+        "signes": {"brulure_estomac_gorge": 15, "regurgitations_acides": 15, "gene_avaler": 10, "douleur_thoracique": 8, "eructations": 10},
+        "facteurs": {"surpoids": 5, "plus_de_65ans": 5}
+    },
+    {
+        "name": "Péritonite",
+        "short": "Infection grave péritoine",
+        "pdf": "fiches/peritonite.pdf",
+        "signes": {"douleur_abdominale": 5, "douleur_abdominale_diffuse_intense": 20, "ventre_dur_bois": 20, "fievre_elevee": 15, "immobilité_absolue": 15, "signes_choc": 12},
+        "facteurs": {"appendicite_recente": 5, "chirurgie_abdominale": 5}
+    },
+    {
+        "name": "Hyperparathyroïdie",
+        "short": "Excès de PTH",
+        "pdf": "fiches/hyperparathyroidie.pdf",
+        "signes": {"coliques_nephretiques_repetition": 15, "douleurs_osseuses": 12, "fatigue": 10, "soif_intense": 10, "troubles_digestifs": 8},
+        "facteurs": {"femme": 3, "plus_de_65ans": 5}
+    },
+    {
+        "name": "SOPK",
+        "short": "Ovaires Polykystiques",
+        "pdf": "fiches/sopk.pdf",
+        "signes": {"regles_irregulieres": 18, "acne_severe": 15, "pilosite_excessive": 15, "prise_poids": 12, "infertilite": 10},
+        "facteurs": {"femme": 10, "jeune": 5, "surpoids": 5}
+    },
+    {
+        "name": "Diabète Insipide",
+        "short": "Déficit en ADH",
+        "pdf": "fiches/diabete_insipide.pdf",
+        "signes": {"urines_abondantes_claires": 20, "soif_intense_imperieuse": 20, "reveils_nuit_boire": 15, "pas_de_sucre_urines": 15},
+        "facteurs": {"traumatisme_cranien": 5, "chirurgie_cerveau": 5}
+    },
+    {
+        "name": "Acromégalie",
+        "short": "Excès hormone croissance",
+        "pdf": "fiches/acromegalie.pdf",
+        "signes": {"mains_pieds_grandissent": 20, "visage_deforme_machoire": 18, "maux_tete": 12, "sueurs_excessives": 12, "douleurs_articulaires": 10},
+        "facteurs": {"adulte": 5}
+    },
+    {
+        "name": "Hémophilie",
+        "short": "Déficit coagulation",
+        "pdf": "fiches/hemophilie.pdf",
+        "signes": {"saignements_prolonges": 18, "hematomes_spontanes": 15, "douleur_genoux_sang": 15, "douleur_articulaire": 12},
+        "facteurs": {"homme": 10, "atcd_famille": 10}
+    },
+    {
+        "name": "Anémie de Biermer",
+        "short": "Carence B12",
+        "pdf": "fiches/biermer.pdf",
+        "signes": {"langue_rouge_douloureuse": 18, "fourmillements_membres": 15, "troubles_marche": 12, "fatigue": 10, "paleur_jaune": 10},
+        "facteurs": {"femme": 5, "plus_de_65ans": 5, "auto_immun": 5}
+    },
+    {
+        "name": "Syphilis",
+        "short": "IST bactérienne",
+        "pdf": "fiches/syphilis.pdf",
+        "signes": {"ulcere_indolore_sexe": 20, "boutons_corps_rose": 15, "perte_cheveux_trous": 12, "ganglions_aine": 10, "pas_de_douleur": 10},
+        "facteurs": {"rapport_risque": 10, "partenaires_multiples": 5}
+    },
+    {
+        "name": "Oreillons",
+        "short": "Virose salivaire",
+        "pdf": "fiches/oreillons.pdf",
+        "signes": {"joues_gonflees_douloureuses": 20, "fievre_moderee": 12, "douleur_manger": 15, "douleur_testicule": 10},
+        "facteurs": {"enfant": 5, "non_vaccine": 8}
+    },
+    {
+        "name": "Rubéole",
+        "short": "Virose éruptive",
+        "pdf": "fiches/rubeole.pdf",
+        "signes": {"boutons_roses_fugaces": 15, "ganglions_nuque": 18, "fievre_legere": 10, "douleurs_articulaires": 8},
+        "facteurs": {"enfant": 5, "non_vaccine": 8}
+    },
+    {
+        "name": "Sténose du Pylore",
+        "short": "Obstacle gastrique bébé",
+        "pdf": "fiches/stenose_pylore.pdf",
+        "signes": {"vomissements_jet_lait": 20, "faim_conservee": 15, "perte_poids_bebe": 15, "constipation": 8, "masse_ventre_olive": 12},
+        "facteurs": {"nourrisson": 10, "garcon": 2}
+    },
+    {
+        "name": "Convulsions Fébriles",
+        "short": "Crise liée à la fièvre",
+        "pdf": "fiches/convulsions_febriles.pdf",
+        "signes": {"convulsions_generalisees": 20, "fievre_elevee": 18, "duree_courte": 15, "recuperation_rapide": 12, "perte_connaissance": 15},
+        "facteurs": {"enfant": 10, "1_a_5_ans": 5}
+    },
+    {
+        "name": "Muguet Buccal",
+        "short": "Candidose bébé",
+        "pdf": "fiches/muguet.pdf",
+        "signes": {"depots_blancs_langue": 20, "ne_part_pas_grattage": 18, "gene_manger": 12, "fesses_rouges_associe": 10},
+        "facteurs": {"nourrisson": 10, "antibiotiques_recents": 5}
+    },
+    {
+        "name": "Impétigo",
+        "short": "Infection cutanée",
+        "pdf": "fiches/impetigo.pdf",
+        "signes": {"anomalie_peau": 5, "croutes_jaunes_miel": 20, "autour_bouche_nez": 18, "bulles_peau": 12, "pas_de_fievre": 10, "grattage": 10},
+        "facteurs": {"enfant": 10, "ete": 3}
+    },
+    {
+        "name": "Conjonctivite",
+        "short": "Inflammation oeil",
+        "pdf": "fiches/conjonctivite.pdf",
+        "signes": {"troubles_visuels": 5, "oeil_rouge": 15, "ecoulement_purulent": 18, "paupieres_collees_matin": 18, "sensation_sable": 12, "pas_baisse_vision": 15},
+        "facteurs": {"allergie": 5, "rhume": 5, "contage": 5}
+    },
+    {
+        "name": "Orgelet",
+        "short": "Infection cil",
+        "pdf": "fiches/orgelet.pdf",
+        "signes": {"anomalie_peau": 5, "boule_rouge_bord_paupiere": 20, "point_blanc_cil": 18, "douleur_locale": 15, "gonflement_paupiere": 12},
+        "facteurs": {"frottement_yeux": 5}
+    },
+    {
+        "name": "Acné Sévère",
+        "short": "Dermatose inflammatoire",
+        "pdf": "fiches/acne.pdf",
+        "signes": {"anomalie_peau": 5, "boutons_visage_dos": 20, "kystes_sous_peau": 15, "cicatrices": 12, "points_noirs": 10},
+        "facteurs": {"adolescent": 10, "stress": 3}
+    },
+    {
+        "name": "Eczéma Atopique",
+        "short": "Dermatite",
+        "pdf": "fiches/eczema.pdf",
+        "signes": {"anomalie_peau": 5, "plaques_rouges_seches": 18, "demangeaisons_intenses": 20, "plis_coudes_genoux": 18, "peau_seche": 15},
+        "facteurs": {"allergies": 5, "atcd_famille": 5, "enfant": 3}
+    },
+    {
+        "name": "Urticaire Aiguë",
+        "short": "Oedème dermique",
+        "pdf": "fiches/urticaire.pdf",
+        "signes": {"anomalie_peau": 5, "plaques_rouges_gonflees": 18, "demangeaisons_feroces": 20, "migratoire_change_place": 18, "disparition_rapide_trace": 15},
+        "facteurs": {"aliment": 5, "medicament": 5}
     }
 ]

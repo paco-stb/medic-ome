@@ -342,12 +342,9 @@
         import { getFirestore, doc, getDoc, setDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // --- LOGIQUE D'ENTONNOIR (Raffinement) ---
-        // Liste des questions générales et de leurs précisions.
-        // C'est ici qu'on définit le "Tueur de Frères" : si l'utilisateur valide une clé "Enfant",
-        // les autres clés "Enfant" du même groupe sont supprimées.
         const REFINEMENTS = {
             // DOULEURS
-            "douleur_abdominale": ["douleur_fosse_iliaque_droite", "douleur_hypocondre_droit", "douleur_fosse_iliaque_gauche", "douleur_epigastrique", "douleur_transfixiante_dos", "douleur_bas_ventre", "douleur_pelvienne", "douleur_abdominale_diffuse", "crampes_abdominales", "douleur_abdominale_intermittente", "douleur_sus_pubienne"],
+            "douleur_abdominale": ["douleur_fosse_iliaque_droite", "douleur_hypocondre_droit", "douleur_fosse_iliaque_gauche", "douleur_epigastrique", "douleur_transfixiante_dos", "douleur_bas_ventre", "douleur_pelvienne", "douleur_abdominale_diffuse", "crampes_abdominales", "douleur_abdominale_intermittente", "douleur_sus_pubienne", "troubles_transit"],
             "douleur_thoracique": ["douleur_thoracique_oppressive", "douleur_thoracique_dechirante", "douleur_thoracique_coté", "douleur_basithoracique", "douleur_inspiration", "douleur_thoracique_point_cote"],
             "douleur_dos": ["douleur_lombaire_brutale", "douleur_lombaire_unilaterale", "douleur_lombaire", "douleur_bas_dos", "douleur_bas_dos_nuit", "douleur_dos_os", "douleur_dos_brutale"],
             "douleur_membre_traumatisme": ["impossibilite_marcher", "douleur_poignet", "chute_recente", "jambe_froide_pale", "douleur_articulaire_intense", "douleur_gros_orteil", "douleur_jambe_brutale_intense", "douleur_aine_hanche", "douleur_mains", "douleur_talon", "fourmillements_doigts"],
@@ -1000,8 +997,8 @@
             };
             mkBtn('OUI', 'btn btn-success', true);
             mkBtn('NON', 'btn btn-error', false);
-            // "Je ne sais pas" pas dispo en mode confirmation pour forcer la décision
-            if (!state.confirmationMode) mkBtn('Je ne sais pas', 'link', null);
+            // "Je ne sais pas" toujours disponible
+            mkBtn('Je ne sais pas', 'link', null);
             
             card.appendChild(btnGroup);
 
@@ -1068,7 +1065,7 @@
             // Si on a des questions prioritaires, on les pose en premier !
             if(state.priorityQueue.length > 0) {
                 const nextPriority = state.priorityQueue.shift();
-                // On vérifie qu'on ne l'a pas déjà posée entre temps
+                // On vérifie qu'on ne l'a pas déjà posée entre temps (via la logique sibling killer par exemple)
                 if(!state.asked.includes(nextPriority)) {
                     state.currentSign = nextPriority;
                     state.asked.push(nextPriority);
@@ -1176,7 +1173,7 @@
                 const diagDiv = document.createElement('div'); diagDiv.className='diagnostic-result';
                 diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div>
                                      <div class="patho-desc" style="margin-top:8px">${top.patho.short}</div>
-                                     <div class="score-badge">Probabilité : ${top.prob}%</div><br>
+                                     <br>
                                      ${pdfButton}`;
                 card.appendChild(diagDiv);
                 

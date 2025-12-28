@@ -341,6 +341,15 @@
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // --- LOGIQUE D'ENTONNOIR (Raffinement) ---
+        const REFINEMENTS = {
+            "douleur_abdominale": ["douleur_fosse_iliaque_droite", "douleur_hypocondre_droit", "douleur_fosse_iliaque_gauche", "douleur_epigastrique", "douleur_transfixiante_dos", "douleur_bas_ventre", "douleur_pelvienne", "douleur_abdominale_diffuse", "crampes_abdominales", "douleur_abdominale_crises"],
+            "douleur_thoracique": ["douleur_thoracique_oppressive", "douleur_thoracique_dechirante", "douleur_thoracique_coté", "douleur_basithoracique"],
+            "dyspnee": ["dyspnee_effort", "orthopnee_dyspnee_couchee", "dyspnee_brutale", "dyspnee_sifflante", "essoufflement_aggrave"],
+            "troubles_visuels": ["vision_floue", "vision_double", "baisse_vision_brutale", "amputation_champ_visuel", "eclairs_lumineux", "mouches_devant_yeux", "vision_centrale_floue", "vision_double_un_oeil", "trouble_vision_flou"],
+            "toux": ["toux_seche", "toux_grasse", "toux_sanglante", "chant_du_coq", "toux_chronique"]
+        };
+
         // ================= AUDIO SYSTEM (Synth) =================
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         function playSound(type) {
@@ -394,16 +403,14 @@
         let PATHOLOGIES = [];
         const ACCESS_CODES = [ { code: "SuperCode1", pseudo:"Admin" } ];
 
-        // STATE (With History + Streak + Mastery + Confirm Mode)
+        // STATE (With History + Streak + Mastery + Confirm Mode + PriorityQueue)
         let state = {
             currentUser: null, pseudo: null, 
             progression: { correct: 0, incorrect: 0, streak: 0, mastery: {} },
             isGuest: false, demo:{}, currentSign:null, answers:{}, asked:[], allSigns:[], ranked: [], diagnosticShown:false, previousDiagnostics:[],
             history: [],
-            // AKINATOR MODE
-            confirmationMode: false,
-            confirmationQueue: [],
-            confirmedPatho: null
+            confirmationMode: false, confirmationQueue: [], confirmedPatho: null,
+            priorityQueue: [] // File d'attente prioritaire pour l'entonnoir
         };
 
         async function initApp() {
@@ -846,6 +853,7 @@
             };
             state.answers={}; state.asked=[]; state.diagnosticShown=false; state.previousDiagnostics=[]; state.history=[];
             state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
+            state.priorityQueue = [];
             askNextQuestion();
             };
             const btnCancel = document.createElement('button'); btnCancel.className='link'; btnCancel.textContent='Annuler'; btnCancel.onclick=renderHome;
@@ -953,7 +961,8 @@
                         currentSign: state.currentSign,
                         confirmationMode: state.confirmationMode,
                         confirmationQueue: state.confirmationQueue,
-                        confirmedPatho: state.confirmedPatho
+                        confirmedPatho: state.confirmedPatho,
+                        priorityQueue: state.priorityQueue
                     }));
                     state.answers[signe]=val; 
                     askNextQuestion(); 
@@ -985,6 +994,7 @@
                     state.confirmationMode = prevState.confirmationMode;
                     state.confirmationQueue = prevState.confirmationQueue;
                     state.confirmedPatho = prevState.confirmedPatho;
+                    state.priorityQueue = prevState.priorityQueue;
                     renderCurrentQuestion();
                 };
                 navGroup.appendChild(btnBack);
@@ -999,27 +1009,46 @@
         }
 
         function askNextQuestion() {
-            // --- LOGIQUE AKINATOR DE CONFIRMATION ---
+            // --- 0. GESTION DES RAFFINEMENTS (Entonnoir) ---
+            if(state.asked.length > 0) {
+                const lastSign = state.asked[state.asked.length - 1];
+                const lastAnswer = state.answers[lastSign];
+                
+                // Si on a répondu OUI à une question générale (ex: douleur_abdominale)
+                if(lastAnswer === true && REFINEMENTS[lastSign]) {
+                    // On ajoute les questions précises (ex: douleur_fid) à la file prioritaire
+                    const candidates = REFINEMENTS[lastSign].filter(s => state.allSigns.includes(s) && !state.asked.includes(s));
+                    state.priorityQueue.push(...candidates);
+                }
+            }
+
+            // Si on a des questions prioritaires, on les pose en premier !
+            if(state.priorityQueue.length > 0) {
+                const nextPriority = state.priorityQueue.shift();
+                // On vérifie qu'on ne l'a pas déjà posée entre temps
+                if(!state.asked.includes(nextPriority)) {
+                    state.currentSign = nextPriority;
+                    state.asked.push(nextPriority);
+                    renderCurrentQuestion();
+                    return;
+                }
+            }
+
+            // --- 1. LOGIQUE AKINATOR DE CONFIRMATION ---
             if (state.confirmationMode) {
-                // If the user answered NO to a confirmation question, abort confirmation
-                // We check the LAST answer given.
                 const lastSign = state.asked[state.asked.length - 1];
                 if (state.answers[lastSign] === false) {
-                    // ABORT! Wrong path.
                     state.confirmationMode = false;
                     state.confirmationQueue = [];
                     state.confirmedPatho = null;
                     showAlert("Ah, fausse piste. Je continue à chercher...", "info");
-                    // Continue to normal flow below
                 } else if (state.confirmationQueue.length > 0) {
-                    // Next confirmation question
                     const nextC = state.confirmationQueue.shift();
                     state.currentSign = nextC;
                     state.asked.push(nextC);
                     renderCurrentQuestion();
                     return;
                 } else {
-                    // Queue empty AND no "No" answers -> It's a match!
                     showDiagnostic();
                     return;
                 }
@@ -1030,12 +1059,15 @@
             const remaining = state.allSigns.filter(s => !state.asked.includes(s));
             if(remaining.length === 0) { showDiagnostic(); return; }
 
-            // --- VÉRIFICATION : A-T-ON DÉJÀ UN "OUI" ? ---
             const hasSymptom = Object.keys(state.answers).some(key => state.answers[key] === true);
 
             // --- PHASE 1 : CHASSEUR ---
             if (!hasSymptom) {
-                const randomSign = remaining[Math.floor(Math.random() * remaining.length)];
+                // On privilégie les questions générales pour ouvrir l'entonnoir
+                const generalSigns = remaining.filter(s => REFINEMENTS.hasOwnProperty(s));
+                const pool = generalSigns.length > 0 ? generalSigns : remaining;
+                
+                const randomSign = pool[Math.floor(Math.random() * pool.length)];
                 state.currentSign = randomSign;
                 state.asked.push(randomSign);
                 renderCurrentQuestion();
@@ -1044,26 +1076,19 @@
 
             // --- PHASE 2 : SNIPER ---
             rankPathologies(); 
-            
-            // Check threshold for "Almost Found"
             if(canShowDiagnostic()){ 
-                // ENTER CONFIRMATION MODE instead of showing directly
                 const topPatho = state.ranked[0].patho;
                 const confirmQuestions = prepareConfirmationQuestions(topPatho);
-                
                 if (confirmQuestions.length > 0) {
                     state.confirmationMode = true;
                     state.confirmedPatho = topPatho;
                     state.confirmationQueue = confirmQuestions;
-                    
-                    // Launch first confirmation question
                     const first = state.confirmationQueue.shift();
                     state.currentSign = first;
                     state.asked.push(first);
                     renderCurrentQuestion();
                     return;
                 } else {
-                    // No more questions to ask for this patho, just show it
                     showDiagnostic(); 
                     return; 
                 }

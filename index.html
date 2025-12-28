@@ -343,6 +343,8 @@
 
         // --- LOGIQUE D'ENTONNOIR (Raffinement) ---
         // Liste des questions générales et de leurs précisions.
+        // C'est ici qu'on définit le "Tueur de Frères" : si l'utilisateur valide une clé "Enfant",
+        // les autres clés "Enfant" du même groupe sont supprimées.
         const REFINEMENTS = {
             // DOULEURS
             "douleur_abdominale": ["douleur_fosse_iliaque_droite", "douleur_hypocondre_droit", "douleur_fosse_iliaque_gauche", "douleur_epigastrique", "douleur_transfixiante_dos", "douleur_bas_ventre", "douleur_pelvienne", "douleur_abdominale_diffuse", "crampes_abdominales", "douleur_abdominale_intermittente", "douleur_sus_pubienne"],
@@ -352,7 +354,7 @@
             
             // RESPIRATOIRE / ORL
             "dyspnee": ["dyspnee_effort", "orthopnee_dyspnee_couchee", "dyspnee_brutale", "dyspnee_sifflante", "essoufflement_aggrave", "gene_respiratoire"],
-            "toux": ["toux_seche", "toux_grasse", "toux_sanglante", "chant_du_coq", "toux_chronique", "toux_nuit", "toux_grasse_productive"],
+            "toux": ["toux_seche", "toux_grasse", "toux_sanglante", "chant_du_coq", "toux_chronique", "toux_nuit"],
             
             // SENSORIEL / NEURO
             "troubles_visuels": ["vision_floue", "vision_double", "baisse_vision_brutale", "amputation_champ_visuel", "eclairs_lumineux", "mouches_devant_yeux", "vision_centrale_floue", "vision_double_un_oeil", "trouble_vision_flou"],
@@ -929,12 +931,24 @@
         function canShowDiagnostic() {
             const qNum = state.asked.length;
             if(state.ranked.length===0) return false;
-            const topProb = parseFloat(state.ranked[0].prob);
-            const topName = state.ranked[0].patho.name;
-            if(state.previousDiagnostics.includes(topName)) return false;
-            if(qNum >= 8 && topProb >= 90) return true;
-            if(qNum >= 14 && topProb >= 85) return true;
-            if(qNum >= 17 && topProb >= 75) return true;
+            const top1 = state.ranked[0];
+            const top2 = state.ranked[1];
+            if(state.previousDiagnostics.includes(top1.patho.name)) return false;
+
+            const score1 = parseFloat(top1.prob);
+            if (!top2) return score1 > 50;
+
+            const score2 = parseFloat(top2.prob);
+            const gap = score1 - score2;
+
+            // --- STRATEGIE GAP ---
+            // Palier 1 : Flash (Rapide et Sûr)
+            if (qNum >= 4 && score1 >= 75 && gap >= 30) return true;
+            // Palier 2 : Standard
+            if (qNum >= 9 && score1 >= 70 && gap >= 15) return true;
+            // Palier 3 : Filet de sécurité
+            if (qNum >= 15 && score1 >= 60) return true;
+
             return false;
         }
 
@@ -1038,17 +1052,13 @@
                         state.priorityQueue.push(...candidates);
                     } else {
                         // LOGIQUE D'EXCLUSION MUTUELLE (Sibling Killer)
-                        // Si on vient de répondre OUI à une question "Enfant" (ex: douleur_fid)
-                        // On doit supprimer les autres questions "Enfants" de la file d'attente
                         for (const [parent, children] of Object.entries(REFINEMENTS)) {
                             if (children.includes(lastSign)) {
                                 // On a trouvé le groupe (ex: douleur_abdominale)
                                 // On retire tous les autres enfants de la file prioritaire
                                 const siblings = children.filter(c => c !== lastSign);
                                 state.priorityQueue = state.priorityQueue.filter(q => !siblings.includes(q));
-                                // On peut aussi les marquer comme "traités" pour ne pas qu'ils ressortent en aléatoire
-                                // (Optionnel mais plus propre)
-                                state.asked.push(...siblings.filter(s => !state.asked.includes(s)));
+                                state.asked.push(...siblings.filter(s => !state.asked.includes(s))); // Marquer comme "déjà demandé"
                             }
                         }
                     }
@@ -1058,7 +1068,7 @@
             // Si on a des questions prioritaires, on les pose en premier !
             if(state.priorityQueue.length > 0) {
                 const nextPriority = state.priorityQueue.shift();
-                // On vérifie qu'on ne l'a pas déjà posée entre temps (via la logique sibling killer par exemple)
+                // On vérifie qu'on ne l'a pas déjà posée entre temps
                 if(!state.asked.includes(nextPriority)) {
                     state.currentSign = nextPriority;
                     state.asked.push(nextPriority);

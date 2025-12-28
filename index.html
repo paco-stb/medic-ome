@@ -73,6 +73,7 @@
             background: rgba(0, 210, 255, 0.05); 
             border: 1px solid var(--glass-border);
             border-radius:20px; cursor:pointer; font-size: 14px; 
+            display: flex; align-items: center; gap: 8px;
         }
 
         /* BUTTONS & LINKS */
@@ -315,6 +316,36 @@
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+        // ================= AUDIO SYSTEM (Synth) =================
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            if (type === 'success') {
+                // Ding! (High major chord arpeggio)
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                osc.frequency.exponentialRampToValueAtTime(1046.5, audioCtx.currentTime + 0.1); // C6
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.4);
+            } else if (type === 'error') {
+                // Buzz (Low saw wave)
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+                gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+
         const firebaseConfig = {
             apiKey: "AIzaSyCig9G4gYHU5h642YV1IZxthYm_IXp6vZU",
             authDomain: "medicome-paco.firebaseapp.com",
@@ -338,9 +369,9 @@
         let PATHOLOGIES = [];
         const ACCESS_CODES = [ { code: "SuperCode1", pseudo:"Admin" } ];
 
-        // STATE (With History)
+        // STATE (With History + Streak)
         let state = {
-            currentUser: null, pseudo: null, progression: { correct: 0, incorrect: 0 },
+            currentUser: null, pseudo: null, progression: { correct: 0, incorrect: 0, streak: 0 },
             isGuest: false, demo:{}, currentSign:null, answers:{}, asked:[], allSigns:[], ranked: [], diagnosticShown:false, previousDiagnostics:[],
             history: [] // For going back
         };
@@ -366,7 +397,6 @@
                         if (state.currentUser || state.isGuest) {
                             renderHome();
                         } else {
-                            // Do nothing or renderLogin() if not already there
                             console.log("Not logged in, logo inactive");
                         }
                     };
@@ -398,7 +428,7 @@
                         if (docSnap.exists()) {
                             const data = docSnap.data();
                             if (data.pseudo) state.pseudo = data.pseudo;
-                            state.progression = data.progression || { correct: 0, incorrect: 0 };
+                            state.progression = data.progression || { correct: 0, incorrect: 0, streak: 0 };
                         } else { saveProgression(); }
                         updateHeader(); renderHome();
                     } catch(e) { renderHome(); }
@@ -408,10 +438,12 @@
                     if(!state.isGuest && savedGuest && savedPseudo) {
                         state.isGuest = true; state.pseudo = savedPseudo;
                         state.progression = JSON.parse(savedGuest);
+                        // Ensure streak exists
+                        if(state.progression.streak === undefined) state.progression.streak = 0;
                         updateHeader(); renderHome();
                         setTimeout(() => showAlert(`Bon retour, ${state.pseudo} !`, 'success'), 500);
                     } else {
-                        state.currentUser = null; state.pseudo = null; state.progression = { correct: 0, incorrect: 0 };
+                        state.currentUser = null; state.pseudo = null; state.progression = { correct: 0, incorrect: 0, streak: 0 };
                         renderLogin(); updateHeader();
                     }
                 }
@@ -448,8 +480,13 @@
 
         function updateHeader(){
             const pseudoBox = q("#pseudoBox"); const homeBtn = q("#homeBtn"); const logoutBtn = q("#logoutBtn");
+            
+            // LOGIQUE SERIE DE VICTOIRE (STREAK)
+            const currentStreak = state.progression.streak || 0;
+            const streakDisplay = currentStreak > 0 ? ` <span style="color:#ff9f43; margin-left:8px;">🔥 ${currentStreak}</span>` : '';
+
             if(state.pseudo){ 
-                pseudoBox.textContent = state.pseudo + (state.isGuest ? " (Local)" : ""); 
+                pseudoBox.innerHTML = state.pseudo + (state.isGuest ? " (Local)" : "") + streakDisplay; 
                 pseudoBox.style.display='inline-block'; pseudoBox.onclick=renderProfile;
                 homeBtn.style.display='inline-block'; logoutBtn.style.display='inline-block';
             } else { 
@@ -458,9 +495,168 @@
             homeBtn.onclick=renderHome;
             logoutBtn.onclick = () => {
                 localStorage.removeItem('medicome_guest_progression'); localStorage.removeItem('medicome_guest_pseudo');
-                state.isGuest = false; state.pseudo = null; state.currentUser = null; state.progression = { correct: 0, incorrect: 0 }; 
+                state.isGuest = false; state.pseudo = null; state.currentUser = null; state.progression = { correct: 0, incorrect: 0, streak: 0 }; 
                 signOut(auth).then(() => { renderLogin(); updateHeader(); showAlert("Déconnecté", "success"); }).catch(() => { renderLogin(); updateHeader(); });
             };
+        }
+
+        // =================== REVIEWS PAGE ===================
+        function renderReviews() {
+            const app = q('#app'); app.innerHTML='';
+            const card = document.createElement('div'); card.className='card center';
+            card.innerHTML = `<h2>⭐ Avis Utilisateurs</h2><p class="small" style="margin-bottom:20px">Ce qu'ils pensent de Medicome.</p>`;
+
+            const reviewsContainer = document.createElement('div');
+            reviewsContainer.className = 'reviews-container';
+            reviewsContainer.innerHTML = `
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="review-avatar">A</div>
+                            <div>
+                                <div class="review-name">Antoine D.</div>
+                                <div class="review-stars">★★★★★</div>
+                            </div>
+                        </div>
+                        <div class="review-text">"Super outil pour réviser mes cas cliniques avant les partiels. Simple et efficace."</div>
+                    </div>
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="review-avatar">S</div>
+                            <div>
+                                <div class="review-name">Sarah L.</div>
+                                <div class="review-stars">★★★★☆</div>
+                            </div>
+                        </div>
+                        <div class="review-text">"L'interface est top. J'aimerais juste encore plus de pathologies !"</div>
+                    </div>
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="review-avatar">M</div>
+                            <div>
+                                <div class="review-name">Maxime P.</div>
+                                <div class="review-stars">★★★★★</div>
+                            </div>
+                        </div>
+                        <div class="review-text">"Indispensable pour l'externat. Le mode invité est super pratique."</div>
+                    </div>
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="review-avatar">L</div>
+                            <div>
+                                <div class="review-name">Léa B.</div>
+                                <div class="review-stars">★★★★★</div>
+                            </div>
+                        </div>
+                        <div class="review-text">"Merci pour cet outil gratuit. Ça m'a sauvé sur la sémio cardio !"</div>
+                    </div>
+            `;
+            card.appendChild(reviewsContainer);
+            
+            const btnBack = document.createElement('button'); btnBack.className='btn'; btnBack.textContent='Retour';
+            btnBack.style.marginTop = '20px';
+            btnBack.onclick = () => { if(state.pseudo) renderHome(); else renderLogin(); };
+            card.appendChild(btnBack);
+
+            app.appendChild(card);
+        }
+
+        // =================== CONTACT FORM ===================
+        function renderContact() {
+            const app = q('#app'); app.innerHTML='';
+            const card = document.createElement('div'); card.className='card center';
+            
+            card.innerHTML = `<h2>✉️ Nous Contacter</h2><p class="small" style="margin-bottom:20px">Une suggestion ? Un bug ? Écrivez-nous.</p>`;
+            
+            const inputName = document.createElement('input'); inputName.className='input'; inputName.placeholder='Votre Nom';
+            if(state.pseudo) inputName.value = state.pseudo;
+            
+            const inputEmail = document.createElement('input'); inputEmail.className='input'; inputEmail.placeholder='Votre Email';
+            if(state.currentUser && state.currentUser.email) inputEmail.value = state.currentUser.email;
+
+            const inputText = document.createElement('textarea'); inputText.className='input'; inputText.placeholder='Votre message...';
+            
+            const btnSend = document.createElement('button'); btnSend.className='btn'; btnSend.textContent='Envoyer le message';
+            btnSend.onclick = async () => {
+                if(!inputText.value || !inputEmail.value) { showAlert("Merci de remplir les champs", "error"); return; }
+                btnSend.textContent = 'Envoi...';
+                btnSend.disabled = true;
+
+                try {
+                    // SAVE TO FIREBASE
+                    await addDoc(collection(db, "messages"), {
+                        name: inputName.value,
+                        email: inputEmail.value,
+                        message: inputText.value,
+                        date: new Date(),
+                        uid: state.currentUser ? state.currentUser.uid : 'guest'
+                    });
+                    showAlert("Message envoyé avec succès !", "success");
+                    setTimeout(() => { if(state.pseudo) renderHome(); else renderLogin(); }, 1500);
+                } catch(e) {
+                    console.error(e);
+                    showAlert("Erreur lors de l'envoi", "error");
+                    btnSend.textContent = 'Envoyer le message';
+                    btnSend.disabled = false;
+                }
+            };
+
+            const btnCancel = document.createElement('button'); btnCancel.className='link'; btnCancel.textContent='Annuler';
+            btnCancel.onclick = () => { if(state.pseudo) renderHome(); else renderLogin(); };
+
+            card.appendChild(inputName);
+            card.appendChild(inputEmail);
+            card.appendChild(inputText);
+            card.appendChild(btnSend);
+            card.appendChild(btnCancel);
+            app.appendChild(card);
+        }
+
+        function renderLogin() {
+            const app = q('#app'); app.innerHTML='';
+            const card = document.createElement('div'); card.className='card center'; card.innerHTML='<h2>☁️ Connexion Cloud</h2>';
+            const inputUser = document.createElement('input'); inputUser.placeholder='Email'; inputUser.className='input';
+            const inputPass = document.createElement('input'); inputPass.placeholder='Mot de passe'; inputPass.className='input'; inputPass.type='password';
+            
+            const btnLogin = document.createElement('button'); btnLogin.className='btn'; btnLogin.textContent='Se connecter';
+            btnLogin.onclick = async () => {
+                try { await signInWithEmailAndPassword(auth, inputUser.value, inputPass.value); showAlert("Connexion réussie !", "success"); } catch (error) { showAlert("Erreur: " + error.message, "error"); }
+            };
+            
+            const btnForgot = document.createElement('div'); 
+            btnForgot.className='small link'; btnForgot.style.border='none'; btnForgot.textContent='Mot de passe oublié ?';
+            btnForgot.onclick = async () => {
+                if(!inputUser.value) return showAlert("Veuillez entrer votre email d'abord", "error");
+                try { await sendPasswordResetEmail(auth, inputUser.value); showAlert("Email de réinitialisation envoyé !", "success"); } catch(e) { showAlert("Erreur: " + e.message, "error"); }
+            };
+
+            card.appendChild(inputUser); card.appendChild(inputPass); card.appendChild(btnLogin); card.appendChild(btnForgot);
+            
+            const sep = document.createElement('div'); sep.textContent='— Pas encore de compte ? —'; sep.className='small'; sep.style.margin='16px 0'; card.appendChild(sep);
+            const inRegEmail = document.createElement('input'); inRegEmail.placeholder='Nouvel Email'; inRegEmail.className='input';
+            const inRegPass = document.createElement('input'); inRegPass.placeholder='Nouveau Mot de passe'; inRegPass.className='input'; inRegPass.type='password';
+            const inPseudo = document.createElement('input'); inPseudo.placeholder='Votre Pseudo'; inPseudo.className='input';
+            const btnReg = document.createElement('button'); btnReg.className='link'; btnReg.textContent='Créer un compte Cloud';
+            btnReg.onclick = async () => {
+                if(!inRegEmail.value || !inRegPass.value || !inPseudo.value) return showAlert('Remplissez tout','error');
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, inRegEmail.value, inRegPass.value);
+                    const user = userCredential.user; await updateProfile(user, { displayName: inPseudo.value });
+                    await setDoc(doc(db, "users", user.uid), { pseudo: inPseudo.value, email: inRegEmail.value, progression: { correct: 0, incorrect: 0, streak: 0 }, createdAt: new Date() }, { merge: true });
+                    state.pseudo = inPseudo.value; showAlert("Compte créé !", "success"); updateHeader(); renderHome();
+                } catch (error) { showAlert("Erreur création: " + error.message, "error"); }
+            };
+            card.appendChild(inRegEmail); card.appendChild(inRegPass); card.appendChild(inPseudo); card.appendChild(btnReg);
+            const sepCode = document.createElement('div'); sepCode.textContent='— ou Accès Rapide (Local) —'; sepCode.className='small'; sepCode.style.margin='16px 0'; card.appendChild(sepCode);
+            const inputCode = document.createElement('input'); inputCode.placeholder='Clé d\'accès'; inputCode.className='input';
+            const btnCode = document.createElement('button'); btnCode.className='btn btn-code'; btnCode.textContent='Utiliser une clé';
+            btnCode.onclick = () => {
+                const codeFound = ACCESS_CODES.find(ac => ac.code === inputCode.value);
+                if(codeFound) {
+                    state.isGuest = true; state.pseudo = codeFound.pseudo; state.progression = {correct:0, incorrect:0, streak:0};
+                    saveProgression(); updateHeader(); renderHome(); showAlert(`Mode Invité: ${codeFound.pseudo}`, 'success');
+                } else { showAlert('Clé invalide', 'error'); }
+            };
+            card.appendChild(inputCode); card.appendChild(btnCode); app.appendChild(card);
         }
 
         function renderHome() {
@@ -499,7 +695,12 @@
                             <div class="stat-box" style="text-align:center; background:rgba(255, 77, 77, 0.1); border-color:var(--error)"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">Échecs</div></div>
                             </div>`;
             
-            const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.textContent='🩺 Lancer le défi'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; btnDiag.onclick=renderDemographics;
+            const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.textContent='🩺 Lancer le défi'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; 
+            btnDiag.onclick= () => {
+                // Initialize audio context on user gesture
+                if(audioCtx.state === 'suspended') audioCtx.resume();
+                renderDemographics();
+            };
             const btnGloss = document.createElement('button'); btnGloss.className='link'; btnGloss.textContent='📚 Glossaire des pathologies'; btnGloss.style.marginTop='12px'; btnGloss.onclick=renderGlossary;
             const btnProf = document.createElement('button'); btnProf.className='link'; btnProf.textContent='👤 Mon Profil'; btnProf.style.marginTop='6px'; btnProf.onclick=renderProfile;
             
@@ -524,12 +725,22 @@
             statRate.style.cssText='margin-top:12px;background:rgba(0, 255, 157, 0.1);border-color:var(--success);';
             statRate.innerHTML=`<div class="stat-number" style="color:var(--success);">${successRate}%</div><div class="stat-label">Taux de réussite</div>`;
             card.appendChild(statRate);
+            
+            // Affichage STREAK dans le profil
+            if(prog.streak > 0) {
+                 const statStreak = document.createElement('div');
+                statStreak.className='stat-box'; statStreak.style.width='100%';
+                statStreak.style.cssText='margin-top:12px;background:rgba(255, 159, 67, 0.1);border-color:#ff9f43;';
+                statStreak.innerHTML=`<div class="stat-number" style="color:#ff9f43;">🔥 ${prog.streak}</div><div class="stat-label">Série actuelle</div>`;
+                card.appendChild(statStreak);
+            }
+
             const btnReset = document.createElement('button');
             btnReset.className = 'link'; btnReset.style.color = 'var(--error)'; btnReset.style.marginTop = '20px'; btnReset.style.borderColor = 'rgba(239, 68, 68, 0.3)';
             btnReset.textContent = '🗑️ Réinitialiser Stats';
             btnReset.onclick = async () => {
                 if(confirm("Voulez-vous vraiment effacer toutes vos statistiques ?")) {
-                    state.progression = { correct: 0, incorrect: 0 }; await saveProgression(); renderProfile(); showAlert("Statistiques remises à zéro", "success");
+                    state.progression = { correct: 0, incorrect: 0, streak: 0 }; await saveProgression(); updateHeader(); renderProfile(); showAlert("Statistiques remises à zéro", "success");
                 }
             };
             card.appendChild(btnReset);
@@ -675,22 +886,28 @@
         }
 
         function askNextQuestion() {
-            prepareSigns(); rankPathologies();
-            if(canShowDiagnostic()){ showDiagnostic(); return; }
+            prepareSigns();
             const remaining = state.allSigns.filter(s => !state.asked.includes(s));
+
+            // --- NOUVELLE LOGIQUE : 3 QUESTIONS ALÉATOIRES AU DÉBUT ---
+            if (state.asked.length < 3) {
+                 if(remaining.length === 0) { showDiagnostic(); return; }
+                 // Pioche purement aléatoire pour les 3 premières
+                 const randomSign = remaining[Math.floor(Math.random() * remaining.length)];
+                 state.currentSign = randomSign;
+                 state.asked.push(randomSign);
+                 renderCurrentQuestion();
+                 return;
+            }
+
+            // --- ENSUITE : LOGIQUE INTELLIGENTE ---
+            rankPathologies();
+            if(canShowDiagnostic()){ showDiagnostic(); return; }
             if(remaining.length===0){ showDiagnostic(); return; }
             
-            // --- MODIFICATION ALÉATOIRE ---
-            let signe;
-            // Pour les 3 premières questions, on choisit au hasard
-            if (state.asked.length < 3) {
-                signe = remaining[Math.floor(Math.random() * remaining.length)];
-            } else {
-                // Ensuite, on utilise le cerveau intelligent
-                signe = getNextSmartSign(state.ranked, remaining);
-            }
-            
-            state.currentSign = signe; state.asked.push(signe);
+            const signe = getNextSmartSign(state.ranked, remaining);
+            state.currentSign = signe; 
+            state.asked.push(signe);
             
             renderCurrentQuestion();
         }
@@ -729,19 +946,32 @@
                 card.appendChild(diagDiv);
                 
                 const btnGroup = document.createElement('div'); btnGroup.className='button-group';
+                
+                // BOUTON CORRECT
                 const btnTrue = document.createElement('button'); btnTrue.className='btn btn-success'; btnTrue.textContent='✅ Correct';
                 btnTrue.onclick = async () => { 
                     triggerConfetti();
+                    playSound('success'); // SON SUCCES
                     state.progression.correct++;
+                    state.progression.streak = (state.progression.streak || 0) + 1; // INCREASE STREAK
+                    updateHeader();
+
                     await saveProgression(); 
                     showAlert('Diagnostic validé !','success'); showDiagnosticDetails(top);
                 };
+                
+                // BOUTON INCORRECT
                 const btnFalse = document.createElement('button'); btnFalse.className='btn btn-error'; btnFalse.textContent='❌ Incorrect';
                 btnFalse.onclick = async () => { 
+                    playSound('error'); // SON ERREUR
                     state.progression.incorrect++;
+                    state.progression.streak = 0; // RESET STREAK
+                    updateHeader();
+
                     await saveProgression(); 
                     showAlert('Aïe... Continuons','error'); state.diagnosticShown=false; setTimeout(()=>askNextQuestion(), 800);
                 };
+                
                 btnGroup.appendChild(btnTrue); btnGroup.appendChild(btnFalse); card.appendChild(btnGroup); app.appendChild(card);
             }, 1500);
         }

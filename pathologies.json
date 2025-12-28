@@ -17,7 +17,7 @@
         "name": "Pneumopathie Franche",
         "short": "Infection pulmonaire à Pneumocoque",
         "pdf": "fiches/pneumopathie.pdf",
-        "signes": {"douleur_thoracique": 5, "toux": 5, "fievre": 18, "frissons_intenses": 15, "toux_grasse_productive": 12, "douleur_thoracique_point_cote": 10, "crepitants_audibles": 15, "dyspnee": 8, "toux_sanglante": 5, "fatigue": 8},
+        "signes": {"douleur_thoracique": 5, "toux": 5, "fievre": 18, "frissons_intenses": 15, "toux_grasse": 12, "douleur_thoracique_point_cote": 10, "crepitants_audibles": 15, "dyspnee": 8, "toux_sanglante": 5, "fatigue": 8},
         "facteurs": {"plus_de_65ans": 4, "tabac": 3, "immunodepression": 4}
     },
     {
@@ -101,21 +101,21 @@
         "name": "Péricardite Aiguë",
         "short": "Inflammation du péricarde",
         "pdf": "fiches/pericardite.pdf",
-        "signes": {"douleur_thoracique": 15, "soulage_penche_avant": 20, "fievre": 8, "toux_seche": 6, "dyspnee": 5, "douleur_inspiration": 12, "rhume_recent": 8},
+        "signes": {"douleur_thoracique": 15, "soulage_penche_avant": 20, "fievre": 8, "toux": 6, "dyspnee": 5, "douleur_inspiration": 12, "rhume_recent": 8},
         "facteurs": {"homme": 2, "jeune": 3}
     },
     {
         "name": "Pneumothorax",
         "short": "Air dans la plèvre",
         "pdf": "fiches/pneumothorax.pdf",
-        "signes": {"douleur_thoracique": 5, "dyspnee": 5, "douleur_thoracique_coté": 18, "dyspnee_brutale": 15, "toux_seche": 10, "angoisse": 6, "diminution_bruits_respiratoires": 12},
+        "signes": {"douleur_thoracique": 5, "douleur_thoracique_coté": 18, "dyspnee_brutale": 15, "toux": 10, "angoisse": 6, "diminution_bruits_respiratoires": 12},
         "facteurs": {"homme": 3, "tabac": 5, "grand_mince": 4}
     },
     {
         "name": "Crise d'Asthme",
         "short": "Bronchospasme sévère",
         "pdf": "fiches/asthme.pdf",
-        "signes": {"dyspnee": 5, "toux": 5, "dyspnee_expiratoire": 18, "sifflements_respiratoires": 20, "toux_seche": 12, "oppression_thoracique": 12, "angoisse": 8, "tachycardie": 6},
+        "signes": {"dyspnee": 5, "dyspnee_expiratoire": 18, "sifflements_respiratoires": 20, "toux": 12, "oppression_thoracique": 12, "angoisse": 8, "tachycardie": 6},
         "facteurs": {"atcd_famille": 3, "allergies": 5}
     },
     {
@@ -164,7 +164,7 @@
         "name": "Rétention Aiguë d'Urine",
         "short": "Globe vésical",
         "pdf": "fiches/rau.pdf",
-        "signes": {"genes_urinaires": 5, "douleur_abdominale": 5, "impossibilite_uriner": 20, "masse_sus_pubienne": 18, "douleur_bas_ventre": 15, "envie_pressante_uriner": 15, "agitation": 8},
+        "signes": {"genes_urinaires": 5, "douleur_abdominale": 5, "impossibilite_uriner": 20, "masse_sus_pubienne": 18, "douleur_sus_pubienne": 15, "envie_pressante_uriner": 15, "agitation": 8},
         "facteurs": {"homme": 5, "plus_de_65ans": 5, "prostate": 5}
     },
     {
@@ -220,7 +220,7 @@
         "name": "Invagination Intestinale",
         "short": "Urgence chirurgicale nourrisson",
         "pdf": "fiches/iia.pdf",
-        "signes": {"douleur_abdominale": 5, "douleur_abdominale_crises": 18, "nausees_vomissements": 14, "refus_alimentation": 10, "sang_selles_gelee": 12, "paleur_soudaine": 12, "masse_ventre": 8, "calme_entre_crises": 12},
+        "signes": {"douleur_abdominale": 5, "douleur_abdominale_intermittente": 18, "nausees_vomissements": 14, "refus_alimentation": 10, "sang_selles_gelee": 12, "paleur_soudaine": 12, "masse_ventre": 8, "calme_entre_crises": 12},
         "facteurs": {"homme": 1, "nourrisson": 10}
     },
     {
@@ -325,7 +325,7 @@
         "name": "Purpura Rhumatoïde",
         "short": "Vascularite à IgA",
         "pdf": "fiches/purpura.pdf",
-        "signes": {"anomalie_peau": 5, "douleur_abdominale": 5, "purpura": 20, "douleur_articulaire": 15, "douleur_abdominale_diffuse": 15, "sang_urines": 10},
+        "signes": {"anomalie_peau": 5, "douleur_abdominale": 5, "taches_rouges_jambes": 20, "douleur_articulaire": 15, "douleur_abdominale_diffuse": 15, "sang_urines": 10},
         "facteurs": {"homme": 1, "enfant": 8, "infection_recente": 3}
     },
     {
@@ -339,7 +339,7 @@
         "name": "Varicelle",
         "short": "Primo-infection VZV",
         "pdf": "fiches/varicelle.pdf",
-        "signes": {"anomalie_peau": 5, "vesicules_bulles": 20, "demangeaisons": 18, "fievre": 8, "boutons_tete": 10, "fatigue": 5},
+        "signes": {"anomalie_peau": 5, "boutons_bulles_corps": 20, "demangeaisons": 18, "fievre": 8, "boutons_tete": 10, "fatigue": 5},
         "facteurs": {"plus_de_30ans": 0, "enfant": 5, "contage": 8}
     },
     {
@@ -353,7 +353,7 @@
         "name": "Endocardite Infectieuse",
         "short": "Infection valves cardiaques",
         "pdf": "fiches/endocardite.pdf",
-        "signes": {"fievre": 18, "nouveau_souffle_coeur": 20, "purpura": 10, "grosse_rate": 8, "fatigue": 12, "perte_poids": 10, "douleurs_articulaires": 8, "soins_dentaires": 5},
+        "signes": {"fievre": 18, "nouveau_souffle_coeur": 20, "taches_peau_purpura": 10, "grosse_rate": 8, "fatigue": 12, "perte_poids": 10, "douleurs_articulaires": 8, "soins_dentaires": 5},
         "facteurs": {"homme": 2, "plus_de_65ans": 3, "valvulopathie": 8}
     },
     {
@@ -500,7 +500,7 @@
         "name": "Hématome Sous-Dural",
         "short": "Hémorragie intracrânienne",
         "pdf": "fiches/hsd.pdf",
-        "signes": {"troubles_neuro": 5, "maux_tete": 15, "confusion_mentale": 18, "faiblesse_cote_corps": 12, "somnolence": 15, "chute_recente": 18, "ralentissement_idees": 10, "marche_difficile": 10},
+        "signes": {"troubles_neuro": 5, "maux_tete": 15, "confusion_mentale": 18, "faiblesse_cote_corps": 12, "somnolence": 15, "chute_recente_trauma": 18, "ralentissement_idees": 10, "marche_difficile": 10},
         "facteurs": {"plus_de_65ans": 8, "homme": 2, "alcool": 4, "anticoagulants": 5}
     },
     {

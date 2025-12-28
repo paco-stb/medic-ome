@@ -629,17 +629,38 @@
             let cloudBadge = state.isGuest ? '<span style="color:orange; font-size:0.8em; margin-bottom:10px">💾 Mode Local (Navigateur)</span>' : '<span style="color:var(--success); font-size:0.8em; margin-bottom:10px">☁️ Sauvegarde Cloud Active</span>';
             const displayName = state.pseudo || '...';
             
-            // MAIN DASHBOARD (Avis retirés)
+            // --- NOUVEAU TUTORIEL PÉDAGOGIE INVERSÉE ---
+            const tutorialHTML = `
+                <div style="background: rgba(0, 210, 255, 0.05); border: 1px solid var(--accent); border-radius: 12px; padding: 20px; margin: 20px 0; text-align: left; width: 100%;">
+                    <h3 style="color:var(--accent); font-size: 1.1em; margin-bottom: 10px;">🎓 Mode d'emploi : Défie l'Algorithme</h3>
+                    <p style="font-size: 0.95em; line-height: 1.5; color: #e0e7ff;">
+                        Ici, c'est le monde à l'envers : <strong>C'est toi qui connais le diagnostic, et l'IA qui doit le deviner.</strong>
+                    </p>
+                    <ul style="margin-top: 10px; margin-left: 20px; font-size: 0.9em; color: var(--text-muted);">
+                        <li style="margin-bottom:5px;">🧠 <strong>Étape 1 :</strong> Choisis une pathologie dans ta tête (ex: Appendicite).</li>
+                        <li style="margin-bottom:5px;">🩺 <strong>Étape 2 :</strong> L'IA va te poser des questions sur les signes cliniques.</li>
+                        <li>✅ <strong>Étape 3 :</strong> Réponds correctement (OUI/NON) pour guider l'IA vers ta pathologie.</li>
+                    </ul>
+                    <p style="margin-top: 10px; font-size: 0.85em; font-style: italic; color: var(--accent);">
+                        Si l'IA se trompe, c'est peut-être que tu as oublié un signe clinique important !
+                    </p>
+                </div>
+            `;
+
+            // DASHBOARD CONTENU
             card.innerHTML = `<h2>👋 Bonjour ${displayName}</h2>${cloudBadge}
-                            <div class="stat-box" style="width:100%"><div class="stat-number">${prog.correct + prog.incorrect}</div><div class="stat-label">Cas résolus</div></div>
+                            
+                            ${tutorialHTML}
+
+                            <div class="stat-box" style="width:100%"><div class="stat-number">${prog.correct + prog.incorrect}</div><div class="stat-label">Cas joués</div></div>
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-top:12px;">
-                            <div class="stat-box" style="text-align:center; background:rgba(0, 255, 157, 0.1); border-color:var(--success)"><div class="stat-number" style="color:var(--success);">${prog.correct}</div><div class="stat-label">Corrects</div></div>
-                            <div class="stat-box" style="text-align:center; background:rgba(255, 77, 77, 0.1); border-color:var(--error)"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">Incorrects</div></div>
+                            <div class="stat-box" style="text-align:center; background:rgba(0, 255, 157, 0.1); border-color:var(--success)"><div class="stat-number" style="color:var(--success);">${prog.correct}</div><div class="stat-label">IA a trouvé</div></div>
+                            <div class="stat-box" style="text-align:center; background:rgba(255, 77, 77, 0.1); border-color:var(--error)"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">Échecs</div></div>
                             </div>`;
             
-            const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.textContent='🩺 Lancer Diagnostic'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; btnDiag.onclick=renderDemographics;
-            const btnGloss = document.createElement('button'); btnGloss.className='link'; btnGloss.textContent='📚 Glossaire'; btnGloss.style.marginTop='12px'; btnGloss.onclick=renderGlossary;
-            const btnProf = document.createElement('button'); btnProf.className='link'; btnProf.textContent='👤 Profil'; btnProf.style.marginTop='6px'; btnProf.onclick=renderProfile;
+            const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.textContent='🩺 Lancer le défi'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; btnDiag.onclick=renderDemographics;
+            const btnGloss = document.createElement('button'); btnGloss.className='link'; btnGloss.textContent='📚 Glossaire des pathologies'; btnGloss.style.marginTop='12px'; btnGloss.onclick=renderGlossary;
+            const btnProf = document.createElement('button'); btnProf.className='link'; btnProf.textContent='👤 Mon Profil'; btnProf.style.marginTop='6px'; btnProf.onclick=renderProfile;
             
             card.appendChild(btnDiag); card.appendChild(btnGloss); card.appendChild(btnProf); 
             app.appendChild(card);

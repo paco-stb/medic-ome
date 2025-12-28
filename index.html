@@ -342,9 +342,10 @@
         import { getFirestore, doc, getDoc, setDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // --- LOGIQUE D'ENTONNOIR (Raffinement) ---
+        // Liste des questions générales et de leurs précisions.
         const REFINEMENTS = {
             // DOULEURS
-            "douleur_abdominale": ["douleur_fosse_iliaque_droite", "douleur_hypocondre_droit", "douleur_fosse_iliaque_gauche", "douleur_epigastrique", "douleur_transfixiante_dos", "douleur_bas_ventre", "douleur_pelvienne", "douleur_abdominale_diffuse", "crampes_abdominales", "douleur_abdominale_crises"],
+            "douleur_abdominale": ["douleur_fosse_iliaque_droite", "douleur_hypocondre_droit", "douleur_fosse_iliaque_gauche", "douleur_epigastrique", "douleur_transfixiante_dos", "douleur_bas_ventre", "douleur_pelvienne", "douleur_abdominale_diffuse", "crampes_abdominales", "douleur_abdominale_intermittente", "douleur_sus_pubienne"],
             "douleur_thoracique": ["douleur_thoracique_oppressive", "douleur_thoracique_dechirante", "douleur_thoracique_coté", "douleur_basithoracique", "douleur_inspiration", "douleur_thoracique_point_cote"],
             "douleur_dos": ["douleur_lombaire_brutale", "douleur_lombaire_unilaterale", "douleur_lombaire", "douleur_bas_dos", "douleur_bas_dos_nuit", "douleur_dos_os", "douleur_dos_brutale"],
             "douleur_membre_traumatisme": ["impossibilite_marcher", "douleur_poignet", "chute_recente", "jambe_froide_pale", "douleur_articulaire_intense", "douleur_gros_orteil", "douleur_jambe_brutale_intense", "douleur_aine_hanche", "douleur_mains", "douleur_talon", "fourmillements_doigts"],
@@ -1029,21 +1030,43 @@
                 const lastAnswer = state.answers[lastSign];
                 
                 // Si on a répondu OUI à une question générale (ex: douleur_abdominale)
-                if(lastAnswer === true && REFINEMENTS[lastSign]) {
-                    // On ajoute les questions précises (ex: douleur_fid) à la file prioritaire
-                    const candidates = REFINEMENTS[lastSign].filter(s => state.allSigns.includes(s) && !state.asked.includes(s));
-                    state.priorityQueue.push(...candidates);
+                if(lastAnswer === true) {
+                    // On vérifie si c'est une catégorie "Parent"
+                    if(REFINEMENTS[lastSign]) {
+                        // On ajoute les questions précises à la file prioritaire
+                        const candidates = REFINEMENTS[lastSign].filter(s => state.allSigns.includes(s) && !state.asked.includes(s));
+                        state.priorityQueue.push(...candidates);
+                    } else {
+                        // LOGIQUE D'EXCLUSION MUTUELLE (Sibling Killer)
+                        // Si on vient de répondre OUI à une question "Enfant" (ex: douleur_fid)
+                        // On doit supprimer les autres questions "Enfants" de la file d'attente
+                        for (const [parent, children] of Object.entries(REFINEMENTS)) {
+                            if (children.includes(lastSign)) {
+                                // On a trouvé le groupe (ex: douleur_abdominale)
+                                // On retire tous les autres enfants de la file prioritaire
+                                const siblings = children.filter(c => c !== lastSign);
+                                state.priorityQueue = state.priorityQueue.filter(q => !siblings.includes(q));
+                                // On peut aussi les marquer comme "traités" pour ne pas qu'ils ressortent en aléatoire
+                                // (Optionnel mais plus propre)
+                                state.asked.push(...siblings.filter(s => !state.asked.includes(s)));
+                            }
+                        }
+                    }
                 }
             }
 
             // Si on a des questions prioritaires, on les pose en premier !
             if(state.priorityQueue.length > 0) {
                 const nextPriority = state.priorityQueue.shift();
-                // On vérifie qu'on ne l'a pas déjà posée entre temps
+                // On vérifie qu'on ne l'a pas déjà posée entre temps (via la logique sibling killer par exemple)
                 if(!state.asked.includes(nextPriority)) {
                     state.currentSign = nextPriority;
                     state.asked.push(nextPriority);
                     renderCurrentQuestion();
+                    return;
+                } else {
+                    // Si elle est déjà traitée, on passe à la suivante récursivement
+                    askNextQuestion();
                     return;
                 }
             }

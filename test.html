@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medicome - Training Lab</title>
+    <title>Medicome</title>
     
     <link rel="canonical" href="https://medicome.fr/" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🩺</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
         /* ================= STYLE CHROME / DARK GLOSS ================= */
         :root {
-          /* Palette Deep Chrome */
           --bg-dark: #020b16;
           --bg-light: #1e3c72;
           --glass-bg: rgba(13, 25, 48, 0.75);
@@ -21,13 +21,13 @@
           --accent-glow: rgba(0, 210, 255, 0.4);
           --text-main: #ffffff;
           --text-muted: #b0c4de;
-          
           --success: #00ff9d;
           --error: #ff4d4d;
+          --info: #60a5fa;
         }
 
         /* RESET & BASE */
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
         
         body {
           font-family: 'Inter', sans-serif;
@@ -39,11 +39,11 @@
           flex-direction: column;
         }
 
-        /* HEADER GLASSMORPHISM */
+        /* HEADER */
         header {
           display: flex;
           justify-content: space-between;
-          padding: 16px 24px;
+          padding: 10px 24px;
           background: rgba(2, 11, 22, 0.8);
           backdrop-filter: blur(15px);
           -webkit-backdrop-filter: blur(15px);
@@ -54,11 +54,17 @@
         }
 
         .brand { 
-            font-size:22px; font-weight:700; color:var(--accent); 
             display: flex; align-items: center; gap: 12px; 
-            text-shadow: 0 0 10px var(--accent-glow);
+            cursor: pointer; /* Sera géré par JS pour le lien */
         }
-        .logo-svg { width: 32px; height: 32px; fill: var(--accent); filter: drop-shadow(0 0 5px var(--accent)); }
+        
+        .logo-img {
+            height: 50px; 
+            width: auto;
+            filter: drop-shadow(0 0 8px var(--accent-glow));
+            transition: transform 0.3s;
+        }
+        .brand:hover .logo-img { transform: scale(1.05); }
         
         .top-right { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
         
@@ -69,7 +75,7 @@
             border-radius:20px; cursor:pointer; font-size: 14px; 
         }
 
-        /* BOUTONS & LINKS */
+        /* BUTTONS & LINKS */
         .link {
           background: rgba(255,255,255,0.03);
           border:1px solid rgba(255,255,255,0.1);
@@ -99,27 +105,29 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 0 1px var(--glass-border); 
             margin-bottom:16px; width:100%; max-width:600px; 
             transition: transform 0.3s ease;
+            animation: fadeIn 0.5s ease-out;
         }
         
         .card h2 { margin-bottom:20px; font-size:26px; text-align:center; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         .card h3 { margin-bottom:16px; font-size:22px; text-align:center; color: var(--accent); }
 
         /* INPUTS */
-        .input, select { 
+        .input, select, textarea { 
             width:100%; padding:14px; border-radius:10px; 
             border:1px solid rgba(255,255,255,0.15); 
             background: rgba(0,0,0,0.3); 
             color: var(--text-main); 
             margin-top:8px; margin-bottom:12px; font-size:14px; 
-            transition:all 0.3s; 
+            transition:all 0.3s; font-family: 'Inter', sans-serif;
         }
-        .input:focus, select:focus { 
+        textarea { resize: vertical; min-height: 100px; }
+        .input:focus, select:focus, textarea:focus { 
             outline:none; border-color:var(--accent); 
             background: rgba(0,0,0,0.5); 
             box-shadow: 0 0 15px var(--accent-glow);
         }
 
-        /* BOUTONS */
+        /* ACTION BUTTONS */
         .btn { 
             background: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%);
             border:none; padding:14px 24px; border-radius:12px; 
@@ -148,25 +156,18 @@
         }
         .btn-code:hover { background: rgba(0, 210, 255, 0.1) !important; box-shadow: 0 0 15px var(--accent-glow) !important; }
 
-        /* BOUTON RETOUR */
         .btn-back {
-            background: rgba(255, 255, 255, 0.1);
-            color: #ccc;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 10px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
+            background: rgba(255, 255, 255, 0.1); color: #ccc;
+            border: 1px solid rgba(255, 255, 255, 0.2); padding: 10px 20px;
+            border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600;
             transition: all 0.2s;
         }
-        .btn-back:hover {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-        }
+        .btn-back:hover { background: rgba(255, 255, 255, 0.2); color: white; }
 
         /* ELEMENTS */
         .center { text-align:center; display:flex; flex-direction:column; align-items:center; }
+        .button-group { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:12px; width: 100%; }
+        .small { opacity:0.6; font-size:13px; color:var(--text-muted); margin-top:12px; text-align:center; }
         
         .question-text { 
             font-size:22px; text-align:center; line-height:1.6; padding:24px; 
@@ -175,73 +176,100 @@
             word-break:break-word; width: 100%; margin-bottom: 20px;
             box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
         }
-        
-        .button-group { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:12px; width: 100%; }
-        .small { opacity:0.6; font-size:13px; color:var(--text-muted); margin-top:12px; text-align:center; }
-        
+
+        /* REVIEWS SECTION */
+        .reviews-container {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; width: 100%;
+        }
+        .review-card {
+            background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; padding: 15px; text-align: left;
+        }
+        .review-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .review-avatar { width: 30px; height: 30px; background: var(--accent); border-radius: 50%; display:flex; align-items:center; justify-content:center; font-weight:bold; color:black; font-size:12px;}
+        .review-name { font-weight: 600; font-size: 14px; color: white; }
+        .review-stars { color: #FFD700; font-size: 12px; }
+        .review-text { font-size: 13px; color: var(--text-muted); font-style: italic; }
+
         /* GLOSSAIRE */
-        .glossary-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:20px; width:100%; max-width:1000px; }
-        .patho-card { 
-            background: rgba(255, 255, 255, 0.03); 
-            padding:24px; border-radius:16px; 
-            border:1px solid rgba(255,255,255,0.05); 
-            transition:all 0.3s; cursor:pointer; 
-        }
-        .patho-card:hover { 
-            transform:translateY(-5px); 
-            border-color:var(--accent); 
-            background: rgba(0, 210, 255, 0.05);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px var(--accent-glow);
-        }
+        .glossary-wrapper { display: flex; align-items: flex-start; gap: 20px; width: 100%; max-width: 1000px; position: relative; }
+        .alphabet-sidebar { position: sticky; top: 100px; display: flex; flex-direction: column; gap: 2px; background: rgba(0, 0, 0, 0.4); padding: 10px; border-radius: 20px; border: 1px solid var(--glass-border); max-height: 80vh; overflow-y: auto; flex-shrink: 0; }
+        .alpha-link { color: var(--text-muted); text-decoration: none; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 4px; transition: all 0.2s; text-align: center; }
+        .alpha-link:hover { color: white; background: rgba(255,255,255,0.1); }
+        .alpha-link.active { color: var(--accent); background: rgba(0, 210, 255, 0.1); }
+        .alpha-link.disabled { opacity: 0.2; cursor: default; pointer-events: none; }
+        .glossary-content { flex: 1; width: 100%; }
+        .search-container { width: 100%; max-width: 1000px; margin-bottom: 20px; }
+        .search-input { width: 100%; padding: 16px; border-radius: 12px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.4); color: white; font-size: 16px; backdrop-filter: blur(5px); }
+        .search-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 15px var(--accent-glow); }
+        .letter-header { font-size: 28px; font-weight: 800; color: var(--accent); border-bottom: 2px solid rgba(255,255,255,0.1); margin-top: 40px; margin-bottom: 20px; padding-bottom: 5px; scroll-margin-top: 110px; }
+        .letter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
+        .patho-card { background: rgba(255, 255, 255, 0.03); padding:24px; border-radius:16px; border:1px solid rgba(255,255,255,0.05); transition:all 0.3s; cursor:pointer; }
+        .patho-card:hover { transform:translateY(-5px); border-color:var(--accent); background: rgba(0, 210, 255, 0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px var(--accent-glow); }
         .patho-name { font-size:18px; font-weight:700; color:var(--accent); margin-bottom:8px; }
         .patho-desc { font-size:14px; color:rgba(255,255,255,0.7); line-height:1.5; }
 
-        /* RESULTATS & ALERTS */
+        /* ALERTS & STATS */
         .alert { padding:14px; border-radius:10px; margin:12px 0; font-size:14px; width: 100%; text-align: center; font-weight: 500;}
         .alert-success { background: rgba(0, 255, 157, 0.1); border:1px solid var(--success); color:var(--success); box-shadow: 0 0 15px rgba(0, 255, 157, 0.2); }
         .alert-error { background: rgba(255, 77, 77, 0.1); border:1px solid var(--error); color:var(--error); box-shadow: 0 0 15px rgba(255, 77, 77, 0.2); }
-
-        .stat-box { 
-            background: rgba(0,0,0,0.3); padding:20px; 
-            border-radius:12px; margin:10px 0; 
-            border: 1px solid rgba(255,255,255,0.05);
-            text-align:center; 
-        }
+        .stat-box { background: rgba(0,0,0,0.3); padding:20px; border-radius:12px; margin:10px 0; border: 1px solid rgba(255,255,255,0.05); text-align:center; }
         .stat-number { font-size:36px; font-weight:700; color:white; text-shadow: 0 0 10px rgba(255,255,255,0.3); }
-
-        .diagnostic-result { 
-            background: rgba(0, 210, 255, 0.1); padding:30px; 
-            border-radius:20px; margin:20px 0; 
-            border:2px solid var(--accent); text-align:center; 
-            box-shadow: 0 0 30px var(--accent-glow);
-        }
+        .diagnostic-result { background: rgba(0, 210, 255, 0.1); padding:30px; border-radius:20px; margin:20px 0; border:2px solid var(--accent); text-align:center; box-shadow: 0 0 30px var(--accent-glow); }
         .diagnostic-name { font-size:32px; font-weight:700; color:white; margin-bottom:12px; text-shadow: 0 0 10px var(--accent); }
         .score-badge { display:inline-block; background: var(--accent); color: #000; font-weight: 700; padding:6px 14px; border-radius:20px; font-size:14px; margin-top:12px; }
-        
         .result-item { padding:12px 16px; border-radius:10px; margin-bottom:8px; background: rgba(0,0,0,0.3); display:flex; justify-content:space-between; align-items:center; border: 1px solid rgba(255,255,255,0.05); }
         .result-correct { border-left:4px solid var(--success); }
         .result-missing { border-left:4px solid #f59e0b; }
         .result-error { border-left:4px solid var(--error); }
-        
-        footer { text-align:center; padding:20px; background: rgba(0,0,0,0.3); font-size:13px; opacity:0.6; flex-shrink:0; border-top: 1px solid rgba(255,255,255,0.05); }
+        .result-neutral { border-left:4px solid var(--info); background: rgba(96, 165, 250, 0.1); }
         
         @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+        /* FOOTER & SOCIALS */
+        footer { 
+            text-align:center; padding:30px 20px; 
+            background: rgba(0,0,0,0.5); font-size:13px; 
+            border-top: 1px solid rgba(255,255,255,0.05); 
+            display: flex; flex-direction: column; align-items: center; gap: 15px;
+        }
+        .social-links { display: flex; gap: 20px; margin-bottom: 10px; }
+        .social-link { 
+            display: flex; align-items: center; justify-content: center;
+            width: 40px; height: 40px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        .social-link:hover { 
+            background: rgba(0, 210, 255, 0.1); 
+            transform: scale(1.1); 
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+        .social-icon { width: 20px; height: 20px; fill: var(--text-muted); transition: fill 0.3s; }
+        .social-link:hover .social-icon { fill: var(--accent); }
+        
+        .footer-nav { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;}
+        .footer-link { color: var(--text-muted); text-decoration: none; font-weight: 500; transition: color 0.2s; cursor: pointer;}
+        .footer-link:hover { color: var(--accent); text-decoration: underline; }
 
         @media (max-width:600px){
             .button-group{flex-direction:column;width:100%;}
             .btn,.link{width:100%;}
-            .glossary-grid{grid-template-columns:1fr;}
+            .glossary-wrapper { flex-direction: column; }
+            .alphabet-sidebar { flex-direction: row; flex-wrap: wrap; width: 100%; position: static; justify-content: center; margin-bottom: 20px; max-height: none; }
+            .alpha-link { padding: 5px 10px; font-size: 14px; }
+            .reviews-container { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="brand">
-            <svg class="logo-svg" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M19,3H5C3.9,3 3,3.9 3,5V19C3,20.1 3.9,21 5,21H19C20.1,21 21,20.1 21,19V5C21,3.9 20.1,3 19,3M19,19H5V5H19V19M11,17H13V13H17V11H13V7H11V11H7V13H11V17Z" />
-            </svg>
-            Medicome
+        <div class="brand" id="brandLogo">
+            <img src="logo.png" alt="Medicome Logo" class="logo-img">
         </div>
         
         <div class="top-right">
@@ -259,7 +287,23 @@
     </main>
 
     <footer>
-        Medicome © 2025 - Outil pédagogique pour les étudiants en Médecine
+        <div class="social-links">
+            <a href="https://instagram.com/medicome.fr" target="_blank" class="social-link" title="Instagram">
+                <svg class="social-icon" viewBox="0 0 24 24"><path d="M7.8,2H16.2C19.4,2 22,4.6 22,7.8V16.2A5.8,5.8 0 0,1 16.2,22H7.8C4.6,22 2,19.4 2,16.2V7.8A5.8,5.8 0 0,1 7.8,2M7.6,4A3.6,3.6 0 0,0 4,7.6V16.4C4,18.39 5.61,20 7.6,20H16.4A3.6,3.6 0 0,0 20,16.4V7.6C20,5.61 18.39,4 16.4,4H7.6M17.25,5.5A1.25,1.25 0 0,1 18.5,6.75A1.25,1.25 0 0,1 17.25,8A1.25,1.25 0 0,1 16,6.75A1.25,1.25 0 0,1 17.25,5.5M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z" /></svg>
+            </a>
+            <a href="https://www.tiktok.com/@medicome.fr" target="_blank" class="social-link" title="TikTok">
+                <svg class="social-icon" viewBox="0 0 24 24"><path d="M12.5 3.5v10.55c0 1.9-1.55 3.45-3.45 3.45S5.6 15.95 5.6 14.05c0-1.9 1.55-3.45 3.45-3.45 0.3 0 0.6 0.05 0.85 0.15V7.4c-0.25-0.1-0.55-0.15-0.85-0.15-3.8 0-6.9 3.1-6.9 6.9s3.1 6.9 6.9 6.9c3.8 0 6.9-3.1 6.9-6.9V7.6c1.7 1.2 3.8 1.9 6.05 1.9v-3.75c-2.15 0-4.05-0.9-5.3-2.3H12.5z"/></svg>
+            </a>
+            <a href="https://x.com/medicome_fr" target="_blank" class="social-link" title="X (Twitter)">
+                <svg class="social-icon" viewBox="0 0 24 24"><path d="M22.46,6C21.69,6.35 20.86,6.58 20,6.69C20.88,6.16 21.56,5.32 21.88,4.31C21.05,4.81 20.13,5.16 19.16,5.36C18.37,4.5 17.26,4 16,4C13.65,4 11.73,5.92 11.73,8.29C11.73,8.63 11.77,8.96 11.84,9.27C8.28,9.09 5.11,7.38 3,4.79C2.63,5.42 2.42,6.16 2.42,6.94C2.42,8.43 3.17,9.75 4.33,10.5C3.62,10.5 2.96,10.3 2.38,10C2.38,10 2.38,10.03 2.38,10.05C2.38,12.11 3.86,13.85 5.82,14.24C5.46,14.34 5.08,14.39 4.69,14.39C4.42,14.39 4.15,14.36 3.89,14.31C4.43,16 6,17.26 7.89,17.29C6.43,18.45 4.58,19.13 2.56,19.13C2.22,19.13 1.88,19.11 1.54,19.07C3.44,20.29 5.7,21 8.12,21C16,21 20.33,14.46 20.33,8.79C20.33,8.6 20.33,8.42 20.32,8.23C21.16,7.63 21.88,6.87 22.46,6Z" /></svg>
+            </a>
+        </div>
+        <div class="footer-nav">
+            <span class="footer-link" onclick="window.scrollTo(0,0)">Haut de page</span>
+            <span class="footer-link" id="reviewsLink">Avis Utilisateurs</span>
+            <span class="footer-link" id="contactLink">Nous Contacter</span>
+        </div>
+        <div style="margin-top:10px; opacity:0.6;">Medicome © 2025 - Outil pédagogique</div>
     </footer>
 
     <script type="module">
@@ -268,8 +312,8 @@
         }
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCig9G4gYHU5h642YV1IZxthYm_IXp6vZU",
@@ -294,11 +338,11 @@
         let PATHOLOGIES = [];
         const ACCESS_CODES = [ { code: "SuperCode1", pseudo:"Admin" } ];
 
-        // AJOUT DE L'HISTORIQUE DANS LE STATE
+        // STATE (With History)
         let state = {
             currentUser: null, pseudo: null, progression: { correct: 0, incorrect: 0 },
             isGuest: false, demo:{}, currentSign:null, answers:{}, asked:[], allSigns:[], ranked: [], diagnosticShown:false, previousDiagnostics:[],
-            history: [] // Nouvelle pile pour le bouton Retour
+            history: [] // For going back
         };
 
         async function initApp() {
@@ -306,8 +350,28 @@
                 const response = await fetch('./pathologies.json');
                 if (!response.ok) throw new Error("Impossible de lire le fichier de données");
                 PATHOLOGIES = await response.json();
-                console.log("Données médicales chargées:", PATHOLOGIES.length, "pathologies");
                 startAuthListener();
+                
+                // Bind links
+                const cLink = document.getElementById('contactLink');
+                if(cLink) cLink.onclick = renderContact;
+                
+                const rLink = document.getElementById('reviewsLink');
+                if(rLink) rLink.onclick = renderReviews;
+
+                // LOGO LOGIC (Only click if logged in)
+                const brandLogo = document.getElementById('brandLogo');
+                if(brandLogo) {
+                    brandLogo.onclick = () => {
+                        if (state.currentUser || state.isGuest) {
+                            renderHome();
+                        } else {
+                            // Do nothing or renderLogin() if not already there
+                            console.log("Not logged in, logo inactive");
+                        }
+                    };
+                }
+
             } catch (err) {
                 console.error(err);
                 document.querySelector('#app').innerHTML = `
@@ -363,6 +427,12 @@
             const app = q('#app');
             if(app){ app.insertBefore(alertDiv,app.firstChild); setTimeout(()=>{ if(alertDiv.parentNode) alertDiv.parentNode.removeChild(alertDiv); },3000); }
         }
+        
+        function triggerConfetti() {
+            if(window.confetti) {
+                window.confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            }
+        }
 
         async function saveProgression() {
             if (!state.isGuest && state.currentUser) {
@@ -393,16 +463,137 @@
             };
         }
 
+        // =================== REVIEWS PAGE ===================
+        function renderReviews() {
+            const app = q('#app'); app.innerHTML='';
+            const card = document.createElement('div'); card.className='card center';
+            card.innerHTML = `<h2>⭐ Avis Utilisateurs</h2><p class="small" style="margin-bottom:20px">Ce qu'ils pensent de Medicome.</p>`;
+
+            const reviewsContainer = document.createElement('div');
+            reviewsContainer.className = 'reviews-container';
+            reviewsContainer.innerHTML = `
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="review-avatar">A</div>
+                            <div>
+                                <div class="review-name">Antoine D.</div>
+                                <div class="review-stars">★★★★★</div>
+                            </div>
+                        </div>
+                        <div class="review-text">"Super outil pour réviser mes cas cliniques avant les partiels. Simple et efficace."</div>
+                    </div>
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="review-avatar">S</div>
+                            <div>
+                                <div class="review-name">Sarah L.</div>
+                                <div class="review-stars">★★★★☆</div>
+                            </div>
+                        </div>
+                        <div class="review-text">"L'interface est top. J'aimerais juste encore plus de pathologies !"</div>
+                    </div>
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="review-avatar">M</div>
+                            <div>
+                                <div class="review-name">Maxime P.</div>
+                                <div class="review-stars">★★★★★</div>
+                            </div>
+                        </div>
+                        <div class="review-text">"Indispensable pour l'externat. Le mode invité est super pratique."</div>
+                    </div>
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="review-avatar">L</div>
+                            <div>
+                                <div class="review-name">Léa B.</div>
+                                <div class="review-stars">★★★★★</div>
+                            </div>
+                        </div>
+                        <div class="review-text">"Merci pour cet outil gratuit. Ça m'a sauvé sur la sémio cardio !"</div>
+                    </div>
+            `;
+            card.appendChild(reviewsContainer);
+            
+            const btnBack = document.createElement('button'); btnBack.className='btn'; btnBack.textContent='Retour';
+            btnBack.style.marginTop = '20px';
+            btnBack.onclick = () => { if(state.pseudo) renderHome(); else renderLogin(); };
+            card.appendChild(btnBack);
+
+            app.appendChild(card);
+        }
+
+        // =================== CONTACT FORM ===================
+        function renderContact() {
+            const app = q('#app'); app.innerHTML='';
+            const card = document.createElement('div'); card.className='card center';
+            
+            card.innerHTML = `<h2>✉️ Nous Contacter</h2><p class="small" style="margin-bottom:20px">Une suggestion ? Un bug ? Écrivez-nous.</p>`;
+            
+            const inputName = document.createElement('input'); inputName.className='input'; inputName.placeholder='Votre Nom';
+            if(state.pseudo) inputName.value = state.pseudo;
+            
+            const inputEmail = document.createElement('input'); inputEmail.className='input'; inputEmail.placeholder='Votre Email';
+            if(state.currentUser && state.currentUser.email) inputEmail.value = state.currentUser.email;
+
+            const inputText = document.createElement('textarea'); inputText.className='input'; inputText.placeholder='Votre message...';
+            
+            const btnSend = document.createElement('button'); btnSend.className='btn'; btnSend.textContent='Envoyer le message';
+            btnSend.onclick = async () => {
+                if(!inputText.value || !inputEmail.value) { showAlert("Merci de remplir les champs", "error"); return; }
+                btnSend.textContent = 'Envoi...';
+                btnSend.disabled = true;
+
+                try {
+                    // SAVE TO FIREBASE
+                    await addDoc(collection(db, "messages"), {
+                        name: inputName.value,
+                        email: inputEmail.value,
+                        message: inputText.value,
+                        date: new Date(),
+                        uid: state.currentUser ? state.currentUser.uid : 'guest'
+                    });
+                    showAlert("Message envoyé avec succès !", "success");
+                    setTimeout(() => { if(state.pseudo) renderHome(); else renderLogin(); }, 1500);
+                } catch(e) {
+                    console.error(e);
+                    showAlert("Erreur lors de l'envoi", "error");
+                    btnSend.textContent = 'Envoyer le message';
+                    btnSend.disabled = false;
+                }
+            };
+
+            const btnCancel = document.createElement('button'); btnCancel.className='link'; btnCancel.textContent='Annuler';
+            btnCancel.onclick = () => { if(state.pseudo) renderHome(); else renderLogin(); };
+
+            card.appendChild(inputName);
+            card.appendChild(inputEmail);
+            card.appendChild(inputText);
+            card.appendChild(btnSend);
+            card.appendChild(btnCancel);
+            app.appendChild(card);
+        }
+
         function renderLogin() {
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card center'; card.innerHTML='<h2>☁️ Connexion Cloud</h2>';
             const inputUser = document.createElement('input'); inputUser.placeholder='Email'; inputUser.className='input';
             const inputPass = document.createElement('input'); inputPass.placeholder='Mot de passe'; inputPass.className='input'; inputPass.type='password';
+            
             const btnLogin = document.createElement('button'); btnLogin.className='btn'; btnLogin.textContent='Se connecter';
             btnLogin.onclick = async () => {
                 try { await signInWithEmailAndPassword(auth, inputUser.value, inputPass.value); showAlert("Connexion réussie !", "success"); } catch (error) { showAlert("Erreur: " + error.message, "error"); }
             };
-            card.appendChild(inputUser); card.appendChild(inputPass); card.appendChild(btnLogin);
+            
+            const btnForgot = document.createElement('div'); 
+            btnForgot.className='small link'; btnForgot.style.border='none'; btnForgot.textContent='Mot de passe oublié ?';
+            btnForgot.onclick = async () => {
+                if(!inputUser.value) return showAlert("Veuillez entrer votre email d'abord", "error");
+                try { await sendPasswordResetEmail(auth, inputUser.value); showAlert("Email de réinitialisation envoyé !", "success"); } catch(e) { showAlert("Erreur: " + e.message, "error"); }
+            };
+
+            card.appendChild(inputUser); card.appendChild(inputPass); card.appendChild(btnLogin); card.appendChild(btnForgot);
+            
             const sep = document.createElement('div'); sep.textContent='— Pas encore de compte ? —'; sep.className='small'; sep.style.margin='16px 0'; card.appendChild(sep);
             const inRegEmail = document.createElement('input'); inRegEmail.placeholder='Nouvel Email'; inRegEmail.className='input';
             const inRegPass = document.createElement('input'); inRegPass.placeholder='Nouveau Mot de passe'; inRegPass.className='input'; inRegPass.type='password';
@@ -437,16 +628,42 @@
             const card = document.createElement('div'); card.className='card center';
             let cloudBadge = state.isGuest ? '<span style="color:orange; font-size:0.8em; margin-bottom:10px">💾 Mode Local (Navigateur)</span>' : '<span style="color:var(--success); font-size:0.8em; margin-bottom:10px">☁️ Sauvegarde Cloud Active</span>';
             const displayName = state.pseudo || '...';
+            
+            // --- NOUVEAU TUTORIEL PÉDAGOGIE INVERSÉE ---
+            const tutorialHTML = `
+                <div style="background: rgba(0, 210, 255, 0.05); border: 1px solid var(--accent); border-radius: 12px; padding: 20px; margin: 20px 0; text-align: left; width: 100%;">
+                    <h3 style="color:var(--accent); font-size: 1.1em; margin-bottom: 10px;">🎓 Mode d'emploi : Défie l'Algorithme</h3>
+                    <p style="font-size: 0.95em; line-height: 1.5; color: #e0e7ff;">
+                        Ici, c'est le monde à l'envers : <strong>C'est toi qui connais le diagnostic, et l'IA qui doit le deviner.</strong>
+                    </p>
+                    <ul style="margin-top: 10px; margin-left: 20px; font-size: 0.9em; color: var(--text-muted);">
+                        <li style="margin-bottom:5px;">🧠 <strong>Étape 1 :</strong> Choisis une pathologie dans ta tête (ex: Appendicite).</li>
+                        <li style="margin-bottom:5px;">🩺 <strong>Étape 2 :</strong> L'IA va te poser des questions sur les signes cliniques.</li>
+                        <li>✅ <strong>Étape 3 :</strong> Réponds correctement (OUI/NON) pour guider l'IA vers ta pathologie.</li>
+                    </ul>
+                    <p style="margin-top: 10px; font-size: 0.85em; font-style: italic; color: var(--accent);">
+                        Si l'IA se trompe, c'est peut-être que tu as oublié un signe clinique important !
+                    </p>
+                </div>
+            `;
+
+            // DASHBOARD CONTENU
             card.innerHTML = `<h2>👋 Bonjour ${displayName}</h2>${cloudBadge}
-                            <div class="stat-box" style="width:100%"><div class="stat-number">${prog.correct + prog.incorrect}</div><div class="stat-label">Cas résolus</div></div>
+                            
+                            ${tutorialHTML}
+
+                            <div class="stat-box" style="width:100%"><div class="stat-number">${prog.correct + prog.incorrect}</div><div class="stat-label">Cas joués</div></div>
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-top:12px;">
-                            <div class="stat-box" style="text-align:center; background:rgba(0, 255, 157, 0.1); border-color:var(--success)"><div class="stat-number" style="color:var(--success);">${prog.correct}</div><div class="stat-label">Corrects</div></div>
-                            <div class="stat-box" style="text-align:center; background:rgba(255, 77, 77, 0.1); border-color:var(--error)"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">Incorrects</div></div>
+                            <div class="stat-box" style="text-align:center; background:rgba(0, 255, 157, 0.1); border-color:var(--success)"><div class="stat-number" style="color:var(--success);">${prog.correct}</div><div class="stat-label">IA a trouvé</div></div>
+                            <div class="stat-box" style="text-align:center; background:rgba(255, 77, 77, 0.1); border-color:var(--error)"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">Échecs</div></div>
                             </div>`;
-            const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.textContent='🩺 Lancer Diagnostic'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; btnDiag.onclick=renderDemographics;
-            const btnGloss = document.createElement('button'); btnGloss.className='link'; btnGloss.textContent='📚 Glossaire'; btnGloss.style.marginTop='12px'; btnGloss.onclick=renderGlossary;
-            const btnProf = document.createElement('button'); btnProf.className='link'; btnProf.textContent='👤 Profil'; btnProf.style.marginTop='6px'; btnProf.onclick=renderProfile;
-            card.appendChild(btnDiag); card.appendChild(btnGloss); card.appendChild(btnProf); app.appendChild(card);
+            
+            const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.textContent='🩺 Lancer le défi'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; btnDiag.onclick=renderDemographics;
+            const btnGloss = document.createElement('button'); btnGloss.className='link'; btnGloss.textContent='📚 Glossaire des pathologies'; btnGloss.style.marginTop='12px'; btnGloss.onclick=renderGlossary;
+            const btnProf = document.createElement('button'); btnProf.className='link'; btnProf.textContent='👤 Mon Profil'; btnProf.style.marginTop='6px'; btnProf.onclick=renderProfile;
+            
+            card.appendChild(btnDiag); card.appendChild(btnGloss); card.appendChild(btnProf); 
+            app.appendChild(card);
         }
 
         function renderProfile() {
@@ -480,7 +697,7 @@
             card.appendChild(btnBack); app.appendChild(card);
         }
 
-        // =================== JEU (DIAGNOSTIC) ===================
+        // =================== GAME (DIAGNOSTIC) ===================
 
         function renderDemographics() {
             const app = q('#app'); app.innerHTML='';
@@ -560,7 +777,6 @@
             return false;
         }
 
-        // --- NOUVELLE FONCTION POUR GERER LE RETOUR ARRIERE ---
         function renderCurrentQuestion() {
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card center';
@@ -573,14 +789,12 @@
             const mkBtn = (txt, cls, val) => {
                 const b = document.createElement('button'); b.className=cls; b.textContent=txt;
                 b.onclick=()=>{ 
-                    // SAUVEGARDE ETAT POUR RETOUR
+                    // SAVE STATE FOR HISTORY
                     state.history.push(JSON.stringify({
                         answers: state.answers,
                         asked: state.asked,
                         currentSign: state.currentSign
                     }));
-                    
-                    // REPONSE
                     state.answers[signe]=val; 
                     askNextQuestion(); 
                 };
@@ -591,13 +805,13 @@
             mkBtn('Je ne sais pas', 'link', null);
             card.appendChild(btnGroup);
 
-            // BOUTONS NAVIGATION
+            // NAV BUTTONS
             const navGroup = document.createElement('div');
             navGroup.style.display = 'flex';
             navGroup.style.gap = '15px';
             navGroup.style.marginTop = '20px';
 
-            // Bouton Retour (si historique existe)
+            // Back Button
             if(state.history.length > 0) {
                 const btnBack = document.createElement('button');
                 btnBack.className='btn-back'; btnBack.textContent='⬅️ Retour';
@@ -667,6 +881,7 @@
                 const btnGroup = document.createElement('div'); btnGroup.className='button-group';
                 const btnTrue = document.createElement('button'); btnTrue.className='btn btn-success'; btnTrue.textContent='✅ Correct';
                 btnTrue.onclick = async () => { 
+                    triggerConfetti();
                     state.progression.correct++;
                     await saveProgression(); 
                     showAlert('Diagnostic validé !','success'); showDiagnosticDetails(top);
@@ -684,32 +899,41 @@
         function showDiagnosticDetails(top) {
             const app = q('#app'); app.innerHTML = '';
             const card = document.createElement('div'); card.className='card';
+            
             const title = document.createElement('h2'); title.innerHTML = `✅ ${top.patho.name}`; card.appendChild(title);
             const desc = document.createElement('div'); desc.className='patho-desc'; desc.textContent = top.patho.short; desc.style.marginBottom='20px'; desc.style.textAlign='center'; card.appendChild(desc);
             
             const pathoSigns = Object.keys(top.patho.signes);
-            const correctSigns = [], missingSigns = [], erroneousSigns = [];
+            const correctSigns = [], missingSigns = [], notAskedSigns = [], erroneousSigns = [];
             
             pathoSigns.forEach(s => {
                 const val = state.answers[s];
-                if(val === true) correctSigns.push(s); else if(val === false) missingSigns.push(s);
+                if(val === true) correctSigns.push(s); 
+                else if(val === false) missingSigns.push(s);
+                else notAskedSigns.push(s);
             });
-            state.allSigns.forEach(s => { if(state.answers[s] === true && !pathoSigns.includes(s)) erroneousSigns.push(s); });
+            state.allSigns.forEach(s => { 
+                if(state.answers[s] === true && !pathoSigns.includes(s)) erroneousSigns.push(s); 
+            });
             
             const resultsDiv = document.createElement('div'); resultsDiv.className='result-list';
             const createList = (title, items, type, typeLabel) => {
                 if(items.length > 0) {
-                    const h = document.createElement('h4'); h.textContent = `${title} (${items.length})`; h.style.marginTop='12px'; h.style.color='white'; resultsDiv.appendChild(h);
+                    const h = document.createElement('h4'); 
+                    h.textContent = `${title} (${items.length})`; 
+                    h.style.marginTop='15px'; h.style.marginBottom='5px'; h.style.color='white'; 
+                    resultsDiv.appendChild(h);
                     items.forEach(s => {
                         const r = document.createElement('div'); r.className='result-item result-'+type;
-                        r.innerHTML = `<div>${formatSigneName(s)}</div><div style="opacity:0.8; font-size:0.9em">${typeLabel}</div>`;
+                        r.innerHTML = `<div>${formatSigneName(s)}</div><div style="opacity:0.7; font-size:0.85em; font-weight:600;">${typeLabel}</div>`;
                         resultsDiv.appendChild(r);
                     });
                 }
             };
-            createList("Signes corrects", correctSigns, "correct", "OK");
-            createList("Signes attendus manquants", missingSigns, "missing", "Manqué");
-            createList("Signes cochés par erreur", erroneousSigns, "error", "Erreur");
+            createList("✅ Signes bien identifiés", correctSigns, "correct", "Validé");
+            createList("❌ Signes manqués (Faux Négatifs)", missingSigns, "missing", "Vous avez dit Non");
+            createList("ℹ️ Autres signes du tableau clinique", notAskedSigns, "neutral", "Non demandé");
+            createList("⚠️ Signes cochés à tort (Faux Positifs)", erroneousSigns, "error", "Erreur");
             card.appendChild(resultsDiv);
             
             const btnGroup = document.createElement('div'); btnGroup.className='button-group';
@@ -717,26 +941,115 @@
             btnGroup.appendChild(btnHome); card.appendChild(btnGroup); app.appendChild(card);
         }
 
+        // =================== GLOSSARY FUNCTION ===================
         function renderGlossary() {
             const app = q('#app'); app.innerHTML='';
-            const titleCard = document.createElement('div'); titleCard.className='card center'; titleCard.innerHTML='<h2>📚 Glossaire Pathologies</h2>'; 
             
+            // 1. Header
+            const titleCard = document.createElement('div'); titleCard.className='card center'; titleCard.innerHTML='<h2>📚 Glossaire</h2>'; 
             const btnBack = document.createElement('button'); btnBack.className='link'; btnBack.textContent='🏠 Retour';
             btnBack.style.marginBottom='20px'; btnBack.onclick=renderHome;
             titleCard.appendChild(btnBack);
             app.appendChild(titleCard);
 
-            const grid = document.createElement('div'); grid.className='glossary-grid';
-            PATHOLOGIES.forEach(p=>{
-                const card = document.createElement('div'); card.className='patho-card clickable';
+            // 2. Search Container
+            const searchContainer = document.createElement('div');
+            searchContainer.className = 'search-container';
+            const searchInput = document.createElement('input');
+            searchInput.className = 'search-input';
+            searchInput.placeholder = '🔍 Rechercher une pathologie (ex: Grippe...)';
+            searchInput.type = 'text';
+            searchContainer.appendChild(searchInput);
+            app.appendChild(searchContainer);
+
+            // 3. Wrapper Structure
+            const wrapper = document.createElement('div'); wrapper.className = 'glossary-wrapper';
+            
+            // --- SIDEBAR ---
+            const sidebar = document.createElement('div'); sidebar.className = 'alphabet-sidebar';
+            const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+            const sortedPathos = [...PATHOLOGIES].sort((a, b) => a.name.localeCompare(b.name));
+            const existingLetters = new Set(sortedPathos.map(p => p.name.charAt(0).toUpperCase()));
+            
+            alphabet.forEach(letter => {
+                const link = document.createElement('a');
+                link.textContent = letter;
+                link.className = 'alpha-link';
+                if (existingLetters.has(letter)) {
+                    link.href = `#letter-${letter}`;
+                    link.onclick = (e) => {
+                        e.preventDefault();
+                        const target = document.getElementById(`letter-${letter}`);
+                        if(target) target.scrollIntoView({behavior: 'smooth', block: 'start'});
+                    };
+                } else { link.classList.add('disabled'); }
+                sidebar.appendChild(link);
+            });
+            wrapper.appendChild(sidebar);
+
+            // --- CONTENT ---
+            const content = document.createElement('div'); content.className = 'glossary-content';
+            
+            function renderGrid(pathos, showHeaders = true) {
+                content.innerHTML = '';
+                if(pathos.length === 0) {
+                    content.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted)">Aucune pathologie trouvée.</div>';
+                    return;
+                }
+
+                if(!showHeaders) {
+                    const grid = document.createElement('div'); grid.className = 'letter-grid';
+                    pathos.forEach(p => {
+                        const card = createPathoCard(p);
+                        grid.appendChild(card);
+                    });
+                    content.appendChild(grid);
+                } else {
+                    alphabet.forEach(letter => {
+                        const letterPathos = pathos.filter(p => p.name.charAt(0).toUpperCase() === letter);
+                        if(letterPathos.length > 0) {
+                            const letterHeader = document.createElement('div');
+                            letterHeader.className = 'letter-header';
+                            letterHeader.id = `letter-${letter}`;
+                            letterHeader.textContent = letter;
+                            content.appendChild(letterHeader);
+                            
+                            const grid = document.createElement('div'); grid.className = 'letter-grid';
+                            letterPathos.forEach(p => { grid.appendChild(createPathoCard(p)); });
+                            content.appendChild(grid);
+                        }
+                    });
+                }
+            }
+
+            function createPathoCard(p) {
+                const card = document.createElement('div'); card.className='patho-card';
                 card.innerHTML=`<div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>`;
                 card.onclick=()=>{ 
                     if(p.pdf && p.pdf !== '#') window.open(p.pdf,'_blank'); 
                     else showAlert('Fiche PDF non disponible','error'); 
                 };
-                grid.appendChild(card);
+                return card;
+            }
+
+            // Initial Render
+            renderGrid(sortedPathos, true);
+
+            // Search Logic
+            searchInput.addEventListener('input', (e) => {
+                const term = e.target.value.toLowerCase();
+                if(term.length > 0) {
+                    sidebar.style.display = 'none'; // Hide A-Z on search
+                    const filtered = sortedPathos.filter(p => p.name.toLowerCase().includes(term));
+                    renderGrid(filtered, false); // Flat grid without headers
+                } else {
+                    sidebar.style.display = 'flex';
+                    renderGrid(sortedPathos, true);
+                }
             });
-            app.appendChild(grid);
+            
+            wrapper.appendChild(content);
+            app.appendChild(wrapper);
         }
     </script>
 </body>

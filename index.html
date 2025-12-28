@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medicome</title>
+    <title>Medicome - Akinator Edition</title>
     
     <link rel="canonical" href="https://medicome.fr/" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🩺</text></svg>">
@@ -24,6 +24,7 @@
           --success: #00ff9d;
           --error: #ff4d4d;
           --info: #60a5fa;
+          --gold: #ffd700;
         }
 
         /* RESET & BASE */
@@ -55,7 +56,7 @@
 
         .brand { 
             display: flex; align-items: center; gap: 12px; 
-            cursor: pointer; /* Sera géré par JS pour le lien */
+            cursor: pointer; 
         }
         
         .logo-img {
@@ -210,6 +211,29 @@
         .patho-name { font-size:18px; font-weight:700; color:var(--accent); margin-bottom:8px; }
         .patho-desc { font-size:14px; color:rgba(255,255,255,0.7); line-height:1.5; }
 
+        /* MASTERY PROFILE GRID */
+        .mastery-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; width: 100%; margin-top: 20px;
+        }
+        .mastery-item {
+            background: rgba(0,0,0,0.2); border-radius: 10px; padding: 15px; text-align: center;
+            border: 1px solid rgba(255,255,255,0.05); transition: all 0.3s;
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+        }
+        .mastery-item.locked {
+            opacity: 0.5; filter: grayscale(1); border-style: dashed;
+        }
+        .mastery-item.unlocked {
+            border: 1px solid var(--success); background: rgba(0, 255, 157, 0.05);
+        }
+        .mastery-item.master {
+            border: 1px solid var(--gold); background: rgba(255, 215, 0, 0.1);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+        }
+        .mastery-icon { font-size: 24px; }
+        .mastery-name { font-size: 13px; font-weight: 600; color: white; }
+        .mastery-count { font-size: 11px; color: var(--text-muted); }
+
         /* ALERTS & STATS */
         .alert { padding:14px; border-radius:10px; margin:12px 0; font-size:14px; width: 100%; text-align: center; font-weight: 500;}
         .alert-success { background: rgba(0, 255, 157, 0.1); border:1px solid var(--success); color:var(--success); box-shadow: 0 0 15px rgba(0, 255, 157, 0.2); }
@@ -263,6 +287,7 @@
             .alphabet-sidebar { flex-direction: row; flex-wrap: wrap; width: 100%; position: static; justify-content: center; margin-bottom: 20px; max-height: none; }
             .alpha-link { padding: 5px 10px; font-size: 14px; }
             .reviews-container { grid-template-columns: 1fr; }
+            .mastery-grid { grid-template-columns: repeat(3, 1fr); }
         }
     </style>
 </head>
@@ -369,11 +394,16 @@
         let PATHOLOGIES = [];
         const ACCESS_CODES = [ { code: "SuperCode1", pseudo:"Admin" } ];
 
-        // STATE (With History + Streak)
+        // STATE (With History + Streak + Mastery + Confirm Mode)
         let state = {
-            currentUser: null, pseudo: null, progression: { correct: 0, incorrect: 0, streak: 0 },
+            currentUser: null, pseudo: null, 
+            progression: { correct: 0, incorrect: 0, streak: 0, mastery: {} },
             isGuest: false, demo:{}, currentSign:null, answers:{}, asked:[], allSigns:[], ranked: [], diagnosticShown:false, previousDiagnostics:[],
-            history: [] // For going back
+            history: [],
+            // AKINATOR MODE
+            confirmationMode: false,
+            confirmationQueue: [],
+            confirmedPatho: null
         };
 
         async function initApp() {
@@ -428,7 +458,7 @@
                         if (docSnap.exists()) {
                             const data = docSnap.data();
                             if (data.pseudo) state.pseudo = data.pseudo;
-                            state.progression = data.progression || { correct: 0, incorrect: 0, streak: 0 };
+                            state.progression = data.progression || { correct: 0, incorrect: 0, streak: 0, mastery: {} };
                         } else { saveProgression(); }
                         updateHeader(); renderHome();
                     } catch(e) { renderHome(); }
@@ -438,12 +468,13 @@
                     if(!state.isGuest && savedGuest && savedPseudo) {
                         state.isGuest = true; state.pseudo = savedPseudo;
                         state.progression = JSON.parse(savedGuest);
-                        // Ensure streak exists
+                        // Ensure keys exists
                         if(state.progression.streak === undefined) state.progression.streak = 0;
+                        if(!state.progression.mastery) state.progression.mastery = {};
                         updateHeader(); renderHome();
                         setTimeout(() => showAlert(`Bon retour, ${state.pseudo} !`, 'success'), 500);
                     } else {
-                        state.currentUser = null; state.pseudo = null; state.progression = { correct: 0, incorrect: 0, streak: 0 };
+                        state.currentUser = null; state.pseudo = null; state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {} };
                         renderLogin(); updateHeader();
                     }
                 }
@@ -495,7 +526,7 @@
             homeBtn.onclick=renderHome;
             logoutBtn.onclick = () => {
                 localStorage.removeItem('medicome_guest_progression'); localStorage.removeItem('medicome_guest_pseudo');
-                state.isGuest = false; state.pseudo = null; state.currentUser = null; state.progression = { correct: 0, incorrect: 0, streak: 0 }; 
+                state.isGuest = false; state.pseudo = null; state.currentUser = null; state.progression = { correct: 0, incorrect: 0, streak: 0, mastery:{} }; 
                 signOut(auth).then(() => { renderLogin(); updateHeader(); showAlert("Déconnecté", "success"); }).catch(() => { renderLogin(); updateHeader(); });
             };
         }
@@ -641,7 +672,7 @@
                 try {
                     const userCredential = await createUserWithEmailAndPassword(auth, inRegEmail.value, inRegPass.value);
                     const user = userCredential.user; await updateProfile(user, { displayName: inPseudo.value });
-                    await setDoc(doc(db, "users", user.uid), { pseudo: inPseudo.value, email: inRegEmail.value, progression: { correct: 0, incorrect: 0, streak: 0 }, createdAt: new Date() }, { merge: true });
+                    await setDoc(doc(db, "users", user.uid), { pseudo: inPseudo.value, email: inRegEmail.value, progression: { correct: 0, incorrect: 0, streak: 0, mastery: {} }, createdAt: new Date() }, { merge: true });
                     state.pseudo = inPseudo.value; showAlert("Compte créé !", "success"); updateHeader(); renderHome();
                 } catch (error) { showAlert("Erreur création: " + error.message, "error"); }
             };
@@ -652,7 +683,7 @@
             btnCode.onclick = () => {
                 const codeFound = ACCESS_CODES.find(ac => ac.code === inputCode.value);
                 if(codeFound) {
-                    state.isGuest = true; state.pseudo = codeFound.pseudo; state.progression = {correct:0, incorrect:0, streak:0};
+                    state.isGuest = true; state.pseudo = codeFound.pseudo; state.progression = {correct:0, incorrect:0, streak:0, mastery:{}};
                     saveProgression(); updateHeader(); renderHome(); showAlert(`Mode Invité: ${codeFound.pseudo}`, 'success');
                 } else { showAlert('Clé invalide', 'error'); }
             };
@@ -714,19 +745,18 @@
             const total = prog.correct + prog.incorrect;
             const successRate = total > 0 ? Math.round((prog.correct / total) * 100) : 0;
             const card = document.createElement('div'); card.className='card center';
+            card.style.maxWidth = '800px';
+
             const title = document.createElement('h2'); title.textContent=`👤 Profil de ${state.pseudo || 'Utilisateur'}`; card.appendChild(title);
+            
+            // --- Stats Grid ---
             const gridDiv = document.createElement('div');
             gridDiv.style.cssText='display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-top:12px;';
             gridDiv.innerHTML=`<div class="stat-box"><div class="stat-number" style="color:var(--success);">${prog.correct}</div><div class="stat-label">✓ Corrects</div></div>
                                <div class="stat-box"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">✗ Incorrects</div></div>`;
             card.appendChild(gridDiv);
-            const statRate = document.createElement('div');
-            statRate.className='stat-box'; statRate.style.width='100%';
-            statRate.style.cssText='margin-top:12px;background:rgba(0, 255, 157, 0.1);border-color:var(--success);';
-            statRate.innerHTML=`<div class="stat-number" style="color:var(--success);">${successRate}%</div><div class="stat-label">Taux de réussite</div>`;
-            card.appendChild(statRate);
             
-            // Affichage STREAK dans le profil
+            // Streak
             if(prog.streak > 0) {
                  const statStreak = document.createElement('div');
                 statStreak.className='stat-box'; statStreak.style.width='100%';
@@ -735,12 +765,51 @@
                 card.appendChild(statStreak);
             }
 
+            // --- MASTERY SECTION (COLLECTION) ---
+            const masteryTitle = document.createElement('h3'); 
+            masteryTitle.innerHTML = '🏆 Ma Collection Clinique'; 
+            masteryTitle.style.marginTop = '30px';
+            card.appendChild(masteryTitle);
+
+            const masteryGrid = document.createElement('div');
+            masteryGrid.className = 'mastery-grid';
+
+            // Trier les pathologies par ordre alphabétique
+            const sortedPathos = [...PATHOLOGIES].sort((a, b) => a.name.localeCompare(b.name));
+            const masteryData = prog.mastery || {};
+
+            sortedPathos.forEach(p => {
+                const count = masteryData[p.name] || 0;
+                const mItem = document.createElement('div');
+                let statusClass = 'locked';
+                let icon = '🔒';
+                
+                if (count >= 3) {
+                    statusClass = 'master';
+                    icon = '🏆';
+                } else if (count >= 1) {
+                    statusClass = 'unlocked';
+                    icon = '✅';
+                }
+
+                mItem.className = `mastery-item ${statusClass}`;
+                mItem.innerHTML = `
+                    <div class="mastery-icon">${icon}</div>
+                    <div class="mastery-name">${p.name}</div>
+                    <div class="mastery-count">${count} réussite${count > 1 ? 's' : ''}</div>
+                `;
+                masteryGrid.appendChild(mItem);
+            });
+            
+            card.appendChild(masteryGrid);
+
+            // --- Buttons ---
             const btnReset = document.createElement('button');
-            btnReset.className = 'link'; btnReset.style.color = 'var(--error)'; btnReset.style.marginTop = '20px'; btnReset.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+            btnReset.className = 'link'; btnReset.style.color = 'var(--error)'; btnReset.style.marginTop = '30px'; btnReset.style.borderColor = 'rgba(239, 68, 68, 0.3)';
             btnReset.textContent = '🗑️ Réinitialiser Stats';
             btnReset.onclick = async () => {
                 if(confirm("Voulez-vous vraiment effacer toutes vos statistiques ?")) {
-                    state.progression = { correct: 0, incorrect: 0, streak: 0 }; await saveProgression(); updateHeader(); renderProfile(); showAlert("Statistiques remises à zéro", "success");
+                    state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {} }; await saveProgression(); updateHeader(); renderProfile(); showAlert("Statistiques remises à zéro", "success");
                 }
             };
             card.appendChild(btnReset);
@@ -776,6 +845,7 @@
                 atcd_famille: q('#demo-atcd').value === 'oui', tabac: q('#demo-tabac').value === 'oui'
             };
             state.answers={}; state.asked=[]; state.diagnosticShown=false; state.previousDiagnostics=[]; state.history=[];
+            state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
             askNextQuestion();
             };
             const btnCancel = document.createElement('button'); btnCancel.className='link'; btnCancel.textContent='Annuler'; btnCancel.onclick=renderHome;
@@ -845,12 +915,31 @@
             return false;
         }
 
+        // AKINATOR: Prepare confirmation questions for top suspect
+        function prepareConfirmationQuestions(topPatho) {
+            // Find key signs of the top patho that haven't been asked yet
+            // Sort signs by weight (most important first)
+            const pSigns = Object.entries(topPatho.signes)
+                .sort((a, b) => b[1] - a[1]) // High weight first
+                .map(entry => entry[0]);
+                
+            const potential = pSigns.filter(s => !state.asked.includes(s));
+            
+            // Take up to 2 top remaining signs
+            return potential.slice(0, 2);
+        }
+
         function renderCurrentQuestion() {
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card center';
             const signe = state.currentSign;
             
-            card.innerHTML=`<div class="small" style="margin-bottom:12px; color:var(--accent)">QUESTION ${state.asked.length}</div>
+            // Visually different if Akinator confirmation mode
+            const questionTitle = state.confirmationMode ? 
+                `<span style="color:var(--gold)">🤔 Je pense avoir une piste...</span>` : 
+                `QUESTION ${state.asked.length}`;
+
+            card.innerHTML=`<div class="small" style="margin-bottom:12px; color:var(--accent)">${questionTitle}</div>
                             <div class="question-text">Le patient présente-t-il :<br><strong style="font-size:1.2em; color:white;">${formatSigneName(signe)}</strong> ?</div>`;
             const btnGroup = document.createElement('div'); btnGroup.className='button-group';
             
@@ -861,7 +950,10 @@
                     state.history.push(JSON.stringify({
                         answers: state.answers,
                         asked: state.asked,
-                        currentSign: state.currentSign
+                        currentSign: state.currentSign,
+                        confirmationMode: state.confirmationMode,
+                        confirmationQueue: state.confirmationQueue,
+                        confirmedPatho: state.confirmedPatho
                     }));
                     state.answers[signe]=val; 
                     askNextQuestion(); 
@@ -870,7 +962,9 @@
             };
             mkBtn('OUI', 'btn btn-success', true);
             mkBtn('NON', 'btn btn-error', false);
-            mkBtn('Je ne sais pas', 'link', null);
+            // "Je ne sais pas" pas dispo en mode confirmation pour forcer la décision
+            if (!state.confirmationMode) mkBtn('Je ne sais pas', 'link', null);
+            
             card.appendChild(btnGroup);
 
             // NAV BUTTONS
@@ -888,6 +982,9 @@
                     state.answers = prevState.answers;
                     state.asked = prevState.asked;
                     state.currentSign = prevState.currentSign;
+                    state.confirmationMode = prevState.confirmationMode;
+                    state.confirmationQueue = prevState.confirmationQueue;
+                    state.confirmedPatho = prevState.confirmedPatho;
                     renderCurrentQuestion();
                 };
                 navGroup.appendChild(btnBack);
@@ -902,17 +999,42 @@
         }
 
         function askNextQuestion() {
+            // --- LOGIQUE AKINATOR DE CONFIRMATION ---
+            if (state.confirmationMode) {
+                // If the user answered NO to a confirmation question, abort confirmation
+                // We check the LAST answer given.
+                const lastSign = state.asked[state.asked.length - 1];
+                if (state.answers[lastSign] === false) {
+                    // ABORT! Wrong path.
+                    state.confirmationMode = false;
+                    state.confirmationQueue = [];
+                    state.confirmedPatho = null;
+                    showAlert("Ah, fausse piste. Je continue à chercher...", "info");
+                    // Continue to normal flow below
+                } else if (state.confirmationQueue.length > 0) {
+                    // Next confirmation question
+                    const nextC = state.confirmationQueue.shift();
+                    state.currentSign = nextC;
+                    state.asked.push(nextC);
+                    renderCurrentQuestion();
+                    return;
+                } else {
+                    // Queue empty AND no "No" answers -> It's a match!
+                    showDiagnostic();
+                    return;
+                }
+            }
+
+            // --- FLUX NORMAL ---
             prepareSigns();
             const remaining = state.allSigns.filter(s => !state.asked.includes(s));
             if(remaining.length === 0) { showDiagnostic(); return; }
 
             // --- VÉRIFICATION : A-T-ON DÉJÀ UN "OUI" ? ---
-            // On ignore les facteurs de risque, on cherche un symptôme validé
             const hasSymptom = Object.keys(state.answers).some(key => state.answers[key] === true);
 
-            // --- PHASE 1 : CHASSEUR (Tant qu'on a que des NON ou RIEN) ---
+            // --- PHASE 1 : CHASSEUR ---
             if (!hasSymptom) {
-                // On choisit un signe TOTALEMENT AU HASARD
                 const randomSign = remaining[Math.floor(Math.random() * remaining.length)];
                 state.currentSign = randomSign;
                 state.asked.push(randomSign);
@@ -920,9 +1042,32 @@
                 return;
             }
 
-            // --- PHASE 2 : SNIPER (Dès qu'on a un OUI) ---
+            // --- PHASE 2 : SNIPER ---
             rankPathologies(); 
-            if(canShowDiagnostic()){ showDiagnostic(); return; }
+            
+            // Check threshold for "Almost Found"
+            if(canShowDiagnostic()){ 
+                // ENTER CONFIRMATION MODE instead of showing directly
+                const topPatho = state.ranked[0].patho;
+                const confirmQuestions = prepareConfirmationQuestions(topPatho);
+                
+                if (confirmQuestions.length > 0) {
+                    state.confirmationMode = true;
+                    state.confirmedPatho = topPatho;
+                    state.confirmationQueue = confirmQuestions;
+                    
+                    // Launch first confirmation question
+                    const first = state.confirmationQueue.shift();
+                    state.currentSign = first;
+                    state.asked.push(first);
+                    renderCurrentQuestion();
+                    return;
+                } else {
+                    // No more questions to ask for this patho, just show it
+                    showDiagnostic(); 
+                    return; 
+                }
+            }
             
             const signe = getNextSmartSign(state.ranked, remaining);
             state.currentSign = signe; 
@@ -972,8 +1117,15 @@
                     playSound('success'); // SON SUCCES
                     state.progression.correct++;
                     state.progression.streak = (state.progression.streak || 0) + 1; // INCREASE STREAK
-                    updateHeader();
+                    
+                    // --- MISE A JOUR MASTERY (COLLECTION) ---
+                    if(!state.progression.mastery) state.progression.mastery = {};
+                    const pName = top.patho.name;
+                    if(!state.progression.mastery[pName]) state.progression.mastery[pName] = 0;
+                    state.progression.mastery[pName]++;
+                    // ------------------------------------------
 
+                    updateHeader();
                     await saveProgression(); 
                     showAlert('Diagnostic validé !','success'); showDiagnosticDetails(top);
                 };
@@ -987,7 +1139,11 @@
                     updateHeader();
 
                     await saveProgression(); 
-                    showAlert('Aïe... Continuons','error'); state.diagnosticShown=false; setTimeout(()=>askNextQuestion(), 800);
+                    showAlert('Aïe... Continuons','error'); 
+                    // Reset confirm mode if missed
+                    state.confirmationMode = false;
+                    state.diagnosticShown=false; 
+                    setTimeout(()=>askNextQuestion(), 800);
                 };
                 
                 btnGroup.appendChild(btnTrue); btnGroup.appendChild(btnFalse); card.appendChild(btnGroup); app.appendChild(card);

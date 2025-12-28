@@ -463,165 +463,6 @@
             };
         }
 
-        // =================== REVIEWS PAGE ===================
-        function renderReviews() {
-            const app = q('#app'); app.innerHTML='';
-            const card = document.createElement('div'); card.className='card center';
-            card.innerHTML = `<h2>⭐ Avis Utilisateurs</h2><p class="small" style="margin-bottom:20px">Ce qu'ils pensent de Medicome.</p>`;
-
-            const reviewsContainer = document.createElement('div');
-            reviewsContainer.className = 'reviews-container';
-            reviewsContainer.innerHTML = `
-                    <div class="review-card">
-                        <div class="review-header">
-                            <div class="review-avatar">A</div>
-                            <div>
-                                <div class="review-name">Antoine D.</div>
-                                <div class="review-stars">★★★★★</div>
-                            </div>
-                        </div>
-                        <div class="review-text">"Super outil pour réviser mes cas cliniques avant les partiels. Simple et efficace."</div>
-                    </div>
-                    <div class="review-card">
-                        <div class="review-header">
-                            <div class="review-avatar">S</div>
-                            <div>
-                                <div class="review-name">Sarah L.</div>
-                                <div class="review-stars">★★★★☆</div>
-                            </div>
-                        </div>
-                        <div class="review-text">"L'interface est top. J'aimerais juste encore plus de pathologies !"</div>
-                    </div>
-                    <div class="review-card">
-                        <div class="review-header">
-                            <div class="review-avatar">M</div>
-                            <div>
-                                <div class="review-name">Maxime P.</div>
-                                <div class="review-stars">★★★★★</div>
-                            </div>
-                        </div>
-                        <div class="review-text">"Indispensable pour l'externat. Le mode invité est super pratique."</div>
-                    </div>
-                    <div class="review-card">
-                        <div class="review-header">
-                            <div class="review-avatar">L</div>
-                            <div>
-                                <div class="review-name">Léa B.</div>
-                                <div class="review-stars">★★★★★</div>
-                            </div>
-                        </div>
-                        <div class="review-text">"Merci pour cet outil gratuit. Ça m'a sauvé sur la sémio cardio !"</div>
-                    </div>
-            `;
-            card.appendChild(reviewsContainer);
-            
-            const btnBack = document.createElement('button'); btnBack.className='btn'; btnBack.textContent='Retour';
-            btnBack.style.marginTop = '20px';
-            btnBack.onclick = () => { if(state.pseudo) renderHome(); else renderLogin(); };
-            card.appendChild(btnBack);
-
-            app.appendChild(card);
-        }
-
-        // =================== CONTACT FORM ===================
-        function renderContact() {
-            const app = q('#app'); app.innerHTML='';
-            const card = document.createElement('div'); card.className='card center';
-            
-            card.innerHTML = `<h2>✉️ Nous Contacter</h2><p class="small" style="margin-bottom:20px">Une suggestion ? Un bug ? Écrivez-nous.</p>`;
-            
-            const inputName = document.createElement('input'); inputName.className='input'; inputName.placeholder='Votre Nom';
-            if(state.pseudo) inputName.value = state.pseudo;
-            
-            const inputEmail = document.createElement('input'); inputEmail.className='input'; inputEmail.placeholder='Votre Email';
-            if(state.currentUser && state.currentUser.email) inputEmail.value = state.currentUser.email;
-
-            const inputText = document.createElement('textarea'); inputText.className='input'; inputText.placeholder='Votre message...';
-            
-            const btnSend = document.createElement('button'); btnSend.className='btn'; btnSend.textContent='Envoyer le message';
-            btnSend.onclick = async () => {
-                if(!inputText.value || !inputEmail.value) { showAlert("Merci de remplir les champs", "error"); return; }
-                btnSend.textContent = 'Envoi...';
-                btnSend.disabled = true;
-
-                try {
-                    // SAVE TO FIREBASE
-                    await addDoc(collection(db, "messages"), {
-                        name: inputName.value,
-                        email: inputEmail.value,
-                        message: inputText.value,
-                        date: new Date(),
-                        uid: state.currentUser ? state.currentUser.uid : 'guest'
-                    });
-                    showAlert("Message envoyé avec succès !", "success");
-                    setTimeout(() => { if(state.pseudo) renderHome(); else renderLogin(); }, 1500);
-                } catch(e) {
-                    console.error(e);
-                    showAlert("Erreur lors de l'envoi", "error");
-                    btnSend.textContent = 'Envoyer le message';
-                    btnSend.disabled = false;
-                }
-            };
-
-            const btnCancel = document.createElement('button'); btnCancel.className='link'; btnCancel.textContent='Annuler';
-            btnCancel.onclick = () => { if(state.pseudo) renderHome(); else renderLogin(); };
-
-            card.appendChild(inputName);
-            card.appendChild(inputEmail);
-            card.appendChild(inputText);
-            card.appendChild(btnSend);
-            card.appendChild(btnCancel);
-            app.appendChild(card);
-        }
-
-        function renderLogin() {
-            const app = q('#app'); app.innerHTML='';
-            const card = document.createElement('div'); card.className='card center'; card.innerHTML='<h2>☁️ Connexion Cloud</h2>';
-            const inputUser = document.createElement('input'); inputUser.placeholder='Email'; inputUser.className='input';
-            const inputPass = document.createElement('input'); inputPass.placeholder='Mot de passe'; inputPass.className='input'; inputPass.type='password';
-            
-            const btnLogin = document.createElement('button'); btnLogin.className='btn'; btnLogin.textContent='Se connecter';
-            btnLogin.onclick = async () => {
-                try { await signInWithEmailAndPassword(auth, inputUser.value, inputPass.value); showAlert("Connexion réussie !", "success"); } catch (error) { showAlert("Erreur: " + error.message, "error"); }
-            };
-            
-            const btnForgot = document.createElement('div'); 
-            btnForgot.className='small link'; btnForgot.style.border='none'; btnForgot.textContent='Mot de passe oublié ?';
-            btnForgot.onclick = async () => {
-                if(!inputUser.value) return showAlert("Veuillez entrer votre email d'abord", "error");
-                try { await sendPasswordResetEmail(auth, inputUser.value); showAlert("Email de réinitialisation envoyé !", "success"); } catch(e) { showAlert("Erreur: " + e.message, "error"); }
-            };
-
-            card.appendChild(inputUser); card.appendChild(inputPass); card.appendChild(btnLogin); card.appendChild(btnForgot);
-            
-            const sep = document.createElement('div'); sep.textContent='— Pas encore de compte ? —'; sep.className='small'; sep.style.margin='16px 0'; card.appendChild(sep);
-            const inRegEmail = document.createElement('input'); inRegEmail.placeholder='Nouvel Email'; inRegEmail.className='input';
-            const inRegPass = document.createElement('input'); inRegPass.placeholder='Nouveau Mot de passe'; inRegPass.className='input'; inRegPass.type='password';
-            const inPseudo = document.createElement('input'); inPseudo.placeholder='Votre Pseudo'; inPseudo.className='input';
-            const btnReg = document.createElement('button'); btnReg.className='link'; btnReg.textContent='Créer un compte Cloud';
-            btnReg.onclick = async () => {
-                if(!inRegEmail.value || !inRegPass.value || !inPseudo.value) return showAlert('Remplissez tout','error');
-                try {
-                    const userCredential = await createUserWithEmailAndPassword(auth, inRegEmail.value, inRegPass.value);
-                    const user = userCredential.user; await updateProfile(user, { displayName: inPseudo.value });
-                    await setDoc(doc(db, "users", user.uid), { pseudo: inPseudo.value, email: inRegEmail.value, progression: { correct: 0, incorrect: 0 }, createdAt: new Date() }, { merge: true });
-                    state.pseudo = inPseudo.value; showAlert("Compte créé !", "success"); updateHeader(); renderHome();
-                } catch (error) { showAlert("Erreur création: " + error.message, "error"); }
-            };
-            card.appendChild(inRegEmail); card.appendChild(inRegPass); card.appendChild(inPseudo); card.appendChild(btnReg);
-            const sepCode = document.createElement('div'); sepCode.textContent='— ou Accès Rapide (Local) —'; sepCode.className='small'; sepCode.style.margin='16px 0'; card.appendChild(sepCode);
-            const inputCode = document.createElement('input'); inputCode.placeholder='Clé d\'accès'; inputCode.className='input';
-            const btnCode = document.createElement('button'); btnCode.className='btn btn-code'; btnCode.textContent='Utiliser une clé';
-            btnCode.onclick = () => {
-                const codeFound = ACCESS_CODES.find(ac => ac.code === inputCode.value);
-                if(codeFound) {
-                    state.isGuest = true; state.pseudo = codeFound.pseudo; state.progression = {correct:0, incorrect:0};
-                    saveProgression(); updateHeader(); renderHome(); showAlert(`Mode Invité: ${codeFound.pseudo}`, 'success');
-                } else { showAlert('Clé invalide', 'error'); }
-            };
-            card.appendChild(inputCode); card.appendChild(btnCode); app.appendChild(card);
-        }
-
         function renderHome() {
             const app = q('#app'); app.innerHTML='';
             const prog = state.progression;
@@ -839,7 +680,16 @@
             const remaining = state.allSigns.filter(s => !state.asked.includes(s));
             if(remaining.length===0){ showDiagnostic(); return; }
             
-            const signe = getNextSmartSign(state.ranked, remaining);
+            // --- MODIFICATION ALÉATOIRE ---
+            let signe;
+            // Pour les 3 premières questions, on choisit au hasard
+            if (state.asked.length < 3) {
+                signe = remaining[Math.floor(Math.random() * remaining.length)];
+            } else {
+                // Ensuite, on utilise le cerveau intelligent
+                signe = getNextSmartSign(state.ranked, remaining);
+            }
+            
             state.currentSign = signe; state.asked.push(signe);
             
             renderCurrentQuestion();

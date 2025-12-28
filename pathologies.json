@@ -1,53 +1,751 @@
 [
-    {"name": "Infarctus du myocarde", "short": "Nécrose ischémique du myocarde (SCA).", "pdf": "fiches/infarctus.pdf", "signes": {"douleur_thoracique": 20, "irradiation_bras_gauche": 15, "sueurs": 10, "nausees_vomissements": 8, "dyspnee": 5}, "facteurs": {"homme": 3, "plus_de_65ans": 5, "tabac": 4, "atcd_famille": 3}},
-    {"name": "Embolie pulmonaire", "short": "Obstruction artérielle pulmonaire.", "pdf": "fiches/embolie.pdf", "signes": {"dyspnee": 20, "douleur_thoracique": 12, "hemoptysie": 10, "signes_phlebite": 15, "tachycardie": 8}, "facteurs": {"tabac": 2, "plus_de_65ans": 4, "femme": 1, "atcd_famille": 3}},
-    {"name": "Pneumopathie Franche", "short": "Infection bactérienne (Pneumocoque).", "pdf": "fiches/pneumopathie.pdf", "signes": {"fievre": 18, "toux": 12, "douleur_thoracique": 10, "crepitants": 15, "dyspnee": 8}, "facteurs": {"plus_de_65ans": 4, "tabac": 3}},
-    {"name": "Insuffisance Cardiaque G.", "short": "Défaillance pompe gauche (OAP).", "pdf": "fiches/oap.pdf", "signes": {"dyspnee": 18, "orthopnee": 18, "crepitants": 15, "toux": 10, "oedemes_mi": 8}, "facteurs": {"plus_de_65ans": 6, "atcd_famille": 2}},
-    {"name": "AVC Ischémique", "short": "Occlusion artérielle cérébrale.", "pdf": "fiches/avc.pdf", "signes": {"hemiplegie": 20, "aphasie": 18, "asymetrie_faciale": 15, "troubles_visuels": 12}, "facteurs": {"plus_de_65ans": 6, "tabac": 3, "homme": 1}},
-    {"name": "Méningite Aiguë", "short": "Infection des méninges.", "pdf": "fiches/meningite.pdf", "signes": {"cephalees": 15, "raideur_nuque": 20, "photophobie": 15, "fievre": 12, "nausees_vomissements": 10}, "facteurs": {"plus_de_30ans": 1}},
-    {"name": "Appendicite Aiguë", "short": "Inflammation appendice.", "pdf": "fiches/appendicite.pdf", "signes": {"douleur_abdominale_fid": 20, "defense_abdominale": 16, "fievre": 8, "nausees_vomissements": 10}, "facteurs": {"homme": 1, "femme": 1}},
-    {"name": "Cholécystite Aiguë", "short": "Infection vésicule biliaire.", "pdf": "fiches/cholecystite.pdf", "signes": {"douleur_abdominale_hcd": 18, "signe_murphy": 20, "fievre": 12, "nausees_vomissements": 8}, "facteurs": {"femme": 3, "plus_de_30ans": 3}},
-    {"name": "Gastro-entérite", "short": "Infection digestive virale.", "pdf": "fiches/gastro.pdf", "signes": {"diarrhee": 20, "nausees_vomissements": 15, "douleur_abdominale": 12, "fievre": 6}, "facteurs": {"plus_de_30ans": 0}},
-    {"name": "Colique Néphrétique", "short": "Calcul urinaire bloqué.", "pdf": "fiches/cn.pdf", "signes": {"douleur_lombaire": 20, "agitation": 15, "nausees_vomissements": 10, "fievre": -10}, "facteurs": {"homme": 2, "plus_de_30ans": 2}},
-    {"name": "Pyélonéphrite Aiguë", "short": "Infection rénale bactérienne.", "pdf": "fiches/pna.pdf", "signes": {"fievre": 18, "douleur_lombaire": 15, "brulures_urines": 12, "frissons": 10}, "facteurs": {"femme": 4}},
-    {"name": "Anémie Ferriprive", "short": "Carence en fer.", "pdf": "fiches/anemie.pdf", "signes": {"fatigue": 15, "paleur": 18, "dyspnee": 10, "tachycardie": 8}, "facteurs": {"femme": 4}},
-    {"name": "Hypothyroïdie", "short": "Déficit hormones thyroïdiennes.", "pdf": "fiches/hypo.pdf", "signes": {"prise_poids": 12, "fatigue": 12, "frilosite": 15, "constipation": 10, "bradycardie": 8}, "facteurs": {"femme": 4, "plus_de_30ans": 3}},
-    {"name": "Dissection Aortique", "short": "Déchirure de l'aorte.", "pdf": "fiches/dissection.pdf", "signes": {"douleur_thoracique": 20, "irradiation_dorsale": 18, "asymetrie_pouls": 18, "syncope": 10}, "facteurs": {"homme": 2, "plus_de_65ans": 3, "atcd_famille": 2}},
-    {"name": "Péricardite Aiguë", "short": "Inflammation du péricarde.", "pdf": "fiches/pericardite.pdf", "signes": {"douleur_thoracique": 15, "soulage_anteflexion": 18, "fievre": 8, "frottement_pericardique": 20}, "facteurs": {"homme": 2}},
-    {"name": "Pneumothorax", "short": "Air dans la plèvre.", "pdf": "fiches/pneumothorax.pdf", "signes": {"douleur_thoracique": 18, "dyspnee": 15, "tympanisme": 15, "silence_auscultatoire": 15}, "facteurs": {"homme": 3, "tabac": 5}},
-    {"name": "Crise d'Asthme", "short": "Bronchospasme sévère.", "pdf": "fiches/asthme.pdf", "signes": {"dyspnee": 18, "sibilants": 18, "toux": 10, "oppression_thoracique": 12}, "facteurs": {"atcd_famille": 3}},
-    {"name": "Occlusion Intestinale", "short": "Arrêt du transit.", "pdf": "fiches/occlusion.pdf", "signes": {"arret_matieres_gaz": 20, "douleur_abdominale": 15, "nausees_vomissements": 12, "meteorisme": 10}, "facteurs": {"plus_de_65ans": 3}},
-    {"name": "Pancreatite Aiguë", "short": "Inflammation du pancréas.", "pdf": "fiches/pancreatite.pdf", "signes": {"douleur_abdominale_transfixiante": 20, "nausees_vomissements": 12, "position_chien_fusil": 10}, "facteurs": {"homme": 2, "plus_de_30ans": 3}},
-    {"name": "Hémorragie Digestive", "short": "Saignement digestif haut.", "pdf": "fiches/hemorragie_haute.pdf", "signes": {"hematemese": 20, "melena": 18, "paleur": 10, "tachycardie": 12}, "facteurs": {"plus_de_65ans": 3, "homme": 1}},
-    {"name": "Grossesse Extra-Utérine", "short": "Implantation hors utérus.", "pdf": "fiches/geu.pdf", "signes": {"douleur_pelvienne": 18, "metrorragies": 16, "retard_regles": 15, "malaise": 10}, "facteurs": {"femme": 10, "tabac": 2}},
-    {"name": "Salpingite Aiguë", "short": "Infection génitale haute.", "pdf": "fiches/salpingite.pdf", "signes": {"douleur_pelvienne": 15, "leucorrhees": 15, "fievre": 10}, "facteurs": {"femme": 10}},
-    {"name": "Torsion du Testicule", "short": "Ischémie testiculaire.", "pdf": "fiches/torsion_testicule.pdf", "signes": {"douleur_bourse": 20, "testicule_ascensionne": 18, "nausees_vomissements": 10, "fievre": -10}, "facteurs": {"homme": 10}},
-    {"name": "Rétention Aiguë Urine", "short": "Globe vésical.", "pdf": "fiches/rau.pdf", "signes": {"impossibilite_uriner": 20, "globe_vesical": 18, "douleur_hypogastrique": 15, "envie_pressante": 12}, "facteurs": {"homme": 5, "plus_de_65ans": 5}},
-    {"name": "Fracture Col Fémur", "short": "Traumatisme hanche sujet âgé.", "pdf": "fiches/col_femur.pdf", "signes": {"impotence_fonctionnelle": 18, "raccourcissement_membre": 15, "rotation_externe": 15, "douleur_aine": 12}, "facteurs": {"plus_de_65ans": 8, "femme": 3}},
-    {"name": "Arthrite Septique", "short": "Infection articulaire.", "pdf": "fiches/arthrite.pdf", "signes": {"douleur_articulaire": 18, "impotence_fonctionnelle": 16, "fievre": 14, "articulation_chaude": 12}, "facteurs": {"plus_de_65ans": 3}},
-    {"name": "Sciatique", "short": "Conflit disco-radiculaire.", "pdf": "fiches/sciatique.pdf", "signes": {"douleur_lombaire": 10, "irradiation_jambe": 18, "impulsivite_toux": 12, "signe_lasegue": 15}, "facteurs": {"plus_de_30ans": 2}},
-    {"name": "Crise de Goutte", "short": "Arthrite microcristalline.", "pdf": "fiches/goutte.pdf", "signes": {"douleur_gros_orteil": 20, "inflammation_locale": 15, "douleur_nocturne": 12}, "facteurs": {"homme": 4, "plus_de_30ans": 4}},
-    {"name": "Hémorragie Méningée", "short": "Rupture anévrisme.", "pdf": "fiches/hemorragie_meningee.pdf", "signes": {"cephalees_brutales": 20, "nausees_vomissements": 12, "photophobie": 10, "troubles_conscience": 8}, "facteurs": {"tabac": 2, "plus_de_30ans": 2}},
-    {"name": "Crise d'Épilepsie", "short": "Décharge neuronale.", "pdf": "fiches/epilepsie.pdf", "signes": {"perte_connaissance": 15, "convulsions": 18, "morsure_langue": 12, "perte_urines": 10}, "facteurs": {"atcd_famille": 2}},
-    {"name": "Bronchiolite", "short": "Infection virale nourrisson.", "pdf": "fiches/bronchiolite.pdf", "signes": {"dyspnee": 15, "sibilants": 15, "toux": 10, "refus_biberon": 12}, "facteurs": {"tabac": 0}},
-    {"name": "Invagination Intestinale", "short": "Urgence chirurgicale nourrisson.", "pdf": "fiches/iia.pdf", "signes": {"douleur_abdominale_paroxystique": 18, "nausees_vomissements": 14, "refus_biberon": 10, "rectorragies": 8}, "facteurs": {"homme": 1}},
-    {"name": "Érysipèle", "short": "Dermohypodermite bactérienne.", "pdf": "fiches/erysipele.pdf", "signes": {"placard_rouge_chaud": 18, "fievre": 15, "bourrelet_peripherique": 12}, "facteurs": {"plus_de_30ans": 2}},
-    {"name": "Zona", "short": "Réactivation VZV.", "pdf": "fiches/zona.pdf", "signes": {"eruption_vesiculeuse": 18, "topographie_metamerique": 20, "douleur_brulure": 15}, "facteurs": {"plus_de_65ans": 4}},
-    {"name": "Paludisme", "short": "Parasitose (Retour voyage).", "pdf": "fiches/paludisme.pdf", "signes": {"fievre": 18, "frissons": 12, "sueurs": 12, "cephalees": 10}, "facteurs": {"plus_de_30ans": 0}},
-    {"name": "Hyperthyroïdie", "short": "Excès hormones thyroïdiennes.", "pdf": "fiches/hyperthyroidie.pdf", "signes": {"perte_poids": 14, "tachycardie": 12, "tremblements": 10, "sueurs": 10}, "facteurs": {"femme": 4}},
-    {"name": "Diabète type 1", "short": "Carence insuline.", "pdf": "fiches/dt1.pdf", "signes": {"polyurie": 15, "polydipsie": 15, "perte_poids": 12, "fatigue": 8}, "facteurs": {"atcd_famille": 2}},
-    {"name": "Attaque de Panique", "short": "Crise d'angoisse.", "pdf": "fiches/panique.pdf", "signes": {"tachycardie": 12, "dyspnee": 12, "peur_mourir": 18, "paresthesies": 10}, "facteurs": {"femme": 2}},
-    {"name": "Dépression", "short": "Épisode Dépressif Majeur.", "pdf": "fiches/depression.pdf", "signes": {"tristesse": 18, "perte_plaisir": 18, "ralentissement": 12, "troubles_sommeil": 10}, "facteurs": {"femme": 2, "atcd_famille": 2}},
-    {"name": "Glaucome Aigu", "short": "Hypertonie oculaire.", "pdf": "fiches/glaucome.pdf", "signes": {"douleur_oculaire": 20, "baisse_vision": 15, "oeil_rouge": 12}, "facteurs": {"femme": 2, "plus_de_65ans": 4}},
-    {"name": "Otite Moyenne", "short": "Infection oreille.", "pdf": "fiches/otite.pdf", "signes": {"douleur_oreille": 18, "fievre": 12, "baisse_audition": 10}, "facteurs": {"tabac": 0}},
-    {"name": "Choc Anaphylactique", "short": "Allergie grave.", "pdf": "fiches/choc_ana.pdf", "signes": {"urticaire": 12, "oedeme_visage": 15, "hypotension": 18, "dyspnee_sifflante": 15}, "facteurs": {"atcd_famille": 1}},
-    {"name": "Migraine", "short": "Céphalée primaire.", "pdf": "fiches/migraine.pdf", "signes": {"cephalees_unilaterales": 15, "pulsatile": 15, "photophobie": 12, "nausees_vomissements": 10}, "facteurs": {"femme": 3}},
-    {"name": "Ischémie Membre", "short": "Arrêt flux sanguin membre.", "pdf": "fiches/ischemie_membre.pdf", "signes": {"douleur_membre_intense": 20, "paleur": 15, "paralysie": 12, "froideur": 10}, "facteurs": {"tabac": 3, "plus_de_65ans": 3}},
-    {"name": "Parkinson", "short": "Maladie neurodégénérative.", "pdf": "fiches/parkinson.pdf", "signes": {"tremblement_repos": 18, "lenteur_mouvements": 18, "rigidite": 15}, "facteurs": {"plus_de_65ans": 5, "homme": 1}},
-    {"name": "Sigmoïdite", "short": "Infection diverticule.", "pdf": "fiches/sigmoidite.pdf", "signes": {"douleur_abdominale_fig": 18, "fievre": 12, "troubles_transit": 10}, "facteurs": {"plus_de_65ans": 4}},
-    {"name": "Purpura Rhumatoïde", "short": "Vascularite enfant.", "pdf": "fiches/purpura_rhum.pdf", "signes": {"purpura": 18, "douleur_articulaire": 12, "douleur_abdominale": 14}, "facteurs": {"homme": 1}},
-    {"name": "Hernie Étranglée", "short": "Coincement intestinal.", "pdf": "fiches/hernie.pdf", "signes": {"boule_aine_douloureuse": 20, "non_reductible": 20, "arret_matieres_gaz": 10}, "facteurs": {"homme": 5}},
-    {"name": "Varicelle", "short": "Primo-infection VZV.", "pdf": "fiches/varicelle.pdf", "signes": {"boutons_vesicules": 18, "prurit": 15, "fievre": 8}, "facteurs": {"plus_de_30ans": 0}},
-    {"name": "Fracture Poignet", "short": "Pouteau-Colles.", "pdf": "fiches/pouteau_colles.pdf", "signes": {"deformation_poignet": 18, "douleur_poignet": 15, "impotence_fonctionnelle": 15}, "facteurs": {"femme": 3, "plus_de_65ans": 5}},
-    {"name": "Guillain-Barré", "short": "Polyradiculonévrite.", "pdf": "fiches/guillain_barre.pdf", "signes": {"paralysie_ascendante": 20, "abolition_reflexes": 20, "paresthesies": 10}, "facteurs": {"plus_de_30ans": 0}}
+    {
+        "name": "Infarctus du myocarde",
+        "short": "SCA ST+ (Nécrose ischémique)",
+        "pdf": "fiches/infarctus.pdf",
+        "signes": {"douleur_thoracique_constrictive": 20, "irradiation_bras_gauche": 15, "irradiation_machoire": 12, "sueurs": 10, "nausees_vomissements": 8, "angoisse_mort_imminente": 10, "dyspnee": 6, "paleur": 8},
+        "facteurs": {"homme": 3, "plus_de_65ans": 5, "tabac": 4, "atcd_famille": 3, "diabete": 4}
+    },
+    {
+        "name": "Embolie pulmonaire",
+        "short": "Obstruction artère pulmonaire",
+        "pdf": "fiches/embolie.pdf",
+        "signes": {"dyspnee_aigue_soudaine": 20, "douleur_basithoracique": 12, "hemoptysie": 10, "signes_phlebite": 15, "tachycardie": 12, "angoisse": 8, "fievre_moderee": 5, "syncope": 10},
+        "facteurs": {"tabac": 2, "plus_de_65ans": 4, "femme": 2, "cancer": 5, "chirurgie_recente": 5}
+    },
+    {
+        "name": "Pneumopathie Franche",
+        "short": "Infection pulmonaire à Pneumocoque",
+        "pdf": "fiches/pneumopathie.pdf",
+        "signes": {"fievre_elevee_brutale": 18, "frissons_intenses": 12, "toux_productive": 10, "douleur_thoracique": 10, "crepitants_foyer": 15, "dyspnee": 8, "expectorations_rouillees": 14, "alteration_etat_general": 8},
+        "facteurs": {"plus_de_65ans": 4, "tabac": 3, "immunodepression": 4}
+    },
+    {
+        "name": "OAP (Insuffisance Cardiaque)",
+        "short": "Oedème Aigu du Poumon",
+        "pdf": "fiches/oap.pdf",
+        "signes": {"dyspnee_effort": 14, "orthopnee": 18, "crepitants_bilateraux": 15, "toux_nocturne": 10, "expectorations_mousseuses": 12, "sueurs": 8, "tachycardie": 8, "cyanose": 6},
+        "facteurs": {"plus_de_65ans": 6, "atcd_famille": 2, "hta": 5}
+    },
+    {
+        "name": "AVC Ischémique",
+        "short": "Infarctus cérébral",
+        "pdf": "fiches/avc.pdf",
+        "signes": {"hemiplegie_brutale": 20, "aphasie": 18, "asymetrie_faciale": 15, "troubles_visuels": 12, "troubles_sensitifs": 10, "perte_equilibre": 10, "cephalees": 5, "confusion": 8},
+        "facteurs": {"plus_de_65ans": 6, "tabac": 3, "homme": 1, "hta": 5, "fibrillation_atriale": 5}
+    },
+    {
+        "name": "Méningite Aiguë",
+        "short": "Infection des méninges",
+        "pdf": "fiches/meningite.pdf",
+        "signes": {"cephalees_intenses": 15, "raideur_nuque": 20, "photophobie": 15, "fievre_elevee": 12, "nausees_vomissements_jet": 12, "phonophobie": 10, "constipation": 5, "purpura": 15},
+        "facteurs": {"plus_de_30ans": 1, "entourage_malade": 3}
+    },
+    {
+        "name": "Appendicite Aiguë",
+        "short": "Inflammation appendice",
+        "pdf": "fiches/appendicite.pdf",
+        "signes": {"douleur_abdominale_fid": 20, "defense_abdominale": 16, "fievre_moderee": 8, "nausees_vomissements": 10, "anorexie_perte_appetit": 10, "langue_saburrale": 6, "douleur_migration_periombilicale": 12, "constipation": 5},
+        "facteurs": {"homme": 1, "femme": 1, "jeune": 5}
+    },
+    {
+        "name": "Cholécystite Aiguë",
+        "short": "Infection vésicule biliaire",
+        "pdf": "fiches/cholecystite.pdf",
+        "signes": {"douleur_abdominale_hcd": 18, "signe_murphy": 20, "fievre": 12, "nausees_vomissements": 8, "ictere": -10, "defense_hcd": 12, "inhibition_respiratoire": 10, "anorexie": 6},
+        "facteurs": {"femme": 3, "plus_de_30ans": 3, "surpoids": 4}
+    },
+    {
+        "name": "Gastro-entérite",
+        "short": "Infection digestive virale",
+        "pdf": "fiches/gastro.pdf",
+        "signes": {"diarrhee_aqueuse": 20, "nausees_vomissements": 15, "douleur_abdominale_diffuse": 12, "fievre_moderee": 6, "asthenie": 8, "myalgies": 6, "cephalees": 5, "crampes_abdominales": 10},
+        "facteurs": {"plus_de_30ans": 0, "collectivite": 5}
+    },
+    {
+        "name": "Colique Néphrétique",
+        "short": "Calcul urinaire bloqué",
+        "pdf": "fiches/cn.pdf",
+        "signes": {"douleur_lombaire_brutale": 20, "irradiation_oge": 15, "agitation_anxiete": 15, "nausees_vomissements": 10, "fievre": -10, "hematurie": 8, "pollakiurie": 6, "absence_position_antalgique": 14},
+        "facteurs": {"homme": 2, "plus_de_30ans": 2, "faible_hydratation": 4}
+    },
+    {
+        "name": "Pyélonéphrite Aiguë",
+        "short": "Infection rénale haute",
+        "pdf": "fiches/pna.pdf",
+        "signes": {"fievre_elevee": 18, "douleur_lombaire_unilaterale": 15, "brulures_urines": 12, "frissons": 10, "nausees": 6, "pollakiurie": 8, "urines_troubles": 8, "asthenie": 8},
+        "facteurs": {"femme": 4, "grossesse": 5}
+    },
+    {
+        "name": "Anémie Ferriprive",
+        "short": "Carence en fer",
+        "pdf": "fiches/anemie.pdf",
+        "signes": {"fatigue_chronique": 15, "paleur_cutaneo_muqueuse": 18, "dyspnee_effort": 10, "tachycardie": 8, "cheveux_cassants": 8, "vertiges": 6, "cephalees": 5, "souffle_cardiaque_fonctionnel": 6},
+        "facteurs": {"femme": 4, "regles_abondantes": 5}
+    },
+    {
+        "name": "Hypothyroïdie",
+        "short": "Déficit hormones thyroïdiennes",
+        "pdf": "fiches/hypo.pdf",
+        "signes": {"prise_poids": 12, "fatigue": 12, "frilosite": 15, "constipation": 10, "bradycardie": 8, "visage_bouffi": 10, "peau_seche": 8, "depilation_queue_sourcils": 6},
+        "facteurs": {"femme": 4, "plus_de_30ans": 3, "auto_immun": 3}
+    },
+    {
+        "name": "Dissection Aortique",
+        "short": "Déchirure de l'aorte (Urgence)",
+        "pdf": "fiches/dissection.pdf",
+        "signes": {"douleur_thoracique_dechirante": 20, "irradiation_dorsale": 18, "asymetrie_pouls": 18, "syncope": 10, "asymetrie_tensionnelle": 15, "angoisse": 8, "sueurs": 6, "dyspnee": 5},
+        "facteurs": {"homme": 2, "plus_de_65ans": 3, "hta": 5, "marfan": 5}
+    },
+    {
+        "name": "Péricardite Aiguë",
+        "short": "Inflammation du péricarde",
+        "pdf": "fiches/pericardite.pdf",
+        "signes": {"douleur_thoracique": 15, "soulage_anteflexion": 18, "fievre_moderee": 8, "frottement_pericardique": 20, "toux_seche": 6, "dyspnee": 5, "douleur_inspiration_profonde": 10, "syndrome_grippal_recent": 8},
+        "facteurs": {"homme": 2, "jeune": 3}
+    },
+    {
+        "name": "Pneumothorax",
+        "short": "Air dans la plèvre",
+        "pdf": "fiches/pneumothorax.pdf",
+        "signes": {"douleur_thoracique_brutale": 18, "dyspnee": 15, "tympanisme": 15, "silence_auscultatoire": 15, "toux_seche": 8, "diminution_murmure_vesiculaire": 12, "angoisse": 6, "abolition_vibrations_vocales": 12},
+        "facteurs": {"homme": 3, "tabac": 5, "grand_mince": 4}
+    },
+    {
+        "name": "Crise d'Asthme",
+        "short": "Bronchospasme sévère",
+        "pdf": "fiches/asthme.pdf",
+        "signes": {"dyspnee_expiratoire": 18, "sibilants": 18, "toux_seche": 10, "oppression_thoracique": 12, "freinage_expiratoire": 12, "angoisse": 8, "tachycardie": 6, "orthopnee": 8},
+        "facteurs": {"atcd_famille": 3, "allergies": 5}
+    },
+    {
+        "name": "Occlusion Intestinale",
+        "short": "Arrêt du transit",
+        "pdf": "fiches/occlusion.pdf",
+        "signes": {"arret_matieres_gaz": 20, "douleur_abdominale": 15, "nausees_vomissements": 12, "meteorisme": 10, "bruits_hydroaeriques_metalliques": 8, "deshydratation": 6, "cicatrice_abdominale": 10, "fievre": -5},
+        "facteurs": {"plus_de_65ans": 3, "chirurgie_abdominale": 5}
+    },
+    {
+        "name": "Pancreatite Aiguë",
+        "short": "Inflammation du pancréas",
+        "pdf": "fiches/pancreatite.pdf",
+        "signes": {"douleur_abdominale_transfixiante": 20, "nausees_vomissements": 12, "position_chien_fusil": 10, "defense_epigastrique": 8, "fievre_moderee": 5, "arret_transit": 6, "meteorisme": 5, "ictere": 4},
+        "facteurs": {"homme": 2, "plus_de_30ans": 3, "alcool": 5, "calculs_biliaires": 5}
+    },
+    {
+        "name": "Hémorragie Digestive Haute",
+        "short": "Saignement digestif (Ulcère/Varices)",
+        "pdf": "fiches/hemorragie.pdf",
+        "signes": {"hematemese": 20, "melena": 18, "paleur": 10, "tachycardie": 12, "hypotension": 10, "sueurs_froides": 8, "lipothymie": 8, "douleur_epigastrique": 6},
+        "facteurs": {"plus_de_65ans": 3, "homme": 1, "ains": 4, "alcool": 4}
+    },
+    {
+        "name": "Grossesse Extra-Utérine",
+        "short": "Implantation ectopique",
+        "pdf": "fiches/geu.pdf",
+        "signes": {"douleur_pelvienne_unilaterale": 18, "metrorragies_sepia": 16, "retard_regles": 15, "malaise": 10, "vertiges": 8, "defense_hypogastrique": 8, "scapulalgie": 5, "signes_choc": 6},
+        "facteurs": {"femme": 10, "tabac": 2, "sterilet": 3}
+    },
+    {
+        "name": "Salpingite Aiguë",
+        "short": "Infection génitale haute",
+        "pdf": "fiches/salpingite.pdf",
+        "signes": {"douleur_pelvienne": 15, "leucorrhees_sales": 15, "fievre": 10, "douleur_mobilisation_uterus": 18, "metrorragies": 8, "dyspareunie": 8, "brulures_mictionnelles": 5, "syndrome_inflammatoire": 6},
+        "facteurs": {"femme": 10, "partenaires_multiples": 4}
+    },
+    {
+        "name": "Torsion du Testicule",
+        "short": "Urgence urologique",
+        "pdf": "fiches/torsion.pdf",
+        "signes": {"douleur_bourse_brutale": 20, "testicule_ascensionne": 18, "nausees_vomissements": 10, "fievre": -10, "douleur_abdominale": 6, "bourse_inflammatoire": 8, "abolition_reflexe_cremasterien": 12, "pas_de_signes_urinaires": 8},
+        "facteurs": {"homme": 10, "jeune": 5}
+    },
+    {
+        "name": "Rétention Aiguë d'Urine",
+        "short": "Globe vésical",
+        "pdf": "fiches/rau.pdf",
+        "signes": {"impossibilite_uriner": 20, "globe_vesical": 18, "douleur_hypogastrique": 15, "envie_pressante_uriner": 12, "agitation": 8, "dysurie_prealable": 6, "matite_sus_pubienne": 10, "fievre": -5},
+        "facteurs": {"homme": 5, "plus_de_65ans": 5, "prostate": 5}
+    },
+    {
+        "name": "Fracture Col Fémur",
+        "short": "Traumatisme hanche sujet âgé",
+        "pdf": "fiches/col_femur.pdf",
+        "signes": {"impotence_fonctionnelle": 18, "raccourcissement_membre": 15, "rotation_externe": 15, "douleur_aine": 12, "adduction_membre": 10, "douleur_mobilisation": 10, "hematome": 5, "craquement": 5},
+        "facteurs": {"plus_de_65ans": 8, "femme": 3, "chute": 5}
+    },
+    {
+        "name": "Arthrite Septique",
+        "short": "Infection articulaire",
+        "pdf": "fiches/arthrite.pdf",
+        "signes": {"douleur_articulaire_intense": 18, "impotence_fonctionnelle": 16, "fievre_elevee": 14, "articulation_chaude": 12, "articulation_rouge": 10, "gonflement_articulaire": 12, "frissons": 8, "adenopathie_satellite": 6},
+        "facteurs": {"plus_de_65ans": 3, "porte_entree": 5, "diabete": 3}
+    },
+    {
+        "name": "Sciatique",
+        "short": "Conflit disco-radiculaire",
+        "pdf": "fiches/sciatique.pdf",
+        "signes": {"douleur_lombaire": 10, "irradiation_jambe": 18, "impulsivite_toux": 12, "signe_lasegue": 15, "paresthesies_pied": 8, "abolition_reflexe_achilleen": 8, "raideur_rachidienne": 6, "antalgique_position": 6},
+        "facteurs": {"plus_de_30ans": 2, "effort": 3}
+    },
+    {
+        "name": "Crise de Goutte",
+        "short": "Arthrite microcristalline",
+        "pdf": "fiches/goutte.pdf",
+        "signes": {"douleur_gros_orteil": 20, "inflammation_locale_rouge": 15, "douleur_nocturne_insomniante": 12, "hypersensibilite_contact": 10, "impotence_fonctionnelle": 8, "fievre_moderee": 5, "tophi": 6, "antecedent_crise": 8},
+        "facteurs": {"homme": 4, "plus_de_30ans": 4, "alcool": 3, "surpoids": 3}
+    },
+    {
+        "name": "Hémorragie Méningée",
+        "short": "Rupture anévrisme cérébral",
+        "pdf": "fiches/hsa.pdf",
+        "signes": {"cephalees_brutales_explosives": 20, "nausees_vomissements": 12, "photophobie": 10, "troubles_conscience": 8, "raideur_nuque": 10, "convulsions": 6, "phonophobie": 8, "diplopie": 5},
+        "facteurs": {"tabac": 2, "plus_de_30ans": 2, "hta": 4}
+    },
+    {
+        "name": "Crise d'Épilepsie",
+        "short": "Décharge neuronale généralisée",
+        "pdf": "fiches/epilepsie.pdf",
+        "signes": {"perte_connaissance": 15, "convulsions_tonico_cloniques": 18, "morsure_langue": 12, "perte_urines": 10, "stertor_post_critique": 10, "confusion_post_critique": 10, "amnesie_episode": 8, "courbatures": 6},
+        "facteurs": {"atcd_famille": 2, "sevrage_alcool": 4}
+    },
+    {
+        "name": "Bronchiolite",
+        "short": "Virose respiratoire nourrisson",
+        "pdf": "fiches/bronchiolite.pdf",
+        "signes": {"dyspnee": 15, "sibilants": 15, "toux_seche_quinte": 10, "refus_biberon": 12, "fievre_moderee": 6, "tirage_respiratoire": 10, "rhinite": 8, "battement_ailes_nez": 8},
+        "facteurs": {"tabac_passif": 3, "hiver": 5, "nourrisson": 10}
+    },
+    {
+        "name": "Invagination Intestinale",
+        "short": "Urgence chirurgicale nourrisson",
+        "pdf": "fiches/iia.pdf",
+        "signes": {"douleur_abdominale_paroxystique": 18, "nausees_vomissements": 14, "refus_biberon": 10, "rectorragies_gelée": 8, "acces_hypotonie_paleur": 12, "masse_abdominale": 8, "enfant_calme_entre_crises": 10, "fievre": -5},
+        "facteurs": {"homme": 1, "nourrisson": 10}
+    },
+    {
+        "name": "Érysipèle",
+        "short": "Dermohypodermite bactérienne",
+        "pdf": "fiches/erysipele.pdf",
+        "signes": {"placard_rouge_chaud": 18, "fievre_elevee": 15, "bourrelet_peripherique": 12, "douleur_locale": 10, "adenopathie_satellite": 8, "frissons": 8, "localisation_jambe": 8, "entree_porte": 6},
+        "facteurs": {"plus_de_30ans": 2, "obesite": 3, "diabete": 3}
+    },
+    {
+        "name": "Zona",
+        "short": "Réactivation VZV",
+        "pdf": "fiches/zona.pdf",
+        "signes": {"eruption_vesiculeuse": 18, "topographie_metamerique": 20, "douleur_brulure": 15, "unilateral": 15, "adenopathie": 6, "fievre_moderee": 5, "paresthesies_prealables": 8, "rougeur_locale": 8},
+        "facteurs": {"plus_de_65ans": 4, "stress": 3, "immunodepression": 4}
+    },
+    {
+        "name": "Paludisme",
+        "short": "Parasitose (Retour voyage)",
+        "pdf": "fiches/paludisme.pdf",
+        "signes": {"fievre_elevee": 18, "frissons_intenses": 12, "sueurs_profuses": 12, "cephalees": 10, "myalgies": 8, "troubles_digestifs": 6, "splenomegalie": 6, "ictere": 5},
+        "facteurs": {"plus_de_30ans": 0, "voyage_recent": 10}
+    },
+    {
+        "name": "Hyperthyroïdie",
+        "short": "Maladie de Basedow",
+        "pdf": "fiches/hyperthyroidie.pdf",
+        "signes": {"perte_poids": 14, "tachycardie": 12, "tremblements": 10, "sueurs": 10, "thermophobie": 10, "diarrhee_motrice": 8, "exophtalmie": 12, "nervosite": 8},
+        "facteurs": {"femme": 4, "jeune": 3, "auto_immun": 3}
+    },
+    {
+        "name": "Diabète Type 1",
+        "short": "Découverte inaugurale",
+        "pdf": "fiches/dt1.pdf",
+        "signes": {"polyurie": 15, "polydipsie": 15, "perte_poids": 12, "fatigue": 8, "polyphagie": 8, "haleine_acetonique": 6, "douleur_abdominale": 5, "deshydratation": 6},
+        "facteurs": {"atcd_famille": 2, "jeune": 5}
+    },
+    {
+        "name": "Attaque de Panique",
+        "short": "Crise d'angoisse aiguë",
+        "pdf": "fiches/panique.pdf",
+        "signes": {"tachycardie": 12, "dyspnee": 12, "peur_mourir": 18, "paresthesies": 10, "sueurs": 8, "tremblements": 8, "douleur_thoracique": 6, "sensation_etouffement": 10},
+        "facteurs": {"femme": 2, "stress": 5}
+    },
+    {
+        "name": "Dépression",
+        "short": "Épisode Dépressif Majeur",
+        "pdf": "fiches/depression.pdf",
+        "signes": {"tristesse_humeur": 18, "anhedonie": 18, "ralentissement_psychomoteur": 12, "troubles_sommeil": 10, "perte_appetit": 8, "culpabilite": 8, "idees_noires": 8, "fatigue_matinale": 10},
+        "facteurs": {"femme": 2, "atcd_famille": 2, "isolement": 3}
+    },
+    {
+        "name": "Glaucome Aigu",
+        "short": "Hypertonie oculaire (GAFA)",
+        "pdf": "fiches/glaucome.pdf",
+        "signes": {"douleur_oculaire_intense": 20, "baisse_vision_brutale": 15, "oeil_rouge": 12, "pupille_semi_mydriase": 14, "nausees_vomissements": 10, "oeil_dur": 12, "halos_colores": 8, "cephalees": 8},
+        "facteurs": {"femme": 2, "plus_de_65ans": 4, "hypermetropie": 4}
+    },
+    {
+        "name": "Otite Moyenne Aiguë",
+        "short": "Infection oreille moyenne",
+        "pdf": "fiches/otite.pdf",
+        "signes": {"otalgie": 18, "fievre": 12, "baisse_audition": 10, "tympan_bombe": 15, "otorrhee": 8, "pleurs_enfant": 10, "rhinite_associee": 8, "adenopathie": 5},
+        "facteurs": {"tabac": 0, "enfant": 5, "creche": 3}
+    },
+    {
+        "name": "Choc Anaphylactique",
+        "short": "Allergie grave",
+        "pdf": "fiches/choc_ana.pdf",
+        "signes": {"urticaire_geant": 12, "oedeme_quincke": 15, "hypotension": 18, "dyspnee_sifflante": 15, "tachycardie": 10, "malaise": 10, "douleur_abdominale": 6, "prurit_palmo_plantaire": 8},
+        "facteurs": {"atcd_famille": 1, "allergie_connue": 5}
+    },
+    {
+        "name": "Migraine",
+        "short": "Céphalée primaire",
+        "pdf": "fiches/migraine.pdf",
+        "signes": {"cephalees_unilaterales": 15, "pulsatile": 15, "photophobie": 12, "nausees_vomissements": 10, "phonophobie": 10, "aggravation_effort": 10, "duree_4_72h": 8, "aura_visuelle": 6},
+        "facteurs": {"femme": 3, "stress": 3, "regles": 3}
+    },
+    {
+        "name": "Ischémie Aiguë Membre",
+        "short": "Arrêt flux artériel",
+        "pdf": "fiches/ischemie.pdf",
+        "signes": {"douleur_membre_intense_brutale": 20, "paleur_membre": 15, "paralysie": 12, "froideur_membre": 10, "abolition_pouls": 18, "paresthesies": 10, "marbrures": 8, "veines_plates": 6},
+        "facteurs": {"tabac": 3, "plus_de_65ans": 3, "fibrillation_atriale": 5}
+    },
+    {
+        "name": "Parkinson",
+        "short": "Maladie neurodégénérative",
+        "pdf": "fiches/parkinson.pdf",
+        "signes": {"tremblement_repos": 18, "lenteur_mouvements": 18, "rigidite_roue_dentee": 15, "micrographie": 8, "visage_fige": 8, "pietinement": 10, "perte_balancement_bras": 8, "depression": 5},
+        "facteurs": {"plus_de_65ans": 5, "homme": 1}
+    },
+    {
+        "name": "Sigmoïdite",
+        "short": "Infection diverticule",
+        "pdf": "fiches/sigmoidite.pdf",
+        "signes": {"douleur_abdominale_fig": 18, "fievre": 12, "troubles_transit": 10, "defense_fig": 12, "nausees": 6, "constipation": 8, "meteorisme": 5, "sang_selles": 4},
+        "facteurs": {"plus_de_65ans": 4, "constipation_chronique": 3}
+    },
+    {
+        "name": "Purpura Rhumatoïde",
+        "short": "Vascularite à IgA",
+        "pdf": "fiches/purpura.pdf",
+        "signes": {"purpura_vasculaire": 18, "douleur_articulaire": 12, "douleur_abdominale": 14, "pas_de_fievre": 5, "oedemes": 8, "hematurie": 8, "necrose_cutanee": 4, "arthrites": 10},
+        "facteurs": {"homme": 1, "enfant": 5, "infection_orl": 3}
+    },
+    {
+        "name": "Hernie Inguinale Étranglée",
+        "short": "Étranglement herniaire",
+        "pdf": "fiches/hernie.pdf",
+        "signes": {"boule_aine_douloureuse": 20, "non_reductible": 20, "arret_matieres_gaz": 10, "non_impulsive_toux": 15, "nausees_vomissements": 8, "douleur_brutale": 12, "meteorisme": 6, "fievre": -5},
+        "facteurs": {"homme": 5, "effort": 3}
+    },
+    {
+        "name": "Varicelle",
+        "short": "Primo-infection VZV",
+        "pdf": "fiches/varicelle.pdf",
+        "signes": {"vesicules_ombiliquees": 18, "prurit_intense": 15, "fievre_moderee": 8, "elements_ages_differents": 15, "lesions_cuir_chevelu": 8, "enantheme_buccal": 6, "adenopathie": 5, "fatigue": 5},
+        "facteurs": {"plus_de_30ans": 0, "enfant": 5, "contage": 5}
+    },
+    {
+        "name": "Fracture Pouteau-Colles",
+        "short": "Fracture poignet",
+        "pdf": "fiches/pouteau.pdf",
+        "signes": {"deformation_dos_fourchette": 18, "douleur_poignet": 15, "impotence_fonctionnelle": 15, "oedeme": 10, "ecchymose": 8, "craquement_audible": 6, "main_botte_radiale": 8, "paresthesies_main": 5},
+        "facteurs": {"femme": 3, "plus_de_65ans": 5, "chute_main": 5}
+    },
+    {
+        "name": "Endocardite Infectieuse",
+        "short": "Infection valves cardiaques",
+        "pdf": "fiches/endocardite.pdf",
+        "signes": {"fievre_long_cours": 15, "souffle_cardiaque": 20, "purpura": 10, "splenomegalie": 8, "fatigue": 10, "amaigrissement": 8, "hippocratisme_digital": 5, "arthralgies": 6},
+        "facteurs": {"homme": 2, "plus_de_65ans": 3, "valvulopathie": 5, "soins_dentaires": 4}
+    },
+    {
+        "name": "Fibrillation Atriale",
+        "short": "Trouble du rythme cardiaque",
+        "pdf": "fiches/fa.pdf",
+        "signes": {"palpitations": 18, "dyspnee_effort": 10, "douleur_thoracique": 5, "pouls_irregulier": 20, "fatigue": 8, "vertiges": 6, "angoisse": 5, "syncope": 4},
+        "facteurs": {"plus_de_65ans": 5, "homme": 1, "hta": 3, "alcool": 3}
+    },
+    {
+        "name": "BPCO Exacerbation",
+        "short": "Décompensation respiratoire",
+        "pdf": "fiches/bpco.pdf",
+        "signes": {"dyspnee_majoree": 20, "toux_productive": 15, "cyanose": 10, "sibilants": 10, "expectorations_sales": 12, "tirage": 8, "fievre": 6, "oedemes_mi": 5},
+        "facteurs": {"tabac": 10, "plus_de_65ans": 4, "hiver": 3}
+    },
+    {
+        "name": "Cancer Bronchique",
+        "short": "Tumeur pulmonaire",
+        "pdf": "fiches/kc_poumon.pdf",
+        "signes": {"hemoptysie": 15, "toux_chronique": 10, "perte_poids": 12, "douleur_thoracique": 8, "dyspnee": 8, "hippocratisme_digital": 6, "dysphonie": 5, "fatigue": 10},
+        "facteurs": {"tabac": 10, "plus_de_65ans": 5, "amiante": 5}
+    },
+    {
+        "name": "Tuberculose Pulmonaire",
+        "short": "Infection à BK",
+        "pdf": "fiches/tuberculose.pdf",
+        "signes": {"toux_chronique": 15, "hemoptysie": 10, "fievre_vesperale": 10, "sueurs_nocturnes": 12, "perte_poids": 12, "fatigue": 10, "douleur_thoracique": 5, "dyspnee": 5},
+        "facteurs": {"homme": 1, "precarite": 5, "voyage": 3}
+    },
+    {
+        "name": "Reflux Gastro-Oesophagien",
+        "short": "RGO acide",
+        "pdf": "fiches/rgo.pdf",
+        "signes": {"pyrosis": 20, "regurgitations_acides": 18, "toux_seche_nocturne": 5, "douleur_thoracique": 5, "dysphagie": 4, "douleur_epigastrique": 6, "mauvaise_haleine": 4, "voix_enrouee": 4},
+        "facteurs": {"plus_de_30ans": 2, "surpoids": 4, "alcool": 3, "tabac": 3}
+    },
+    {
+        "name": "Cirrhose Décompensée",
+        "short": "Insuffisance hépatique sévère",
+        "pdf": "fiches/cirrhose.pdf",
+        "signes": {"ascite": 20, "ictere": 15, "angiomes_stellaires": 12, "troubles_conscience": 10, "asterixis": 10, "oedemes_mi": 8, "circulation_collaterale": 8, "erytheme_palmaire": 6},
+        "facteurs": {"homme": 3, "plus_de_30ans": 5, "alcool": 8, "hepatite": 5}
+    },
+    {
+        "name": "Cancer Colorectal",
+        "short": "Tumeur côlon/rectum",
+        "pdf": "fiches/kc_colon.pdf",
+        "signes": {"rectorragies": 15, "alternance_diarrhee_constipation": 15, "douleur_abdominale": 10, "anemie": 10, "perte_poids": 10, "fatigue": 8, "masse_abdominale": 6, "syndrome_occlusif": 5},
+        "facteurs": {"plus_de_65ans": 6, "atcd_famille": 3, "polypes": 5}
+    },
+    {
+        "name": "Maladie de Crohn",
+        "short": "MICI",
+        "pdf": "fiches/crohn.pdf",
+        "signes": {"diarrhee_chronique": 15, "douleur_abdominale": 15, "perte_poids": 10, "fievre": 5, "lesions_anales": 12, "fatigue": 8, "glaire_sang_selles": 8, "aphtes_buccaux": 6},
+        "facteurs": {"tabac": 3, "jeune": 3, "atcd_famille": 3}
+    },
+    {
+        "name": "Rectocolite Hémorragique",
+        "short": "RCH (MICI)",
+        "pdf": "fiches/rch.pdf",
+        "signes": {"diarrhee_glairo_sanglante": 15, "rectorragies": 20, "douleur_abdominale": 10, "fievre": 5, "faux_besoins": 12, "tenesme": 10, "fatigue": 8, "perte_poids": 8},
+        "facteurs": {"homme": 1, "non_fumeur": 3, "jeune": 3}
+    },
+    {
+        "name": "Cancer Prostate",
+        "short": "Adénocarcinome prostatique",
+        "pdf": "fiches/kc_prostate.pdf",
+        "signes": {"dysurie": 15, "hematurie": 10, "douleur_lombaire": 5, "pollakiurie_nocturne": 10, "jet_faible": 8, "retention_urine": 6, "douleur_osseuse": 4, "asymptomatique": 5},
+        "facteurs": {"homme": 10, "plus_de_65ans": 8, "atcd_famille": 4}
+    },
+    {
+        "name": "Tumeur Vessie",
+        "short": "Carcinome urothélial",
+        "pdf": "fiches/kc_vessie.pdf",
+        "signes": {"hematurie_macroscopique": 20, "brulures_urines": 10, "pollakiurie": 10, "douleur_pelvienne": 5, "infections_urinaires_recidivantes": 8, "perte_poids": 5, "fatigue": 5, "urgence_mictionnelle": 6},
+        "facteurs": {"tabac": 8, "homme": 3, "exposition_pro": 4}
+    },
+    {
+        "name": "Insuffisance Rénale Aiguë",
+        "short": "Défaillance rénale brutale",
+        "pdf": "fiches/ira.pdf",
+        "signes": {"anurie_oligurie": 15, "oedemes_mi": 10, "nausees_vomissements": 8, "dyspnee": 5, "confusion": 6, "fatigue": 8, "HTA": 6, "gout_metallique": 4},
+        "facteurs": {"plus_de_65ans": 5, "deshydratation": 5, "medicaments": 4}
+    },
+    {
+        "name": "Syndrome Néphrotique",
+        "short": "Fuite rénale de protéines",
+        "pdf": "fiches/sd_nephrotique.pdf",
+        "signes": {"oedemes_mi_mous_blancs": 20, "prise_poids_rapide": 15, "urines_mousseuses": 10, "ascite": 8, "epanchement_pleural": 6, "fatigue": 8, "baisse_diurese": 5, "paleur": 5},
+        "facteurs": {"homme": 1, "diabete": 3, "lupus": 3}
+    },
+    {
+        "name": "Polyarthrite Rhumatoïde",
+        "short": "Rhumatisme inflammatoire",
+        "pdf": "fiches/pr.pdf",
+        "signes": {"douleur_articulaire_mains": 15, "gonflement_articulaire": 15, "raideur_matinale_>30min": 20, "deformation_mains": 10, "bilateral_symetrique": 12, "fatigue": 8, "nodules_sous_cutanes": 5, "secheresse_oculaire": 4},
+        "facteurs": {"femme": 3, "tabac": 2, "plus_de_30ans": 2}
+    },
+    {
+        "name": "Spondylarthrite",
+        "short": "SPA (Dos inflammatoire)",
+        "pdf": "fiches/spa.pdf",
+        "signes": {"douleur_lombaire_inflammatoire": 15, "raideur_matinale": 15, "fessalgie_bascule": 12, "talalgie": 10, "reveils_nocturnes": 10, "arthrite_peripherique": 6, "doigt_saucisse": 5, "oeil_rouge_uveite": 6},
+        "facteurs": {"homme": 2, "jeune": 4, "atcd_famille": 3}
+    },
+    {
+        "name": "Ostéoporose Fracturaire",
+        "short": "Fragilité osseuse",
+        "pdf": "fiches/osteoporose.pdf",
+        "signes": {"douleur_lombaire": 10, "perte_taille": 15, "cyphose_dorsale": 10, "fracture_poignet": 8, "fracture_col_femur": 8, "douleur_vertebrale_aigue": 12, "pli_cutane_dos": 5, "asymptomatique_avant_fracture": 10},
+        "facteurs": {"femme": 5, "plus_de_65ans": 8, "corticoides": 4, "maigreur": 3}
+    },
+    {
+        "name": "Canal Carpien",
+        "short": "Compression nerf médian",
+        "pdf": "fiches/canal_carpien.pdf",
+        "signes": {"paresthesies_3_premiers_doigts": 20, "douleur_main_nuit": 18, "baisse_force_main": 10, "irradiation_avant_bras": 8, "maladresse_main": 8, "amyotrophie_thenar": 6, "besoin_secouer_main": 12, "trouble_sensibilite": 8},
+        "facteurs": {"femme": 3, "travail_manuel": 4, "grossesse": 3}
+    },
+    {
+        "name": "Sclérose en Plaques",
+        "short": "Maladie démyélinisante",
+        "pdf": "fiches/sep.pdf",
+        "signes": {"troubles_visuels_flou": 15, "paresthesies_membres": 12, "troubles_moteurs": 12, "fatigue_intense": 10, "signe_lhermitte": 10, "troubles_urinaires": 8, "vertiges": 6, "diplopie": 8},
+        "facteurs": {"femme": 3, "jeune": 4, "nord": 2}
+    },
+    {
+        "name": "Maladie d'Alzheimer",
+        "short": "Démence corticale",
+        "pdf": "fiches/alzheimer.pdf",
+        "signes": {"troubles_memoire_recents": 20, "desorientation_temps_espace": 15, "aphasie_manque_mot": 10, "troubles_comportement": 8, "apraxie": 8, "agnosie": 6, "anosognosie": 10, "perte_autonomie": 8},
+        "facteurs": {"plus_de_65ans": 10, "atcd_famille": 3, "femme": 2}
+    },
+    {
+        "name": "Myasthénie",
+        "short": "Faiblesse musculaire auto-immune",
+        "pdf": "fiches/myasthenie.pdf",
+        "signes": {"fatigabilite_musculaire_effort": 20, "ptosis_paupiere": 18, "dysphagie": 15, "diplopie": 12, "voix_nasonnee": 10, "faiblesse_membres": 8, "dyspnee": 6, "mastication_difficile": 8},
+        "facteurs": {"femme": 2, "jeune": 3}
+    },
+    {
+        "name": "Hématome Sous-Dural",
+        "short": "Hémorragie intracrânienne",
+        "pdf": "fiches/hsd.pdf",
+        "signes": {"cephalees": 15, "confusion": 15, "hemiplegie_progressive": 10, "troubles_conscience": 12, "chute_recente": 15, "ralentissement_ideatoire": 8, "troubles_marche": 8, "aphasie": 6},
+        "facteurs": {"plus_de_65ans": 8, "homme": 2, "alcool": 4, "anticoagulants": 5}
+    },
+    {
+        "name": "Diabète Type 2",
+        "short": "Insulino-résistance",
+        "pdf": "fiches/dt2.pdf",
+        "signes": {"polyurie": 10, "polydipsie": 10, "surpoids_abdominal": 15, "fatigue": 8, "troubles_visuels": 5, "infections_recidivantes": 6, "prurit_vulvaire": 5, "asymptomatique": 10},
+        "facteurs": {"plus_de_30ans": 5, "atcd_famille": 4, "sedentarite": 4, "hta": 3}
+    },
+    {
+        "name": "Insuffisance Surrénalienne",
+        "short": "Déficit cortisol (Addison)",
+        "pdf": "fiches/isa.pdf",
+        "signes": {"hypotension_orthostatique": 15, "fatigue_intense": 15, "melanodermie": 12, "douleur_abdominale": 10, "perte_poids": 10, "nausees_vomissements": 8, "gout_sel": 6, "depression": 5},
+        "facteurs": {"femme": 2, "auto_immun": 3, "arret_corticoides": 5}
+    },
+    {
+        "name": "Syndrome de Cushing",
+        "short": "Excès de cortisol",
+        "pdf": "fiches/cushing.pdf",
+        "signes": {"prise_poids_faciale": 18, "amyotrophie_membres": 15, "vergetures_pourpres": 20, "hta": 10, "hirsutisme": 8, "fragilite_cutanee": 10, "troubles_regles": 6, "depression": 5},
+        "facteurs": {"femme": 3, "corticoides": 5}
+    },
+    {
+        "name": "Leucémie Aiguë",
+        "short": "Cancer du sang (LAM/LAL)",
+        "pdf": "fiches/leucemie.pdf",
+        "signes": {"fatigue": 15, "fievre_inexpliquee": 12, "purpura_ecchymoses": 12, "douleur_osseuse": 10, "paleur": 10, "saignements_gencives": 8, "infections_repetition": 8, "adenopathies": 6},
+        "facteurs": {"plus_de_65ans": 2, "exposition_chimique": 3}
+    },
+    {
+        "name": "Lymphome de Hodgkin",
+        "short": "Cancer ganglionnaire",
+        "pdf": "fiches/hodgkin.pdf",
+        "signes": {"adenopathie_cervicale": 20, "fievre_prolongee": 10, "sueurs_nocturnes": 10, "prurit_sine_materia": 12, "perte_poids": 8, "fatigue": 8, "douleur_ganglion_alcool": 6, "toux_seche": 5},
+        "facteurs": {"homme": 1, "jeune": 3}
+    },
+    {
+        "name": "Myélome Multiple",
+        "short": "Cancer plasmocytaire",
+        "pdf": "fiches/myelome.pdf",
+        "signes": {"douleur_osseuse_rachis": 20, "fatigue": 12, "fractures_pathologiques": 15, "paleur": 8, "infections_repetition": 8, "compression_nerveuse": 6, "polydipsie": 5, "confusion": 5},
+        "facteurs": {"plus_de_65ans": 8, "homme": 2}
+    },
+    {
+        "name": "Drépanocytose",
+        "short": "Hémoglobinopathie",
+        "pdf": "fiches/drepanocytose.pdf",
+        "signes": {"douleur_osseuse_crise": 20, "fievre": 10, "paleur": 10, "ictere": 8, "fatigue": 8, "priapisme": 5, "douleur_abdominale": 8, "infections_frequentes": 6},
+        "facteurs": {"atcd_famille": 10, "origine_africaine": 10}
+    },
+    {
+        "name": "Psoriasis",
+        "short": "Dermatose inflammatoire",
+        "pdf": "fiches/psoriasis.pdf",
+        "signes": {"plaques_rouges_squameuses": 20, "prurit": 10, "douleur_articulaire": 8, "lesions_coudes_genoux": 15, "squames_blanches": 12, "ongles_abimes": 6, "cuir_chevelu_atteint": 8, "signe_rosée_sanglante": 5},
+        "facteurs": {"atcd_famille": 3, "stress": 3}
+    },
+    {
+        "name": "Mélanome",
+        "short": "Cancer de la peau",
+        "pdf": "fiches/melanome.pdf",
+        "signes": {"grain_beaute_asymetrique": 20, "saignement_cutane": 10, "prurit_lesion": 5, "bord_irregulier": 15, "couleur_heterogene": 15, "diametre_>6mm": 12, "evolution_rapide": 15, "nodule_noir": 10},
+        "facteurs": {"plus_de_30ans": 2, "soleil": 5, "peau_claire": 4}
+    },
+    {
+        "name": "Carcinome Basocellulaire",
+        "short": "Cancer cutané fréquent",
+        "pdf": "fiches/basocellulaire.pdf",
+        "signes": {"perle_translucide": 20, "ulceration_crouteuse": 15, "saignement_cutane": 10, "telangiectasies": 12, "lesion_visage": 15, "bordure_perlee": 15, "evolution_lente": 8, "indolore": 8},
+        "facteurs": {"plus_de_65ans": 5, "soleil": 5, "peau_claire": 4}
+    },
+    {
+        "name": "Gale",
+        "short": "Parasitose cutanée",
+        "pdf": "fiches/gale.pdf",
+        "signes": {"prurit_nocturne": 20, "sillons_interdigitaux": 18, "nodules_scabieux": 15, "lesions_poignets": 12, "papules_excoriees": 10, "prurit_familial": 15, "lesions_fesses": 8, "vesicules_perlees": 8},
+        "facteurs": {"atcd_famille": 5, "contact": 5}
+    },
+    {
+        "name": "Endométriose",
+        "short": "Gynéco inflammatoire",
+        "pdf": "fiches/endometriose.pdf",
+        "signes": {"dysmenorrhee_intense": 20, "dyspareunie_profonde": 15, "douleur_pelvienne_chronique": 12, "infertilite": 10, "troubles_urinaires_regles": 8, "douleur_defecation": 8, "fatigue_chronique": 6, "lombalgies": 5},
+        "facteurs": {"femme": 10, "jeune": 4}
+    },
+    {
+        "name": "Cancer du Sein",
+        "short": "Tumeur mammaire",
+        "pdf": "fiches/kc_sein.pdf",
+        "signes": {"nodule_sein_dur": 20, "adenopathie_axillaire": 10, "retraction_mamelon": 15, "ecoulement_mamelonnaire": 12, "peau_orange": 10, "rougeur_sein": 6, "douleur_sein": 4, "asymetrie_seins": 8},
+        "facteurs": {"femme": 10, "plus_de_30ans": 5, "atcd_famille": 4, "hormones": 3}
+    },
+    {
+        "name": "Pré-éclampsie",
+        "short": "HTA gravidique",
+        "pdf": "fiches/pre_eclampsie.pdf",
+        "signes": {"hta_>14/9": 20, "oedemes_mi": 15, "cephalees": 10, "phosphenes_visuels": 10, "acouphenes": 8, "douleur_epigastrique_barre": 10, "prise_poids_rapide": 8, "nausees_vomissements": 6},
+        "facteurs": {"femme": 10, "grossesse": 10, "primipare": 3}
+    },
+    {
+        "name": "Fibrome Utérin",
+        "short": "Tumeur bénigne utérus",
+        "pdf": "fiches/fibrome.pdf",
+        "signes": {"menorragies_regles_abondantes": 18, "douleur_pelvienne": 12, "pesanteur_pelvienne": 10, "pollakiurie": 8, "constipation": 6, "augmentation_volume_abdomen": 8, "anemie": 8, "dyspareunie": 5},
+        "facteurs": {"femme": 10, "plus_de_30ans": 5, "noire": 3}
+    },
+    {
+        "name": "Rougeole",
+        "short": "Virose éruptive",
+        "pdf": "fiches/rougeole.pdf",
+        "signes": {"fievre_elevee": 18, "eruption_cutanee_descendante": 15, "catarrhe_oculo_nasal": 15, "signe_koplik": 20, "toux": 10, "yeux_rouges": 12, "fatigue": 8, "photophobie": 6},
+        "facteurs": {"atcd_famille": 5, "enfant": 5, "pas_de_vaccin": 5}
+    },
+    {
+        "name": "Syndrome de Kawasaki",
+        "short": "Vascularite enfant",
+        "pdf": "fiches/kawasaki.pdf",
+        "signes": {"fievre_>5jours": 18, "adenopathie_cervicale": 12, "conjonctivite_bilaterale": 15, "eruption_cutanee": 12, "langue_framboisee": 15, "oedeme_mains_pieds": 12, "desquamation_doigts": 10, "cheilite": 8},
+        "facteurs": {"homme": 1, "enfant": 10, "asiatique": 2}
+    },
+    {
+        "name": "Scarlatine",
+        "short": "Infection à Streptocoque",
+        "pdf": "fiches/scarlatine.pdf",
+        "signes": {"fievre_elevee": 15, "angine_rouge": 15, "eruption_cutanee_graniteuse": 15, "langue_framboisee": 18, "desquamation_doigts": 10, "paleur_peribuccale": 8, "adenopathie": 8, "vomissements": 6},
+        "facteurs": {"atcd_famille": 5, "enfant": 5}
+    },
+    {
+        "name": "Coqueluche",
+        "short": "Infection respiratoire",
+        "pdf": "fiches/coqueluche.pdf",
+        "signes": {"quintes_toux_emetisantes": 20, "chant_du_coq": 18, "apnee_nourrisson": 10, "vomissements_post_toux": 12, "pas_de_fievre": 8, "visage_bouffi_toux": 6, "cyanose_toux": 8, "toux_nocturne": 10},
+        "facteurs": {"atcd_famille": 5, "nourrisson": 5, "pas_de_vaccin": 5}
+    },
+    {
+        "name": "Schizophrénie",
+        "short": "Psychose chronique",
+        "pdf": "fiches/schizophrenie.pdf",
+        "signes": {"delire_paranoide": 18, "hallucinations_auditives": 18, "retrait_social": 15, "desorganisation_comportement": 12, "incurie": 10, "discours_incoherent": 12, "emoussement_affectif": 10, "agitation": 8},
+        "facteurs": {"homme": 1, "jeune": 5, "cannabis": 4}
+    },
+    {
+        "name": "Trouble Bipolaire",
+        "short": "Psychose maniaco-dépressive",
+        "pdf": "fiches/bipolaire.pdf",
+        "signes": {"exaltation_humeur": 18, "tristesse_profonde": 15, "insomnie_sans_fatigue": 12, "logorrhee": 12, "achats_compulsifs": 10, "megalomanie": 10, "hyperactivite": 10, "desinhibition": 8},
+        "facteurs": {"atcd_famille": 5, "jeune": 3}
+    },
+    {
+        "name": "Anorexie Mentale",
+        "short": "TCA",
+        "pdf": "fiches/anorexie.pdf",
+        "signes": {"perte_poids_importante": 20, "amenorree": 15, "dysmorphophobie": 18, "hyperactivite_physique": 10, "restriction_alimentaire": 15, "deni_maigreur": 12, "frilosite": 8, "bradycardie": 6},
+        "facteurs": {"femme": 8, "adolescente": 5, "perfectionnisme": 3}
+    },
+    {
+        "name": "DMLA",
+        "short": "Dégénérescence maculaire",
+        "pdf": "fiches/dmla.pdf",
+        "signes": {"baisse_vision_centrale": 18, "metamorphopsies_lignes_ondulées": 20, "scotome_central": 15, "besoin_plus_lumiere": 8, "difficulté_lecture": 10, "couleurs_fades": 6, "vision_pres_alteree": 8, "eblouissement": 5},
+        "facteurs": {"plus_de_65ans": 10, "tabac": 3, "atcd_famille": 3}
+    },
+    {
+        "name": "Cataracte",
+        "short": "Opacification cristallin",
+        "pdf": "fiches/cataracte.pdf",
+        "signes": {"baisse_vision_progressive": 15, "photophobie_eblouissement": 12, "diplopie_monoculaire": 8, "vision_floue": 10, "changement_frequent_lunettes": 6, "halo_autour_lumieres": 8, "alteration_perception_couleurs": 6, "gene_conduite_nuit": 10},
+        "facteurs": {"plus_de_65ans": 10, "diabete": 3, "corticoides": 3}
+    },
+    {
+        "name": "Décollement de Rétine",
+        "short": "Urgence ophtalmo",
+        "pdf": "fiches/retine.pdf",
+        "signes": {"amputation_champ_visuel": 20, "phosphenes_eclairs": 15, "baisse_vision_brutale": 12, "myodesopsies_mouches": 10, "voile_noir": 15, "indolore": 8, "vision_trouble": 8, "ombre_peripherique": 10},
+        "facteurs": {"plus_de_65ans": 5, "myopie": 5, "chirurgie_cataracte": 4}
+    },
+    {
+        "name": "VPPB",
+        "short": "Vertige positionnel",
+        "pdf": "fiches/vppb.pdf",
+        "signes": {"vertiges_rotatoires_brefs": 20, "nausees_vomissements": 15, "nystagmus": 18, "declenchement_changement_position": 20, "pas_de_surdite": 10, "pas_acouphenes": 10, "instabilite_marche": 8, "anxiete": 5},
+        "facteurs": {"femme": 2, "plus_de_65ans": 3, "traumatisme_cranien": 3}
+    },
+    {
+        "name": "Angine Bactérienne",
+        "short": "Infection amygdales (SGA)",
+        "pdf": "fiches/angine.pdf",
+        "signes": {"mal_gorge_intense": 20, "fievre_elevee": 15, "adenopathie_cervicale": 12, "pas_de_toux": 10, "dysphagie": 12, "amygdales_rouges_blanches": 15, "cephalees": 8, "douleur_abdominale": 6},
+        "facteurs": {"tabac": 0, "enfant": 5, "hiver": 3}
+    },
+    {
+        "name": "Guillain-Barré",
+        "short": "Polyradiculonévrite",
+        "pdf": "fiches/guillain_barre.pdf",
+        "signes": {"paralysie_ascendante_symetrique": 20, "paresthesies_extremites": 10, "abolition_reflexes": 20, "douleurs_musculaires": 8, "troubles_deglutition": 6, "dyspnee": 8, "tachycardie": 5, "deficit_sensitif": 6},
+        "facteurs": {"plus_de_30ans": 0, "infection_virale_recente": 5, "chirurgie": 3}
+    },
+    {
+        "name": "Epistaxis",
+        "short": "Saignement de nez",
+        "pdf": "fiches/epistaxis.pdf",
+        "signes": {"saignement_narine": 20, "ecoulement_gorge": 10, "gout_sang": 8, "anxiete": 5, "crachats_sanglants": 6, "paleur": 5, "tachycardie": 5, "hypotension": 4},
+        "facteurs": {"homme": 1, "hta": 5, "anticoagulants": 5, "grattage": 5}
+    },
+    {
+        "name": "Mononucléose Infectieuse",
+        "short": "Infection EBV",
+        "pdf": "fiches/mni.pdf",
+        "signes": {"fatigue_intense": 18, "angine_pseudomembraneuse": 15, "adenopathies_diffuses": 15, "splenomegalie": 12, "fievre": 10, "oedeme_palpebral": 8, "rash_cutane_amox": 10, "cephalees": 6},
+        "facteurs": {"jeune": 5, "adolescent": 5}
+    },
+    {
+        "name": "Primo-Infection VIH",
+        "short": "Infection rétrovirale",
+        "pdf": "fiches/vih.pdf",
+        "signes": {"fievre": 15, "eruption_cutanee": 12, "pharyngite": 10, "adenopathies": 10, "fatigue": 10, "ulcerations_buccales": 8, "diarrhee": 6, "myalgies": 8},
+        "facteurs": {"rapport_risque": 10, "partenaires_multiples": 5}
+    },
+    {
+        "name": "Maladie de Lyme",
+        "short": "Borréliose",
+        "pdf": "fiches/lyme.pdf",
+        "signes": {"erytheme_migrant": 20, "fatigue": 10, "douleurs_articulaires": 10, "cephalees": 8, "fievre_moderee": 6, "raideur_nuque": 5, "paralysie_faciale": 6, "radiculite": 5},
+        "facteurs": {"piqure_tique": 10, "foret": 5}
+    },
+    {
+        "name": "Tétanos",
+        "short": "Toxine tétanique",
+        "pdf": "fiches/tetanos.pdf",
+        "signes": {"trismus": 20, "contractures_musculaires": 18, "spasmes": 15, "rire_sardonique": 12, "dysphagie": 10, "raideur_nuque": 10, "opisthotonos": 12, "fievre_moderee": 5},
+        "facteurs": {"plaque_souillee": 10, "non_vaccine": 10, "jardinage": 5}
+    },
+    {
+        "name": "Botulisme",
+        "short": "Toxine botulique",
+        "pdf": "fiches/botulisme.pdf",
+        "signes": {"diplopie": 18, "bouche_seche": 15, "paralysie_descendante": 18, "mydriase": 10, "dysphagie": 12, "constipation": 8, "dysphonie": 8, "retention_urine": 6},
+        "facteurs": {"conserve_artisanale": 10, "charcuterie": 5}
+    },
+    {
+        "name": "Intoxication CO",
+        "short": "Monoxyde de carbone",
+        "pdf": "fiches/co.pdf",
+        "signes": {"cephalees": 15, "nausees_vomissements": 15, "vertiges": 12, "coma": 10, "fatigue_soudaine": 10, "troubles_visuels": 8, "paleur": -5, "peau_rose": 5},
+        "facteurs": {"chauffage_defectueux": 10, "hiver": 5, "collectif": 5}
+    }
 ]

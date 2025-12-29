@@ -3,14 +3,14 @@
         "name": "Infarctus du myocarde",
         "short": "SCA ST+ (Nécrose ischémique)",
         "pdf": "fiches/infarctus.pdf",
-        "signes": {"douleur_thoracique": 5, "douleur_thoracique_oppressive": 20, "irradiation_bras_machoire": 18, "sueurs_froides": 10, "nausees_vomissements": 8, "angoisse_mort_imminente": 10, "dyspnee": 6, "paleur": 8},
+        "signes": {"douleur_thoracique": 5, "douleur_thoracique_oppressive": 25, "irradiation_bras_machoire": 20, "sueurs_froides": 10, "nausees_vomissements": 8, "angoisse_mort_imminente": 10, "dyspnee": 6, "paleur": 8, "douleur_effort": 15},
         "facteurs": {"homme": 3, "plus_de_65ans": 5, "tabac": 4, "atcd_famille": 3, "diabete": 4}
     },
     {
         "name": "Embolie pulmonaire",
         "short": "Obstruction artère pulmonaire",
         "pdf": "fiches/embolie.pdf",
-        "signes": {"douleur_thoracique": 5, "dyspnee": 5, "dyspnee_brutale": 20, "douleur_basithoracique": 15, "toux_sanglante": 12, "signes_phlebite_mollet": 15, "tachycardie": 12, "angoisse": 8, "fievre": 5, "malaise_syncope": 10},
+        "signes": {"douleur_thoracique": 5, "dyspnee": 5, "dyspnee_brutale": 20, "douleur_basithoracique": 15, "toux_sanglante": 12, "signes_phlebite_mollet": 18, "tachycardie": 12, "angoisse": 8, "fievre": 5, "malaise_syncope": 10},
         "facteurs": {"tabac": 2, "plus_de_65ans": 4, "femme": 2, "cancer": 5, "chirurgie_recente": 8}
     },
     {
@@ -38,21 +38,21 @@
         "name": "Méningite Aiguë",
         "short": "Infection des méninges",
         "pdf": "fiches/meningite.pdf",
-        "signes": {"cephalees": 5, "anomalie_peau": 5, "cephalees_intenses": 18, "raideur_nuque": 20, "gene_lumiere": 15, "fievre": 15, "vomissements_en_jet": 15, "gene_bruit": 10, "constipation": 5, "purpura": 15},
+        "signes": {"cephalees": 5, "anomalie_peau": 5, "cephalees_intenses": 18, "raideur_nuque": 25, "gene_lumiere": 15, "fievre": 15, "vomissements_en_jet": 15, "gene_bruit": 10, "constipation": 5, "purpura": 15},
         "facteurs": {"plus_de_30ans": 1, "entourage_malade": 3}
     },
     {
         "name": "Appendicite Aiguë",
         "short": "Inflammation appendice",
         "pdf": "fiches/appendicite.pdf",
-        "signes": {"douleur_abdominale": 5, "douleur_fosse_iliaque_droite": 20, "defense_abdominale_droite": 16, "fievre": 8, "nausees_vomissements": 10, "perte_appetit": 10, "langue_blanche": 6, "douleur_migration_ombilic": 12, "constipation": 5},
+        "signes": {"douleur_abdominale": 5, "douleur_fosse_iliaque_droite": 25, "defense_abdominale_droite": 20, "fievre": 8, "nausees_vomissements": 10, "perte_appetit": 10, "langue_blanche": 8, "douleur_migration_ombilic": 15, "constipation": 5},
         "facteurs": {"homme": 1, "femme": 1, "jeune": 5}
     },
     {
         "name": "Cholécystite Aiguë",
         "short": "Infection vésicule biliaire",
         "pdf": "fiches/cholecystite.pdf",
-        "signes": {"douleur_abdominale": 5, "douleur_hypocondre_droit": 18, "arret_respi_inspiration": 20, "fievre": 12, "nausees_vomissements": 8, "ictere_jaunisse": 5, "defense_abdominale": 12, "perte_appetit": 6},
+        "signes": {"douleur_abdominale": 5, "douleur_hypocondre_droit": 20, "arret_respi_inspiration": 20, "fievre": 12, "nausees_vomissements": 8, "ictere_jaunisse": 5, "defense_abdominale": 12, "perte_appetit": 6},
         "facteurs": {"femme": 3, "plus_de_30ans": 3, "surpoids": 4}
     },
     {
@@ -94,7 +94,7 @@
         "name": "Dissection Aortique",
         "short": "Déchirure de l'aorte (Urgence)",
         "pdf": "fiches/dissection.pdf",
-        "signes": {"douleur_thoracique": 5, "douleur_thoracique_dechirante": 20, "irradiation_dos": 18, "asymetrie_pouls": 18, "malaise_syncope": 10, "difference_tension_bras": 15, "angoisse": 8, "sueurs": 6, "dyspnee": 5},
+        "signes": {"douleur_thoracique": 5, "douleur_thoracique_dechirante": 20, "irradiation_dos": 18, "asymetrie_pouls": 20, "malaise_syncope": 10, "difference_tension_bras": 18, "angoisse": 8, "sueurs": 6, "dyspnee": 5},
         "facteurs": {"homme": 2, "plus_de_65ans": 3, "hta": 5, "marfan": 5}
     },
     {
@@ -108,7 +108,7 @@
         "name": "Pneumothorax",
         "short": "Air dans la plèvre",
         "pdf": "fiches/pneumothorax.pdf",
-        "signes": {"douleur_thoracique": 5, "dyspnee": 5, "douleur_thoracique_coté": 18, "dyspnee_brutale": 15, "toux_seche": 10, "angoisse": 6, "diminution_bruits_respiratoires": 12},
+        "signes": {"douleur_thoracique": 5, "dyspnee": 5, "douleur_thoracique_coté": 20, "dyspnee_brutale": 18, "toux_seche": 10, "angoisse": 6, "diminution_bruits_respiratoires": 25, "tympanisme": 15},
         "facteurs": {"homme": 3, "tabac": 5, "grand_mince": 4}
     },
     {
@@ -157,7 +157,7 @@
         "name": "Torsion du Testicule",
         "short": "Urgence urologique",
         "pdf": "fiches/torsion.pdf",
-        "signes": {"genes_urinaires": 5, "douleur_testicule_brutale": 20, "testicule_remonte": 18, "nausees_vomissements": 12, "douleur_abdominale": 6, "bouse_rouge_gonflee": 10, "pas_de_brulures_urinaires": 8},
+        "signes": {"genes_urinaires": 5, "douleur_testicule_brutale": 20, "testicule_remonte": 18, "nausees_vomissements": 12, "douleur_abdominale": 6, "bouse_rouge_gonflee": 10, "urines_indolores": 10},
         "facteurs": {"homme": 10, "jeune": 5}
     },
     {
@@ -241,7 +241,7 @@
         "name": "Paludisme",
         "short": "Parasitose (Retour voyage)",
         "pdf": "fiches/paludisme.pdf",
-        "signes": {"fievre": 20, "frissons_intenses": 15, "sueurs_profuses": 15, "cephalees": 10, "douleurs_musculaires": 10, "troubles_digestifs": 8, "ictere_jaunisse": 5, "voyage_recent": 15},
+        "signes": {"fievre": 20, "frissons_intenses": 15, "sueurs_profuses": 15, "cephalees": 10, "douleurs_musculaires": 10, "troubles_digestifs": 8, "ictere_jaunisse": 5, "voyage_recent": 30},
         "facteurs": {"plus_de_30ans": 0}
     },
     {
@@ -262,7 +262,7 @@
         "name": "Attaque de Panique",
         "short": "Crise d'angoisse aiguë",
         "pdf": "fiches/panique.pdf",
-        "signes": {"trouble_psy": 5, "dyspnee": 5, "tachycardie_palpitations": 15, "gene_respiratoire": 15, "peur_mourir_devenir_fou": 20, "fourmillements": 12, "sueurs": 10, "tremblements": 10, "douleur_thoracique": 8, "sensation_etouffement": 12},
+        "signes": {"trouble_psy": 5, "dyspnee": 5, "tachycardie_palpitations": 15, "gene_respiratoire": 15, "peur_mourir_devenir_fou": 20, "fourmillements": 15, "sueurs": 10, "tremblements": 10, "douleur_thoracique": 8, "sensation_etouffement": 12, "tetanie_contractures": 12},
         "facteurs": {"femme": 2, "stress": 5}
     },
     {
@@ -801,7 +801,7 @@
         "name": "Arthrose",
         "short": "Usure du cartilage",
         "pdf": "fiches/arthrose.pdf",
-        "signes": {"douleur_membre_traumatisme": 5, "douleur_articulaire": 15, "douleur_mouvement": 18, "derouillage_matin_court": 15, "craquements": 10, "pas_de_fievre": 10},
+        "signes": {"douleur_membre_traumatisme": 5, "douleur_articulaire": 15, "douleur_mouvement": 18, "derouillage_matin_court": 15, "craquements": 10, "etat_general_conserve": 10},
         "facteurs": {"plus_de_65ans": 10, "surpoids": 5}
     },
     {
@@ -857,14 +857,14 @@
         "name": "Cystite Aiguë",
         "short": "Infection urinaire basse",
         "pdf": "fiches/cystite.pdf",
-        "signes": {"genes_urinaires": 5, "brulures_urinaires": 20, "envie_frequente_uriner": 18, "urines_troubles_odorantes": 12, "douleur_sus_pubienne": 10, "pas_de_fievre": 15},
+        "signes": {"genes_urinaires": 5, "brulures_urinaires": 20, "envie_frequente_uriner": 18, "urines_troubles_odorantes": 12, "douleur_sus_pubienne": 10, "absence_de_fievre": 15},
         "facteurs": {"femme": 10, "rapports_recents": 5}
     },
     {
         "name": "Kyste Ovarien",
         "short": "Tuméfaction ovarienne",
         "pdf": "fiches/kyste_ovaire.pdf",
-        "signes": {"douleur_pelvienne": 5, "douleur_pelvienne_unilaterale": 18, "pesanteur_bas_ventre": 15, "troubles_regles": 10, "pas_de_fievre": 10},
+        "signes": {"douleur_pelvienne": 5, "douleur_pelvienne_unilaterale": 18, "pesanteur_bas_ventre": 15, "troubles_regles": 10, "absence_de_fievre": 10},
         "facteurs": {"femme": 10, "jeune": 5}
     },
     {
@@ -906,7 +906,7 @@
         "name": "Lithiase Biliaire",
         "short": "Colique hépatique",
         "pdf": "fiches/lithiase.pdf",
-        "signes": {"douleur_abdominale": 5, "douleur_hypocondre_droit": 20, "irradiation_epaule_droite": 15, "arret_respi_inspiration": 15, "pas_de_fievre": 12, "nausees": 10},
+        "signes": {"douleur_abdominale": 5, "douleur_hypocondre_droit": 20, "irradiation_epaule_droite": 15, "arret_respi_inspiration": 15, "absence_de_fievre": 12, "nausees": 10},
         "facteurs": {"femme": 5, "surpoids": 5, "plus_de_30ans": 5}
     },
     {
@@ -1011,14 +1011,14 @@
         "name": "Impétigo",
         "short": "Infection cutanée",
         "pdf": "fiches/impetigo.pdf",
-        "signes": {"anomalie_peau": 5, "croutes_jaunes_miel": 20, "autour_bouche_nez": 18, "bulles_peau": 12, "pas_de_fievre": 10, "grattage": 10},
+        "signes": {"anomalie_peau": 5, "croutes_jaunes_miel": 20, "autour_bouche_nez": 18, "bulles_peau": 12, "absence_de_fievre": 10, "grattage": 10},
         "facteurs": {"enfant": 10, "ete": 3}
     },
     {
         "name": "Conjonctivite",
         "short": "Inflammation oeil",
         "pdf": "fiches/conjonctivite.pdf",
-        "signes": {"troubles_visuels": 5, "oeil_rouge": 15, "ecoulement_purulent": 18, "paupieres_collees_matin": 18, "sensation_sable": 12, "pas_baisse_vision": 15},
+        "signes": {"troubles_visuels": 5, "oeil_rouge": 15, "ecoulement_purulent": 18, "paupieres_collees_matin": 18, "sensation_sable": 12, "vision_conservee": 15},
         "facteurs": {"allergie": 5, "rhume": 5, "contage": 5}
     },
     {

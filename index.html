@@ -575,13 +575,6 @@
             const reviewsContainer = document.createElement('div');
             reviewsContainer.className = 'reviews-container';
             
-            // Avis statiques (Toujours visibles)
-            reviewsContainer.innerHTML = `
-                <div class="review-card">
-                    <div class="review-header"><div class="review-avatar">A</div><div><div class="review-name">Antoine D.</div><div class="review-stars">★★★★★</div></div></div>
-                    <div class="review-text">"Super outil pour réviser mes cas cliniques avant les partiels. Simple et efficace."</div>
-                </div>
-            `;
 
             // Charger avis Firebase (SEULEMENT CEUX VALIDÉS : approved == true)
             try {

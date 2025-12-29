@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
   <url>
     <loc>https://medicome.fr/</loc>
     <lastmod>2025-01-01</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
 
@@ -16,4 +18,145 @@
   <url><loc>https://medicome.fr/fiches/cholecystite.pdf</loc><priority>0.8</priority></url>
   <url><loc>https://medicome.fr/fiches/gastro.pdf</loc><priority>0.8</priority></url>
   <url><loc>https://medicome.fr/fiches/cn.pdf</loc><priority>0.8</priority></url>
-  </urlset>
+  <url><loc>https://medicome.fr/fiches/pna.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/anemie.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/hypo.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/dissection.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/pericardite.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/pneumothorax.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/asthme.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/occlusion.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/pancreatite.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/hemorragie.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/geu.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/salpingite.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/torsion.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/rau.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/col_femur.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/arthrite.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/sciatique.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/goutte.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/hsa.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/epilepsie.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/bronchiolite.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/iia.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/erysipele.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/zona.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/paludisme.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/hyperthyroidie.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/dt1.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/panique.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/depression.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/glaucome.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/otite.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/choc_ana.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/migraine.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/ischemie.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/parkinson.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/sigmoidite.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/purpura.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/hernie.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/varicelle.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/pouteau.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/endocardite.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/fa.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/bpco.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/kc_poumon.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/tuberculose.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/rgo.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/cirrhose.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/kc_colon.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/crohn.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/rch.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/kc_prostate.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/kc_vessie.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/ira.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/sd_nephrotique.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/pr.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/spa.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/osteoporose.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/canal_carpien.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/sep.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/alzheimer.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/myasthenie.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/hsd.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/dt2.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/isa.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/cushing.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/leucemie.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/hodgkin.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/myelome.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/drepanocytose.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/psoriasis.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/melanome.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/basocellulaire.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/gale.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/endometriose.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/kc_sein.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/pre_eclampsie.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/fibrome.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/rougeole.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/kawasaki.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/scarlatine.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/coqueluche.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/schizophrenie.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/bipolaire.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/anorexie.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/dmla.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/cataracte.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/retine.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/vppb.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/angine.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/guillain_barre.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/epistaxis.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/mni.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/vih.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/lyme.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/tetanos.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/botulisme.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/co.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/aaa.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/choc_septique.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/hypoglycemie.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/hed.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/ischemie_mesenterique.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/lumbago.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/entorse.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/arthrose.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/lupus.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/hernie_discale.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/grippe.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/sinusite.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/laryngite.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/apnee.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/pleuresie.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/cystite.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/kyste_ovaire.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/mycose.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/kc_testicule.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/irc.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/ulcere.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/hepatite.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/lithiase.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/hernie_hiatale.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/peritonite.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/hyperparathyroidie.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/sopk.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/diabete_insipide.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/acromegalie.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/hemophilie.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/biermer.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/syphilis.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/oreillons.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/rubeole.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/stenose_pylore.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/convulsions_febriles.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/muguet.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/impetigo.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/conjonctivite.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/orgelet.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/acne.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/eczema.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/urticaire.pdf</loc><priority>0.8</priority></url>
+
+</urlset>

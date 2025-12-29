@@ -5,12 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google-site-verification" content="8SyBOdC5YhaXDqfNYGfzP1EZbb0iQWABpkImmZHXG30" />
     <title>Medicome - Entraînement Clinique</title>
-    
     <meta name="description" content="Simulateur de cas cliniques interactif pour étudiants en médecine.">
     <meta property="og:title" content="Medicome">
     <meta property="og:type" content="website">
     <link rel="icon" href="favicon.png">
-
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
@@ -912,8 +910,12 @@
 
         function prepareConfirmationQuestions(topPatho) {
             const pSigns = Object.entries(topPatho.signes).sort((a, b) => b[1] - a[1]).map(entry => entry[0]);
+            
+            // FILTRER : On ne garde que les signes NON POSÉS
             const potential = pSigns.filter(s => !state.asked.includes(s));
-            return potential.slice(0, 2);
+            
+            // NOUVELLE LOGIQUE : On retourne TOUT le reste des questions pour la checklist complète
+            return potential;
         }
 
         function renderCurrentQuestion() {
@@ -991,13 +993,21 @@
 
             if (state.confirmationMode) {
                 const lastSign = state.asked[state.asked.length - 1];
+                
+                // SI REPONSE NON PENDANT CONFIRMATION -> ECHEC PISTE -> RETOUR MODE NORMAL
                 if (state.answers[lastSign] === false) {
                     state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
                     showAlert("Ah, fausse piste. Je continue à chercher...", "info");
-                } else if (state.confirmationQueue.length > 0) {
+                    askNextQuestion(); // On relance la boucle normale
+                    return;
+                } 
+                else if (state.confirmationQueue.length > 0) {
                     const nextC = state.confirmationQueue.shift();
                     state.currentSign = nextC; state.asked.push(nextC); renderCurrentQuestion(); return;
-                } else { showDiagnostic(); return; }
+                } else { 
+                    // PLUS DE QUESTIONS -> DIAGNOSTIC FINAL
+                    showDiagnostic(); return; 
+                }
             }
 
             prepareSigns();
@@ -1156,11 +1166,9 @@
                 };
                 
                 if(wasManualError) {
-                    // En cas d'erreur, on montre ce qu'on a raté
                     createList("❌ Signes manqués (Faux Négatifs)", missingSigns, "missing", "Vous avez dit Non");
                     createList("ℹ️ Autres signes du tableau clinique", notAskedSigns, "neutral", "Non demandé");
                 } else {
-                    // En cas de réussite, on montre aussi les erreurs
                     createList("✅ Signes bien identifiés", correctSigns, "correct", "Validé");
                     if(missingSigns.length > 0) {
                         createList("⚠️ Attention : Signes manqués", missingSigns, "missing", "Vous avez dit Non (Erreur)");

@@ -546,15 +546,6 @@
             const card = document.createElement('div'); card.className='card center';
             card.innerHTML = `<h2>⭐ Avis Utilisateurs</h2><p class="small" style="margin-bottom:20px">Ce qu'ils pensent de Medicome.</p>`;
 
-            // Bouton Admin (Visible seulement si pseudo est Admin)
-            if(state.pseudo === 'Admin') {
-                const btnMod = document.createElement('button'); 
-                btnMod.className = 'btn btn-error'; 
-                btnMod.textContent = '👮 Gérer la Modération';
-                btnMod.style.marginBottom = '20px';
-                btnMod.onclick = renderModeration;
-                card.appendChild(btnMod);
-            }
 
             const formDiv = document.createElement('div');
             formDiv.style.background = 'rgba(255,255,255,0.05)'; formDiv.style.padding='15px'; formDiv.style.borderRadius='10px'; formDiv.style.width='100%'; formDiv.style.marginBottom='20px';
@@ -633,71 +624,6 @@
             }, 100);
         }
 
-        async function renderModeration() {
-            window.scrollTo(0,0);
-            const app = q('#app'); app.innerHTML='';
-            const card = document.createElement('div'); card.className='card center';
-            card.innerHTML = `<h2>👮 Modération Avis</h2><p class="small">Validez ou supprimez les avis en attente.</p>`;
-
-            const listDiv = document.createElement('div');
-            listDiv.style.width = '100%';
-            listDiv.style.textAlign = 'left';
-
-            try {
-                // On cherche ceux qui sont approved: false
-                const qMod = query(collection(db, "reviews"), where("approved", "==", false));
-                const snap = await getDocs(qMod);
-
-                if (snap.empty) {
-                    listDiv.innerHTML = '<div style="text-align:center; padding:20px; opacity:0.6">Aucun avis en attente.</div>';
-                }
-
-                snap.forEach(docSnap => {
-                    const r = docSnap.data();
-                    const item = document.createElement('div');
-                    item.style.background = 'rgba(0,0,0,0.3)'; item.style.padding='15px'; item.style.borderRadius='10px'; item.style.marginBottom='10px'; item.style.border='1px solid rgba(255,255,255,0.1)';
-                    
-                    item.innerHTML = `
-                        <div style="font-weight:bold; color:var(--accent);">${r.pseudo} <span style="color:var(--gold)">${"★".repeat(r.rating)}</span></div>
-                        <div style="font-style:italic; margin:5px 0;">"${r.text}"</div>
-                        <div style="font-size:11px; opacity:0.5; margin-bottom:10px;">${new Date(r.date.seconds * 1000).toLocaleDateString()}</div>
-                    `;
-
-                    const btnValid = document.createElement('button');
-                    btnValid.className = 'btn btn-success'; 
-                    btnValid.style.display='inline-block'; btnValid.style.width='auto'; btnValid.style.marginRight='10px'; btnValid.style.padding='5px 15px'; btnValid.style.fontSize='12px';
-                    btnValid.textContent = '✅ Valider';
-                    btnValid.onclick = async () => {
-                        await updateDoc(doc(db, "reviews", docSnap.id), { approved: true });
-                        renderModeration(); // Rafraichir
-                        showAlert("Avis validé !", "success");
-                    };
-
-                    const btnDelete = document.createElement('button');
-                    btnDelete.className = 'btn btn-error'; 
-                    btnDelete.style.display='inline-block'; btnDelete.style.width='auto'; btnDelete.style.padding='5px 15px'; btnDelete.style.fontSize='12px';
-                    btnDelete.textContent = '🗑️ Supprimer';
-                    btnDelete.onclick = async () => {
-                        if(confirm("Supprimer définitivement ?")) {
-                            await deleteDoc(doc(db, "reviews", docSnap.id));
-                            renderModeration();
-                            showAlert("Avis supprimé", "info");
-                        }
-                    };
-
-                    item.appendChild(btnValid);
-                    item.appendChild(btnDelete);
-                    listDiv.appendChild(item);
-                });
-
-            } catch(e) { console.error(e); listDiv.innerHTML="Erreur chargement (Vérifiez la console pour l'index)"; }
-
-            card.appendChild(listDiv);
-
-            const btnBack = document.createElement('button'); btnBack.className='btn'; btnBack.textContent='Retour aux Avis';
-            btnBack.style.marginTop='20px'; btnBack.onclick=renderReviews;
-            card.appendChild(btnBack); app.appendChild(card);
-        }
 
         // --- ABANDON MENU ---
         function renderAbandonMenu() {

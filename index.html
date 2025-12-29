@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google-site-verification" content="8SyBOdC5YhaXDqfNYGfzP1EZbb0iQWABpkImmZHXG30" />
     <title>Medicome - Entraînement Clinique</title>
+    
     <meta name="description" content="Simulateur de cas cliniques interactif pour étudiants en médecine.">
     <meta property="og:title" content="Medicome">
     <meta property="og:type" content="website">
     <link rel="icon" href="favicon.png">
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
@@ -207,9 +209,9 @@
     <script type="module">
         if (window.location.hostname.includes("github.io")) { window.location.href = "https://medicome.fr"; }
 
+        import { getFirestore, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, collection, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, getDocs, setDoc, addDoc, collection, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // MAPPING GROUPES
         const PATHO_GROUPS = {
@@ -544,6 +546,16 @@
             const card = document.createElement('div'); card.className='card center';
             card.innerHTML = `<h2>⭐ Avis Utilisateurs</h2><p class="small" style="margin-bottom:20px">Ce qu'ils pensent de Medicome.</p>`;
 
+            // Bouton Admin (Visible seulement si pseudo est Admin)
+            if(state.pseudo === 'Admin') {
+                const btnMod = document.createElement('button'); 
+                btnMod.className = 'btn btn-error'; 
+                btnMod.textContent = '👮 Gérer la Modération';
+                btnMod.style.marginBottom = '20px';
+                btnMod.onclick = renderModeration;
+                card.appendChild(btnMod);
+            }
+
             const formDiv = document.createElement('div');
             formDiv.style.background = 'rgba(255,255,255,0.05)'; formDiv.style.padding='15px'; formDiv.style.borderRadius='10px'; formDiv.style.width='100%'; formDiv.style.marginBottom='20px';
             
@@ -556,14 +568,14 @@
                 <input type="radio" id="1-star" name="rating" value="1" /><label for="1-star">★</label>
             </div>
             <textarea id="reviewText" class="input" placeholder="Votre commentaire..." style="min-height:60px;"></textarea>
-            <button id="submitReviewBtn" class="btn" style="width:100%; font-size:13px;">Publier l'avis</button>`;
+            <button id="submitReviewBtn" class="btn" style="width:100%; font-size:13px;">Envoyer (Soumis à modération)</button>`;
             
             card.appendChild(formDiv);
 
             const reviewsContainer = document.createElement('div');
             reviewsContainer.className = 'reviews-container';
             
-            // Avis statiques (pour garder le look existant)
+            // Avis statiques (Toujours visibles)
             reviewsContainer.innerHTML = `
                 <div class="review-card">
                     <div class="review-header"><div class="review-avatar">A</div><div><div class="review-name">Antoine D.</div><div class="review-stars">★★★★★</div></div></div>
@@ -571,9 +583,10 @@
                 </div>
             `;
 
-            // Charger avis Firebase
+            // Charger avis Firebase (SEULEMENT CEUX VALIDÉS : approved == true)
             try {
-                const qRev = query(collection(db, "reviews"), orderBy("date", "desc"), limit(10));
+                // NOTE : La première fois, Firebase demandera de créer un index dans la console (lien dans inspecteur)
+                const qRev = query(collection(db, "reviews"), where("approved", "==", true), orderBy("date", "desc"), limit(10));
                 const snap = await getDocs(qRev);
                 snap.forEach(doc => {
                     const r = doc.data();
@@ -589,7 +602,15 @@
                     `;
                     reviewsContainer.insertBefore(div, reviewsContainer.firstChild);
                 });
-            } catch(e) { console.log("Erreur avis", e); }
+            } catch(e) { 
+                console.log("Erreur avis (Index manquant ?)", e); 
+                // Si erreur d'index, on affiche quand même sans le tri pour éviter le bug visuel
+                if(e.code === 'failed-precondition') {
+                     const qRevBackup = query(collection(db, "reviews"), where("approved", "==", true), limit(10));
+                     const snap = await getDocs(qRevBackup);
+                     snap.forEach(doc => { /* Affichage simplifié backup */ });
+                }
+            }
 
             card.appendChild(reviewsContainer);
             const btnBack = document.createElement('button'); btnBack.className='btn'; btnBack.textContent='Retour';
@@ -604,12 +625,86 @@
                         const ratingEl = document.querySelector('input[name="rating"]:checked');
                         if(!text || !ratingEl) return showAlert("Note et message requis", "error");
                         try {
-                            await addDoc(collection(db, "reviews"), { pseudo: state.pseudo || "Anonyme", text, rating: parseInt(ratingEl.value), date: new Date() });
-                            showAlert("Merci !", "success"); renderReviews();
+                            // ICI : On ajoute approved: false
+                            await addDoc(collection(db, "reviews"), { 
+                                pseudo: state.pseudo || "Anonyme", 
+                                text, 
+                                rating: parseInt(ratingEl.value), 
+                                date: new Date(),
+                                approved: false 
+                            });
+                            showAlert("Avis envoyé ! Il sera visible après validation.", "success"); 
+                            q('#reviewText').value = ''; // On vide le champ
                         } catch(e) { showAlert("Erreur d'envoi", "error"); }
                     };
                 }
             }, 100);
+        }
+
+        async function renderModeration() {
+            window.scrollTo(0,0);
+            const app = q('#app'); app.innerHTML='';
+            const card = document.createElement('div'); card.className='card center';
+            card.innerHTML = `<h2>👮 Modération Avis</h2><p class="small">Validez ou supprimez les avis en attente.</p>`;
+
+            const listDiv = document.createElement('div');
+            listDiv.style.width = '100%';
+            listDiv.style.textAlign = 'left';
+
+            try {
+                // On cherche ceux qui sont approved: false
+                const qMod = query(collection(db, "reviews"), where("approved", "==", false));
+                const snap = await getDocs(qMod);
+
+                if (snap.empty) {
+                    listDiv.innerHTML = '<div style="text-align:center; padding:20px; opacity:0.6">Aucun avis en attente.</div>';
+                }
+
+                snap.forEach(docSnap => {
+                    const r = docSnap.data();
+                    const item = document.createElement('div');
+                    item.style.background = 'rgba(0,0,0,0.3)'; item.style.padding='15px'; item.style.borderRadius='10px'; item.style.marginBottom='10px'; item.style.border='1px solid rgba(255,255,255,0.1)';
+                    
+                    item.innerHTML = `
+                        <div style="font-weight:bold; color:var(--accent);">${r.pseudo} <span style="color:var(--gold)">${"★".repeat(r.rating)}</span></div>
+                        <div style="font-style:italic; margin:5px 0;">"${r.text}"</div>
+                        <div style="font-size:11px; opacity:0.5; margin-bottom:10px;">${new Date(r.date.seconds * 1000).toLocaleDateString()}</div>
+                    `;
+
+                    const btnValid = document.createElement('button');
+                    btnValid.className = 'btn btn-success'; 
+                    btnValid.style.display='inline-block'; btnValid.style.width='auto'; btnValid.style.marginRight='10px'; btnValid.style.padding='5px 15px'; btnValid.style.fontSize='12px';
+                    btnValid.textContent = '✅ Valider';
+                    btnValid.onclick = async () => {
+                        await updateDoc(doc(db, "reviews", docSnap.id), { approved: true });
+                        renderModeration(); // Rafraichir
+                        showAlert("Avis validé !", "success");
+                    };
+
+                    const btnDelete = document.createElement('button');
+                    btnDelete.className = 'btn btn-error'; 
+                    btnDelete.style.display='inline-block'; btnDelete.style.width='auto'; btnDelete.style.padding='5px 15px'; btnDelete.style.fontSize='12px';
+                    btnDelete.textContent = '🗑️ Supprimer';
+                    btnDelete.onclick = async () => {
+                        if(confirm("Supprimer définitivement ?")) {
+                            await deleteDoc(doc(db, "reviews", docSnap.id));
+                            renderModeration();
+                            showAlert("Avis supprimé", "info");
+                        }
+                    };
+
+                    item.appendChild(btnValid);
+                    item.appendChild(btnDelete);
+                    listDiv.appendChild(item);
+                });
+
+            } catch(e) { console.error(e); listDiv.innerHTML="Erreur chargement (Vérifiez la console pour l'index)"; }
+
+            card.appendChild(listDiv);
+
+            const btnBack = document.createElement('button'); btnBack.className='btn'; btnBack.textContent='Retour aux Avis';
+            btnBack.style.marginTop='20px'; btnBack.onclick=renderReviews;
+            card.appendChild(btnBack); app.appendChild(card);
         }
 
         // --- ABANDON MENU ---
@@ -909,13 +1004,26 @@
         }
 
         function prepareConfirmationQuestions(topPatho) {
-            const pSigns = Object.entries(topPatho.signes).sort((a, b) => b[1] - a[1]).map(entry => entry[0]);
+            // 1. Récupérer les vrais signes restants (La Checklist)
+            const pSigns = Object.entries(topPatho.signes)
+                .sort((a, b) => b[1] - a[1]) // On trie par importance
+                .map(entry => entry[0]);
             
-            // FILTRER : On ne garde que les signes NON POSÉS
-            const potential = pSigns.filter(s => !state.asked.includes(s));
+            let questions = pSigns.filter(s => !state.asked.includes(s));
             
-            // NOUVELLE LOGIQUE : On retourne TOUT le reste des questions pour la checklist complète
-            return potential;
+            // 2. Ajouter un "LEURRE" (Question Piège) pour vérifier que l'élève ne triche pas
+            // On prend un signe au hasard qui n'appartient PAS à la maladie en cours
+            const trapCandidates = state.allSigns.filter(s => !pSigns.includes(s) && !state.asked.includes(s));
+            
+            if (trapCandidates.length > 0) {
+                // On prend un piège au hasard
+                const trap = trapCandidates[Math.floor(Math.random() * trapCandidates.length)];
+                // On l'insère au début ou au milieu pour piéger l'utilisateur
+                questions.splice(1, 0, trap); 
+            }
+
+            // On limite quand même à 5 questions max pour ne pas être trop long
+            return questions.slice(0, 5);
         }
 
         function renderCurrentQuestion() {
@@ -994,18 +1102,31 @@
             if (state.confirmationMode) {
                 const lastSign = state.asked[state.asked.length - 1];
                 
-                // SI REPONSE NON PENDANT CONFIRMATION -> ECHEC PISTE -> RETOUR MODE NORMAL
-                if (state.answers[lastSign] === false) {
+                // --- LOGIQUE ANTI-TRICHE ---
+                // Vérifier si le signe posé appartient vraiment à la maladie suspectée
+                const isSignPartOfPatho = Object.keys(state.confirmedPatho.signes).includes(lastSign);
+                const userSaidYes = state.answers[lastSign] === true;
+
+                // 1. Si c'était un piège (le signe n'est pas dans la maladie) ET que l'utilisateur a dit OUI -> ECHEC
+                if (!isSignPartOfPatho && userSaidYes) {
+                    state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
+                    showAlert("Aïe ! Ce symptôme ne collait pas...", "error");
+                    askNextQuestion(); return;
+                }
+
+                // 2. Si c'était un vrai signe ET que l'utilisateur a dit NON -> ECHEC (Piste abandonnée)
+                if (isSignPartOfPatho && !userSaidYes) {
                     state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
                     showAlert("Ah, fausse piste. Je continue à chercher...", "info");
-                    askNextQuestion(); // On relance la boucle normale
-                    return;
-                } 
-                else if (state.confirmationQueue.length > 0) {
+                    askNextQuestion(); return;
+                }
+
+                // Si on a passé les tests, on continue la liste de confirmation
+                if (state.confirmationQueue.length > 0) {
                     const nextC = state.confirmationQueue.shift();
                     state.currentSign = nextC; state.asked.push(nextC); renderCurrentQuestion(); return;
                 } else { 
-                    // PLUS DE QUESTIONS -> DIAGNOSTIC FINAL
+                    // PLUS DE QUESTIONS -> DIAGNOSTIC FINAL CONFIRMÉ
                     showDiagnostic(); return; 
                 }
             }

@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google-site-verification" content="8SyBOdC5YhaXDqfNYGfzP1EZbb0iQWABpkImmZHXG30" />
     <title>Medicome - Entraînement Clinique</title>
+    
     <meta name="description" content="Simulateur de cas cliniques interactif pour étudiants en médecine.">
     <meta property="og:title" content="Medicome">
     <meta property="og:type" content="website">
     <link rel="icon" href="favicon.png">
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
@@ -72,7 +74,7 @@
         .star-rating label { font-size: 25px; color: #444; cursor: pointer; transition: color 0.2s; }
         .star-rating input:checked ~ label, .star-rating label:hover, .star-rating label:hover ~ label { color: var(--gold); }
 
-        /* MASTERY */
+        /* MASTERY & BADGES */
         .mastery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; width: 100%; margin-top: 20px; }
         .mastery-item { background: rgba(0,0,0,0.2); border-radius: 10px; padding: 15px 10px; text-align: center; border: 2px solid transparent; transition: all 0.3s; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
         .mastery-item:hover { transform: translateY(-3px); background: rgba(255,255,255,0.05); }
@@ -84,7 +86,7 @@
         .mastery-icon { font-size: 24px; }
         .mastery-name { font-size: 13px; font-weight: 600; color: white; }
         .mastery-count { font-size: 11px; color: var(--text-muted); }
-
+        
         /* BADGE TITRE */
         .specialty-badge { font-size: 16px; font-weight: bold; color: var(--text-main); background: linear-gradient(90deg, rgba(0,210,255,0.2) 0%, rgba(0,210,255,0) 100%); padding: 10px 20px; border-radius: 30px; border-left: 4px solid var(--accent); display: inline-block; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
 
@@ -525,7 +527,7 @@
                             <div class="stat-box" style="text-align:center; background:rgba(255, 77, 77, 0.1); border-color:var(--error)"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">Échecs</div></div>
                             </div>`;
             
-            const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.textContent='🩺 Lancer le défi'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; 
+            const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.textContent='🩺 Lancer le défi'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; 
             btnDiag.onclick= () => {
                 if(audioCtx.state === 'suspended') audioCtx.resume();
                 renderDemographics();
@@ -533,7 +535,7 @@
             const btnGloss = document.createElement('button'); btnGloss.className='link'; btnGloss.textContent='📚 Glossaire des pathologies'; btnGloss.style.marginTop='12px'; btnGloss.onclick=renderGlossary;
             const btnProf = document.createElement('button'); btnProf.className='link'; btnProf.textContent='👤 Mon Profil'; btnProf.style.marginTop='6px'; btnProf.onclick=renderProfile;
             
-            card.appendChild(btnDiag); card.appendChild(btnGloss); card.appendChild(btnProf); 
+            card.appendChild(btnDiag); card.appendChild(btnGloss); card.appendChild(btnProf); 
             app.appendChild(card);
         }
 
@@ -674,16 +676,21 @@
                 }
             });
 
-            if(bestGroup) {
+            // On n'affiche le badge QUE si le score est >= 3
+            if(bestGroup && maxScore >= 3) {
                 card.innerHTML += `<div class="specialty-badge">🎖️ Spécialiste ${bestGroup}</div>`;
             } else {
-                card.innerHTML += `<div style="margin-bottom:20px; color:var(--text-muted); font-size:13px;">Jouez pour débloquer votre spécialité !</div>`;
+                card.innerHTML += `<div style="margin-bottom:20px; color:var(--text-muted); font-size:13px;">Jouez pour débloquer votre titre de spécialiste !</div>`;
             }
 
             // GLOBAL PROGRESS BAR
             const totalPathos = PATHOLOGIES.length;
-            const unlockedPathos = Object.keys(prog.mastery || {}).length;
-            const percentage = Math.round((unlockedPathos / totalPathos) * 100);
+            const unlockedPathos = Object.keys(prog.mastery || {}).filter(k => {
+                const d = prog.mastery[k];
+                const s = (typeof d === 'number') ? d : d.success;
+                return s > 0;
+            }).length;
+            const percentage = totalPathos > 0 ? Math.round((unlockedPathos / totalPathos) * 100) : 0;
             
             card.innerHTML += `
                 <div style="width:100%; background:rgba(255,255,255,0.1); border-radius:10px; height:10px; margin-bottom:5px; overflow:hidden;">
@@ -693,7 +700,7 @@
             `;
 
             // 2. MASTERY GRID
-            const masteryTitle = document.createElement('h3'); masteryTitle.innerHTML = 'Maitrise Clinique'; 
+            const masteryTitle = document.createElement('h3'); masteryTitle.innerHTML = 'Maitrise Clinique'; 
             card.appendChild(masteryTitle);
 
             const masteryGrid = document.createElement('div'); masteryGrid.className = 'mastery-grid';
@@ -880,15 +887,26 @@
         function canShowDiagnostic() {
             const qNum = state.asked.length;
             if(state.ranked.length===0) return false;
+            
             const top1 = state.ranked[0];
             const top2 = state.ranked[1];
+            
             if(state.previousDiagnostics.includes(top1.patho.name)) return false;
+
+            // RÈGLE 1 : FILET DE SÉCURITÉ (Max 20 questions)
+            if (qNum >= 20) return true;
+
             const score1 = parseFloat(top1.prob);
-            if (!top2) return score1 > 50;
-            const gap = score1 - parseFloat(top2.prob);
-            if (qNum >= 4 && score1 >= 75 && gap >= 30) return true;
-            if (qNum >= 9 && score1 >= 70 && gap >= 15) return true;
-            if (qNum >= 15 && score1 >= 60) return true;
+            if (!top2) return score1 > 40; 
+
+            const score2 = parseFloat(top2.prob);
+            const gap = score1 - score2;
+
+            // RÈGLE 2 : AUDACE PROGRESSIVE
+            if (qNum >= 5 && score1 >= 50 && gap >= 20) return true;
+            if (qNum >= 10 && gap >= 10) return true;
+            if (qNum >= 15) return true;
+
             return false;
         }
 
@@ -942,6 +960,9 @@
         }
 
         function askNextQuestion() {
+            // SÉCURITÉ MORT SUBITE
+            if (state.asked.length >= 20) { showDiagnostic(); return; }
+
             if(state.asked.length > 0) {
                 const lastSign = state.asked[state.asked.length - 1];
                 const lastAnswer = state.answers[lastSign];
@@ -1133,10 +1154,19 @@
                         });
                     }
                 };
-                createList("✅ Signes bien identifiés", correctSigns, "correct", "Validé");
-                createList("❌ Signes manqués (Faux Négatifs)", missingSigns, "missing", "Vous avez dit Non");
-                createList("ℹ️ Autres signes du tableau clinique", notAskedSigns, "neutral", "Non demandé");
-                createList("⚠️ Signes cochés à tort (Faux Positifs)", erroneousSigns, "error", "Erreur");
+                
+                if(wasManualError) {
+                    // En cas d'erreur, on montre ce qu'on a raté
+                    createList("❌ Signes manqués (Faux Négatifs)", missingSigns, "missing", "Vous avez dit Non");
+                    createList("ℹ️ Autres signes du tableau clinique", notAskedSigns, "neutral", "Non demandé");
+                } else {
+                    // En cas de réussite, on montre aussi les erreurs
+                    createList("✅ Signes bien identifiés", correctSigns, "correct", "Validé");
+                    if(missingSigns.length > 0) {
+                        createList("⚠️ Attention : Signes manqués", missingSigns, "missing", "Vous avez dit Non (Erreur)");
+                    }
+                    createList("ℹ️ Autres signes du tableau clinique", notAskedSigns, "neutral", "Non demandé");
+                }
                 card.appendChild(resultsDiv);
             }
 

@@ -3,29 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
     <meta name="google-site-verification" content="8SyBOdC5YhaXDqfNYGfzP1EZbb0iQWABpkImmZHXG30" />
     
     <title>Medicome - Entraînement Clinique</title>
     
-    <meta name="description" content="Entraînez-vous au diagnostic médical avec Medicome. Une IA interactive pour réviser la sémiologie, les pathologies et réussir vos examens de médecine.">
-    <meta property="og:title" content="Medicome - L'IA de Diagnostic Médical">
+    <meta name="description" content="Entraînez-vous au diagnostic médical avec Medicome.">
+    <meta property="og:title" content="Medicome">
     <meta property="og:type" content="website">
-    <link rel="canonical" href="https://medicome.fr/" />
     <link rel="icon" href="favicon.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
-        /* ================= STYLE GLOBAL (Basé sur ton code) ================= */
         :root {
           --bg-dark: #020b16; --bg-light: #1e3c72;
           --glass-bg: rgba(13, 25, 48, 0.85); --glass-border: rgba(100, 200, 255, 0.15);
           --accent: #00d2ff; --accent-glow: rgba(0, 210, 255, 0.4);
           --text-main: #ffffff; --text-muted: #b0c4de;
           --success: #00ff9d; --error: #ff4d4d; --info: #60a5fa;
-          --gold: #ffd700; --bronze: #cd7f32; --ruby: #e01e37;
+          --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32; --ruby: #e01e37;
         }
 
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
@@ -92,21 +89,22 @@
         .star-rating label { font-size: 25px; color: #444; cursor: pointer; transition: color 0.2s; }
         .star-rating input:checked ~ label, .star-rating label:hover, .star-rating label:hover ~ label { color: var(--gold); }
 
-        /* MASTERY & BADGES (New) */
+        /* MASTERY & BADGES */
         .mastery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; width: 100%; margin-top: 20px; }
         .mastery-item { background: rgba(0,0,0,0.2); border-radius: 10px; padding: 15px 10px; text-align: center; border: 2px solid transparent; transition: all 0.3s; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
         .mastery-item:hover { transform: translateY(-3px); background: rgba(255,255,255,0.05); }
         .m-locked { border-color: rgba(255,255,255,0.1); opacity: 0.5; filter: grayscale(1); border-style: dashed;}
         .m-bronze { border-color: var(--bronze); background: rgba(205, 127, 50, 0.1); }
-        .m-gold { border-color: var(--gold); background: rgba(255, 215, 0, 0.1); box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
-        .m-master { border-color: var(--ruby); background: rgba(224, 30, 55, 0.15); box-shadow: 0 0 15px rgba(224, 30, 55, 0.3); }
+        .m-silver { border-color: var(--silver); background: rgba(192, 192, 192, 0.1); box-shadow: 0 0 10px rgba(192, 192, 192, 0.2); }
+        .m-gold { border-color: var(--gold); background: rgba(255, 215, 0, 0.1); box-shadow: 0 0 12px rgba(255, 215, 0, 0.3); }
+        .m-master { border-color: var(--ruby); background: rgba(224, 30, 55, 0.15); box-shadow: 0 0 15px rgba(224, 30, 55, 0.4); }
         .mastery-icon { font-size: 24px; }
         .mastery-name { font-size: 13px; font-weight: 600; color: white; }
         .mastery-count { font-size: 11px; color: var(--text-muted); }
         
         .badge-container { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
-        .badge { font-size: 11px; padding: 4px 10px; border-radius: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); }
-        .badge-unlocked { background: var(--accent); color: #000; border-color: var(--accent); font-weight: bold; box-shadow: 0 0 10px var(--accent-glow); }
+        .badge { font-size: 12px; padding: 6px 12px; border-radius: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); opacity: 0.7; transition: all 0.3s; display: flex; align-items: center; gap: 5px;}
+        .badge-unlocked { background: rgba(0, 210, 255, 0.15); color: white; border-color: var(--accent); font-weight: bold; box-shadow: 0 0 15px var(--accent-glow); opacity: 1; }
 
         /* RESULTS */
         .result-item { padding:12px 16px; border-radius:10px; margin-bottom:8px; background: rgba(0,0,0,0.3); display:flex; justify-content:space-between; align-items:center; border: 1px solid rgba(255,255,255,0.05); }
@@ -136,18 +134,27 @@
         .footer-nav { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;}
         .footer-link { color: var(--text-muted); text-decoration: none; cursor: pointer; } .footer-link:hover { color: var(--accent); }
 
-        /* GLOSSARY */
+        /* GLOSSARY IMPROVED */
         .glossary-wrapper { display: flex; align-items: flex-start; gap: 20px; width: 100%; max-width: 1000px; position: relative; }
-        .alphabet-sidebar { position: sticky; top: 100px; display: flex; flex-direction: column; gap: 2px; background: rgba(0, 0, 0, 0.4); padding: 10px; border-radius: 20px; max-height: 80vh; overflow-y: auto; }
-        .alpha-link { color: var(--text-muted); text-decoration: none; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 4px; transition: all 0.2s; text-align: center; }
+        .alphabet-sidebar { position: sticky; top: 100px; display: flex; flex-direction: column; gap: 5px; background: rgba(0, 0, 0, 0.6); padding: 15px; border-radius: 20px; max-height: 80vh; overflow-y: auto; border: 1px solid var(--glass-border); min-width: 60px; align-items: center;}
+        .alpha-link { color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 700; padding: 5px 10px; border-radius: 6px; transition: all 0.2s; text-align: center; width: 100%; display: block;}
         .alpha-link:hover { color: white; background: rgba(255,255,255,0.1); }
+        .alpha-link.active { color: var(--bg-dark); background: var(--accent); }
+        .alpha-link.disabled { opacity: 0.3; cursor: default; }
+        
         .glossary-content { flex: 1; width: 100%; }
-        .letter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 15px; }
-        .patho-card { background: rgba(255, 255, 255, 0.03); padding:24px; border-radius:16px; border:1px solid rgba(255,255,255,0.05); transition:all 0.3s; cursor:pointer; }
-        .patho-card:hover { transform:translateY(-5px); border-color:var(--accent); }
-        .patho-name { font-size:18px; font-weight:700; color:var(--accent); margin-bottom:8px; }
+        .search-container { width: 100%; max-width: 600px; margin: 0 auto 30px auto; position: relative; }
+        .search-input { width: 100%; padding: 16px 20px; border-radius: 50px; border: 2px solid var(--glass-border); background: rgba(0,0,0,0.6); color: white; font-size: 16px; backdrop-filter: blur(10px); transition: all 0.3s; text-align: center;}
+        .search-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); transform: scale(1.02); }
+        
+        .letter-header { font-size: 32px; font-weight: 800; color: var(--accent); border-bottom: 2px solid rgba(255,255,255,0.1); margin-top: 40px; margin-bottom: 20px; padding-bottom: 5px; scroll-margin-top: 110px; }
+        .letter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px; }
+        .patho-card { background: rgba(255, 255, 255, 0.03); padding:20px; border-radius:16px; border:1px solid rgba(255,255,255,0.05); transition:all 0.3s; cursor:pointer; }
+        .patho-card:hover { transform:translateY(-5px); border-color:var(--accent); background: rgba(0, 210, 255, 0.05); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .patho-name { font-size:16px; font-weight:700; color:var(--text-main); margin-bottom:5px; }
+        .patho-desc { font-size:13px; color:var(--text-muted); line-height:1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
-        @media (max-width:600px){ .reviews-container, .mastery-grid { grid-template-columns: repeat(2, 1fr); } .glossary-wrapper { flex-direction: column; } .alphabet-sidebar { flex-direction: row; flex-wrap: wrap; width: 100%; position: static; max-height: none; } }
+        @media (max-width:600px){ .reviews-container, .mastery-grid { grid-template-columns: repeat(2, 1fr); } .glossary-wrapper { flex-direction: column; } .alphabet-sidebar { flex-direction: row; flex-wrap: wrap; width: 100%; position: static; max-height: none; padding: 10px; justify-content: center; gap: 8px;} .alpha-link { width: auto; } }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
     </style>
@@ -536,7 +543,7 @@
                             <div class="stat-box" style="text-align:center; background:rgba(255, 77, 77, 0.1); border-color:var(--error)"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">Échecs</div></div>
                             </div>`;
             
-            const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.textContent='🩺 Lancer le défi'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; 
+            const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.textContent='🩺 Lancer le défi'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; 
             btnDiag.onclick= () => {
                 if(audioCtx.state === 'suspended') audioCtx.resume();
                 renderDemographics();
@@ -544,7 +551,7 @@
             const btnGloss = document.createElement('button'); btnGloss.className='link'; btnGloss.textContent='📚 Glossaire des pathologies'; btnGloss.style.marginTop='12px'; btnGloss.onclick=renderGlossary;
             const btnProf = document.createElement('button'); btnProf.className='link'; btnProf.textContent='👤 Mon Profil'; btnProf.style.marginTop='6px'; btnProf.onclick=renderProfile;
             
-            card.appendChild(btnDiag); card.appendChild(btnGloss); card.appendChild(btnProf); 
+            card.appendChild(btnDiag); card.appendChild(btnGloss); card.appendChild(btnProf); 
             app.appendChild(card);
         }
 
@@ -684,7 +691,7 @@
             card.appendChild(badgesDiv);
 
             // 2. MASTERY GRID
-            const masteryTitle = document.createElement('h3'); masteryTitle.innerHTML = 'Maitrise Clinique'; 
+            const masteryTitle = document.createElement('h3'); masteryTitle.innerHTML = 'Maitrise Clinique'; 
             masteryTitle.style.marginTop='20px'; card.appendChild(masteryTitle);
 
             const masteryGrid = document.createElement('div'); masteryGrid.className = 'mastery-grid';
@@ -699,6 +706,7 @@
                 let sClass = 'm-locked', icon = '🔒';
                 if (successCount >= 10) { sClass = 'm-master'; icon = '💎'; }
                 else if (successCount >= 5) { sClass = 'm-gold'; icon = '🥇'; }
+                else if (successCount >= 3) { sClass = 'm-silver'; icon = '🥈'; }
                 else if (successCount >= 1) { sClass = 'm-bronze'; icon = '🥉'; }
 
                 mItem.className = `mastery-item ${sClass}`;
@@ -721,24 +729,37 @@
             const loss = (m?.failures || 0);
             const mistakes = (m?.missedSigns || {});
 
-            card.innerHTML = `<h2>${patho.name}</h2>
+            let rank = 'Verrouillé', icon='🔒', color='var(--text-muted)';
+            if(wins >= 10) { rank='Maître'; icon='💎'; color='var(--ruby)'; }
+            else if(wins >= 5) { rank='Or'; icon='🥇'; color='var(--gold)'; }
+            else if(wins >= 3) { rank='Argent'; icon='🥈'; color='var(--silver)'; }
+            else if(wins >= 1) { rank='Bronze'; icon='🥉'; color='var(--bronze)'; }
+
+            card.innerHTML = `
+            <div style="font-size:40px; margin-bottom:10px;">${icon}</div>
+            <h3 style="color:${color}; margin-bottom:20px;">Rang : ${rank}</h3>
+            <h2>${patho.name}</h2>
             <div class="patho-desc" style="margin-bottom:20px;">${patho.short}</div>
-            <div style="display:flex; gap:10px; width:100%; margin-bottom:20px;">
-                <div class="stat-box" style="border-color:var(--success)"><div class="stat-number" style="color:var(--success)">${wins}</div>Réussites</div>
-                <div class="stat-box" style="border-color:var(--error)"><div class="stat-number" style="color:var(--error)">${loss}</div>Erreurs</div>
+            
+            <div style="display:flex; gap:15px; width:100%; margin-bottom:20px; justify-content:center;">
+                <div class="stat-box" style="border-color:var(--success); max-width:150px;"><div class="stat-number" style="color:var(--success)">${wins}</div>Réussites</div>
+                <div class="stat-box" style="border-color:var(--error); max-width:150px;"><div class="stat-number" style="color:var(--error)">${loss}</div>Erreurs</div>
             </div>`;
 
             if(Object.keys(mistakes).length > 0) {
-                card.innerHTML += `<h4 style="color:var(--error); margin-top:20px;">Signes souvent manqués :</h4>`;
-                let html = '<ul style="text-align:left; color:var(--text-muted); margin-top:10px;">';
+                card.innerHTML += `<h3 style="color:var(--error); margin-top:20px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px; width:100%;">⚠️ Vos oublis fréquents</h3>`;
+                let html = '<ul style="text-align:left; color:var(--text-muted); margin-top:15px; width:100%;">';
                 Object.entries(mistakes).sort((a,b)=>b[1]-a[1]).forEach(([sign, count]) => {
-                    html += `<li>${formatSigneName(sign)} (x${count})</li>`;
+                    html += `<li style="margin-bottom:5px;"><strong>${formatSigneName(sign)}</strong> <span style="opacity:0.6; font-size:0.9em;">(Oublié ${count} fois)</span></li>`;
                 });
                 html += '</ul>';
                 card.innerHTML += html;
+            } else {
+                card.innerHTML += `<div style="margin-top:20px; opacity:0.6;">Aucune erreur fréquente enregistrée.</div>`;
             }
 
             const btnBack = document.createElement('button'); btnBack.className='btn'; btnBack.textContent='Retour Profil';
+            btnBack.style.marginTop = '20px';
             btnBack.onclick=renderProfile;
             card.appendChild(btnBack); app.appendChild(card);
         }
@@ -1008,14 +1029,22 @@
                     triggerConfetti(); playSound('success');
                     state.progression.correct++; state.progression.streak = (state.progression.streak || 0) + 1;
                     
-                    // SAVE MASTERY (NEW)
                     if(!state.progression.mastery) state.progression.mastery = {};
                     const pName = top.patho.name;
-                    // Handle migration from simple number to object
                     let m = state.progression.mastery[pName];
                     if(!m) m = { success: 0, failures: 0, missedSigns: {} };
                     if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
+                    
                     m.success++;
+                    
+                    // CHECK FOR MISSED SIGNS EVEN ON SUCCESS
+                    Object.keys(top.patho.signes).forEach(s => {
+                        if(state.answers[s] === false) { 
+                            if(!m.missedSigns[s]) m.missedSigns[s] = 0;
+                            m.missedSigns[s]++;
+                        }
+                    });
+
                     state.progression.mastery[pName] = m;
 
                     updateHeader(); await saveProgression(); 
@@ -1027,7 +1056,6 @@
                     playSound('error');
                     state.progression.incorrect++; state.progression.streak = 0;
                     
-                    // SAVE FAILURE (NEW)
                     if(!state.progression.mastery) state.progression.mastery = {};
                     const pName = top.patho.name;
                     let m = state.progression.mastery[pName];
@@ -1054,14 +1082,14 @@
             if(wasManualError) {
                 card.innerHTML = `<h2 style="color:var(--error)">❌ C'était : ${top.name}</h2>`;
                 
-                // Track missed signs
                 if(!state.progression.mastery) state.progression.mastery = {};
                 let m = state.progression.mastery[top.name];
                 if(!m) m = { success: 0, failures: 0, missedSigns: {} };
                 if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
                 
+                m.failures++;
                 Object.keys(top.signes).forEach(s => {
-                    if(state.answers[s] === false) { // Said NO but was YES
+                    if(state.answers[s] === false) { 
                         if(!m.missedSigns[s]) m.missedSigns[s] = 0;
                         m.missedSigns[s]++;
                     }

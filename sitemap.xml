@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://medicome.fr/</loc>
+    <lastmod>2025-01-01</lastmod>
+    <priority>1.0</priority>
+  </url>
+
+  <url><loc>https://medicome.fr/fiches/infarctus.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/embolie.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/pneumopathie.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/oap.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/avc.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/meningite.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/appendicite.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/cholecystite.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/gastro.pdf</loc><priority>0.8</priority></url>
+  <url><loc>https://medicome.fr/fiches/cn.pdf</loc><priority>0.8</priority></url>
+  </urlset>

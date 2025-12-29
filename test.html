@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <meta name="google-site-verification" content="8SyBOdC5YhaXDqfNYGfzP1EZbb0iQWABpkImmZHXG30" />
     
@@ -23,19 +23,6 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
-        /* Classe utilitaire pour cacher du texte aux humains mais le montrer à Google */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
-        }
-
         /* ================= STYLE CHROME / DARK GLOSS ================= */
         :root {
           --bg-dark: #020b16;
@@ -52,7 +39,6 @@
           --gold: #ffd700;
         }
 
-        /* RESET & BASE */
         * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
         
         body {
@@ -79,21 +65,30 @@
           box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
 
-        .brand { 
-            display: flex; align-items: center; gap: 12px; 
-            cursor: pointer; 
-        }
-        
-        .logo-img {
-            height: 70px; 
-            width: auto;
-            filter: drop-shadow(0 0 8px var(--accent-glow));
-            transition: transform 0.3s;
-        }
+        .brand { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .logo-img { height: 70px; width: auto; filter: drop-shadow(0 0 8px var(--accent-glow)); transition: transform 0.3s; }
         .brand:hover .logo-img { transform: scale(1.05); }
         
         .top-right { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
         
+        /* Notification Bell */
+        .notif-btn { position: relative; background: none; border: none; cursor: pointer; padding: 5px; margin-right: 10px; }
+        .notif-icon { width: 24px; height: 24px; fill: var(--text-muted); transition: fill 0.3s; }
+        .notif-btn:hover .notif-icon { fill: var(--accent); }
+        .notif-badge { position: absolute; top: 0; right: 0; width: 10px; height: 10px; background: var(--error); border-radius: 50%; display: none; border: 1px solid var(--bg-dark); }
+        
+        /* Notification Dropdown/Modal */
+        .notif-modal {
+            position: absolute; top: 60px; right: 20px; width: 300px;
+            background: var(--bg-dark); border: 1px solid var(--glass-border);
+            border-radius: 12px; padding: 15px; z-index: 200;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            display: none; max-height: 400px; overflow-y: auto;
+        }
+        .notif-item { border-bottom: 1px solid rgba(255,255,255,0.1); padding: 10px 0; font-size: 13px; text-align: left; }
+        .notif-item:last-child { border-bottom: none; }
+        .notif-date { font-size: 11px; color: var(--accent); margin-bottom: 4px; }
+
         .pseudo { 
             color:var(--accent); font-weight:600; padding:6px 12px; 
             background: rgba(0, 210, 255, 0.05); 
@@ -104,37 +99,22 @@
 
         /* BUTTONS & LINKS */
         .link {
-          background: rgba(255,255,255,0.03);
-          border:1px solid rgba(255,255,255,0.1);
-          color: var(--text-muted);
-          padding:8px 16px;
-          border-radius:8px;
-          cursor:pointer;
-          transition:all 0.3s;
-          font-size:14px;
+          background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.1);
+          color: var(--text-muted); padding:8px 16px; border-radius:8px;
+          cursor:pointer; transition:all 0.3s; font-size:14px;
         }
-        .link:hover { 
-            background: rgba(255,255,255,0.1); 
-            color: white; 
-            border-color: var(--accent);
-            box-shadow: 0 0 10px var(--accent-glow);
-        }
+        .link:hover { background: rgba(255,255,255,0.1); color: white; border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
 
         /* CARDS */
         main { flex:1; max-width:1000px; width:100%; margin:0 auto; padding:30px 20px; display:flex; flex-direction:column; align-items:center; }
         
         .card { 
-            background: var(--glass-bg); 
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding:32px; 
-            border-radius:20px; 
+            background: var(--glass-bg); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding:32px; border-radius:20px; 
             box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 0 1px var(--glass-border); 
             margin-bottom:16px; width:100%; max-width:600px; 
-            transition: transform 0.3s ease;
-            animation: fadeIn 0.5s ease-out;
+            transition: transform 0.3s ease; animation: fadeIn 0.5s ease-out;
         }
-        
         .card h2 { margin-bottom:20px; font-size:26px; text-align:center; color: white; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
         .card h3 { margin-bottom:16px; font-size:22px; text-align:center; color: var(--accent); }
 
@@ -142,53 +122,35 @@
         .input, select, textarea { 
             width:100%; padding:14px; border-radius:10px; 
             border:1px solid rgba(255,255,255,0.15); 
-            background: rgba(0,0,0,0.3); 
-            color: var(--text-main); 
+            background: rgba(0,0,0,0.3); color: var(--text-main); 
             margin-top:8px; margin-bottom:12px; font-size:14px; 
             transition:all 0.3s; font-family: 'Inter', sans-serif;
         }
         textarea { resize: vertical; min-height: 100px; }
-        .input:focus, select:focus, textarea:focus { 
-            outline:none; border-color:var(--accent); 
-            background: rgba(0,0,0,0.5); 
-            box-shadow: 0 0 15px var(--accent-glow);
-        }
+        .input:focus, select:focus, textarea:focus { outline:none; border-color:var(--accent); background: rgba(0,0,0,0.5); box-shadow: 0 0 15px var(--accent-glow); }
+
+        /* STARS RATING */
+        .star-rating { display: flex; gap: 5px; justify-content: center; margin: 10px 0; direction: rtl; }
+        .star-rating input { display: none; }
+        .star-rating label { font-size: 25px; color: #444; cursor: pointer; transition: color 0.2s; }
+        .star-rating input:checked ~ label, .star-rating label:hover, .star-rating label:hover ~ label { color: var(--gold); }
 
         /* ACTION BUTTONS */
         .btn { 
             background: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%);
             border:none; padding:14px 24px; border-radius:12px; 
             color: #000; cursor:pointer; font-weight:700; font-size:15px; 
-            transition:all 0.3s; 
-            box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            transition:all 0.3s; box-shadow: 0 4px 15px rgba(0, 114, 255, 0.4);
+            text-transform: uppercase; letter-spacing: 0.5px;
         }
-        .btn:hover { 
-            transform:translateY(-2px); 
-            box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6), inset 0 0 0 2px rgba(255,255,255,0.3);
-        }
-        
+        .btn:hover { transform:translateY(-2px); box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6), inset 0 0 0 2px rgba(255,255,255,0.3); }
         .btn-success { background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%); color: #022015; box-shadow: 0 4px 15px rgba(0, 176, 155, 0.4); }
         .btn-success:hover { box-shadow: 0 6px 20px rgba(0, 176, 155, 0.6); }
-        
         .btn-error { background: linear-gradient(135deg, #cb2d3e 0%, #ef473a 100%); color: white; box-shadow: 0 4px 15px rgba(203, 45, 62, 0.4); }
         .btn-error:hover { box-shadow: 0 6px 20px rgba(203, 45, 62, 0.6); }
-
-        .btn-code { 
-            background: transparent !important; 
-            border: 1px solid var(--accent) !important; 
-            color: var(--accent) !important;
-            box-shadow: none !important;
-        }
+        .btn-code { background: transparent !important; border: 1px solid var(--accent) !important; color: var(--accent) !important; box-shadow: none !important; }
         .btn-code:hover { background: rgba(0, 210, 255, 0.1) !important; box-shadow: 0 0 15px var(--accent-glow) !important; }
-
-        .btn-back {
-            background: rgba(255, 255, 255, 0.1); color: #ccc;
-            border: 1px solid rgba(255, 255, 255, 0.2); padding: 10px 20px;
-            border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600;
-            transition: all 0.2s;
-        }
+        .btn-back { background: rgba(255, 255, 255, 0.1); color: #ccc; border: 1px solid rgba(255, 255, 255, 0.2); padding: 10px 20px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s; }
         .btn-back:hover { background: rgba(255, 255, 255, 0.2); color: white; }
 
         /* ELEMENTS */
@@ -205,13 +167,8 @@
         }
 
         /* REVIEWS SECTION */
-        .reviews-container {
-            display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; width: 100%;
-        }
-        .review-card {
-            background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px; padding: 15px; text-align: left;
-        }
+        .reviews-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; width: 100%; }
+        .review-card { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 15px; text-align: left; }
         .review-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
         .review-avatar { width: 30px; height: 30px; background: var(--accent); border-radius: 50%; display:flex; align-items:center; justify-content:center; font-weight:bold; color:black; font-size:12px;}
         .review-name { font-weight: 600; font-size: 14px; color: white; }
@@ -237,24 +194,11 @@
         .patho-desc { font-size:14px; color:rgba(255,255,255,0.7); line-height:1.5; }
 
         /* MASTERY PROFILE GRID */
-        .mastery-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; width: 100%; margin-top: 20px;
-        }
-        .mastery-item {
-            background: rgba(0,0,0,0.2); border-radius: 10px; padding: 15px; text-align: center;
-            border: 1px solid rgba(255,255,255,0.05); transition: all 0.3s;
-            display: flex; flex-direction: column; align-items: center; gap: 8px;
-        }
-        .mastery-item.locked {
-            opacity: 0.5; filter: grayscale(1); border-style: dashed;
-        }
-        .mastery-item.unlocked {
-            border: 1px solid var(--success); background: rgba(0, 255, 157, 0.05);
-        }
-        .mastery-item.master {
-            border: 1px solid var(--gold); background: rgba(255, 215, 0, 0.1);
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
-        }
+        .mastery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; width: 100%; margin-top: 20px; }
+        .mastery-item { background: rgba(0,0,0,0.2); border-radius: 10px; padding: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.05); transition: all 0.3s; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .mastery-item.locked { opacity: 0.5; filter: grayscale(1); border-style: dashed; }
+        .mastery-item.unlocked { border: 1px solid var(--success); background: rgba(0, 255, 157, 0.05); }
+        .mastery-item.master { border: 1px solid var(--gold); background: rgba(255, 215, 0, 0.1); box-shadow: 0 0 15px rgba(255, 215, 0, 0.2); }
         .mastery-icon { font-size: 24px; }
         .mastery-name { font-size: 13px; font-weight: 600; color: white; }
         .mastery-count { font-size: 11px; color: var(--text-muted); }
@@ -277,30 +221,27 @@
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 
+        /* LEGAL MODAL */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 1000; display: none;
+            justify-content: center; align-items: center; padding: 20px;
+        }
+        .modal-content {
+            background: var(--bg-dark); padding: 30px; border-radius: 20px;
+            max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto;
+            border: 1px solid var(--glass-border); text-align: left;
+        }
+        .modal-content h3 { color: var(--accent); margin-top: 20px; margin-bottom: 10px; }
+        .modal-content p { font-size: 14px; line-height: 1.6; color: var(--text-muted); margin-bottom: 10px; }
+
         /* FOOTER & SOCIALS */
-        footer { 
-            text-align:center; padding:30px 20px; 
-            background: rgba(0,0,0,0.5); font-size:13px; 
-            border-top: 1px solid rgba(255,255,255,0.05); 
-            display: flex; flex-direction: column; align-items: center; gap: 15px;
-        }
+        footer { text-align:center; padding:30px 20px; background: rgba(0,0,0,0.5); font-size:13px; border-top: 1px solid rgba(255,255,255,0.05); display: flex; flex-direction: column; align-items: center; gap: 15px; }
         .social-links { display: flex; gap: 20px; margin-bottom: 10px; }
-        .social-link { 
-            display: flex; align-items: center; justify-content: center;
-            width: 40px; height: 40px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 50%;
-            transition: all 0.3s;
-            text-decoration: none;
-        }
-        .social-link:hover { 
-            background: rgba(0, 210, 255, 0.1); 
-            transform: scale(1.1); 
-            box-shadow: 0 0 15px var(--accent-glow);
-        }
+        .social-link { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: rgba(255,255,255,0.05); border-radius: 50%; transition: all 0.3s; text-decoration: none; }
+        .social-link:hover { background: rgba(0, 210, 255, 0.1); transform: scale(1.1); box-shadow: 0 0 15px var(--accent-glow); }
         .social-icon { width: 20px; height: 20px; fill: var(--text-muted); transition: fill 0.3s; }
         .social-link:hover .social-icon { fill: var(--accent); }
-        
         .footer-nav { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;}
         .footer-link { color: var(--text-muted); text-decoration: none; font-weight: 500; transition: color 0.2s; cursor: pointer;}
         .footer-link:hover { color: var(--accent); text-decoration: underline; }
@@ -325,6 +266,17 @@
         </div>
         
         <div class="top-right">
+            <button class="notif-btn" id="notifBtn" title="Nouveautés">
+                <svg class="notif-icon" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
+                <div class="notif-badge" id="notifBadge"></div>
+            </button>
+            <div class="notif-modal" id="notifModal">
+                <h4 style="color:white; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px;">🔔 Nouveautés & Mises à jour</h4>
+                <div id="notifContent">
+                    <div class="small">Chargement...</div>
+                </div>
+            </div>
+
             <button id="homeBtn" class="link" style="display:none;">Accueil</button>
             <div id="pseudoBox" class="pseudo" style="display:none;">Utilisateur</div>
             <button id="logoutBtn" class="link" style="display:none;">Déconnexion</button>
@@ -332,22 +284,34 @@
     </header>
 
     <main id="app">
-        <div class="center">
-            <div style="font-size: 40px; animation: spin 1s infinite linear; margin-bottom: 20px;">⚙️</div>
-            <div class="small">Chargement du noyau médical...</div>
-            
-            <div style="opacity:0; height:1px; overflow:hidden;">
-                <h2>Application de Révision Médicale pour Externes</h2>
+        <div class="center" id="landing-content" style="padding: 20px; text-align: center;">
+            <div style="font-size: 50px; margin-bottom: 20px;">🩺</div>
+            <h1 style="font-size: 2rem; margin-bottom: 10px; color: white;">Medicome</h1>
+            <h2 style="font-size: 1.2rem; color: var(--accent); margin-bottom: 20px; font-weight: normal;">
+                Application de Révision Médicale pour Externes
+            </h2>
+            <div style="max-width: 600px; margin: 0 auto; color: var(--text-muted); line-height: 1.5;">
                 <p>Bienvenue sur Medicome, le simulateur de cas cliniques interactif.</p>
-                <p>Préparez vos ECN, EDN et examens de médecine grâce à notre intelligence artificielle qui vous challenge sur :</p>
-                <ul>
-                    <li>La sémiologie médicale</li>
-                    <li>Le diagnostic différentiel</li>
-                    <li>Les pathologies cardio, pneumo, neuro et digestives</li>
-                </ul>
+                <p>Préparez vos ECN, EDN et examens de médecine grâce à notre intelligence artificielle qui vous challenge sur la sémiologie, le diagnostic différentiel et les pathologies.</p>
+            </div>
+            
+            <div style="margin-top: 40px;">
+                <div style="font-size: 30px; animation: spin 1s infinite linear;">⚙️</div>
+                <div class="small" style="margin-top: 10px;">Chargement du noyau médical...</div>
             </div>
         </div>
     </main>
+
+    <div class="modal-overlay" id="legalModal">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h2 style="color:white;">Mentions Légales</h2>
+                <button onclick="document.getElementById('legalModal').style.display='none'" class="link">Fermer</button>
+            </div>
+            <div id="legalTextContent">
+                </div>
+        </div>
+    </div>
 
     <footer>
         <div class="social-links">
@@ -365,6 +329,7 @@
             <span class="footer-link" onclick="window.scrollTo(0,0)">Haut de page</span>
             <span class="footer-link" id="reviewsLink">Avis Utilisateurs</span>
             <span class="footer-link" id="contactLink">Nous Contacter</span>
+            <span class="footer-link" onclick="renderLegal()">Mentions Légales & Confidentialité</span>
         </div>
         <div style="margin-top:10px; opacity:0.6;">Medicome © 2025 - Outil pédagogique</div>
     </footer>
@@ -376,26 +341,19 @@
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, getDocs, setDoc, addDoc, collection, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // --- LOGIQUE D'ENTONNOIR (Raffinement) ---
         const REFINEMENTS = {
-            // DOULEURS
             "douleur_abdominale": ["douleur_fosse_iliaque_droite", "douleur_hypocondre_droit", "douleur_fosse_iliaque_gauche", "douleur_epigastrique", "douleur_transfixiante_dos", "douleur_bas_ventre", "douleur_pelvienne", "douleur_abdominale_diffuse", "crampes_abdominales", "douleur_abdominale_intermittente", "douleur_sus_pubienne", "troubles_transit"],
             "douleur_thoracique": ["douleur_thoracique_oppressive", "douleur_thoracique_dechirante", "douleur_thoracique_coté", "douleur_basithoracique", "douleur_inspiration", "douleur_thoracique_point_cote"],
             "douleur_dos": ["douleur_lombaire_brutale", "douleur_lombaire_unilaterale", "douleur_lombaire", "douleur_bas_dos", "douleur_bas_dos_nuit", "douleur_dos_os", "douleur_dos_brutale"],
             "douleur_membre_traumatisme": ["impossibilite_marcher", "douleur_poignet", "chute_recente", "jambe_froide_pale", "douleur_articulaire_intense", "douleur_gros_orteil", "douleur_jambe_brutale_intense", "douleur_aine_hanche", "douleur_mains", "douleur_talon", "fourmillements_doigts"],
-            
-            // RESPIRATOIRE / ORL
             "dyspnee": ["dyspnee_effort", "orthopnee_dyspnee_couchee", "dyspnee_brutale", "dyspnee_sifflante", "essoufflement_aggrave", "gene_respiratoire"],
             "toux": ["toux_seche", "toux_grasse", "toux_sanglante", "chant_du_coq", "toux_chronique", "toux_nuit"],
-            
-            // SENSORIEL / NEURO
             "troubles_visuels": ["vision_floue", "vision_double", "baisse_vision_brutale", "amputation_champ_visuel", "eclairs_lumineux", "mouches_devant_yeux", "vision_centrale_floue", "vision_double_un_oeil", "trouble_vision_flou"],
             "troubles_neuro": ["paralysie_unilaterale", "troubles_parole_aphasie", "asymetrie_visage", "perte_sensibilite", "perte_equilibre", "tremblement_repos", "lenteur_mouvements", "machoire_bloquee", "corps_raide_contracte", "paralysie_descend_tete_vers_pieds", "paralysie_monte_pieds_vers_tete", "perte_connaissance"],
             "cephalees": ["cephalees_intenses", "cephalees_explosives_brutales", "mal_tete_unilateral"],
-            
-            // AUTRES
             "anomalie_peau": ["plaques_rouges", "vesicules_bulles", "demangeaisons", "grain_beaute_suspect", "tache_noire", "jambe_rouge", "purpura", "taches_rouges_jambes", "taches_rouges_peau", "tache_rouge_s_etend_peau", "plaques_rouges_croutes", "perle_translucide_peau", "croute_ne_guerit_pas", "boutons_bulles_corps", "taches_peau_purpura", "eruption_boutons_corps", "eruption_corps", "peau_aspect_granite", "boule_aine_douloureuse_dure"],
             "trouble_psy": ["tristesse_permanente", "delire_paranoiaque", "hallucinations", "perte_memoire", "agitation", "excitation_euphorie", "maigreur_extreme", "ne_se_lave_plus", "oubli_faits_recents", "cherches_ses_mots"],
             "genes_urinaires": ["sang_urines", "brulures_urinaires", "impossibilite_uriner", "regles_tres_abondantes", "douleur_testicule_brutale", "pertes_vaginales_anormales", "sang_urines_rouge", "difficulte_uriner", "urines_abondantes", "urines_mousseuses"]
@@ -411,16 +369,14 @@
             gainNode.connect(audioCtx.destination);
             
             if (type === 'success') {
-                // Ding! (High major chord arpeggio)
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
-                osc.frequency.exponentialRampToValueAtTime(1046.5, audioCtx.currentTime + 0.1); // C6
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1046.5, audioCtx.currentTime + 0.1);
                 gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.4);
             } else if (type === 'error') {
-                // Buzz (Low saw wave)
                 osc.type = 'sawtooth';
                 osc.frequency.setValueAtTime(150, audioCtx.currentTime);
                 osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.3);
@@ -454,14 +410,13 @@
         let PATHOLOGIES = [];
         const ACCESS_CODES = [ { code: "SuperCode1", pseudo:"Admin" } ];
 
-        // STATE (With History + Streak + Mastery + Confirm Mode + PriorityQueue)
         let state = {
             currentUser: null, pseudo: null, 
             progression: { correct: 0, incorrect: 0, streak: 0, mastery: {} },
             isGuest: false, demo:{}, currentSign:null, answers:{}, asked:[], allSigns:[], ranked: [], diagnosticShown:false, previousDiagnostics:[],
             history: [],
             confirmationMode: false, confirmationQueue: [], confirmedPatho: null,
-            priorityQueue: [] // File d'attente prioritaire pour l'entonnoir
+            priorityQueue: []
         };
 
         async function initApp() {
@@ -469,7 +424,22 @@
                 const response = await fetch('./pathologies.json');
                 if (!response.ok) throw new Error("Impossible de lire le fichier de données");
                 PATHOLOGIES = await response.json();
+                
+                // DEEP LINKING
+                const urlParams = new URLSearchParams(window.location.search);
+                const ficheDemandee = urlParams.get('fiche');
+                if (ficheDemandee) {
+                    const pathoTrouvee = PATHOLOGIES.find(p => p.name.toLowerCase() === ficheDemandee.toLowerCase());
+                    if (pathoTrouvee) {
+                        q('#app').innerHTML = ''; // Clear loading
+                        // Mock result for display
+                        showDiagnosticDetails({patho: pathoTrouvee});
+                        return; // Stop further init
+                    }
+                }
+
                 startAuthListener();
+                fetchNotifications();
                 
                 // Bind links
                 const cLink = document.getElementById('contactLink');
@@ -478,17 +448,32 @@
                 const rLink = document.getElementById('reviewsLink');
                 if(rLink) rLink.onclick = renderReviews;
 
-                // LOGO LOGIC (Only click if logged in)
-                const brandLogo = document.getElementById('brandLogo');
-                if(brandLogo) {
-                    brandLogo.onclick = () => {
-                        if (state.currentUser || state.isGuest) {
-                            renderHome();
-                        } else {
-                            console.log("Not logged in, logo inactive");
+                // NOTIFICATION LOGIC
+                const notifBtn = q('#notifBtn');
+                const notifModal = q('#notifModal');
+                if(notifBtn) {
+                    notifBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        const isVisible = notifModal.style.display === 'block';
+                        notifModal.style.display = isVisible ? 'none' : 'block';
+                        if(!isVisible) {
+                            const badge = q('#notifBadge');
+                            if(badge) badge.style.display = 'none';
                         }
                     };
                 }
+                window.onclick = () => { if(notifModal) notifModal.style.display = 'none'; };
+
+                // LOGO LOGIC
+                const brandLogo = document.getElementById('brandLogo');
+                if(brandLogo) {
+                    brandLogo.onclick = () => {
+                        if (state.currentUser || state.isGuest) { renderHome(); } 
+                    };
+                }
+                
+                // Global legal render
+                window.renderLegal = renderLegal;
 
             } catch (err) {
                 console.error(err);
@@ -502,6 +487,37 @@
             }
         }
         initApp();
+
+        async function fetchNotifications() {
+            try {
+                const qRef = query(collection(db, "notifications"), orderBy("date", "desc"), limit(5));
+                const snapshot = await getDocs(qRef);
+                const container = q('#notifContent');
+                
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="small">Aucune nouveauté pour le moment.</div>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                snapshot.forEach(doc => {
+                    const n = doc.data();
+                    const div = document.createElement('div');
+                    div.className = 'notif-item';
+                    const dateStr = n.date && n.date.seconds ? new Date(n.date.seconds * 1000).toLocaleDateString() : 'Récemment';
+                    div.innerHTML = `<div class="notif-date">${dateStr}</div><div style="color:white;">${n.message}</div>`;
+                    container.appendChild(div);
+                });
+                
+                const badge = q('#notifBadge');
+                if(badge) badge.style.display = 'block';
+                
+            } catch (e) {
+                console.log("Erreur notifs:", e);
+                const container = q('#notifContent');
+                if(container) container.innerHTML = '<div class="small">Impossible de charger les actus.</div>';
+            }
+        }
 
         function startAuthListener() {
             onAuthStateChanged(auth, async (user) => {
@@ -526,7 +542,6 @@
                     if(!state.isGuest && savedGuest && savedPseudo) {
                         state.isGuest = true; state.pseudo = savedPseudo;
                         state.progression = JSON.parse(savedGuest);
-                        // Ensure keys exists
                         if(state.progression.streak === undefined) state.progression.streak = 0;
                         if(!state.progression.mastery) state.progression.mastery = {};
                         updateHeader(); renderHome();
@@ -569,8 +584,6 @@
 
         function updateHeader(){
             const pseudoBox = q("#pseudoBox"); const homeBtn = q("#homeBtn"); const logoutBtn = q("#logoutBtn");
-            
-            // LOGIQUE SERIE DE VICTOIRE (STREAK)
             const currentStreak = state.progression.streak || 0;
             const streakDisplay = currentStreak > 0 ? ` <span style="color:#ff9f43; margin-left:8px;">🔥 ${currentStreak}</span>` : '';
 
@@ -587,117 +600,6 @@
                 state.isGuest = false; state.pseudo = null; state.currentUser = null; state.progression = { correct: 0, incorrect: 0, streak: 0, mastery:{} }; 
                 signOut(auth).then(() => { renderLogin(); updateHeader(); showAlert("Déconnecté", "success"); }).catch(() => { renderLogin(); updateHeader(); });
             };
-        }
-
-        // =================== REVIEWS PAGE ===================
-        function renderReviews() {
-            const app = q('#app'); app.innerHTML='';
-            const card = document.createElement('div'); card.className='card center';
-            card.innerHTML = `<h2>⭐ Avis Utilisateurs</h2><p class="small" style="margin-bottom:20px">Ce qu'ils pensent de Medicome.</p>`;
-
-            const reviewsContainer = document.createElement('div');
-            reviewsContainer.className = 'reviews-container';
-            reviewsContainer.innerHTML = `
-                    <div class="review-card">
-                        <div class="review-header">
-                            <div class="review-avatar">A</div>
-                            <div>
-                                <div class="review-name">Antoine D.</div>
-                                <div class="review-stars">★★★★★</div>
-                            </div>
-                        </div>
-                        <div class="review-text">"Super outil pour réviser mes cas cliniques avant les partiels. Simple et efficace."</div>
-                    </div>
-                    <div class="review-card">
-                        <div class="review-header">
-                            <div class="review-avatar">S</div>
-                            <div>
-                                <div class="review-name">Sarah L.</div>
-                                <div class="review-stars">★★★★☆</div>
-                            </div>
-                        </div>
-                        <div class="review-text">"L'interface est top. J'aimerais juste encore plus de pathologies !"</div>
-                    </div>
-                    <div class="review-card">
-                        <div class="review-header">
-                            <div class="review-avatar">M</div>
-                            <div>
-                                <div class="review-name">Maxime P.</div>
-                                <div class="review-stars">★★★★★</div>
-                            </div>
-                        </div>
-                        <div class="review-text">"Indispensable pour l'externat. Le mode invité est super pratique."</div>
-                    </div>
-                    <div class="review-card">
-                        <div class="review-header">
-                            <div class="review-avatar">L</div>
-                            <div>
-                                <div class="review-name">Léa B.</div>
-                                <div class="review-stars">★★★★★</div>
-                            </div>
-                        </div>
-                        <div class="review-text">"Merci pour cet outil gratuit. Ça m'a sauvé sur la sémio cardio !"</div>
-                    </div>
-            `;
-            card.appendChild(reviewsContainer);
-            
-            const btnBack = document.createElement('button'); btnBack.className='btn'; btnBack.textContent='Retour';
-            btnBack.style.marginTop = '20px';
-            btnBack.onclick = () => { if(state.pseudo) renderHome(); else renderLogin(); };
-            card.appendChild(btnBack);
-
-            app.appendChild(card);
-        }
-
-        // =================== CONTACT FORM ===================
-        function renderContact() {
-            const app = q('#app'); app.innerHTML='';
-            const card = document.createElement('div'); card.className='card center';
-            
-            card.innerHTML = `<h2>✉️ Nous Contacter</h2><p class="small" style="margin-bottom:20px">Une suggestion ? Un bug ? Écrivez-nous.</p>`;
-            
-            const inputName = document.createElement('input'); inputName.className='input'; inputName.placeholder='Votre Nom';
-            if(state.pseudo) inputName.value = state.pseudo;
-            
-            const inputEmail = document.createElement('input'); inputEmail.className='input'; inputEmail.placeholder='Votre Email';
-            if(state.currentUser && state.currentUser.email) inputEmail.value = state.currentUser.email;
-
-            const inputText = document.createElement('textarea'); inputText.className='input'; inputText.placeholder='Votre message...';
-            
-            const btnSend = document.createElement('button'); btnSend.className='btn'; btnSend.textContent='Envoyer le message';
-            btnSend.onclick = async () => {
-                if(!inputText.value || !inputEmail.value) { showAlert("Merci de remplir les champs", "error"); return; }
-                btnSend.textContent = 'Envoi...';
-                btnSend.disabled = true;
-
-                try {
-                    // SAVE TO FIREBASE
-                    await addDoc(collection(db, "messages"), {
-                        name: inputName.value,
-                        email: inputEmail.value,
-                        message: inputText.value,
-                        date: new Date(),
-                        uid: state.currentUser ? state.currentUser.uid : 'guest'
-                    });
-                    showAlert("Message envoyé avec succès !", "success");
-                    setTimeout(() => { if(state.pseudo) renderHome(); else renderLogin(); }, 1500);
-                } catch(e) {
-                    console.error(e);
-                    showAlert("Erreur lors de l'envoi", "error");
-                    btnSend.textContent = 'Envoyer le message';
-                    btnSend.disabled = false;
-                }
-            };
-
-            const btnCancel = document.createElement('button'); btnCancel.className='link'; btnCancel.textContent='Annuler';
-            btnCancel.onclick = () => { if(state.pseudo) renderHome(); else renderLogin(); };
-
-            card.appendChild(inputName);
-            card.appendChild(inputEmail);
-            card.appendChild(inputText);
-            card.appendChild(btnSend);
-            card.appendChild(btnCancel);
-            app.appendChild(card);
         }
 
         function renderLogin() {
@@ -755,7 +657,6 @@
             let cloudBadge = state.isGuest ? '<span style="color:orange; font-size:0.8em; margin-bottom:10px">💾 Mode Local (Navigateur)</span>' : '<span style="color:var(--success); font-size:0.8em; margin-bottom:10px">☁️ Sauvegarde Cloud Active</span>';
             const displayName = state.pseudo || '...';
             
-            // --- NOUVEAU TUTORIEL PÉDAGOGIE INVERSÉE ---
             const tutorialHTML = `
                 <div style="background: rgba(0, 210, 255, 0.05); border: 1px solid var(--accent); border-radius: 12px; padding: 20px; margin: 20px 0; text-align: left; width: 100%;">
                     <h3 style="color:var(--accent); font-size: 1.1em; margin-bottom: 10px;">🎓 Mode d'emploi : Défie l'Algorithme</h3>
@@ -773,11 +674,8 @@
                 </div>
             `;
 
-            // DASHBOARD CONTENU
             card.innerHTML = `<h2>👋 Bonjour ${displayName}</h2>${cloudBadge}
-                            
                             ${tutorialHTML}
-
                             <div class="stat-box" style="width:100%"><div class="stat-number">${prog.correct + prog.incorrect}</div><div class="stat-label">Cas joués</div></div>
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-top:12px;">
                             <div class="stat-box" style="text-align:center; background:rgba(0, 255, 157, 0.1); border-color:var(--success)"><div class="stat-number" style="color:var(--success);">${prog.correct}</div><div class="stat-label">IA a trouvé</div></div>
@@ -786,7 +684,6 @@
             
             const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.textContent='🩺 Lancer le défi'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; 
             btnDiag.onclick= () => {
-                // Initialize audio context on user gesture
                 if(audioCtx.state === 'suspended') audioCtx.resume();
                 renderDemographics();
             };
@@ -797,11 +694,183 @@
             app.appendChild(card);
         }
 
+        // --- NEW REVIEWS SYSTEM ---
+        async function renderReviews() {
+            const app = q('#app'); app.innerHTML='';
+            const card = document.createElement('div'); card.className='card center';
+            card.innerHTML = `<h2>⭐ Avis Utilisateurs</h2><p class="small" style="margin-bottom:20px">Ce qu'ils pensent de Medicome.</p>`;
+
+            // --- FORMULAIRE D'AJOUT ---
+            const formDiv = document.createElement('div');
+            formDiv.style.background = 'rgba(255,255,255,0.05)'; formDiv.style.padding='15px'; formDiv.style.borderRadius='10px'; formDiv.style.width='100%'; formDiv.style.marginBottom='20px';
+            
+            formDiv.innerHTML = `<h4 style="margin-bottom:10px; color:var(--accent);">Laisser un avis</h4>
+            <div class="star-rating">
+                <input type="radio" id="5-stars" name="rating" value="5" /><label for="5-stars">★</label>
+                <input type="radio" id="4-stars" name="rating" value="4" /><label for="4-stars">★</label>
+                <input type="radio" id="3-stars" name="rating" value="3" /><label for="3-stars">★</label>
+                <input type="radio" id="2-stars" name="rating" value="2" /><label for="2-stars">★</label>
+                <input type="radio" id="1-star" name="rating" value="1" /><label for="1-star">★</label>
+            </div>
+            <textarea id="reviewText" class="input" placeholder="Votre commentaire..." style="min-height:60px;"></textarea>
+            <button id="submitReviewBtn" class="btn" style="width:100%; font-size:13px;">Publier l'avis</button>`;
+            
+            card.appendChild(formDiv);
+
+            // --- CONTAINER AVIS ---
+            const reviewsContainer = document.createElement('div');
+            reviewsContainer.className = 'reviews-container';
+            
+            // --- AVIS STATIQUES (Originaux) ---
+            reviewsContainer.innerHTML = `
+                <div class="review-card">
+                    <div class="review-header"><div class="review-avatar">A</div><div><div class="review-name">Antoine D.</div><div class="review-stars">★★★★★</div></div></div>
+                    <div class="review-text">"Super outil pour réviser mes cas cliniques avant les partiels. Simple et efficace."</div>
+                </div>
+                <div class="review-card">
+                    <div class="review-header"><div class="review-avatar">S</div><div><div class="review-name">Sarah L.</div><div class="review-stars">★★★★☆</div></div></div>
+                    <div class="review-text">"L'interface est top. J'aimerais juste encore plus de pathologies !"</div>
+                </div>
+                <div class="review-card">
+                    <div class="review-header"><div class="review-avatar">M</div><div><div class="review-name">Maxime P.</div><div class="review-stars">★★★★★</div></div></div>
+                    <div class="review-text">"Indispensable pour l'externat. Le mode invité est super pratique."</div>
+                </div>
+                <div class="review-card">
+                    <div class="review-header"><div class="review-avatar">L</div><div><div class="review-name">Léa B.</div><div class="review-stars">★★★★★</div></div></div>
+                    <div class="review-text">"Merci pour cet outil gratuit. Ça m'a sauvé sur la sémio cardio !"</div>
+                </div>
+            `;
+
+            // --- CHARGER AVIS DYNAMIQUES DEPUIS FIREBASE ---
+            try {
+                const qRev = query(collection(db, "reviews"), orderBy("date", "desc"), limit(10));
+                const snap = await getDocs(qRev);
+                snap.forEach(doc => {
+                    const r = doc.data();
+                    const stars = "★".repeat(r.rating) + "☆".repeat(5-r.rating);
+                    const div = document.createElement('div');
+                    div.className = 'review-card';
+                    div.innerHTML = `
+                        <div class="review-header">
+                            <div class="review-avatar">${r.pseudo.charAt(0).toUpperCase()}</div>
+                            <div>
+                                <div class="review-name">${r.pseudo}</div>
+                                <div class="review-stars" style="color:var(--gold)">${stars}</div>
+                            </div>
+                        </div>
+                        <div class="review-text">${r.text}</div>
+                    `;
+                    reviewsContainer.insertBefore(div, reviewsContainer.firstChild);
+                });
+            } catch(e) { console.log("Erreur chargement avis dynamiques", e); }
+
+            card.appendChild(reviewsContainer);
+            
+            const btnBack = document.createElement('button'); btnBack.className='btn'; btnBack.textContent='Retour';
+            btnBack.style.marginTop = '20px';
+            btnBack.onclick = () => { if(state.pseudo) renderHome(); else renderLogin(); };
+            card.appendChild(btnBack);
+
+            app.appendChild(card);
+
+            // LOGIC SUBMIT
+            setTimeout(() => {
+                const submitBtn = q('#submitReviewBtn');
+                if(submitBtn){
+                    submitBtn.onclick = async () => {
+                        const text = q('#reviewText').value;
+                        const ratingEl = document.querySelector('input[name="rating"]:checked');
+                        if(!text || !ratingEl) return showAlert("Note et message requis", "error");
+                        
+                        const rating = parseInt(ratingEl.value);
+                        const pseudo = state.pseudo || "Anonyme";
+                        
+                        try {
+                            await addDoc(collection(db, "reviews"), {
+                                pseudo, text, rating, date: new Date()
+                            });
+                            showAlert("Merci pour votre avis !", "success");
+                            renderReviews(); // Reload
+                        } catch(e) { showAlert("Erreur d'envoi", "error"); }
+                    };
+                }
+            }, 100);
+        }
+
+        // --- NEW LEGAL MODAL LOGIC ---
+        function renderLegal() {
+            const modal = q('#legalModal');
+            const content = q('#legalTextContent');
+            content.innerHTML = `
+                <h3>1. Éditeur du site</h3>
+                <p>Le site Medicome.fr est édité à titre personnel. <br>Contact : via le formulaire de contact du site.</p>
+                
+                <h3>2. Hébergement</h3>
+                <p>Le site est hébergé par GitHub Pages (GitHub Inc., 88 Colin P Kelly Jr St, San Francisco, CA 94107, USA).</p>
+                <p>Les données sont stockées sur Google Firebase (Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irlande).</p>
+                
+                <h3>3. Données Personnelles (RGPD)</h3>
+                <p>Medicome recueille votre adresse email uniquement pour l'authentification. Aucune donnée n'est revendue à des tiers. Conformément à la loi, vous disposez d'un droit d'accès, de rectification et de suppression de vos données en nous contactant.</p>
+                
+                <h3>4. Cookies</h3>
+                <p>Nous utilisons uniquement des cookies techniques nécessaires au fonctionnement (session utilisateur). Aucun cookie publicitaire n'est utilisé.</p>
+            `;
+            modal.style.display = 'flex';
+        }
+
+        function renderContact() {
+            const app = q('#app'); app.innerHTML='';
+            const card = document.createElement('div'); card.className='card center';
+            
+            card.innerHTML = `<h2>✉️ Nous Contacter</h2><p class="small" style="margin-bottom:20px">Une suggestion ? Un bug ? Écrivez-nous.</p>`;
+            
+            const inputName = document.createElement('input'); inputName.className='input'; inputName.placeholder='Votre Nom';
+            if(state.pseudo) inputName.value = state.pseudo;
+            
+            const inputEmail = document.createElement('input'); inputEmail.className='input'; inputEmail.placeholder='Votre Email';
+            if(state.currentUser && state.currentUser.email) inputEmail.value = state.currentUser.email;
+
+            const inputText = document.createElement('textarea'); inputText.className='input'; inputText.placeholder='Votre message...';
+            
+            const btnSend = document.createElement('button'); btnSend.className='btn'; btnSend.textContent='Envoyer le message';
+            btnSend.onclick = async () => {
+                if(!inputText.value || !inputEmail.value) { showAlert("Merci de remplir les champs", "error"); return; }
+                btnSend.textContent = 'Envoi...';
+                btnSend.disabled = true;
+
+                try {
+                    await addDoc(collection(db, "messages"), {
+                        name: inputName.value,
+                        email: inputEmail.value,
+                        message: inputText.value,
+                        date: new Date(),
+                        uid: state.currentUser ? state.currentUser.uid : 'guest'
+                    });
+                    showAlert("Message envoyé avec succès !", "success");
+                    setTimeout(() => { if(state.pseudo) renderHome(); else renderLogin(); }, 1500);
+                } catch(e) {
+                    console.error(e);
+                    showAlert("Erreur lors de l'envoi", "error");
+                    btnSend.textContent = 'Envoyer le message';
+                    btnSend.disabled = false;
+                }
+            };
+
+            const btnCancel = document.createElement('button'); btnCancel.className='link'; btnCancel.textContent='Annuler';
+            btnCancel.onclick = () => { if(state.pseudo) renderHome(); else renderLogin(); };
+
+            card.appendChild(inputName);
+            card.appendChild(inputEmail);
+            card.appendChild(inputText);
+            card.appendChild(btnSend);
+            card.appendChild(btnCancel);
+            app.appendChild(card);
+        }
+
         function renderProfile() {
             const app = q('#app'); app.innerHTML='';
             const prog = state.progression;
             const total = prog.correct + prog.incorrect;
-            const successRate = total > 0 ? Math.round((prog.correct / total) * 100) : 0;
             const card = document.createElement('div'); card.className='card center';
             card.style.maxWidth = '800px';
 
@@ -832,7 +901,6 @@
             const masteryGrid = document.createElement('div');
             masteryGrid.className = 'mastery-grid';
 
-            // Trier les pathologies par ordre alphabétique
             const sortedPathos = [...PATHOLOGIES].sort((a, b) => a.name.localeCompare(b.name));
             const masteryData = prog.mastery || {};
 
@@ -842,23 +910,13 @@
                 let statusClass = 'locked';
                 let icon = '🔒';
                 
-                if (count >= 3) {
-                    statusClass = 'master';
-                    icon = '🏆';
-                } else if (count >= 1) {
-                    statusClass = 'unlocked';
-                    icon = '✅';
-                }
+                if (count >= 3) { statusClass = 'master'; icon = '🏆'; } 
+                else if (count >= 1) { statusClass = 'unlocked'; icon = '✅'; }
 
                 mItem.className = `mastery-item ${statusClass}`;
-                mItem.innerHTML = `
-                    <div class="mastery-icon">${icon}</div>
-                    <div class="mastery-name">${p.name}</div>
-                    <div class="mastery-count">${count} réussite${count > 1 ? 's' : ''}</div>
-                `;
+                mItem.innerHTML = `<div class="mastery-icon">${icon}</div><div class="mastery-name">${p.name}</div><div class="mastery-count">${count} réussite${count > 1 ? 's' : ''}</div>`;
                 masteryGrid.appendChild(mItem);
             });
-            
             card.appendChild(masteryGrid);
 
             // --- Buttons ---
@@ -875,8 +933,6 @@
             btnBack.style.marginTop='20px'; btnBack.onclick=renderHome;
             card.appendChild(btnBack); app.appendChild(card);
         }
-
-        // =================== GAME (DIAGNOSTIC) ===================
 
         function renderDemographics() {
             const app = q('#app'); app.innerHTML='';
@@ -940,21 +996,16 @@
             const top1 = rankedPathos[0].patho;
             const top2 = rankedPathos[1].patho;
             
-            // 1. Calcul de pertinence (Différentiel + Aléatoire léger)
             let candidates = remainingSigns.map(s => {
                 const w1 = top1.signes[s] || 0;
                 const w2 = top2.signes[s] || 0;
                 return { sign: s, score: Math.abs(w1 - w2) + (Math.random() * 0.1) };
             });
 
-            // 2. Tri du plus pertinent au moins pertinent
             candidates.sort((a, b) => b.score - a.score);
-            
-            // 3. Filtrage : on garde ceux qui servent à quelque chose
             let usefulCandidates = candidates.filter(c => c.score > 0.1);
             if (usefulCandidates.length === 0) usefulCandidates = candidates;
 
-            // 4. Sélection dans le TOP 5 (Fuzzy Logic)
             const poolSize = Math.min(usefulCandidates.length, 5);
             const topPool = usefulCandidates.slice(0, poolSize);
             const winner = topPool[Math.floor(Math.random() * topPool.length)];
@@ -975,28 +1026,18 @@
             const score2 = parseFloat(top2.prob);
             const gap = score1 - score2;
 
-            // --- STRATEGIE GAP ---
-            // Palier 1 : Flash (Rapide et Sûr)
             if (qNum >= 4 && score1 >= 75 && gap >= 30) return true;
-            // Palier 2 : Standard
             if (qNum >= 9 && score1 >= 70 && gap >= 15) return true;
-            // Palier 3 : Filet de sécurité
             if (qNum >= 15 && score1 >= 60) return true;
 
             return false;
         }
 
-        // AKINATOR: Prepare confirmation questions for top suspect
         function prepareConfirmationQuestions(topPatho) {
-            // Find key signs of the top patho that haven't been asked yet
-            // Sort signs by weight (most important first)
             const pSigns = Object.entries(topPatho.signes)
-                .sort((a, b) => b[1] - a[1]) // High weight first
+                .sort((a, b) => b[1] - a[1])
                 .map(entry => entry[0]);
-                
             const potential = pSigns.filter(s => !state.asked.includes(s));
-            
-            // Take up to 2 top remaining signs
             return potential.slice(0, 2);
         }
 
@@ -1004,8 +1045,6 @@
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card center';
             const signe = state.currentSign;
-            
-            // Visually different if Akinator confirmation mode
             const questionTitle = state.confirmationMode ? 
                 `<span style="color:var(--gold)">🤔 Je pense avoir une piste...</span>` : 
                 `QUESTION ${state.asked.length}`;
@@ -1017,180 +1056,108 @@
             const mkBtn = (txt, cls, val) => {
                 const b = document.createElement('button'); b.className=cls; b.textContent=txt;
                 b.onclick=()=>{ 
-                    // SAVE STATE FOR HISTORY
                     state.history.push(JSON.stringify({
-                        answers: state.answers,
-                        asked: state.asked,
-                        currentSign: state.currentSign,
-                        confirmationMode: state.confirmationMode,
-                        confirmationQueue: state.confirmationQueue,
-                        confirmedPatho: state.confirmedPatho,
-                        priorityQueue: state.priorityQueue
+                        answers: state.answers, asked: state.asked, currentSign: state.currentSign,
+                        confirmationMode: state.confirmationMode, confirmationQueue: state.confirmationQueue,
+                        confirmedPatho: state.confirmedPatho, priorityQueue: state.priorityQueue
                     }));
-                    state.answers[signe]=val; 
-                    askNextQuestion(); 
+                    state.answers[signe]=val; askNextQuestion(); 
                 };
                 btnGroup.appendChild(b);
             };
             mkBtn('OUI', 'btn btn-success', true);
             mkBtn('NON', 'btn btn-error', false);
-            // "Je ne sais pas" toujours disponible
             mkBtn('Je ne sais pas', 'link', null);
-            
             card.appendChild(btnGroup);
 
-            // NAV BUTTONS
-            const navGroup = document.createElement('div');
-            navGroup.style.display = 'flex';
-            navGroup.style.gap = '15px';
-            navGroup.style.marginTop = '20px';
-
-            // Back Button
+            const navGroup = document.createElement('div'); navGroup.style.display = 'flex'; navGroup.style.gap = '15px'; navGroup.style.marginTop = '20px';
             if(state.history.length > 0) {
-                const btnBack = document.createElement('button');
-                btnBack.className='btn-back'; btnBack.textContent='⬅️ Retour';
+                const btnBack = document.createElement('button'); btnBack.className='btn-back'; btnBack.textContent='⬅️ Retour';
                 btnBack.onclick = () => {
                     const prevState = JSON.parse(state.history.pop());
-                    state.answers = prevState.answers;
-                    state.asked = prevState.asked;
-                    state.currentSign = prevState.currentSign;
-                    state.confirmationMode = prevState.confirmationMode;
-                    state.confirmationQueue = prevState.confirmationQueue;
-                    state.confirmedPatho = prevState.confirmedPatho;
-                    state.priorityQueue = prevState.priorityQueue;
+                    Object.assign(state, prevState);
                     renderCurrentQuestion();
                 };
                 navGroup.appendChild(btnBack);
             }
-
-            const btnAb = document.createElement('button'); btnAb.className='link'; btnAb.textContent='Abandonner'; 
-            btnAb.onclick=renderHome;
-            navGroup.appendChild(btnAb);
-            card.appendChild(navGroup);
-
+            const btnAb = document.createElement('button'); btnAb.className='link'; btnAb.textContent='Abandonner'; btnAb.onclick=renderHome;
+            navGroup.appendChild(btnAb); card.appendChild(navGroup);
             app.appendChild(card);
         }
 
         function askNextQuestion() {
-            // --- 0. GESTION DES RAFFINEMENTS (Entonnoir) ---
             if(state.asked.length > 0) {
                 const lastSign = state.asked[state.asked.length - 1];
                 const lastAnswer = state.answers[lastSign];
-                
-                // Si on a répondu OUI à une question générale (ex: douleur_abdominale)
                 if(lastAnswer === true) {
-                    // On vérifie si c'est une catégorie "Parent"
                     if(REFINEMENTS[lastSign]) {
-                        // On ajoute les questions précises à la file prioritaire
                         const candidates = REFINEMENTS[lastSign].filter(s => state.allSigns.includes(s) && !state.asked.includes(s));
                         state.priorityQueue.push(...candidates);
                     } else {
-                        // LOGIQUE D'EXCLUSION MUTUELLE (Sibling Killer)
                         for (const [parent, children] of Object.entries(REFINEMENTS)) {
                             if (children.includes(lastSign)) {
-                                // On a trouvé le groupe (ex: douleur_abdominale)
-                                // On retire tous les autres enfants de la file prioritaire
                                 const siblings = children.filter(c => c !== lastSign);
                                 state.priorityQueue = state.priorityQueue.filter(q => !siblings.includes(q));
-                                state.asked.push(...siblings.filter(s => !state.asked.includes(s))); // Marquer comme "déjà demandé"
+                                state.asked.push(...siblings.filter(s => !state.asked.includes(s)));
                             }
                         }
                     }
                 }
             }
 
-            // Si on a des questions prioritaires, on les pose en premier !
             if(state.priorityQueue.length > 0) {
                 const nextPriority = state.priorityQueue.shift();
-                // On vérifie qu'on ne l'a pas déjà posée entre temps (via la logique sibling killer par exemple)
                 if(!state.asked.includes(nextPriority)) {
-                    state.currentSign = nextPriority;
-                    state.asked.push(nextPriority);
-                    renderCurrentQuestion();
-                    return;
+                    state.currentSign = nextPriority; state.asked.push(nextPriority); renderCurrentQuestion(); return;
                 } else {
-                    // Si elle est déjà traitée, on passe à la suivante récursivement
-                    askNextQuestion();
-                    return;
+                    askNextQuestion(); return;
                 }
             }
 
-            // --- 1. LOGIQUE AKINATOR DE CONFIRMATION ---
             if (state.confirmationMode) {
                 const lastSign = state.asked[state.asked.length - 1];
                 if (state.answers[lastSign] === false) {
-                    state.confirmationMode = false;
-                    state.confirmationQueue = [];
-                    state.confirmedPatho = null;
+                    state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
                     showAlert("Ah, fausse piste. Je continue à chercher...", "info");
                 } else if (state.confirmationQueue.length > 0) {
                     const nextC = state.confirmationQueue.shift();
-                    state.currentSign = nextC;
-                    state.asked.push(nextC);
-                    renderCurrentQuestion();
-                    return;
+                    state.currentSign = nextC; state.asked.push(nextC); renderCurrentQuestion(); return;
                 } else {
-                    showDiagnostic();
-                    return;
+                    showDiagnostic(); return;
                 }
             }
 
-            // --- FLUX NORMAL ---
             prepareSigns();
             const remaining = state.allSigns.filter(s => !state.asked.includes(s));
             if(remaining.length === 0) { showDiagnostic(); return; }
 
             const hasSymptom = Object.keys(state.answers).some(key => state.answers[key] === true);
-
-            // --- PHASE 1 : CHASSEUR ---
             if (!hasSymptom) {
-                // On privilégie les questions générales pour ouvrir l'entonnoir
                 const generalSigns = remaining.filter(s => REFINEMENTS.hasOwnProperty(s));
                 const pool = generalSigns.length > 0 ? generalSigns : remaining;
-                
                 const randomSign = pool[Math.floor(Math.random() * pool.length)];
-                state.currentSign = randomSign;
-                state.asked.push(randomSign);
-                renderCurrentQuestion();
-                return;
+                state.currentSign = randomSign; state.asked.push(randomSign); renderCurrentQuestion(); return;
             }
 
-            // --- PHASE 2 : SNIPER ---
             rankPathologies(); 
             if(canShowDiagnostic()){ 
                 const topPatho = state.ranked[0].patho;
                 const confirmQuestions = prepareConfirmationQuestions(topPatho);
                 if (confirmQuestions.length > 0) {
-                    state.confirmationMode = true;
-                    state.confirmedPatho = topPatho;
-                    state.confirmationQueue = confirmQuestions;
+                    state.confirmationMode = true; state.confirmedPatho = topPatho; state.confirmationQueue = confirmQuestions;
                     const first = state.confirmationQueue.shift();
-                    state.currentSign = first;
-                    state.asked.push(first);
-                    renderCurrentQuestion();
-                    return;
-                } else {
-                    showDiagnostic(); 
-                    return; 
-                }
+                    state.currentSign = first; state.asked.push(first); renderCurrentQuestion(); return;
+                } else { showDiagnostic(); return; }
             }
             
             const signe = getNextSmartSign(state.ranked, remaining);
-            state.currentSign = signe; 
-            state.asked.push(signe);
-            renderCurrentQuestion();
+            state.currentSign = signe; state.asked.push(signe); renderCurrentQuestion();
         }
 
         function showDiagnostic() {
-            const app = q('#app');
-            app.innerHTML = '';
-            const loadingCard = document.createElement('div');
-            loadingCard.className = 'card center';
-            loadingCard.innerHTML = `
-                <h3 style="color:var(--accent)">🔎 Analyse IA en cours...</h3>
-                <div style="margin: 30px 0; font-size: 50px; animation: spin 0.8s infinite linear;">⚙️</div>
-                <p class="small">Comparaison base de données...</p>
-            `;
+            const app = q('#app'); app.innerHTML = '';
+            const loadingCard = document.createElement('div'); loadingCard.className = 'card center';
+            loadingCard.innerHTML = `<h3 style="color:var(--accent)">🔎 Analyse IA en cours...</h3><div style="margin: 30px 0; font-size: 50px; animation: spin 0.8s infinite linear;">⚙️</div><p class="small">Comparaison base de données...</p>`;
             app.appendChild(loadingCard);
 
             setTimeout(() => {
@@ -1203,52 +1170,33 @@
                 const card = document.createElement('div'); card.className='card center';
                 const title = document.createElement('h2'); title.textContent='💡 Diagnostic Proposé'; card.appendChild(title);
                 
-                let pdfButton = top.patho.pdf && top.patho.pdf !== '#' ? 
-                    `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.patho.pdf}" target="_blank">📄 Voir fiche PDF</a>` : 
-                    `<span class="small" style="opacity:0.5">📄 Pas de fiche PDF</span>`;
+                let pdfButton = top.patho.pdf && top.patho.pdf !== '#' ? `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.patho.pdf}" target="_blank">📄 Voir fiche PDF</a>` : `<span class="small" style="opacity:0.5">📄 Pas de fiche PDF</span>`;
                 
                 const diagDiv = document.createElement('div'); diagDiv.className='diagnostic-result';
-                diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div>
-                                     <div class="patho-desc" style="margin-top:8px">${top.patho.short}</div>
-                                     <br>
-                                     ${pdfButton}`;
+                diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div><div class="patho-desc" style="margin-top:8px">${top.patho.short}</div><br>${pdfButton}`;
                 card.appendChild(diagDiv);
                 
                 const btnGroup = document.createElement('div'); btnGroup.className='button-group';
                 
-                // BOUTON CORRECT
                 const btnTrue = document.createElement('button'); btnTrue.className='btn btn-success'; btnTrue.textContent='✅ Correct';
                 btnTrue.onclick = async () => { 
-                    triggerConfetti();
-                    playSound('success'); // SON SUCCES
-                    state.progression.correct++;
-                    state.progression.streak = (state.progression.streak || 0) + 1; // INCREASE STREAK
-                    
-                    // --- MISE A JOUR MASTERY (COLLECTION) ---
+                    triggerConfetti(); playSound('success');
+                    state.progression.correct++; state.progression.streak = (state.progression.streak || 0) + 1;
                     if(!state.progression.mastery) state.progression.mastery = {};
                     const pName = top.patho.name;
                     if(!state.progression.mastery[pName]) state.progression.mastery[pName] = 0;
                     state.progression.mastery[pName]++;
-                    // ------------------------------------------
-
-                    updateHeader();
-                    await saveProgression(); 
+                    updateHeader(); await saveProgression(); 
                     showAlert('Diagnostic validé !','success'); showDiagnosticDetails(top);
                 };
                 
-                // BOUTON INCORRECT
                 const btnFalse = document.createElement('button'); btnFalse.className='btn btn-error'; btnFalse.textContent='❌ Incorrect';
                 btnFalse.onclick = async () => { 
-                    playSound('error'); // SON ERREUR
-                    state.progression.incorrect++;
-                    state.progression.streak = 0; // RESET STREAK
-                    updateHeader();
-
-                    await saveProgression(); 
+                    playSound('error');
+                    state.progression.incorrect++; state.progression.streak = 0;
+                    updateHeader(); await saveProgression(); 
                     showAlert('Aïe... Continuons','error'); 
-                    // Reset confirm mode if missed
-                    state.confirmationMode = false;
-                    state.diagnosticShown=false; 
+                    state.confirmationMode = false; state.diagnosticShown=false; 
                     setTimeout(()=>askNextQuestion(), 800);
                 };
                 
@@ -1263,153 +1211,105 @@
             const title = document.createElement('h2'); title.innerHTML = `✅ ${top.patho.name}`; card.appendChild(title);
             const desc = document.createElement('div'); desc.className='patho-desc'; desc.textContent = top.patho.short; desc.style.marginBottom='20px'; desc.style.textAlign='center'; card.appendChild(desc);
             
-            const pathoSigns = Object.keys(top.patho.signes);
-            const correctSigns = [], missingSigns = [], notAskedSigns = [], erroneousSigns = [];
-            
-            pathoSigns.forEach(s => {
-                const val = state.answers[s];
-                if(val === true) correctSigns.push(s); 
-                else if(val === false) missingSigns.push(s);
-                else notAskedSigns.push(s);
-            });
-            state.allSigns.forEach(s => { 
-                if(state.answers[s] === true && !pathoSigns.includes(s)) erroneousSigns.push(s); 
-            });
-            
-            const resultsDiv = document.createElement('div'); resultsDiv.className='result-list';
-            const createList = (title, items, type, typeLabel) => {
-                if(items.length > 0) {
-                    const h = document.createElement('h4'); 
-                    h.textContent = `${title} (${items.length})`; 
-                    h.style.marginTop='15px'; h.style.marginBottom='5px'; h.style.color='white'; 
-                    resultsDiv.appendChild(h);
-                    items.forEach(s => {
-                        const r = document.createElement('div'); r.className='result-item result-'+type;
-                        r.innerHTML = `<div>${formatSigneName(s)}</div><div style="opacity:0.7; font-size:0.85em; font-weight:600;">${typeLabel}</div>`;
-                        resultsDiv.appendChild(r);
-                    });
-                }
-            };
-            createList("✅ Signes bien identifiés", correctSigns, "correct", "Validé");
-            createList("❌ Signes manqués (Faux Négatifs)", missingSigns, "missing", "Vous avez dit Non");
-            createList("ℹ️ Autres signes du tableau clinique", notAskedSigns, "neutral", "Non demandé");
-            createList("⚠️ Signes cochés à tort (Faux Positifs)", erroneousSigns, "error", "Erreur");
-            card.appendChild(resultsDiv);
+            if(top.patho.signes) { // Check if called from deep link with full object
+                const pathoSigns = Object.keys(top.patho.signes);
+                const correctSigns = [], missingSigns = [], notAskedSigns = [], erroneousSigns = [];
+                pathoSigns.forEach(s => {
+                    const val = state.answers[s];
+                    if(val === true) correctSigns.push(s); 
+                    else if(val === false) missingSigns.push(s);
+                    else notAskedSigns.push(s);
+                });
+                state.allSigns.forEach(s => { if(state.answers[s] === true && !pathoSigns.includes(s)) erroneousSigns.push(s); });
+                
+                const resultsDiv = document.createElement('div'); resultsDiv.className='result-list';
+                const createList = (title, items, type, typeLabel) => {
+                    if(items.length > 0) {
+                        const h = document.createElement('h4'); h.textContent = `${title} (${items.length})`; h.style.marginTop='15px'; h.style.marginBottom='5px'; h.style.color='white'; resultsDiv.appendChild(h);
+                        items.forEach(s => {
+                            const r = document.createElement('div'); r.className='result-item result-'+type;
+                            r.innerHTML = `<div>${formatSigneName(s)}</div><div style="opacity:0.7; font-size:0.85em; font-weight:600;">${typeLabel}</div>`;
+                            resultsDiv.appendChild(r);
+                        });
+                    }
+                };
+                createList("✅ Signes bien identifiés", correctSigns, "correct", "Validé");
+                createList("❌ Signes manqués (Faux Négatifs)", missingSigns, "missing", "Vous avez dit Non");
+                createList("ℹ️ Autres signes du tableau clinique", notAskedSigns, "neutral", "Non demandé");
+                createList("⚠️ Signes cochés à tort (Faux Positifs)", erroneousSigns, "error", "Erreur");
+                card.appendChild(resultsDiv);
+            }
+
+            // PDF Button again if needed
+            if(top.patho.pdf && top.patho.pdf !== '#') {
+                const pdfBtn = document.createElement('a');
+                pdfBtn.href = top.patho.pdf; pdfBtn.target = "_blank"; pdfBtn.className = 'btn'; pdfBtn.textContent = '📄 Voir la fiche PDF complète'; pdfBtn.style.marginTop = '20px'; pdfBtn.style.display = 'block'; pdfBtn.style.textAlign = 'center';
+                card.appendChild(pdfBtn);
+            }
             
             const btnGroup = document.createElement('div'); btnGroup.className='button-group';
             const btnHome = document.createElement('button'); btnHome.className='btn'; btnHome.textContent = '🏠 Retour Accueil'; btnHome.onclick = renderHome;
             btnGroup.appendChild(btnHome); card.appendChild(btnGroup); app.appendChild(card);
         }
 
-        // =================== GLOSSARY FUNCTION ===================
         function renderGlossary() {
             const app = q('#app'); app.innerHTML='';
-            
-            // 1. Header
             const titleCard = document.createElement('div'); titleCard.className='card center'; titleCard.innerHTML='<h2>📚 Glossaire</h2>'; 
             const btnBack = document.createElement('button'); btnBack.className='link'; btnBack.textContent='🏠 Retour';
             btnBack.style.marginBottom='20px'; btnBack.onclick=renderHome;
-            titleCard.appendChild(btnBack);
-            app.appendChild(titleCard);
+            titleCard.appendChild(btnBack); app.appendChild(titleCard);
 
-            // 2. Search Container
-            const searchContainer = document.createElement('div');
-            searchContainer.className = 'search-container';
-            const searchInput = document.createElement('input');
-            searchInput.className = 'search-input';
-            searchInput.placeholder = '🔍 Rechercher une pathologie (ex: Grippe...)';
-            searchInput.type = 'text';
-            searchContainer.appendChild(searchInput);
-            app.appendChild(searchContainer);
+            const searchContainer = document.createElement('div'); searchContainer.className = 'search-container';
+            const searchInput = document.createElement('input'); searchInput.className = 'search-input'; searchInput.placeholder = '🔍 Rechercher une pathologie (ex: Grippe...)'; searchInput.type = 'text';
+            searchContainer.appendChild(searchInput); app.appendChild(searchContainer);
 
-            // 3. Wrapper Structure
             const wrapper = document.createElement('div'); wrapper.className = 'glossary-wrapper';
-            
-            // --- SIDEBAR ---
             const sidebar = document.createElement('div'); sidebar.className = 'alphabet-sidebar';
             const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
             const sortedPathos = [...PATHOLOGIES].sort((a, b) => a.name.localeCompare(b.name));
             const existingLetters = new Set(sortedPathos.map(p => p.name.charAt(0).toUpperCase()));
             
             alphabet.forEach(letter => {
-                const link = document.createElement('a');
-                link.textContent = letter;
-                link.className = 'alpha-link';
+                const link = document.createElement('a'); link.textContent = letter; link.className = 'alpha-link';
                 if (existingLetters.has(letter)) {
                     link.href = `#letter-${letter}`;
-                    link.onclick = (e) => {
-                        e.preventDefault();
-                        const target = document.getElementById(`letter-${letter}`);
-                        if(target) target.scrollIntoView({behavior: 'smooth', block: 'start'});
-                    };
+                    link.onclick = (e) => { e.preventDefault(); const target = document.getElementById(`letter-${letter}`); if(target) target.scrollIntoView({behavior: 'smooth', block: 'start'}); };
                 } else { link.classList.add('disabled'); }
                 sidebar.appendChild(link);
             });
             wrapper.appendChild(sidebar);
 
-            // --- CONTENT ---
             const content = document.createElement('div'); content.className = 'glossary-content';
-            
             function renderGrid(pathos, showHeaders = true) {
                 content.innerHTML = '';
-                if(pathos.length === 0) {
-                    content.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted)">Aucune pathologie trouvée.</div>';
-                    return;
-                }
-
+                if(pathos.length === 0) { content.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted)">Aucune pathologie trouvée.</div>'; return; }
                 if(!showHeaders) {
                     const grid = document.createElement('div'); grid.className = 'letter-grid';
-                    pathos.forEach(p => {
-                        const card = createPathoCard(p);
-                        grid.appendChild(card);
-                    });
-                    content.appendChild(grid);
+                    pathos.forEach(p => { grid.appendChild(createPathoCard(p)); }); content.appendChild(grid);
                 } else {
                     alphabet.forEach(letter => {
                         const letterPathos = pathos.filter(p => p.name.charAt(0).toUpperCase() === letter);
                         if(letterPathos.length > 0) {
-                            const letterHeader = document.createElement('div');
-                            letterHeader.className = 'letter-header';
-                            letterHeader.id = `letter-${letter}`;
-                            letterHeader.textContent = letter;
-                            content.appendChild(letterHeader);
-                            
+                            const letterHeader = document.createElement('div'); letterHeader.className = 'letter-header'; letterHeader.id = `letter-${letter}`; letterHeader.textContent = letter; content.appendChild(letterHeader);
                             const grid = document.createElement('div'); grid.className = 'letter-grid';
-                            letterPathos.forEach(p => { grid.appendChild(createPathoCard(p)); });
-                            content.appendChild(grid);
+                            letterPathos.forEach(p => { grid.appendChild(createPathoCard(p)); }); content.appendChild(grid);
                         }
                     });
                 }
             }
-
             function createPathoCard(p) {
                 const card = document.createElement('div'); card.className='patho-card';
                 card.innerHTML=`<div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>`;
-                card.onclick=()=>{ 
-                    if(p.pdf && p.pdf !== '#') window.open(p.pdf,'_blank'); 
-                    else showAlert('Fiche PDF non disponible','error'); 
-                };
+                card.onclick=()=>{ if(p.pdf && p.pdf !== '#') window.open(p.pdf,'_blank'); else showAlert('Fiche PDF non disponible','error'); };
                 return card;
             }
-
-            // Initial Render
             renderGrid(sortedPathos, true);
-
-            // Search Logic
             searchInput.addEventListener('input', (e) => {
                 const term = e.target.value.toLowerCase();
-                if(term.length > 0) {
-                    sidebar.style.display = 'none'; // Hide A-Z on search
-                    const filtered = sortedPathos.filter(p => p.name.toLowerCase().includes(term));
-                    renderGrid(filtered, false); // Flat grid without headers
-                } else {
-                    sidebar.style.display = 'flex';
-                    renderGrid(sortedPathos, true);
-                }
+                if(term.length > 0) { sidebar.style.display = 'none'; const filtered = sortedPathos.filter(p => p.name.toLowerCase().includes(term)); renderGrid(filtered, false); } 
+                else { sidebar.style.display = 'flex'; renderGrid(sortedPathos, true); }
             });
-            
-            wrapper.appendChild(content);
-            app.appendChild(wrapper);
+            wrapper.appendChild(content); app.appendChild(wrapper);
         }
     </script>
 </body>

@@ -2,11 +2,11 @@
 <html lang="fr">
 <head>
     <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1a1a2e">
+    <meta name="theme-color" content="#1a1a2e">
 
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="favicon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="favicon.png">
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -23,20 +23,20 @@
     
     <style>
         :root {
-          /* MODE SOMBRE (Défaut) */
-          --bg-dark: #020b16; --bg-light: #1e3c72;
-          --glass-bg: rgba(13, 25, 48, 0.9); --glass-border: rgba(100, 200, 255, 0.15);
-          --accent: #00d2ff; --accent-glow: rgba(0, 210, 255, 0.4);
-          --text-main: #ffffff; --text-muted: #b0c4de;
-          --success: #00ff9d; --error: #ff4d4d; --info: #60a5fa;
-          --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32; --ruby: #e01e37;
-          --card-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            /* MODE SOMBRE (Défaut) */
+            --bg-dark: #020b16; --bg-light: #1e3c72;
+            --glass-bg: rgba(13, 25, 48, 0.95); --glass-border: rgba(100, 200, 255, 0.15);
+            --accent: #00d2ff; --accent-glow: rgba(0, 210, 255, 0.4);
+            --text-main: #ffffff; --text-muted: #b0c4de;
+            --success: #00ff9d; --error: #ff4d4d; --info: #60a5fa;
+            --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32; --ruby: #e01e37;
+            --card-shadow: 0 15px 35px rgba(0,0,0,0.6);
         }
 
         [data-theme="light"] {
             /* MODE CLAIR */
             --bg-dark: #e0f2fe; --bg-light: #f0f9ff;
-            --glass-bg: rgba(255, 255, 255, 0.9); --glass-border: rgba(0, 114, 255, 0.2);
+            --glass-bg: rgba(255, 255, 255, 0.95); --glass-border: rgba(0, 114, 255, 0.2);
             --accent: #0072ff; --accent-glow: rgba(0, 114, 255, 0.2);
             --text-main: #0f172a; --text-muted: #475569;
             --success: #059669; --error: #dc2626; --info: #2563eb;
@@ -263,6 +263,64 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+        // ==========================================
+        // CONFIGURATION DES AFFINAGES SYMPTÔMES (CORRECTIF)
+        // ==========================================
+        const REFINEMENTS = {
+            "douleur_thoracique": [
+                "douleur_thoracique_oppressive", "douleur_thoracique_dechirante", "douleur_thoracique_coté",
+                "irradiation_bras_machoire", "irradiation_dos", "douleur_effort", "soulage_penche_avant", "oppression_thoracique"
+            ],
+            "douleur_abdominale": [
+                "douleur_fosse_iliaque_droite", "douleur_fosse_iliaque_gauche", "douleur_hypocondre_droit",
+                "douleur_epigastrique", "douleur_transfixiante_dos", "douleur_abdominale_brutale",
+                "defense_abdominale", "ventre_dur_bois", "douleur_migration_ombilic"
+            ],
+            "toux": [
+                "toux_seche", "toux_grasse", "toux_sanglante", "toux_chronique", "toux_seche_aboyante",
+                "quintes_toux_violentes", "reprise_inspiratoire_bruyante"
+            ],
+            "dyspnee": [
+                "dyspnee_effort", "dyspnee_brutale", "orthopnee_dyspnee_couchee",
+                "dyspnee_expiratoire", "dyspnee_inspiratoire", "sifflements_respiratoires"
+            ],
+            "fievre": [
+                "fievre_elevee", "frissons_intenses", "sueurs_nocturnes", "convulsions_generalisees"
+            ],
+            "cephalees": [
+                "cephalees_intenses", "cephalees_explosives_brutales", "pulsatile_coeur_cogne",
+                "mal_tete_unilateral", "raideur_nuque", "gene_lumiere"
+            ],
+            "troubles_visuels": [
+                "vision_double", "vision_floue", "baisse_vision_brutale", "eclairs_lumineux",
+                "pluie_de_suie", "halo_autour_phares", "vision_centrale_floue", "lignes_droites_ondulees"
+            ],
+            "troubles_neuro": [
+                "paralysie_unilaterale", "troubles_parole_aphasie", "perte_connaissance", "convulsions",
+                "confusion", "tremblement_repos", "rigidite_musculaire"
+            ],
+            "anomalie_peau": [
+                "ictere_jaunisse", "purpura", "taches_rouges_peau", "eruption_vesicules_bulles",
+                "plaques_rouges", "grain_beaute_asymetrique", "croutes_jaunes_miel"
+            ],
+            "genes_urinaires": [
+                "brulures_urinaires", "sang_urines", "urines_troubles_odorantes",
+                "envie_frequente_uriner", "difficulte_uriner", "absence_urine"
+            ],
+            "douleur_membre_traumatisme": [
+                "impossibilite_marcher", "raccourcissement_jambe", "rotation_externe_pied",
+                "poignet_dos_fourchette", "douleur_jambe_brutale_intense", "absence_pouls"
+            ],
+            "douleur_dos": [
+                "douleur_lombaire_brutale", "irradiation_vers_pubis", "douleur_bas_dos_nuit",
+                "raideur_matin", "irradiation_fesse_jambe"
+            ],
+            "trouble_psy": [
+                "tristesse_permanente", "idees_noires", "delire_paranoiaque", "excitation_euphorie",
+                "peur_mourir_devenir_fou", "maigreur_extreme"
+            ]
+        };
+
         // MAPPING GROUPES
         const PATHO_GROUPS = {
             "Infarctus du myocarde": "Cardio", "Embolie pulmonaire": "Cardio", "OAP": "Cardio", "Dissection Aortique": "Cardio", "Péricardite Aiguë": "Cardio", "Fibrillation Atriale": "Cardio", "Endocardite Infectieuse": "Cardio", "Ischémie Aiguë Membre": "Cardio", "Rupture Anévrisme Aorte": "Cardio", "Choc Septique": "Cardio",
@@ -279,7 +337,7 @@
             "Paludisme": "Infectio", "Coqueluche": "Infectio", "Grippe": "Infectio", "Mononucléose Infectieuse": "Infectio", "Primo-Infection VIH": "Infectio", "Maladie de Lyme": "Infectio", "Tétanos": "Infectio", "Botulisme": "Infectio", "Rubéole": "Infectio", "Syphilis": "Infectio", "Oreillons": "Infectio", "Muguet Buccal": "Infectio"
         };
         
-        // ACHIEVEMENTS DEFINITIONS (COMPLET)
+        // ACHIEVEMENTS DEFINITIONS (COMPLET & CORRIGE)
         const ACHIEVEMENTS = [
             { id: "played_10_days", title: "Assiduité", desc: "Jouer 10 jours d'affilée", icon: "🗓️" },
             { id: "baby_doc", title: "Bébé Médecin", desc: "Identifier 1 pathologie", icon: "🍼" },
@@ -297,7 +355,10 @@
             { id: "master_100", title: "Légende", desc: "100 pathologies au rang Maître", icon: "🧞" },
             { id: "encyclopedia", title: "Encyclopédie Vivante", desc: "Débloquer toutes les pathologies", icon: "🌍" },
             { id: "god_mode", title: "Dieu de la Médecine", desc: "Toutes pathologies en Maître", icon: "⚡" },
-            { id: "speed_10", title: "Flash", desc: "10 diagnostics en moins de 30s", icon: "🚀" },
+            
+            // --- CORRECTION ICI : "speed_demon" pour correspondre à ta BDD ---
+            { id: "speed_demon", title: "Flash", desc: "10 diagnostics en moins de 30s", icon: "🚀" },
+            
             { id: "speed_50", title: "Vitesse Lumière", desc: "50 diagnostics en moins de 30s", icon: "🌠" },
             { id: "speed_100", title: "Voyageur Temporel", desc: "100 diagnostics en moins de 30s", icon: "⏳" },
             { id: "daily_10", title: "Expert du Quotidien", desc: "Réussir 10 défis du jour", icon: "☀️" }
@@ -386,8 +447,9 @@
 
         async function initApp() {
             try {
+                // IMPORTANT : Ce fichier doit être dans le même dossier
                 const response = await fetch('./pathologies.json');
-                if (!response.ok) throw new Error("Impossible de lire le fichier de données");
+                if (!response.ok) throw new Error("Impossible de lire le fichier de données pathologies.json");
                 PATHOLOGIES = await response.json();
                 
                 // DEEP LINKING
@@ -567,7 +629,7 @@
             if((p.dailyStreak || 0) >= 10) unlock('daily_10');
             
             // Speed Wins
-            if(p.speedWins >= 10) unlock('speed_10');
+            if(p.speedWins >= 10) unlock('speed_demon'); // CORRIGE ICI AUSSI
             if(p.speedWins >= 50) unlock('speed_50');
             if(p.speedWins >= 100) unlock('speed_100');
             
@@ -846,16 +908,16 @@
             const card = document.createElement('div'); card.className='card center'; card.style.maxWidth = '800px';
             card.innerHTML = `<h2>👤 Profil de ${state.pseudo}</h2>`;
             
-            // 1. ACHIEVEMENTS BUTTON (CORRIGÉ)
+            // 1. ACHIEVEMENTS BUTTON (CORRIGÉ & SÉCURISÉ)
             const btnAch = document.createElement('button'); btnAch.className='btn'; 
             btnAch.style.background = 'var(--gold)'; btnAch.style.color = 'black'; btnAch.style.marginBottom = '20px';
             btnAch.textContent = '🏆 Voir mes Succès';
             
-            // AJOUT DE (e) et e.stopPropagation()
             btnAch.onclick = (e) => {
-                e.stopPropagation(); // EMPÊCHE LA FERMETURE IMMÉDIATE
+                e.stopPropagation(); 
                 const modal = q('#achModal'); 
                 const content = q('#achContent');
+                if(!content) return; // Sécurité si modal non trouvée
                 content.innerHTML = '';
                 
                 // Construire la liste des succès

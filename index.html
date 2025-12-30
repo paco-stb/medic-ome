@@ -233,14 +233,6 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="achModal">
-        <div class="modal-content">
-            <h2 style="color:var(--gold); margin-bottom:15px; text-align:center;">🏆 Mes Succès</h2>
-            <div id="achContent"></div>
-            <button onclick="document.getElementById('achModal').style.display='none'" class="btn" style="margin-top:20px;">Fermer</button>
-        </div>
-    </div>
-
     <footer>
         <div class="social-links">
             <a id="linkInsta" href="https://instagram.com/medicome.fr" target="_blank" class="social-link"><svg class="social-icon" viewBox="0 0 24 24"><path d="M7.8,2H16.2C19.4,2 22,4.6 22,7.8V16.2A5.8,5.8 0 0,1 16.2,22H7.8C4.6,22 2,19.4 2,16.2V7.8A5.8,5.8 0 0,1 7.8,2M7.6,4A3.6,3.6 0 0,0 4,7.6V16.4C4,18.39 5.61,20 7.6,20H16.4A3.6,3.6 0 0,0 20,16.4V7.6C20,5.61 18.39,4 16.4,4H7.6M17.25,5.5A1.25,1.25 0 0,1 18.5,6.75A1.25,1.25 0 0,1 17.25,8A1.25,1.25 0 0,1 16,6.75A1.25,1.25 0 0,1 17.25,5.5M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z" /></svg></a>
@@ -279,7 +271,7 @@
             "Paludisme": "Infectio", "Coqueluche": "Infectio", "Grippe": "Infectio", "Mononucléose Infectieuse": "Infectio", "Primo-Infection VIH": "Infectio", "Maladie de Lyme": "Infectio", "Tétanos": "Infectio", "Botulisme": "Infectio", "Rubéole": "Infectio", "Syphilis": "Infectio", "Oreillons": "Infectio", "Muguet Buccal": "Infectio"
         };
         
-        // ACHIEVEMENTS DEFINITIONS (COMPLET)
+        // ACHIEVEMENTS DEFINITIONS
         const ACHIEVEMENTS = [
             { id: "played_10_days", title: "Assiduité", desc: "Jouer 10 jours d'affilée", icon: "🗓️" },
             { id: "baby_doc", title: "Bébé Médecin", desc: "Identifier 1 pathologie", icon: "🍼" },
@@ -846,21 +838,41 @@
             const card = document.createElement('div'); card.className='card center'; card.style.maxWidth = '800px';
             card.innerHTML = `<h2>👤 Profil de ${state.pseudo}</h2>`;
             
-            // 1. ACHIEVEMENTS BUTTON (CORRIGÉ)
+            // --- BOUTON SUCCÈS (VERSION BLINDÉE) ---
             const btnAch = document.createElement('button'); btnAch.className='btn'; 
             btnAch.style.background = 'var(--gold)'; btnAch.style.color = 'black'; btnAch.style.marginBottom = '20px';
             btnAch.textContent = '🏆 Voir mes Succès';
             
-            // AJOUT DE (e) et e.stopPropagation()
             btnAch.onclick = (e) => {
-                e.stopPropagation(); // EMPÊCHE LA FERMETURE IMMÉDIATE
-                const modal = q('#achModal'); 
-                const content = q('#achContent');
-                content.innerHTML = '';
+                e.stopPropagation(); 
+
+                // 1. NETTOYAGE : On supprime les anciennes fenêtres mal placées s'il y en a
+                const oldModals = document.querySelectorAll('#achModal');
+                oldModals.forEach(m => m.remove());
+
+                // 2. CRÉATION DYNAMIQUE : On crée la fenêtre propre via JS
+                const modal = document.createElement('div');
+                modal.id = 'achModal';
+                modal.className = 'modal-overlay';
+                modal.style.display = 'flex'; // On l'affiche direct
+                modal.style.zIndex = '9999';  // On force l'affichage tout devant
                 
-                // Construire la liste des succès
+                modal.innerHTML = `
+                    <div class="modal-content">
+                        <h2 style="color:var(--gold); margin-bottom:15px; text-align:center;">🏆 Mes Succès</h2>
+                        <div id="achContent"></div>
+                        <button id="closeAchBtn" class="btn" style="margin-top:20px;">Fermer</button>
+                    </div>
+                `;
+                document.body.appendChild(modal); // On l'ajoute à la fin du site
+
+                // 3. REMPLISSAGE DU CONTENU
+                const content = modal.querySelector('#achContent');
+                
+                if(!prog.achievements) prog.achievements = []; // Sécurité
+                
                 ACHIEVEMENTS.forEach(ach => {
-                    const unlocked = (prog.achievements || []).includes(ach.id);
+                    const unlocked = prog.achievements.includes(ach.id);
                     const row = document.createElement('div');
                     row.className = `achievement-row ${unlocked ? 'unlocked' : ''}`;
                     row.innerHTML = `
@@ -872,13 +884,14 @@
                     `;
                     content.appendChild(row);
                 });
-                
-                modal.style.display = 'flex';
+
+                // 4. GESTION FERMETURE
+                document.getElementById('closeAchBtn').onclick = () => modal.remove();
+                modal.onclick = (evt) => { if(evt.target === modal) modal.remove(); };
             };
             card.appendChild(btnAch);
 
-
-            // 2. SPECIALTY & PROGRESS
+            // --- SUITE DU PROFIL ---
             const groupScores = {};
             let maxScore = 0; let bestGroup = null;
             Object.keys(prog.mastery || {}).forEach(pName => {
@@ -913,16 +926,13 @@
                 <div class="small" style="margin-bottom:30px;">Progression globale : ${percentage}% (${unlockedPathos}/${totalPathos})</div>
             `;
 
-            // 3. ERROR TRACKER
+            // Error Tracker
             const errorTracker = document.createElement('div');
             errorTracker.className = 'error-tracker';
             errorTracker.innerHTML = `<h3 style="color:var(--error); font-size:16px;">⚠️ Boîte à Erreurs (Suivi)</h3>`;
-            
-            // Logic: Erreurs de plus de 7 jours
             const now = Date.now();
             let hasErrors = false;
             Object.entries(prog.errorLog || {}).forEach(([pName, data]) => {
-                // data = { date: timestamp, count: number }
                 if(now - data.date > 7 * 24 * 60 * 60 * 1000) {
                     hasErrors = true;
                     const item = document.createElement('div');
@@ -931,12 +941,10 @@
                     errorTracker.appendChild(item);
                 }
             });
-            
             if(!hasErrors) errorTracker.innerHTML += `<div class="small">Aucune pathologie oubliée depuis 1 semaine. Bien joué !</div>`;
             card.appendChild(errorTracker);
 
-
-            // 4. MASTERY GRID
+            // Mastery Grid
             const masteryTitle = document.createElement('h3'); masteryTitle.innerHTML = 'Maitrise Clinique'; 
             masteryTitle.style.marginTop = "30px";
             card.appendChild(masteryTitle);
@@ -948,7 +956,6 @@
             sortedPathos.forEach(p => {
                 const m = masteryData[p.name];
                 const successCount = (typeof m === 'number') ? m : (m?.success || 0);
-                
                 const mItem = document.createElement('div');
                 let sClass = 'm-locked', icon = '🔒';
                 if (successCount >= 10) { sClass = 'm-master'; icon = '💎'; }
@@ -958,7 +965,7 @@
 
                 mItem.className = `mastery-item ${sClass}`;
                 mItem.innerHTML = `<div class="mastery-icon">${icon}</div><div class="mastery-name">${p.name}</div><div class="mastery-count">${successCount} réussite(s)</div>`;
-                mItem.onclick = () => renderPathoStats(p); // Click to see stats
+                mItem.onclick = () => renderPathoStats(p); 
                 masteryGrid.appendChild(mItem);
             });
             card.appendChild(masteryGrid);

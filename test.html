@@ -233,6 +233,14 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="achModal">
+        <div class="modal-content">
+            <h2 style="color:var(--gold); margin-bottom:15px; text-align:center;">🏆 Mes Succès</h2>
+            <div id="achContent"></div>
+            <button onclick="document.getElementById('achModal').style.display='none'" class="btn" style="margin-top:20px;">Fermer</button>
+        </div>
+    </div>
+
     <footer>
         <div class="social-links">
             <a id="linkInsta" href="https://instagram.com/medicome.fr" target="_blank" class="social-link"><svg class="social-icon" viewBox="0 0 24 24"><path d="M7.8,2H16.2C19.4,2 22,4.6 22,7.8V16.2A5.8,5.8 0 0,1 16.2,22H7.8C4.6,22 2,19.4 2,16.2V7.8A5.8,5.8 0 0,1 7.8,2M7.6,4A3.6,3.6 0 0,0 4,7.6V16.4C4,18.39 5.61,20 7.6,20H16.4A3.6,3.6 0 0,0 20,16.4V7.6C20,5.61 18.39,4 16.4,4H7.6M17.25,5.5A1.25,1.25 0 0,1 18.5,6.75A1.25,1.25 0 0,1 17.25,8A1.25,1.25 0 0,1 16,6.75A1.25,1.25 0 0,1 17.25,5.5M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z" /></svg></a>
@@ -269,21 +277,6 @@
             "Attaque de Panique": "Psy", "Dépression": "Psy", "Schizophrénie": "Psy", "Trouble Bipolaire": "Psy", "Anorexie Mentale": "Psy",
             "Glaucome Aigu": "ORL/Ophtalmo", "Otite Moyenne Aiguë": "ORL/Ophtalmo", "DMLA": "ORL/Ophtalmo", "Cataracte": "ORL/Ophtalmo", "Décollement de Rétine": "ORL/Ophtalmo", "VPPB": "ORL/Ophtalmo", "Angine Bactérienne": "ORL/Ophtalmo", "Epistaxis": "ORL/Ophtalmo", "Sinusite Aiguë": "ORL/Ophtalmo", "Laryngite Aiguë": "ORL/Ophtalmo", "Conjonctivite": "ORL/Ophtalmo", "Orgelet": "ORL/Ophtalmo",
             "Paludisme": "Infectio", "Coqueluche": "Infectio", "Grippe": "Infectio", "Mononucléose Infectieuse": "Infectio", "Primo-Infection VIH": "Infectio", "Maladie de Lyme": "Infectio", "Tétanos": "Infectio", "Botulisme": "Infectio", "Rubéole": "Infectio", "Syphilis": "Infectio", "Oreillons": "Infectio", "Muguet Buccal": "Infectio"
-        };
-
-        const REFINEMENTS = {
-            "douleur_abdominale": ["douleur_fosse_iliaque_droite", "douleur_hypocondre_droit", "douleur_fosse_iliaque_gauche", "douleur_epigastrique", "douleur_transfixiante_dos", "douleur_bas_ventre", "douleur_pelvienne", "douleur_abdominale_diffuse", "crampes_abdominales", "douleur_abdominale_intermittente", "douleur_sus_pubienne", "troubles_transit"],
-            "douleur_thoracique": ["douleur_thoracique_oppressive", "douleur_thoracique_dechirante", "douleur_thoracique_coté", "douleur_basithoracique", "douleur_inspiration", "douleur_thoracique_point_cote"],
-            "douleur_dos": ["douleur_lombaire_brutale", "douleur_lombaire_unilaterale", "douleur_lombaire", "douleur_bas_dos", "douleur_bas_dos_nuit", "douleur_dos_os", "douleur_dos_brutale"],
-            "douleur_membre_traumatisme": ["impossibilite_marcher", "douleur_poignet", "chute_recente", "jambe_froide_pale", "douleur_articulaire_intense", "douleur_gros_orteil", "douleur_jambe_brutale_intense", "douleur_aine_hanche", "douleur_mains", "douleur_talon", "fourmillements_doigts"],
-            "dyspnee": ["dyspnee_effort", "orthopnee_dyspnee_couchee", "dyspnee_brutale", "dyspnee_sifflante", "essoufflement_aggrave", "gene_respiratoire"],
-            "toux": ["toux_seche", "toux_grasse", "toux_sanglante", "chant_du_coq", "toux_chronique", "toux_nuit"],
-            "troubles_visuels": ["vision_floue", "vision_double", "baisse_vision_brutale", "amputation_champ_visuel", "eclairs_lumineux", "mouches_devant_yeux", "vision_centrale_floue", "vision_double_un_oeil", "trouble_vision_flou"],
-            "troubles_neuro": ["paralysie_unilaterale", "troubles_parole_aphasie", "asymetrie_visage", "perte_sensibilite", "perte_equilibre", "tremblement_repos", "lenteur_mouvements", "machoire_bloquee", "corps_raide_contracte", "paralysie_descend_tete_vers_pieds", "paralysie_monte_pieds_vers_tete", "perte_connaissance"],
-            "cephalees": ["cephalees_intenses", "cephalees_explosives_brutales", "mal_tete_unilateral"],
-            "anomalie_peau": ["plaques_rouges", "vesicules_bulles", "demangeaisons", "grain_beaute_suspect", "tache_noire", "jambe_rouge", "purpura", "taches_rouges_jambes", "taches_rouges_peau", "tache_rouge_s_etend_peau", "plaques_rouges_croutes", "perle_translucide_peau", "croute_ne_guerit_pas", "boutons_bulles_corps", "taches_peau_purpura", "eruption_boutons_corps", "eruption_corps", "peau_aspect_granite", "boule_aine_douloureuse_dure"],
-            "trouble_psy": ["tristesse_permanente", "delire_paranoiaque", "hallucinations", "perte_memoire", "agitation", "excitation_euphorie", "maigreur_extreme", "ne_se_lave_plus", "oubli_faits_recents", "cherches_ses_mots"],
-            "genes_urinaires": ["sang_urines", "brulures_urinaires", "impossibilite_uriner", "regles_tres_abondantes", "douleur_testicule_brutale", "pertes_vaginales_anormales", "sang_urines_rouge", "difficulte_uriner", "urines_abondantes", "urines_mousseuses"]
         };
         
         // ACHIEVEMENTS DEFINITIONS (COMPLET)
@@ -861,8 +854,8 @@
             // AJOUT DE (e) et e.stopPropagation()
             btnAch.onclick = (e) => {
                 e.stopPropagation(); // EMPÊCHE LA FERMETURE IMMÉDIATE
-                const modal = q('#notifModal'); 
-                const content = q('#notifContent');
+                const modal = q('#achModal'); 
+                const content = q('#achContent');
                 content.innerHTML = '';
                 
                 // Construire la liste des succès
@@ -873,18 +866,14 @@
                     row.innerHTML = `
                         <div class="ach-icon">${unlocked ? ach.icon : '🔒'}</div>
                         <div class="ach-info">
-                            <div class="ach-title">${ach.title}</div>
+                            <div class="ach-title" style="color:${unlocked ? 'var(--text-main)' : 'var(--text-muted)'}">${ach.title}</div>
                             <div class="ach-desc">${ach.desc}</div>
                         </div>
                     `;
                     content.appendChild(row);
                 });
                 
-                // Hack: réutiliser la modale notif pour l'instant
-                const title = q('#notifModal h4');
-                if(title) title.textContent = '🏆 Succès & Trophées';
-                
-                modal.style.display = 'block';
+                modal.style.display = 'flex';
             };
             card.appendChild(btnAch);
 

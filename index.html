@@ -160,9 +160,41 @@
         .result-missing { border-left:4px solid #f59e0b; }
         .result-error { border-left:4px solid var(--error); }
 
-        /* LEGAL MODAL */
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; display: none; justify-content: center; align-items: center; padding: 20px; }
-        .modal-content { background: var(--glass-bg); padding: 30px; border-radius: 20px; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto; border: 1px solid var(--glass-border); text-align: left; color: var(--text-main); }
+        /* LEGAL MODAL & SUCCESS MODAL - FIXE ET SÉCURISÉE */
+        .modal-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100vw; 
+            height: 100vh; 
+            background: rgba(0, 0, 0, 0.85); 
+            z-index: 99999; /* TRES HAUT */
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 20px; 
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-overlay.active {
+            display: flex !important;
+        }
+
+        .modal-content { 
+            background: var(--glass-bg); 
+            padding: 30px; 
+            border-radius: 20px; 
+            max-width: 600px; 
+            width: 100%; 
+            max-height: 80vh; 
+            overflow-y: auto; 
+            border: 1px solid var(--glass-border); 
+            text-align: left; 
+            color: var(--text-main); 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            position: relative; 
+        }
+        
         .modal-content h3 { color: var(--accent); margin-top: 20px; }
 
         footer { text-align:center; padding:30px 20px; background: rgba(0,0,0,0.5); font-size:13px; border-top: 1px solid var(--glass-border); display: flex; flex-direction: column; align-items: center; gap: 15px; }
@@ -229,7 +261,7 @@
         <div class="modal-content">
             <h2 style="color:var(--text-main); margin-bottom:15px;">Mentions Légales</h2>
             <div id="legalTextContent"></div>
-            <button onclick="document.getElementById('legalModal').style.display='none'" class="link" style="margin-top:20px;">Fermer</button>
+            <button onclick="document.getElementById('legalModal').classList.remove('active')" class="link" style="margin-top:20px;">Fermer</button>
         </div>
     </div>
 
@@ -237,7 +269,7 @@
         <div class="modal-content">
             <h2 style="color:var(--gold); margin-bottom:15px; text-align:center;">🏆 Mes Succès</h2>
             <div id="achContent"></div>
-            <button onclick="document.getElementById('achModal').style.display='none'" class="btn" style="margin-top:20px;">Fermer</button>
+            <button onclick="document.getElementById('achModal').classList.remove('active')" class="btn" style="margin-top:20px;">Fermer</button>
         </div>
     </div>
 
@@ -264,64 +296,24 @@
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         // ==========================================
-        // CONFIGURATION DES AFFINAGES SYMPTÔMES (CORRECTIF)
+        // 1. CORRECTION: AJOUT DE REFINEMENTS
         // ==========================================
         const REFINEMENTS = {
-            "douleur_thoracique": [
-                "douleur_thoracique_oppressive", "douleur_thoracique_dechirante", "douleur_thoracique_coté",
-                "irradiation_bras_machoire", "irradiation_dos", "douleur_effort", "soulage_penche_avant", "oppression_thoracique"
-            ],
-            "douleur_abdominale": [
-                "douleur_fosse_iliaque_droite", "douleur_fosse_iliaque_gauche", "douleur_hypocondre_droit",
-                "douleur_epigastrique", "douleur_transfixiante_dos", "douleur_abdominale_brutale",
-                "defense_abdominale", "ventre_dur_bois", "douleur_migration_ombilic"
-            ],
-            "toux": [
-                "toux_seche", "toux_grasse", "toux_sanglante", "toux_chronique", "toux_seche_aboyante",
-                "quintes_toux_violentes", "reprise_inspiratoire_bruyante"
-            ],
-            "dyspnee": [
-                "dyspnee_effort", "dyspnee_brutale", "orthopnee_dyspnee_couchee",
-                "dyspnee_expiratoire", "dyspnee_inspiratoire", "sifflements_respiratoires"
-            ],
-            "fievre": [
-                "fievre_elevee", "frissons_intenses", "sueurs_nocturnes", "convulsions_generalisees"
-            ],
-            "cephalees": [
-                "cephalees_intenses", "cephalees_explosives_brutales", "pulsatile_coeur_cogne",
-                "mal_tete_unilateral", "raideur_nuque", "gene_lumiere"
-            ],
-            "troubles_visuels": [
-                "vision_double", "vision_floue", "baisse_vision_brutale", "eclairs_lumineux",
-                "pluie_de_suie", "halo_autour_phares", "vision_centrale_floue", "lignes_droites_ondulees"
-            ],
-            "troubles_neuro": [
-                "paralysie_unilaterale", "troubles_parole_aphasie", "perte_connaissance", "convulsions",
-                "confusion", "tremblement_repos", "rigidite_musculaire"
-            ],
-            "anomalie_peau": [
-                "ictere_jaunisse", "purpura", "taches_rouges_peau", "eruption_vesicules_bulles",
-                "plaques_rouges", "grain_beaute_asymetrique", "croutes_jaunes_miel"
-            ],
-            "genes_urinaires": [
-                "brulures_urinaires", "sang_urines", "urines_troubles_odorantes",
-                "envie_frequente_uriner", "difficulte_uriner", "absence_urine"
-            ],
-            "douleur_membre_traumatisme": [
-                "impossibilite_marcher", "raccourcissement_jambe", "rotation_externe_pied",
-                "poignet_dos_fourchette", "douleur_jambe_brutale_intense", "absence_pouls"
-            ],
-            "douleur_dos": [
-                "douleur_lombaire_brutale", "irradiation_vers_pubis", "douleur_bas_dos_nuit",
-                "raideur_matin", "irradiation_fesse_jambe"
-            ],
-            "trouble_psy": [
-                "tristesse_permanente", "idees_noires", "delire_paranoiaque", "excitation_euphorie",
-                "peur_mourir_devenir_fou", "maigreur_extreme"
-            ]
+            "douleur_thoracique": ["douleur_thoracique_oppressive", "douleur_thoracique_dechirante", "douleur_thoracique_coté", "irradiation_bras_machoire", "irradiation_dos", "douleur_effort", "soulage_penche_avant", "oppression_thoracique"],
+            "douleur_abdominale": ["douleur_fosse_iliaque_droite", "douleur_fosse_iliaque_gauche", "douleur_hypocondre_droit", "douleur_epigastrique", "douleur_transfixiante_dos", "douleur_abdominale_brutale", "defense_abdominale", "ventre_dur_bois", "douleur_migration_ombilic"],
+            "toux": ["toux_seche", "toux_grasse", "toux_sanglante", "toux_chronique", "toux_seche_aboyante", "quintes_toux_violentes", "reprise_inspiratoire_bruyante"],
+            "dyspnee": ["dyspnee_effort", "dyspnee_brutale", "orthopnee_dyspnee_couchee", "dyspnee_expiratoire", "dyspnee_inspiratoire", "sifflements_respiratoires"],
+            "fievre": ["fievre_elevee", "frissons_intenses", "sueurs_nocturnes", "convulsions_generalisees"],
+            "cephalees": ["cephalees_intenses", "cephalees_explosives_brutales", "pulsatile_coeur_cogne", "mal_tete_unilateral", "raideur_nuque", "gene_lumiere"],
+            "troubles_visuels": ["vision_double", "vision_floue", "baisse_vision_brutale", "eclairs_lumineux", "pluie_de_suie", "halo_autour_phares", "vision_centrale_floue", "lignes_droites_ondulees"],
+            "troubles_neuro": ["paralysie_unilaterale", "troubles_parole_aphasie", "perte_connaissance", "convulsions", "confusion", "tremblement_repos", "rigidite_musculaire"],
+            "anomalie_peau": ["ictere_jaunisse", "purpura", "taches_rouges_peau", "eruption_vesicules_bulles", "plaques_rouges", "grain_beaute_asymetrique", "croutes_jaunes_miel"],
+            "genes_urinaires": ["brulures_urinaires", "sang_urines", "urines_troubles_odorantes", "envie_frequente_uriner", "difficulte_uriner", "absence_urine"],
+            "douleur_membre_traumatisme": ["impossibilite_marcher", "raccourcissement_jambe", "rotation_externe_pied", "poignet_dos_fourchette", "douleur_jambe_brutale_intense", "absence_pouls"],
+            "douleur_dos": ["douleur_lombaire_brutale", "irradiation_vers_pubis", "douleur_bas_dos_nuit", "raideur_matin", "irradiation_fesse_jambe"],
+            "trouble_psy": ["tristesse_permanente", "idees_noires", "delire_paranoiaque", "excitation_euphorie", "peur_mourir_devenir_fou", "maigreur_extreme"]
         };
 
-        // MAPPING GROUPES
         const PATHO_GROUPS = {
             "Infarctus du myocarde": "Cardio", "Embolie pulmonaire": "Cardio", "OAP": "Cardio", "Dissection Aortique": "Cardio", "Péricardite Aiguë": "Cardio", "Fibrillation Atriale": "Cardio", "Endocardite Infectieuse": "Cardio", "Ischémie Aiguë Membre": "Cardio", "Rupture Anévrisme Aorte": "Cardio", "Choc Septique": "Cardio",
             "AVC Ischémique": "Neuro", "Méningite Aiguë": "Neuro", "Hémorragie Méningée": "Neuro", "Crise d'Épilepsie": "Neuro", "Parkinson": "Neuro", "Sclérose en Plaques": "Neuro", "Maladie d'Alzheimer": "Neuro", "Myasthénie": "Neuro", "Hématome Sous-Dural": "Neuro", "Hématome Extra-Dural": "Neuro", "Guillain-Barré": "Neuro",
@@ -337,7 +329,9 @@
             "Paludisme": "Infectio", "Coqueluche": "Infectio", "Grippe": "Infectio", "Mononucléose Infectieuse": "Infectio", "Primo-Infection VIH": "Infectio", "Maladie de Lyme": "Infectio", "Tétanos": "Infectio", "Botulisme": "Infectio", "Rubéole": "Infectio", "Syphilis": "Infectio", "Oreillons": "Infectio", "Muguet Buccal": "Infectio"
         };
         
-        // ACHIEVEMENTS DEFINITIONS (COMPLET & CORRIGE)
+        // ==========================================
+        // 2. CORRECTION: ID SUCCES (speed_demon)
+        // ==========================================
         const ACHIEVEMENTS = [
             { id: "played_10_days", title: "Assiduité", desc: "Jouer 10 jours d'affilée", icon: "🗓️" },
             { id: "baby_doc", title: "Bébé Médecin", desc: "Identifier 1 pathologie", icon: "🍼" },
@@ -355,10 +349,7 @@
             { id: "master_100", title: "Légende", desc: "100 pathologies au rang Maître", icon: "🧞" },
             { id: "encyclopedia", title: "Encyclopédie Vivante", desc: "Débloquer toutes les pathologies", icon: "🌍" },
             { id: "god_mode", title: "Dieu de la Médecine", desc: "Toutes pathologies en Maître", icon: "⚡" },
-            
-            // --- CORRECTION ICI : "speed_demon" pour correspondre à ta BDD ---
-            { id: "speed_demon", title: "Flash", desc: "10 diagnostics en moins de 30s", icon: "🚀" },
-            
+            { id: "speed_demon", title: "Flash", desc: "10 diagnostics en moins de 30s", icon: "🚀" }, // CORRIGE
             { id: "speed_50", title: "Vitesse Lumière", desc: "50 diagnostics en moins de 30s", icon: "🌠" },
             { id: "speed_100", title: "Voyageur Temporel", desc: "100 diagnostics en moins de 30s", icon: "⏳" },
             { id: "daily_10", title: "Expert du Quotidien", desc: "Réussir 10 défis du jour", icon: "☀️" }
@@ -497,7 +488,13 @@
                     brandLogo.onclick = () => { if (state.currentUser || state.isGuest) { renderHome(); } };
                 }
                 
-                window.renderLegal = renderLegal;
+                window.renderLegal = () => {
+                    const modal = document.getElementById('legalModal');
+                    if(modal) {
+                        modal.style.display = 'flex';
+                        modal.classList.add('active'); // FORCE DISPLAY
+                    }
+                };
 
             } catch (err) {
                 console.error(err);
@@ -908,34 +905,50 @@
             const card = document.createElement('div'); card.className='card center'; card.style.maxWidth = '800px';
             card.innerHTML = `<h2>👤 Profil de ${state.pseudo}</h2>`;
             
-            // 1. ACHIEVEMENTS BUTTON (CORRIGÉ & SÉCURISÉ)
-            const btnAch = document.createElement('button'); btnAch.className='btn'; 
-            btnAch.style.background = 'var(--gold)'; btnAch.style.color = 'black'; btnAch.style.marginBottom = '20px';
+            // 3. CORRECTION: BOUTON SUCCÈS SECURISÉ & VISIBLE
+            const btnAch = document.createElement('button'); 
+            btnAch.className='btn'; 
+            btnAch.style.background = 'var(--gold)'; 
+            btnAch.style.color = 'black'; 
+            btnAch.style.marginBottom = '20px';
             btnAch.textContent = '🏆 Voir mes Succès';
             
             btnAch.onclick = (e) => {
-                e.stopPropagation(); 
-                const modal = q('#achModal'); 
-                const content = q('#achContent');
-                if(!content) return; // Sécurité si modal non trouvée
+                e.preventDefault();
+                e.stopPropagation(); // Stop propagation
+                
+                const modal = document.getElementById('achModal'); 
+                const content = document.getElementById('achContent');
+                
+                if(!modal || !content) {
+                    console.error("Erreur: Modale non trouvée");
+                    return;
+                }
+
                 content.innerHTML = '';
                 
                 // Construire la liste des succès
-                ACHIEVEMENTS.forEach(ach => {
-                    const unlocked = (prog.achievements || []).includes(ach.id);
-                    const row = document.createElement('div');
-                    row.className = `achievement-row ${unlocked ? 'unlocked' : ''}`;
-                    row.innerHTML = `
-                        <div class="ach-icon">${unlocked ? ach.icon : '🔒'}</div>
-                        <div class="ach-info">
-                            <div class="ach-title" style="color:${unlocked ? 'var(--text-main)' : 'var(--text-muted)'}">${ach.title}</div>
-                            <div class="ach-desc">${ach.desc}</div>
-                        </div>
-                    `;
-                    content.appendChild(row);
-                });
+                if(ACHIEVEMENTS && ACHIEVEMENTS.length > 0) {
+                    ACHIEVEMENTS.forEach(ach => {
+                        const unlocked = (prog.achievements || []).includes(ach.id);
+                        const row = document.createElement('div');
+                        row.className = `achievement-row ${unlocked ? 'unlocked' : ''}`;
+                        row.innerHTML = `
+                            <div class="ach-icon">${unlocked ? ach.icon : '🔒'}</div>
+                            <div class="ach-info">
+                                <div class="ach-title" style="color:${unlocked ? 'var(--text-main)' : 'var(--text-muted)'}">${ach.title}</div>
+                                <div class="ach-desc">${ach.desc}</div>
+                            </div>
+                        `;
+                        content.appendChild(row);
+                    });
+                } else {
+                    content.innerHTML = "<div>Aucun succès chargé.</div>";
+                }
                 
+                // FORCE L'AFFICHAGE AVEC LA CLASSE ACTIVE
                 modal.style.display = 'flex';
+                modal.classList.add('active');
             };
             card.appendChild(btnAch);
 
@@ -1087,6 +1100,7 @@
                 <p>Email uniquement pour authentification. Aucune revente.</p>
             `;
             modal.style.display = 'flex';
+            modal.classList.add('active'); // FORCE DISPLAY
         }
 
         function renderContact() {

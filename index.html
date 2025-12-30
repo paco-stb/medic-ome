@@ -3,36 +3,51 @@
 <head>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a1a2e">
+
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="favicon.png">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="google-site-verification" content="8SyBOdC5YhaXDqfNYGfzP1EZbb0iQWABpkImmZHXG30" />
     <title>Medicome - Entraînement Clinique</title>
+    
+    <meta name="description" content="Simulateur de cas cliniques interactif pour étudiants en médecine.">
+    <meta property="og:title" content="Medicome">
+    <meta property="og:type" content="website">
+    <link rel="icon" href="favicon.png">
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
         :root {
+            /* MODE SOMBRE (Défaut) */
             --bg-dark: #020b16; --bg-light: #1e3c72;
             --glass-bg: rgba(13, 25, 48, 0.95); --glass-border: rgba(100, 200, 255, 0.15);
             --accent: #00d2ff; --accent-glow: rgba(0, 210, 255, 0.4);
             --text-main: #ffffff; --text-muted: #b0c4de;
-            --success: #00ff9d; --error: #ff4d4d;
+            --success: #00ff9d; --error: #ff4d4d; --info: #60a5fa;
             --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32; --ruby: #e01e37;
             --card-shadow: 0 15px 35px rgba(0,0,0,0.6);
         }
+
         [data-theme="light"] {
+            /* MODE CLAIR */
             --bg-dark: #e0f2fe; --bg-light: #f0f9ff;
             --glass-bg: rgba(255, 255, 255, 0.95); --glass-border: rgba(0, 114, 255, 0.2);
             --accent: #0072ff; --accent-glow: rgba(0, 114, 255, 0.2);
             --text-main: #0f172a; --text-muted: #475569;
-            --success: #059669; --error: #dc2626;
+            --success: #059669; --error: #dc2626; --info: #2563eb;
+            --card-shadow: 0 10px 25px rgba(0,0,0,0.1);
         }
+
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
         * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
-        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at 50% 0%, var(--bg-light), var(--bg-dark) 80%); background-attachment: fixed; color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; transition: background 0.3s; }
         
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at 50% 0%, var(--bg-light), var(--bg-dark) 80%); background-attachment: fixed; color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; transition: background 0.3s; }
+
         /* HEADER */
         header { display: flex; justify-content: space-between; padding: 10px 24px; background: var(--glass-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); align-items: center; border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         .brand { display: flex; align-items: center; gap: 12px; cursor: pointer; }
@@ -41,16 +56,15 @@
         .top-right { display:flex; gap:12px; align-items:center; }
         .pseudo { color:var(--accent); font-weight:600; padding:6px 12px; background: rgba(0, 210, 255, 0.05); border: 1px solid var(--glass-border); border-radius:20px; cursor:pointer; font-size: 14px; }
 
-        /* MODALS (CORRIGE) */
-        .modal-overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.85); z-index: 9999; 
-            display: none; /* Important: None par défaut */
-            justify-content: center; align-items: center; padding: 20px; 
-            backdrop-filter: blur(5px);
-        }
-        .modal-content { background: var(--glass-bg); padding: 30px; border-radius: 20px; max-width: 600px; width: 100%; max-height: 80vh; overflow-y: auto; border: 1px solid var(--glass-border); text-align: left; color: var(--text-main); position: relative; box-shadow: 0 0 50px rgba(0,0,0,0.5); }
-        
+        /* NOTIFICATIONS */
+        .notif-btn, .theme-btn { position: relative; background: none; border: none; cursor: pointer; padding: 5px; margin-right: 5px; }
+        .notif-icon, .theme-icon { width: 24px; height: 24px; fill: var(--text-muted); transition: fill 0.3s; }
+        .notif-btn:hover .notif-icon, .theme-btn:hover .theme-icon { fill: var(--accent); }
+        .notif-badge { position: absolute; top: 0; right: 0; width: 10px; height: 10px; background: var(--error); border-radius: 50%; display: none; border: 1px solid var(--bg-dark); }
+        .notif-modal { position: absolute; top: 60px; right: 20px; width: 300px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 15px; z-index: 200; box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: none; max-height: 400px; overflow-y: auto; color: var(--text-main); }
+        .notif-item { border-bottom: 1px solid var(--glass-border); padding: 10px 0; font-size: 13px; text-align: left; }
+        .notif-date { font-size: 11px; color: var(--accent); margin-bottom: 4px; }
+
         /* UI ELEMENTS */
         .link { background: rgba(125,125,125,0.1); border:1px solid var(--glass-border); color: var(--text-muted); padding:8px 16px; border-radius:8px; cursor:pointer; transition:all 0.3s; font-size:14px; }
         .link:hover { background: rgba(125,125,125,0.2); color: var(--text-main); border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
@@ -71,35 +85,34 @@
         .small { opacity:0.6; font-size:13px; color:var(--text-muted); margin-top:12px; text-align:center; }
         .question-text { font-size:22px; text-align:center; padding:24px; background: linear-gradient(90deg, rgba(0,210,255,0.05) 0%, rgba(0,210,255,0) 100%); border-radius:12px; border-left:4px solid var(--accent); width: 100%; margin-bottom: 20px; box-shadow: inset 0 0 20px rgba(0,0,0,0.05); color: var(--text-main); }
 
-        /* NOTIFS */
-        .notif-btn, .theme-btn { position: relative; background: none; border: none; cursor: pointer; padding: 5px; margin-right: 5px; }
-        .notif-icon, .theme-icon { width: 24px; height: 24px; fill: var(--text-muted); transition: fill 0.3s; }
-        .notif-btn:hover .notif-icon, .theme-btn:hover .theme-icon { fill: var(--accent); }
-        .notif-badge { position: absolute; top: 0; right: 0; width: 10px; height: 10px; background: var(--error); border-radius: 50%; display: none; border: 1px solid var(--bg-dark); }
-        .notif-modal { position: absolute; top: 60px; right: 20px; width: 300px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 15px; z-index: 200; box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: none; max-height: 400px; overflow-y: auto; color: var(--text-main); }
-        .notif-item { border-bottom: 1px solid var(--glass-border); padding: 10px 0; font-size: 13px; text-align: left; }
-        .notif-date { font-size: 11px; color: var(--accent); margin-bottom: 4px; }
-
-        /* PROGRESS & STATS */
+        /* PROGRESS BAR IA */
         .ai-progress-container { width: 100%; height: 6px; background: rgba(125,125,125,0.1); border-radius: 10px; margin-bottom: 20px; overflow: hidden; position: relative;}
         .ai-progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--success)); width: 0%; transition: width 0.5s ease-out; }
         .ai-progress-label { font-size: 11px; color: var(--accent); margin-bottom: 4px; text-align: right; }
+
+        /* DAILY & ACHIEVEMENTS */
         .daily-card { border: 1px solid var(--gold); background: rgba(255, 215, 0, 0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; width: 100%; }
         .daily-title { color: var(--gold); font-weight: bold; margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        
         .achievement-row { display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(125,125,125,0.1); border-radius: 8px; margin-bottom: 8px; border: 1px solid transparent; text-align: left; }
         .achievement-row.unlocked { border-color: var(--gold); background: rgba(255, 215, 0, 0.1); }
         .ach-icon { font-size: 20px; min-width: 30px; }
         .ach-info { flex: 1; }
         .ach-title { font-weight: bold; font-size: 13px; color: var(--text-main); }
         .ach-desc { font-size: 11px; color: var(--text-muted); }
+        
         .error-tracker { margin-top: 20px; width: 100%; border-top: 1px solid var(--glass-border); padding-top: 15px; }
         .error-item { display: flex; justify-content: space-between; padding: 8px; background: rgba(255, 77, 77, 0.1); border-left: 3px solid var(--error); margin-bottom: 5px; border-radius: 4px; font-size: 13px; color: var(--text-main); }
+
+        /* REVIEWS */
         .reviews-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; width: 100%; }
         .review-card { background: rgba(125,125,125,0.1); border: 1px solid var(--glass-border); border-radius: 12px; padding: 15px; text-align: left; }
         .star-rating { display: flex; gap: 5px; justify-content: center; margin: 10px 0; direction: rtl; }
         .star-rating input { display: none; }
         .star-rating label { font-size: 25px; color: #888; cursor: pointer; transition: color 0.2s; }
         .star-rating input:checked ~ label, .star-rating label:hover, .star-rating label:hover ~ label { color: var(--gold); }
+
+        /* MASTERY & BADGES */
         .mastery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; width: 100%; margin-top: 20px; }
         .mastery-item { background: rgba(125,125,125,0.1); border-radius: 10px; padding: 15px 10px; text-align: center; border: 2px solid transparent; transition: all 0.3s; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
         .mastery-item:hover { transform: translateY(-3px); background: rgba(125,125,125,0.2); }
@@ -111,18 +124,22 @@
         .mastery-icon { font-size: 24px; }
         .mastery-name { font-size: 13px; font-weight: 600; color: var(--text-main); }
         .mastery-count { font-size: 11px; color: var(--text-muted); }
-        .specialty-badge { font-size: 16px; font-weight: bold; color: var(--text-main); background: linear-gradient(90deg, rgba(0,210,255,0.2) 0%, rgba(0,210,255,0) 100%); padding: 10px 20px; border-radius: 30px; border-left: 4px solid var(--accent); display: inline-block; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         
-        /* GLOSSARY */
+        /* BADGE TITRE */
+        .specialty-badge { font-size: 16px; font-weight: bold; color: var(--text-main); background: linear-gradient(90deg, rgba(0,210,255,0.2) 0%, rgba(0,210,255,0) 100%); padding: 10px 20px; border-radius: 30px; border-left: 4px solid var(--accent); display: inline-block; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+
+        /* GLOSSARY RENOVÉ */
         .glossary-wrapper { display: flex; align-items: flex-start; gap: 30px; width: 100%; max-width: 1000px; position: relative; }
         .alphabet-sidebar { position: sticky; top: 100px; display: flex; flex-direction: column; gap: 8px; background: var(--glass-bg); padding: 15px 10px; border-radius: 20px; max-height: 80vh; overflow-y: auto; border: 1px solid var(--glass-border); min-width: 50px; align-items: center;}
         .alpha-link { color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 700; padding: 4px 0; transition: all 0.2s; text-align: center; width: 100%; display: block;}
         .alpha-link:hover { color: var(--text-main); transform: scale(1.2); }
         .alpha-link.disabled { opacity: 0.2; cursor: default; pointer-events: none; }
+        
         .glossary-content { flex: 1; width: 100%; }
         .search-container { width: 100%; max-width: 600px; margin: 0 auto 40px auto; position: relative; }
         .search-input { width: 100%; padding: 18px 25px; border-radius: 50px; border: 2px solid var(--glass-border); background: var(--glass-bg); color: var(--text-main); font-size: 18px; backdrop-filter: blur(10px); transition: all 0.3s; text-align: left; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .search-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 25px var(--accent-glow); transform: scale(1.01); }
+        
         .letter-header { font-size: 40px; font-weight: 800; color: rgba(125,125,125,0.2); border-bottom: 2px solid var(--glass-border); margin-top: 50px; margin-bottom: 20px; padding-bottom: 5px; scroll-margin-top: 110px; text-transform: uppercase; }
         .letter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
         .patho-card { background: rgba(125,125,125,0.05); padding:25px; border-radius:16px; border:1px solid var(--glass-border); transition:all 0.3s; cursor:pointer; position: relative; overflow: hidden; }
@@ -131,7 +148,8 @@
         .patho-card:hover::before { opacity: 1; }
         .patho-name { font-size:18px; font-weight:700; color: var(--text-main); margin-bottom:8px; }
         .patho-desc { font-size:13px; color:var(--text-muted); line-height:1.5; }
-        
+
+        /* UTILS */
         .alert { padding:14px; border-radius:10px; margin:12px 0; font-size:14px; width: 100%; text-align: center; }
         .alert-success { background: rgba(0, 255, 157, 0.1); border:1px solid var(--success); color:var(--success); }
         .alert-error { background: rgba(255, 77, 77, 0.1); border:1px solid var(--error); color:var(--error); }
@@ -141,6 +159,43 @@
         .result-correct { border-left:4px solid var(--success); }
         .result-missing { border-left:4px solid #f59e0b; }
         .result-error { border-left:4px solid var(--error); }
+
+        /* LEGAL MODAL & SUCCESS MODAL - FIXE ET SÉCURISÉE */
+        .modal-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100vw; 
+            height: 100vh; 
+            background: rgba(0, 0, 0, 0.85); 
+            z-index: 99999; /* TRES HAUT */
+            display: none; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 20px; 
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-overlay.active {
+            display: flex !important;
+        }
+
+        .modal-content { 
+            background: var(--glass-bg); 
+            padding: 30px; 
+            border-radius: 20px; 
+            max-width: 600px; 
+            width: 100%; 
+            max-height: 80vh; 
+            overflow-y: auto; 
+            border: 1px solid var(--glass-border); 
+            text-align: left; 
+            color: var(--text-main); 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            position: relative; 
+        }
+        
+        .modal-content h3 { color: var(--accent); margin-top: 20px; }
 
         footer { text-align:center; padding:30px 20px; background: rgba(0,0,0,0.5); font-size:13px; border-top: 1px solid var(--glass-border); display: flex; flex-direction: column; align-items: center; gap: 15px; }
         .social-links { display: flex; gap: 20px; margin-bottom: 10px; }
@@ -206,7 +261,7 @@
         <div class="modal-content">
             <h2 style="color:var(--text-main); margin-bottom:15px;">Mentions Légales</h2>
             <div id="legalTextContent"></div>
-            <button onclick="document.getElementById('legalModal').style.display='none'" class="link" style="margin-top:20px;">Fermer</button>
+            <button onclick="document.getElementById('legalModal').classList.remove('active')" class="link" style="margin-top:20px;">Fermer</button>
         </div>
     </div>
 
@@ -214,7 +269,7 @@
         <div class="modal-content">
             <h2 style="color:var(--gold); margin-bottom:15px; text-align:center;">🏆 Mes Succès</h2>
             <div id="achContent"></div>
-            <button onclick="document.getElementById('achModal').style.display='none'" class="btn" style="margin-top:20px;">Fermer</button>
+            <button onclick="document.getElementById('achModal').classList.remove('active')" class="btn" style="margin-top:20px;">Fermer</button>
         </div>
     </div>
 
@@ -228,7 +283,7 @@
             <span class="footer-link" onclick="window.scrollTo(0,0)">Haut de page</span>
             <span class="footer-link" id="reviewsLink">Avis Utilisateurs</span>
             <span class="footer-link" id="contactLink">Nous Contacter</span>
-            <span class="footer-link" onclick="window.renderLegal()">Mentions Légales & Confidentialité</span>
+            <span class="footer-link" onclick="renderLegal()">Mentions Légales & Confidentialité</span>
         </div>
         <div style="margin-top:10px; opacity:0.6;">Medicome © 2025 - Outil pédagogique</div>
     </footer>
@@ -241,7 +296,7 @@
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         // ==========================================
-        // 1. CORRECTION: REFINEMENTS
+        // 1. CORRECTION: AJOUT DE REFINEMENTS
         // ==========================================
         const REFINEMENTS = {
             "douleur_thoracique": ["douleur_thoracique_oppressive", "douleur_thoracique_dechirante", "douleur_thoracique_coté", "irradiation_bras_machoire", "irradiation_dos", "douleur_effort", "soulage_penche_avant", "oppression_thoracique"],
@@ -259,32 +314,6 @@
             "trouble_psy": ["tristesse_permanente", "idees_noires", "delire_paranoiaque", "excitation_euphorie", "peur_mourir_devenir_fou", "maigreur_extreme"]
         };
 
-        // ==========================================
-        // 2. FONCTIONS GLOBALES (POUR REGLER LE BUG DES MENTIONS)
-        // ==========================================
-        window.q = (sel) => document.querySelector(sel);
-        
-        window.renderLegal = function() {
-            const modal = document.getElementById('legalModal');
-            const content = document.getElementById('legalTextContent');
-            if(modal && content) {
-                content.innerHTML = `
-                    <h3>1. Éditeur du site</h3>
-                    <p>Le site Medicome.fr est édité à titre personnel. <br>Contact : via le formulaire de contact du site.</p>
-                    <h3>2. Hébergement</h3>
-                    <p>Hébergé par GitHub Pages (USA). Données stockées sur Google Firebase (Irlande).</p>
-                    <h3>3. Données Personnelles</h3>
-                    <p>Email uniquement pour authentification. Aucune revente.</p>
-                `;
-                // FORCE LE DISPLAY FLEX DIRECTEMENT
-                modal.style.display = 'flex';
-                modal.style.zIndex = '99999';
-            } else {
-                console.error("Impossible de trouver la modale mentions légales");
-            }
-        };
-
-        // MAPPING GROUPES
         const PATHO_GROUPS = {
             "Infarctus du myocarde": "Cardio", "Embolie pulmonaire": "Cardio", "OAP": "Cardio", "Dissection Aortique": "Cardio", "Péricardite Aiguë": "Cardio", "Fibrillation Atriale": "Cardio", "Endocardite Infectieuse": "Cardio", "Ischémie Aiguë Membre": "Cardio", "Rupture Anévrisme Aorte": "Cardio", "Choc Septique": "Cardio",
             "AVC Ischémique": "Neuro", "Méningite Aiguë": "Neuro", "Hémorragie Méningée": "Neuro", "Crise d'Épilepsie": "Neuro", "Parkinson": "Neuro", "Sclérose en Plaques": "Neuro", "Maladie d'Alzheimer": "Neuro", "Myasthénie": "Neuro", "Hématome Sous-Dural": "Neuro", "Hématome Extra-Dural": "Neuro", "Guillain-Barré": "Neuro",
@@ -300,7 +329,9 @@
             "Paludisme": "Infectio", "Coqueluche": "Infectio", "Grippe": "Infectio", "Mononucléose Infectieuse": "Infectio", "Primo-Infection VIH": "Infectio", "Maladie de Lyme": "Infectio", "Tétanos": "Infectio", "Botulisme": "Infectio", "Rubéole": "Infectio", "Syphilis": "Infectio", "Oreillons": "Infectio", "Muguet Buccal": "Infectio"
         };
         
-        // 3. CORRECTION: ID SUCCES (speed_demon)
+        // ==========================================
+        // 2. CORRECTION: ID SUCCES (speed_demon)
+        // ==========================================
         const ACHIEVEMENTS = [
             { id: "played_10_days", title: "Assiduité", desc: "Jouer 10 jours d'affilée", icon: "🗓️" },
             { id: "baby_doc", title: "Bébé Médecin", desc: "Identifier 1 pathologie", icon: "🍼" },
@@ -318,7 +349,7 @@
             { id: "master_100", title: "Légende", desc: "100 pathologies au rang Maître", icon: "🧞" },
             { id: "encyclopedia", title: "Encyclopédie Vivante", desc: "Débloquer toutes les pathologies", icon: "🌍" },
             { id: "god_mode", title: "Dieu de la Médecine", desc: "Toutes pathologies en Maître", icon: "⚡" },
-            { id: "speed_demon", title: "Flash", desc: "10 diagnostics en moins de 30s", icon: "🚀" }, 
+            { id: "speed_demon", title: "Flash", desc: "10 diagnostics en moins de 30s", icon: "🚀" }, // CORRIGE
             { id: "speed_50", title: "Vitesse Lumière", desc: "50 diagnostics en moins de 30s", icon: "🌠" },
             { id: "speed_100", title: "Voyageur Temporel", desc: "100 diagnostics en moins de 30s", icon: "⏳" },
             { id: "daily_10", title: "Expert du Quotidien", desc: "Réussir 10 défis du jour", icon: "☀️" }
@@ -456,6 +487,14 @@
                 if(brandLogo) {
                     brandLogo.onclick = () => { if (state.currentUser || state.isGuest) { renderHome(); } };
                 }
+                
+                window.renderLegal = () => {
+                    const modal = document.getElementById('legalModal');
+                    if(modal) {
+                        modal.style.display = 'flex';
+                        modal.classList.add('active'); // FORCE DISPLAY
+                    }
+                };
 
             } catch (err) {
                 console.error(err);
@@ -497,6 +536,7 @@
                         if (docSnap.exists()) {
                             const data = docSnap.data();
                             if (data.pseudo) state.pseudo = data.pseudo;
+                            // MERGE PROGRESSION TO KEEP NEW FIELDS
                             state.progression = { ...state.progression, ...data.progression };
                         } else { saveProgression(); }
                         updateHeader(); renderHome();
@@ -526,6 +566,7 @@
             });
         }
 
+        function q(sel){ return document.querySelector(sel); }
         function formatSigneName(sign){ return sign.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
         function showAlert(message,type){
             const alertDiv = document.createElement('div');
@@ -534,12 +575,13 @@
             const app = q('#app');
             if(app){ app.insertBefore(alertDiv,app.firstChild); setTimeout(()=>{ if(alertDiv.parentNode) alertDiv.parentNode.removeChild(alertDiv); },3000); }
         }
+        
         function triggerConfetti() {
             if(window.confetti) { window.confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); }
         }
 
         async function saveProgression() {
-            checkAchievements(); 
+            checkAchievements(); // Vérifier les succès avant de sauvegarder
             if (!state.isGuest && state.currentUser) {
                 try {
                     const userRef = doc(db, "users", state.currentUser.uid);
@@ -551,6 +593,7 @@
             }
         }
         
+        // --- ACHIEVEMENT CHECK ---
         function checkAchievements() {
             if(!state.progression.achievements) state.progression.achievements = [];
             const unlock = (id) => {
@@ -560,29 +603,41 @@
                     triggerConfetti();
                 }
             };
+            
             const p = state.progression;
             
+            // Diagnostics Count
             if(p.correct >= 1) unlock('baby_doc');
             if(p.correct >= 25) unlock('med_student');
             if(p.correct >= 50) unlock('intern');
             if(p.correct >= 100) unlock('chief');
+            
+            // Social & Reviews
             if(p.reviewDone) unlock('critic');
             if(p.socialDone) unlock('fan');
+            
+            // PDF Downloads
             if(p.pdfDownloads >= 1) unlock('bookworm_1');
             if(p.pdfDownloads >= 25) unlock('bookworm_25');
             if(p.pdfDownloads >= 50) unlock('bookworm_50');
             if(p.pdfDownloads >= 100) unlock('bookworm_100');
+            
+            // Daily Streak
             if((p.dailyStreak || 0) >= 10) unlock('daily_10');
-            if(p.speedWins >= 10) unlock('speed_demon'); 
+            
+            // Speed Wins
+            if(p.speedWins >= 10) unlock('speed_demon'); // CORRIGE ICI AUSSI
             if(p.speedWins >= 50) unlock('speed_50');
             if(p.speedWins >= 100) unlock('speed_100');
             
+            // Mastery & Collection
             const unlockedCount = Object.keys(p.mastery || {}).filter(k => p.mastery[k].success > 0).length;
             const masterCount = Object.keys(p.mastery || {}).filter(k => p.mastery[k].success >= 10).length;
             
             if(masterCount >= 5) unlock('master_5');
             if(masterCount >= 30) unlock('master_30');
             if(masterCount >= 100) unlock('master_100');
+            
             if(unlockedCount >= PATHOLOGIES.length && PATHOLOGIES.length > 0) unlock('encyclopedia');
             if(masterCount >= PATHOLOGIES.length && PATHOLOGIES.length > 0) unlock('god_mode');
         }
@@ -709,16 +764,19 @@
             card.appendChild(btnDiag); card.appendChild(btnGloss); card.appendChild(btnProf); 
             app.appendChild(card);
 
+            // Handler Daily
+            const btnDaily = q('#btnDaily');
             if(btnDaily) {
                 btnDaily.onclick = () => {
                     if(audioCtx.state === 'suspended') audioCtx.resume();
                     state.dailyTarget = dailyPatho;
-                    state.isChrono = false; 
+                    state.isChrono = false; // Pas de chrono forcé en daily
                     renderDemographics();
                 };
             }
         }
 
+        // --- NEW REVIEWS SYSTEM ---
         async function renderReviews() {
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
@@ -744,6 +802,7 @@
             const reviewsContainer = document.createElement('div');
             reviewsContainer.className = 'reviews-container';
             
+            // Charger avis Firebase
             try {
                 const qRev = query(collection(db, "reviews"), where("approved", "==", true), orderBy("date", "desc"), limit(10));
                 const snap = await getDocs(qRev);
@@ -760,7 +819,14 @@
                     `;
                     reviewsContainer.insertBefore(div, reviewsContainer.firstChild);
                 });
-            } catch(e) { console.log(e); }
+            } catch(e) { 
+                console.log("Erreur avis", e); 
+                if(e.code === 'failed-precondition') {
+                     const qRevBackup = query(collection(db, "reviews"), where("approved", "==", true), limit(10));
+                     const snap = await getDocs(qRevBackup);
+                     snap.forEach(doc => { /* Affichage simplifié backup */ });
+                }
+            }
 
             card.appendChild(reviewsContainer);
             const btnBack = document.createElement('button'); btnBack.className='btn'; btnBack.textContent='Retour';
@@ -783,10 +849,13 @@
                                 approved: false 
                             });
                             showAlert("Avis envoyé ! Il sera visible après validation.", "success"); 
+                            
+                            // UNLOCK ACHIEVEMENT REVIEW
                             if(!state.progression.reviewDone) {
                                 state.progression.reviewDone = true;
                                 saveProgression();
                             }
+
                             q('#reviewText').value = ''; 
                         } catch(e) { showAlert("Erreur d'envoi", "error"); }
                     };
@@ -794,6 +863,7 @@
             }, 100);
         }
 
+        // --- ABANDON MENU ---
         function renderAbandonMenu() {
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML = '';
@@ -827,7 +897,7 @@
             app.appendChild(card);
         }
 
-        // --- PROFILE & BADGES (CORRIGE) ---
+        // --- PROFILE & BADGES ---
         function renderProfile() {
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
@@ -835,7 +905,7 @@
             const card = document.createElement('div'); card.className='card center'; card.style.maxWidth = '800px';
             card.innerHTML = `<h2>👤 Profil de ${state.pseudo}</h2>`;
             
-            // BOUTON SUCCÈS
+            // 3. CORRECTION: BOUTON SUCCÈS SECURISÉ & VISIBLE
             const btnAch = document.createElement('button'); 
             btnAch.className='btn'; 
             btnAch.style.background = 'var(--gold)'; 
@@ -844,30 +914,46 @@
             btnAch.textContent = '🏆 Voir mes Succès';
             
             btnAch.onclick = (e) => {
-                e.preventDefault(); e.stopPropagation(); 
+                e.preventDefault();
+                e.stopPropagation(); // Stop propagation
+                
                 const modal = document.getElementById('achModal'); 
                 const content = document.getElementById('achContent');
-                if(!modal || !content) return; 
+                
+                if(!modal || !content) {
+                    console.error("Erreur: Modale non trouvée");
+                    return;
+                }
+
                 content.innerHTML = '';
                 
+                // Construire la liste des succès
                 if(ACHIEVEMENTS && ACHIEVEMENTS.length > 0) {
                     ACHIEVEMENTS.forEach(ach => {
                         const unlocked = (prog.achievements || []).includes(ach.id);
                         const row = document.createElement('div');
                         row.className = `achievement-row ${unlocked ? 'unlocked' : ''}`;
-                        row.innerHTML = `<div class="ach-icon">${unlocked ? ach.icon : '🔒'}</div>
-                                         <div class="ach-info">
-                                            <div class="ach-title" style="color:${unlocked ? 'var(--text-main)' : 'var(--text-muted)'}">${ach.title}</div>
-                                            <div class="ach-desc">${ach.desc}</div>
-                                         </div>`;
+                        row.innerHTML = `
+                            <div class="ach-icon">${unlocked ? ach.icon : '🔒'}</div>
+                            <div class="ach-info">
+                                <div class="ach-title" style="color:${unlocked ? 'var(--text-main)' : 'var(--text-muted)'}">${ach.title}</div>
+                                <div class="ach-desc">${ach.desc}</div>
+                            </div>
+                        `;
                         content.appendChild(row);
                     });
+                } else {
+                    content.innerHTML = "<div>Aucun succès chargé.</div>";
                 }
-                modal.style.display = 'flex'; // FORCE DISPLAY
+                
+                // FORCE L'AFFICHAGE AVEC LA CLASSE ACTIVE
+                modal.style.display = 'flex';
+                modal.classList.add('active');
             };
             card.appendChild(btnAch);
 
-            // SPECIALTY
+
+            // 2. SPECIALTY & PROGRESS
             const groupScores = {};
             let maxScore = 0; let bestGroup = null;
             Object.keys(prog.mastery || {}).forEach(pName => {
@@ -902,13 +988,16 @@
                 <div class="small" style="margin-bottom:30px;">Progression globale : ${percentage}% (${unlockedPathos}/${totalPathos})</div>
             `;
 
-            // ERROR TRACKER
+            // 3. ERROR TRACKER
             const errorTracker = document.createElement('div');
             errorTracker.className = 'error-tracker';
             errorTracker.innerHTML = `<h3 style="color:var(--error); font-size:16px;">⚠️ Boîte à Erreurs (Suivi)</h3>`;
+            
+            // Logic: Erreurs de plus de 7 jours
             const now = Date.now();
             let hasErrors = false;
             Object.entries(prog.errorLog || {}).forEach(([pName, data]) => {
+                // data = { date: timestamp, count: number }
                 if(now - data.date > 7 * 24 * 60 * 60 * 1000) {
                     hasErrors = true;
                     const item = document.createElement('div');
@@ -917,28 +1006,34 @@
                     errorTracker.appendChild(item);
                 }
             });
+            
             if(!hasErrors) errorTracker.innerHTML += `<div class="small">Aucune pathologie oubliée depuis 1 semaine. Bien joué !</div>`;
             card.appendChild(errorTracker);
 
-            // MASTERY
+
+            // 4. MASTERY GRID
             const masteryTitle = document.createElement('h3'); masteryTitle.innerHTML = 'Maitrise Clinique'; 
             masteryTitle.style.marginTop = "30px";
             card.appendChild(masteryTitle);
+
             const masteryGrid = document.createElement('div'); masteryGrid.className = 'mastery-grid';
             const sortedPathos = [...PATHOLOGIES].sort((a, b) => a.name.localeCompare(b.name));
             const masteryData = prog.mastery || {};
+
             sortedPathos.forEach(p => {
                 const m = masteryData[p.name];
                 const successCount = (typeof m === 'number') ? m : (m?.success || 0);
+                
                 const mItem = document.createElement('div');
                 let sClass = 'm-locked', icon = '🔒';
                 if (successCount >= 10) { sClass = 'm-master'; icon = '💎'; }
                 else if (successCount >= 5) { sClass = 'm-gold'; icon = '🥇'; }
                 else if (successCount >= 3) { sClass = 'm-silver'; icon = '🥈'; }
                 else if (successCount >= 1) { sClass = 'm-bronze'; icon = '🥉'; }
+
                 mItem.className = `mastery-item ${sClass}`;
                 mItem.innerHTML = `<div class="mastery-icon">${icon}</div><div class="mastery-name">${p.name}</div><div class="mastery-count">${successCount} réussite(s)</div>`;
-                mItem.onclick = () => renderPathoStats(p); 
+                mItem.onclick = () => renderPathoStats(p); // Click to see stats
                 masteryGrid.appendChild(mItem);
             });
             card.appendChild(masteryGrid);
@@ -992,12 +1087,52 @@
             card.appendChild(btnBack); app.appendChild(card);
         }
 
+        // --- LEGAL MODAL LOGIC ---
+        function renderLegal() {
+            const modal = q('#legalModal');
+            const content = q('#legalTextContent');
+            content.innerHTML = `
+                <h3>1. Éditeur du site</h3>
+                <p>Le site Medicome.fr est édité à titre personnel. <br>Contact : via le formulaire de contact du site.</p>
+                <h3>2. Hébergement</h3>
+                <p>Hébergé par GitHub Pages (USA). Données stockées sur Google Firebase (Irlande).</p>
+                <h3>3. Données Personnelles</h3>
+                <p>Email uniquement pour authentification. Aucune revente.</p>
+            `;
+            modal.style.display = 'flex';
+            modal.classList.add('active'); // FORCE DISPLAY
+        }
+
+        function renderContact() {
+            window.scrollTo(0,0);
+            const app = q('#app'); app.innerHTML='';
+            const card = document.createElement('div'); card.className='card center';
+            card.innerHTML = `<h2>✉️ Nous Contacter</h2>`;
+            const inputName = document.createElement('input'); inputName.className='input'; inputName.placeholder='Votre Nom';
+            if(state.pseudo) inputName.value = state.pseudo;
+            const inputEmail = document.createElement('input'); inputEmail.className='input'; inputEmail.placeholder='Votre Email';
+            if(state.currentUser) inputEmail.value = state.currentUser.email;
+            const inputText = document.createElement('textarea'); inputText.className='input'; inputText.placeholder='Votre message...';
+            const btnSend = document.createElement('button'); btnSend.className='btn'; btnSend.textContent='Envoyer';
+            btnSend.onclick = async () => {
+                if(!inputText.value) return;
+                try {
+                    await addDoc(collection(db, "messages"), { name: inputName.value, email: inputEmail.value, message: inputText.value, date: new Date(), uid: state.currentUser ? state.currentUser.uid : 'guest' });
+                    showAlert("Envoyé !", "success"); setTimeout(() => { if(state.pseudo) renderHome(); else renderLogin(); }, 1500);
+                } catch(e) { showAlert("Erreur", "error"); }
+            };
+            const btnCancel = document.createElement('button'); btnCancel.className='link'; btnCancel.textContent='Annuler';
+            btnCancel.onclick = () => { if(state.pseudo) renderHome(); else renderLogin(); };
+            card.append(inputName, inputEmail, inputText, btnSend, btnCancel); app.appendChild(card);
+        }
+
         function renderDemographics() {
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card';
             card.innerHTML=`<h3>📋 Données démographiques</h3><p class="small" style="margin-bottom:20px">Paramétrez le patient virtuel.</p>`;
             
+            // Si c'est le défi du jour, on affiche un message spécial
             if(state.dailyTarget) {
                 card.innerHTML = `<h3>☀️ Défi du Jour</h3><p class="small" style="margin-bottom:20px; color:var(--gold);">Cible : ${state.dailyTarget.name}</p>`;
             }
@@ -1014,7 +1149,8 @@
             createSel("Antécédents familiaux ?", "demo-atcd", [["rien","Je ne sais pas"],["oui","Oui"],["non","Non"]]);
             createSel("Fumeur ?", "demo-tabac", [["rien","Je ne sais pas"],["oui","Oui"],["non","Non"]]);
             
-            if(!state.dailyTarget) { 
+            // CHRONO TOGGLE
+            if(!state.dailyTarget) { // Pas de chrono optionnel en daily (on peut l'imposer si on veut)
                 const chronoDiv = document.createElement('div');
                 chronoDiv.style.margin = '20px 0'; chronoDiv.style.textAlign='center';
                 const chronoLabel = document.createElement('label'); 
@@ -1036,7 +1172,8 @@
                 state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
                 state.priorityQueue = [];
                 
-                if(state.dailyTarget) state.isChrono = false; 
+                // Chrono logic
+                if(state.dailyTarget) state.isChrono = false; // ou true si on veut timer le daily
                 else state.isChrono = q('#chronoToggle')?.checked || false;
                 
                 if(state.isChrono) state.startTime = Date.now();
@@ -1089,28 +1226,46 @@
         function canShowDiagnostic() {
             const qNum = state.asked.length;
             if(state.ranked.length===0) return false;
+            
             const top1 = state.ranked[0];
             const top2 = state.ranked[1];
+            
             if(state.previousDiagnostics.includes(top1.patho.name)) return false;
+
+            // RÈGLE 1 : FILET DE SÉCURITÉ (Max 20 questions)
             if (qNum >= 20) return true;
+
             const score1 = parseFloat(top1.prob);
             if (!top2) return score1 > 40; 
+
             const score2 = parseFloat(top2.prob);
             const gap = score1 - score2;
+
+            // RÈGLE 2 : AUDACE PROGRESSIVE
             if (qNum >= 5 && score1 >= 50 && gap >= 20) return true;
             if (qNum >= 10 && gap >= 10) return true;
             if (qNum >= 15) return true;
+
             return false;
         }
 
         function prepareConfirmationQuestions(topPatho) {
-            const pSigns = Object.entries(topPatho.signes).sort((a, b) => b[1] - a[1]).map(entry => entry[0]);
+            // 1. Récupérer les vrais signes restants (La Checklist)
+            const pSigns = Object.entries(topPatho.signes)
+                .sort((a, b) => b[1] - a[1]) // On trie par importance
+                .map(entry => entry[0]);
+            
             let questions = pSigns.filter(s => !state.asked.includes(s));
+            
+            // 2. Ajouter un "LEURRE" (Question Piège) pour vérifier que l'élève ne triche pas
             const trapCandidates = state.allSigns.filter(s => !pSigns.includes(s) && !state.asked.includes(s));
+            
             if (trapCandidates.length > 0) {
                 const trap = trapCandidates[Math.floor(Math.random() * trapCandidates.length)];
                 questions.splice(1, 0, trap); 
             }
+
+            // On limite quand même à 5 questions max pour ne pas être trop long
             return questions.slice(0, 5);
         }
 
@@ -1120,6 +1275,8 @@
             const card = document.createElement('div'); card.className='card center';
             const signe = state.currentSign;
             const questionTitle = state.confirmationMode ? `<span style="color:var(--gold)">🤔 Je pense avoir une piste...</span>` : `QUESTION ${state.asked.length}`;
+            
+            // Calcul proba pour barre
             let prob = 0;
             if(state.ranked.length > 0) prob = parseFloat(state.ranked[0].prob);
 
@@ -1129,10 +1286,12 @@
                     <div class="ai-progress-bar" style="width:${prob}%"></div>
                 </div>
                 <div class="ai-progress-label">Confiance IA : ${prob}%</div>
+                
                 <div class="small" style="margin-bottom:12px; color:var(--accent)">${questionTitle}</div>
                 <div class="question-text">Le patient présente-t-il :<br><strong style="font-size:1.2em; color:var(--text-main);">${formatSigneName(signe)}</strong> ?</div>`;
             
             const btnGroup = document.createElement('div'); btnGroup.className='button-group';
+            
             const mkBtn = (txt, cls, val) => {
                 const b = document.createElement('button'); b.className=cls; b.textContent=txt;
                 b.onclick=()=>{ 
@@ -1142,7 +1301,12 @@
                         confirmedPatho: state.confirmedPatho, priorityQueue: state.priorityQueue,
                         isChrono: state.isChrono, startTime: state.startTime, dailyTarget: state.dailyTarget
                     }));
-                    if(state.dailyTarget && val === false && state.dailyTarget.signes[signe]) { }
+                    
+                    // Si clic NON sur un vrai signe (erreur anticipée pour feedback visuel futur, ou log)
+                    if(state.dailyTarget && val === false && state.dailyTarget.signes[signe]) {
+                        // On pourrait stocker ici que l'utilisateur a fait une erreur en direct
+                    }
+                    
                     state.answers[signe]=val; askNextQuestion(); 
                 };
                 btnGroup.appendChild(b);
@@ -1168,6 +1332,7 @@
         }
 
         function askNextQuestion() {
+            // SÉCURITÉ MORT SUBITE
             if (state.asked.length >= 20) { showDiagnostic(); return; }
 
             if(state.asked.length > 0) {
@@ -1198,19 +1363,26 @@
 
             if (state.confirmationMode) {
                 const lastSign = state.asked[state.asked.length - 1];
+                
+                // --- LOGIQUE ANTI-TRICHE ---
                 const isSignPartOfPatho = Object.keys(state.confirmedPatho.signes).includes(lastSign);
                 const userSaidYes = state.answers[lastSign] === true;
 
+                // 1. Si c'était un piège (le signe n'est pas dans la maladie) ET que l'utilisateur a dit OUI -> ECHEC
                 if (!isSignPartOfPatho && userSaidYes) {
+                    // LOG ERROR VISUELLE
                     state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
                     showAlert("Aïe ! Ce symptôme ne collait pas...", "error");
                     askNextQuestion(); return;
                 }
+
+                // 2. Si c'était un vrai signe ET que l'utilisateur a dit NON -> ECHEC (Piste abandonnée)
                 if (isSignPartOfPatho && !userSaidYes) {
                     state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
                     showAlert("Ah, fausse piste. Je continue à chercher...", "info");
                     askNextQuestion(); return;
                 }
+
                 if (state.confirmationQueue.length > 0) {
                     const nextC = state.confirmationQueue.shift();
                     state.currentSign = nextC; state.asked.push(nextC); renderCurrentQuestion(); return;
@@ -1276,6 +1448,7 @@
                     triggerConfetti(); playSound('success');
                     state.progression.correct++; state.progression.streak = (state.progression.streak || 0) + 1;
                     
+                    // GESTION DU DAILY
                     if(state.dailyTarget && state.dailyTarget.name === top.patho.name) {
                         const today = new Date().toDateString();
                         if(state.progression.lastDaily !== today) {
@@ -1293,9 +1466,11 @@
                     
                     m.success++;
                     
+                    // CHRONO SAVE
                     if(state.isChrono && state.startTime) {
                         const duration = (Date.now() - state.startTime) / 1000;
                         if(duration < 30) {
+                            // Increment speed counter for achievements
                             state.progression.speedWins = (state.progression.speedWins || 0) + 1;
                         }
                         if(!state.progression.bestTimes) state.progression.bestTimes = {};
@@ -1305,6 +1480,7 @@
                         }
                     }
 
+                    // CHECK FOR MISSED SIGNS EVEN ON SUCCESS
                     Object.keys(top.patho.signes).forEach(s => {
                         if(state.answers[s] === false) { 
                             if(!m.missedSigns[s]) m.missedSigns[s] = 0;
@@ -1313,6 +1489,7 @@
                     });
 
                     state.progression.mastery[pName] = m;
+                    
                     updateHeader(); await saveProgression(); 
                     showAlert('Diagnostic validé !','success'); showDiagnosticDetails({patho: top.patho});
                 };
@@ -1321,6 +1498,7 @@
                 btnFalse.onclick = async () => { 
                     playSound('error');
                     state.progression.incorrect++; state.progression.streak = 0;
+                    
                     if(!state.progression.mastery) state.progression.mastery = {};
                     const pName = top.patho.name;
                     let m = state.progression.mastery[pName];
@@ -1328,8 +1506,11 @@
                     if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
                     m.failures++;
                     state.progression.mastery[pName] = m;
+
+                    // ERROR LOGGING
                     if(!state.progression.errorLog) state.progression.errorLog = {};
                     state.progression.errorLog[pName] = { date: Date.now(), count: (state.progression.errorLog[pName]?.count || 0) + 1 };
+
                     updateHeader(); await saveProgression(); 
                     showAlert('Aïe... Continuons','error'); 
                     state.confirmationMode = false; state.diagnosticShown=false; 
@@ -1348,10 +1529,12 @@
             
             if(wasManualError) {
                 card.innerHTML = `<h2 style="color:var(--error)">❌ C'était : ${top.name}</h2>`;
+                
                 if(!state.progression.mastery) state.progression.mastery = {};
                 let m = state.progression.mastery[top.name];
                 if(!m) m = { success: 0, failures: 0, missedSigns: {} };
                 if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
+                
                 m.failures++;
                 Object.keys(top.signes).forEach(s => {
                     if(state.answers[s] === false) { 
@@ -1360,9 +1543,13 @@
                     }
                 });
                 state.progression.mastery[top.name] = m;
+                
+                // ERROR LOGGING
                 if(!state.progression.errorLog) state.progression.errorLog = {};
                 state.progression.errorLog[top.name] = { date: Date.now(), count: (state.progression.errorLog[top.name]?.count || 0) + 1 };
+                
                 saveProgression();
+
             } else {
                 card.innerHTML = `<h2>✅ ${top.name}</h2>`;
             }
@@ -1408,14 +1595,19 @@
             if(top.pdf && top.pdf !== '#') {
                 const pdfBtn = document.createElement('a');
                 pdfBtn.href = top.pdf; pdfBtn.target = "_blank"; pdfBtn.className = 'btn'; pdfBtn.textContent = '📄 Voir la fiche PDF complète'; pdfBtn.style.marginTop = '20px'; pdfBtn.style.display = 'block'; pdfBtn.style.textAlign = 'center';
+                
+                // TRACKING PDF DOWNLOAD
                 pdfBtn.onclick = trackPdf;
+
                 card.appendChild(pdfBtn);
             }
             
             const btnGroup = document.createElement('div'); btnGroup.className='button-group';
+            
+            // BOUTON REJOUER DIRECT
             const btnReplay = document.createElement('button'); btnReplay.className='btn btn-success'; btnReplay.textContent = '🔄 Rejouer tout de suite'; 
             btnReplay.onclick = () => {
-                 state.dailyTarget = null; 
+                 state.dailyTarget = null; // Reset daily flag if random play
                  renderDemographics();
             };
 
@@ -1474,7 +1666,7 @@
                 card.innerHTML=`<div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>`;
                 card.onclick=()=>{ 
                     if(p.pdf && p.pdf !== '#') {
-                        trackPdf(); 
+                        trackPdf(); // Track download on glossary click too
                         window.open(p.pdf,'_blank'); 
                     } else showAlert('Fiche PDF non disponible','error'); 
                 };

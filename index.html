@@ -167,7 +167,7 @@
 
         footer { text-align:center; padding:30px 20px; background: rgba(0,0,0,0.5); font-size:13px; border-top: 1px solid var(--glass-border); display: flex; flex-direction: column; align-items: center; gap: 15px; }
         .social-links { display: flex; gap: 20px; margin-bottom: 10px; }
-        .social-link { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: rgba(125,125,125,0.1); border-radius: 50%; transition: all 0.3s; text-decoration: none; }
+        .social-link { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: rgba(125,125,125,0.1); border-radius: 50%; transition: all 0.3s; text-decoration: none; cursor: pointer; }
         .social-link:hover { background: rgba(0, 210, 255, 0.1); transform: scale(1.1); }
         .social-icon { width: 20px; height: 20px; fill: var(--text-muted); transition: fill 0.3s; }
         .social-link:hover .social-icon { fill: var(--accent); }
@@ -235,9 +235,9 @@
 
     <footer>
         <div class="social-links">
-            <a href="https://instagram.com/medicome.fr" target="_blank" class="social-link"><svg class="social-icon" viewBox="0 0 24 24"><path d="M7.8,2H16.2C19.4,2 22,4.6 22,7.8V16.2A5.8,5.8 0 0,1 16.2,22H7.8C4.6,22 2,19.4 2,16.2V7.8A5.8,5.8 0 0,1 7.8,2M7.6,4A3.6,3.6 0 0,0 4,7.6V16.4C4,18.39 5.61,20 7.6,20H16.4A3.6,3.6 0 0,0 20,16.4V7.6C20,5.61 18.39,4 16.4,4H7.6M17.25,5.5A1.25,1.25 0 0,1 18.5,6.75A1.25,1.25 0 0,1 17.25,8A1.25,1.25 0 0,1 16,6.75A1.25,1.25 0 0,1 17.25,5.5M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z" /></svg></a>
-            <a href="https://www.tiktok.com/@medicome.fr" target="_blank" class="social-link"><svg class="social-icon" viewBox="0 0 24 24"><path d="M12.5 3.5v10.55c0 1.9-1.55 3.45-3.45 3.45S5.6 15.95 5.6 14.05c0-1.9 1.55-3.45 3.45-3.45 0.3 0 0.6 0.05 0.85 0.15V7.4c-0.25-0.1-0.55-0.15-0.85-0.15-3.8 0-6.9 3.1-6.9 6.9s3.1 6.9 6.9 6.9c3.8 0 6.9-3.1 6.9-6.9V7.6c1.7 1.2 3.8 1.9 6.05 1.9v-3.75c-2.15 0-4.05-0.9-5.3-2.3H12.5z"/></svg></a>
-            <a href="https://x.com/medicome_fr" target="_blank" class="social-link"><svg class="social-icon" viewBox="0 0 24 24"><path d="M22.46,6C21.69,6.35 20.86,6.58 20,6.69C20.88,6.16 21.56,5.32 21.88,4.31C21.05,4.81 20.13,5.16 19.16,5.36C18.37,4.5 17.26,4 16,4C13.65,4 11.73,5.92 11.73,8.29C11.73,8.63 11.77,8.96 11.84,9.27C8.28,9.09 5.11,7.38 3,4.79C2.63,5.42 2.42,6.16 2.42,6.94C2.42,8.43 3.17,9.75 4.33,10.5C3.62,10.5 2.96,10.3 2.38,10C2.38,10 2.38,10.03 2.38,10.05C2.38,12.11 3.86,13.85 5.82,14.24C5.46,14.34 5.08,14.39 4.69,14.39C4.42,14.39 4.15,14.36 3.89,14.31C4.43,16 6,17.26 7.89,17.29C6.43,18.45 4.58,19.13 2.56,19.13C2.22,19.13 1.88,19.11 1.54,19.07C3.44,20.29 5.7,21 8.12,21C16,21 20.33,14.46 20.33,8.79C20.33,8.6 20.33,8.42 20.32,8.23C21.16,7.63 21.88,6.87 22.46,6Z" /></svg></a>
+            <a id="linkInsta" href="https://instagram.com/medicome.fr" target="_blank" class="social-link"><svg class="social-icon" viewBox="0 0 24 24"><path d="M7.8,2H16.2C19.4,2 22,4.6 22,7.8V16.2A5.8,5.8 0 0,1 16.2,22H7.8C4.6,22 2,19.4 2,16.2V7.8A5.8,5.8 0 0,1 7.8,2M7.6,4A3.6,3.6 0 0,0 4,7.6V16.4C4,18.39 5.61,20 7.6,20H16.4A3.6,3.6 0 0,0 20,16.4V7.6C20,5.61 18.39,4 16.4,4H7.6M17.25,5.5A1.25,1.25 0 0,1 18.5,6.75A1.25,1.25 0 0,1 17.25,8A1.25,1.25 0 0,1 16,6.75A1.25,1.25 0 0,1 17.25,5.5M12,7A5,5 0 0,1 17,12A5,5 0 0,1 12,17A5,5 0 0,1 7,12A5,5 0 0,1 12,7M12,9A3,3 0 0,0 9,12A3,3 0 0,0 12,15A3,3 0 0,0 15,12A3,3 0 0,0 12,9Z" /></svg></a>
+            <a id="linkTiktok" href="https://www.tiktok.com/@medicome.fr" target="_blank" class="social-link"><svg class="social-icon" viewBox="0 0 24 24"><path d="M12.5 3.5v10.55c0 1.9-1.55 3.45-3.45 3.45S5.6 15.95 5.6 14.05c0-1.9 1.55-3.45 3.45-3.45 0.3 0 0.6 0.05 0.85 0.15V7.4c-0.25-0.1-0.55-0.15-0.85-0.15-3.8 0-6.9 3.1-6.9 6.9s3.1 6.9 6.9 6.9c3.8 0 6.9-3.1 6.9-6.9V7.6c1.7 1.2 3.8 1.9 6.05 1.9v-3.75c-2.15 0-4.05-0.9-5.3-2.3H12.5z"/></svg></a>
+            <a id="linkX" href="https://x.com/medicome_fr" target="_blank" class="social-link"><svg class="social-icon" viewBox="0 0 24 24"><path d="M22.46,6C21.69,6.35 20.86,6.58 20,6.69C20.88,6.16 21.56,5.32 21.88,4.31C21.05,4.81 20.13,5.16 19.16,5.36C18.37,4.5 17.26,4 16,4C13.65,4 11.73,5.92 11.73,8.29C11.73,8.63 11.77,8.96 11.84,9.27C8.28,9.09 5.11,7.38 3,4.79C2.63,5.42 2.42,6.16 2.42,6.94C2.42,8.43 3.17,9.75 4.33,10.5C3.62,10.5 2.96,10.3 2.38,10C2.38,10 2.38,10.03 2.38,10.05C2.38,12.11 3.86,13.85 5.82,14.24C5.46,14.34 5.08,14.39 4.69,14.39C4.42,14.39 4.15,14.36 3.89,14.31C4.43,16 6,17.26 7.89,17.29C6.43,18.45 4.58,19.13 2.56,19.13C2.22,19.13 1.88,19.11 1.54,19.07C3.44,20.29 5.7,21 8.12,21C16,21 20.33,14.46 20.33,8.79C20.33,8.6 20.33,8.42 20.32,8.23C21.16,7.63 21.88,6.87 22.46,6Z" /></svg></a>
         </div>
         <div class="footer-nav">
             <span class="footer-link" onclick="window.scrollTo(0,0)">Haut de page</span>
@@ -286,13 +286,28 @@
             "genes_urinaires": ["sang_urines", "brulures_urinaires", "impossibilite_uriner", "regles_tres_abondantes", "douleur_testicule_brutale", "pertes_vaginales_anormales", "sang_urines_rouge", "difficulte_uriner", "urines_abondantes", "urines_mousseuses"]
         };
         
-        // ACHIEVEMENTS DEFINITIONS
+        // ACHIEVEMENTS DEFINITIONS (COMPLET)
         const ACHIEVEMENTS = [
             { id: "played_10_days", title: "Assiduité", desc: "Jouer 10 jours d'affilée", icon: "🗓️" },
-            { id: "id_50", title: "Interne", desc: "Identifier 50 pathologies", icon: "🩺" },
-            { id: "id_100", title: "Chef de Clinique", desc: "Identifier 100 pathologies", icon: "🏥" },
-            { id: "daily_10", title: "Expert du Quotidien", desc: "Réussir 10 défis du jour", icon: "☀️" },
-            { id: "speed_demon", title: "Flash Éclair", desc: "Trouver un cas en moins de 30s", icon: "⚡" }
+            { id: "baby_doc", title: "Bébé Médecin", desc: "Identifier 1 pathologie", icon: "🍼" },
+            { id: "med_student", title: "Étudiant en Médecine", desc: "Identifier 25 pathologies", icon: "🎓" },
+            { id: "intern", title: "Interne", desc: "Identifier 50 pathologies", icon: "🩺" },
+            { id: "chief", title: "Chef de Clinique", desc: "Identifier 100 pathologies", icon: "🏥" },
+            { id: "critic", title: "Critique Médical", desc: "Publier un avis", icon: "✍️" },
+            { id: "fan", title: "Fan Club", desc: "Suivre sur les réseaux", icon: "❤️" },
+            { id: "bookworm_1", title: "Rat de Bibliothèque", desc: "Télécharger 1 fiche PDF", icon: "📜" },
+            { id: "bookworm_25", title: "Archiviste", desc: "Télécharger 25 fiches PDF", icon: "📚" },
+            { id: "bookworm_50", title: "Bibliothécaire", desc: "Télécharger 50 fiches PDF", icon: "🏛️" },
+            { id: "bookworm_100", title: "Savoir Absolu", desc: "Télécharger 100 fiches PDF", icon: "🧠" },
+            { id: "master_5", title: "Major de Promo", desc: "5 pathologies au rang Maître", icon: "🎖️" },
+            { id: "master_30", title: "Professeur", desc: "30 pathologies au rang Maître", icon: "👑" },
+            { id: "master_100", title: "Légende", desc: "100 pathologies au rang Maître", icon: "🧞" },
+            { id: "encyclopedia", title: "Encyclopédie Vivante", desc: "Débloquer toutes les pathologies", icon: "🌍" },
+            { id: "god_mode", title: "Dieu de la Médecine", desc: "Toutes pathologies en Maître", icon: "⚡" },
+            { id: "speed_10", title: "Flash", desc: "10 diagnostics en moins de 30s", icon: "🚀" },
+            { id: "speed_50", title: "Vitesse Lumière", desc: "50 diagnostics en moins de 30s", icon: "🌠" },
+            { id: "speed_100", title: "Voyageur Temporel", desc: "100 diagnostics en moins de 30s", icon: "⏳" },
+            { id: "daily_10", title: "Expert du Quotidien", desc: "Réussir 10 défis du jour", icon: "☀️" }
         ];
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -337,12 +352,14 @@
 
         let state = {
             currentUser: null, pseudo: null, 
-            progression: { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0, lastDaily: null, achievements: [], bestTimes: {}, errorLog: {} },
+            progression: { 
+                correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0, lastDaily: null, achievements: [], bestTimes: {}, errorLog: {},
+                pdfDownloads: 0, speedWins: 0, socialDone: false, reviewDone: false
+            },
             isGuest: false, demo:{}, currentSign:null, answers:{}, asked:[], allSigns:[], ranked: [], diagnosticShown:false, previousDiagnostics:[],
             history: [],
             confirmationMode: false, confirmationQueue: [], confirmedPatho: null,
             priorityQueue: [],
-            // Nouveaux états
             isChrono: false, startTime: null, dailyTarget: null
         };
 
@@ -401,6 +418,12 @@
                 
                 const rLink = document.getElementById('reviewsLink');
                 if(rLink) rLink.onclick = renderReviews;
+
+                // Social Links Tracking
+                ['linkInsta', 'linkTiktok', 'linkX'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) el.addEventListener('click', trackSocial);
+                });
 
                 const notifBtn = q('#notifBtn');
                 const notifModal = q('#notifModal');
@@ -461,6 +484,7 @@
                         if (docSnap.exists()) {
                             const data = docSnap.data();
                             if (data.pseudo) state.pseudo = data.pseudo;
+                            // MERGE PROGRESSION TO KEEP NEW FIELDS
                             state.progression = { ...state.progression, ...data.progression };
                         } else { saveProgression(); }
                         updateHeader(); renderHome();
@@ -478,7 +502,12 @@
                         updateHeader(); renderHome();
                         setTimeout(() => showAlert(`Bon retour, ${state.pseudo} !`, 'success'), 500);
                     } else {
-                        state.currentUser = null; state.pseudo = null; state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0, lastDaily: null, achievements: [], bestTimes: {}, errorLog: {} };
+                        state.currentUser = null; state.pseudo = null; 
+                        // Reset clean state
+                        state.progression = { 
+                            correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0, lastDaily: null, achievements: [], bestTimes: {}, errorLog: {},
+                            pdfDownloads: 0, speedWins: 0, socialDone: false, reviewDone: false
+                        };
                         renderLogin(); updateHeader();
                     }
                 }
@@ -523,14 +552,54 @@
                 }
             };
             
-            // 50 Pathologies
-            if(state.progression.correct >= 50) unlock('id_50');
-            // 100 Pathologies
-            if(state.progression.correct >= 100) unlock('id_100');
-            // Daily streak
-            if((state.progression.dailyStreak || 0) >= 10) unlock('daily_10');
+            const p = state.progression;
             
-            // Note: "10 jours d'affilée" nécessiterait un tracking des dates de login séparé, simplifié ici.
+            // Diagnostics Count
+            if(p.correct >= 1) unlock('baby_doc');
+            if(p.correct >= 25) unlock('med_student');
+            if(p.correct >= 50) unlock('intern');
+            if(p.correct >= 100) unlock('chief');
+            
+            // Social & Reviews
+            if(p.reviewDone) unlock('critic');
+            if(p.socialDone) unlock('fan');
+            
+            // PDF Downloads
+            if(p.pdfDownloads >= 1) unlock('bookworm_1');
+            if(p.pdfDownloads >= 25) unlock('bookworm_25');
+            if(p.pdfDownloads >= 50) unlock('bookworm_50');
+            if(p.pdfDownloads >= 100) unlock('bookworm_100');
+            
+            // Daily Streak
+            if((p.dailyStreak || 0) >= 10) unlock('daily_10');
+            
+            // Speed Wins
+            if(p.speedWins >= 10) unlock('speed_10');
+            if(p.speedWins >= 50) unlock('speed_50');
+            if(p.speedWins >= 100) unlock('speed_100');
+            
+            // Mastery & Collection
+            const unlockedCount = Object.keys(p.mastery || {}).filter(k => p.mastery[k].success > 0).length;
+            const masterCount = Object.keys(p.mastery || {}).filter(k => p.mastery[k].success >= 10).length;
+            
+            if(masterCount >= 5) unlock('master_5');
+            if(masterCount >= 30) unlock('master_30');
+            if(masterCount >= 100) unlock('master_100');
+            
+            if(unlockedCount >= PATHOLOGIES.length && PATHOLOGIES.length > 0) unlock('encyclopedia');
+            if(masterCount >= PATHOLOGIES.length && PATHOLOGIES.length > 0) unlock('god_mode');
+        }
+        
+        function trackPdf() {
+            state.progression.pdfDownloads = (state.progression.pdfDownloads || 0) + 1;
+            saveProgression();
+        }
+        
+        function trackSocial() {
+            if(!state.progression.socialDone) {
+                state.progression.socialDone = true;
+                saveProgression();
+            }
         }
 
         function updateHeader(){
@@ -549,7 +618,7 @@
             logoutBtn.onclick = () => {
                 localStorage.removeItem('medicome_guest_progression'); localStorage.removeItem('medicome_guest_pseudo');
                 state.isGuest = false; state.pseudo = null; state.currentUser = null; 
-                state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0, lastDaily: null, achievements: [], bestTimes: {}, errorLog: {} }; 
+                state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0, lastDaily: null, achievements: [], bestTimes: {}, errorLog: {}, pdfDownloads: 0, speedWins: 0, socialDone: false, reviewDone: false }; 
                 signOut(auth).then(() => { renderLogin(); updateHeader(); showAlert("Déconnecté", "success"); }).catch(() => { renderLogin(); updateHeader(); });
             };
         }
@@ -728,6 +797,13 @@
                                 approved: false 
                             });
                             showAlert("Avis envoyé ! Il sera visible après validation.", "success"); 
+                            
+                            // UNLOCK ACHIEVEMENT REVIEW
+                            if(!state.progression.reviewDone) {
+                                state.progression.reviewDone = true;
+                                saveProgression();
+                            }
+
                             q('#reviewText').value = ''; 
                         } catch(e) { showAlert("Erreur d'envoi", "error"); }
                     };
@@ -777,11 +853,14 @@
             const card = document.createElement('div'); card.className='card center'; card.style.maxWidth = '800px';
             card.innerHTML = `<h2>👤 Profil de ${state.pseudo}</h2>`;
             
-            // 1. ACHIEVEMENTS BUTTON
+            // 1. ACHIEVEMENTS BUTTON (CORRIGÉ)
             const btnAch = document.createElement('button'); btnAch.className='btn'; 
             btnAch.style.background = 'var(--gold)'; btnAch.style.color = 'black'; btnAch.style.marginBottom = '20px';
             btnAch.textContent = '🏆 Voir mes Succès';
-            btnAch.onclick = () => {
+            
+            // AJOUT DE (e) et e.stopPropagation()
+            btnAch.onclick = (e) => {
+                e.stopPropagation(); // EMPÊCHE LA FERMETURE IMMÉDIATE
                 const modal = q('#notifModal'); 
                 const content = q('#notifContent');
                 content.innerHTML = '';
@@ -802,7 +881,9 @@
                 });
                 
                 // Hack: réutiliser la modale notif pour l'instant
-                q('#notifModal h4').textContent = '🏆 Succès & Trophées';
+                const title = q('#notifModal h4');
+                if(title) title.textContent = '🏆 Succès & Trophées';
+                
                 modal.style.display = 'block';
             };
             card.appendChild(btnAch);
@@ -843,7 +924,7 @@
                 <div class="small" style="margin-bottom:30px;">Progression globale : ${percentage}% (${unlockedPathos}/${totalPathos})</div>
             `;
 
-            // 3. ERROR TRACKER (Facultatif)
+            // 3. ERROR TRACKER
             const errorTracker = document.createElement('div');
             errorTracker.className = 'error-tracker';
             errorTracker.innerHTML = `<h3 style="color:var(--error); font-size:16px;">⚠️ Boîte à Erreurs (Suivi)</h3>`;
@@ -1323,7 +1404,10 @@
                     // CHRONO SAVE
                     if(state.isChrono && state.startTime) {
                         const duration = (Date.now() - state.startTime) / 1000;
-                        if(duration < 30) checkAchievements(); // Check "Speed Demon" (via saveProgression call later)
+                        if(duration < 30) {
+                            // Increment speed counter for achievements
+                            state.progression.speedWins = (state.progression.speedWins || 0) + 1;
+                        }
                         if(!state.progression.bestTimes) state.progression.bestTimes = {};
                         if(!state.progression.bestTimes[pName] || duration < state.progression.bestTimes[pName]) {
                             state.progression.bestTimes[pName] = duration;
@@ -1341,14 +1425,6 @@
 
                     state.progression.mastery[pName] = m;
                     
-                    // Check achievements before saving
-                    if(state.isChrono && state.startTime && (Date.now() - state.startTime)/1000 < 30) {
-                        if(!state.progression.achievements.includes('speed_demon')) {
-                             state.progression.achievements.push('speed_demon');
-                             showAlert('🏆 Succès : Flash Éclair !', 'success');
-                        }
-                    }
-
                     updateHeader(); await saveProgression(); 
                     showAlert('Diagnostic validé !','success'); showDiagnosticDetails({patho: top.patho});
                 };
@@ -1454,6 +1530,10 @@
             if(top.pdf && top.pdf !== '#') {
                 const pdfBtn = document.createElement('a');
                 pdfBtn.href = top.pdf; pdfBtn.target = "_blank"; pdfBtn.className = 'btn'; pdfBtn.textContent = '📄 Voir la fiche PDF complète'; pdfBtn.style.marginTop = '20px'; pdfBtn.style.display = 'block'; pdfBtn.style.textAlign = 'center';
+                
+                // TRACKING PDF DOWNLOAD
+                pdfBtn.onclick = trackPdf;
+
                 card.appendChild(pdfBtn);
             }
             
@@ -1519,7 +1599,12 @@
             function createPathoCard(p) {
                 const card = document.createElement('div'); card.className='patho-card';
                 card.innerHTML=`<div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>`;
-                card.onclick=()=>{ if(p.pdf && p.pdf !== '#') window.open(p.pdf,'_blank'); else showAlert('Fiche PDF non disponible','error'); };
+                card.onclick=()=>{ 
+                    if(p.pdf && p.pdf !== '#') {
+                        trackPdf(); // Track download on glossary click too
+                        window.open(p.pdf,'_blank'); 
+                    } else showAlert('Fiche PDF non disponible','error'); 
+                };
                 return card;
             }
             renderGrid(sortedPathos, true);

@@ -2,11 +2,11 @@
 <html lang="fr">
 <head>
     <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1a1a2e">
+    <meta name="theme-color" content="#1a1a2e">
 
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="favicon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="favicon.png">
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -23,7 +23,6 @@
     
     <style>
         :root {
-          /* MODE SOMBRE (Défaut) */
           --bg-dark: #020b16; --bg-light: #1e3c72;
           --glass-bg: rgba(13, 25, 48, 0.9); --glass-border: rgba(100, 200, 255, 0.15);
           --accent: #00d2ff; --accent-glow: rgba(0, 210, 255, 0.4);
@@ -34,7 +33,6 @@
         }
 
         [data-theme="light"] {
-            /* MODE CLAIR */
             --bg-dark: #e0f2fe; --bg-light: #f0f9ff;
             --glass-bg: rgba(255, 255, 255, 0.9); --glass-border: rgba(0, 114, 255, 0.2);
             --accent: #0072ff; --accent-glow: rgba(0, 114, 255, 0.2);
@@ -230,6 +228,14 @@
             <h2 style="color:var(--text-main); margin-bottom:15px;">Mentions Légales</h2>
             <div id="legalTextContent"></div>
             <button onclick="document.getElementById('legalModal').style.display='none'" class="link" style="margin-top:20px;">Fermer</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="achModal">
+        <div class="modal-content">
+            <h2 style="color:var(--gold); margin-bottom:15px; text-align:center;">🏆 Mes Succès</h2>
+            <div id="achContent"></div>
+            <button onclick="document.getElementById('achModal').style.display='none'" class="btn" style="margin-top:20px;">Fermer</button>
         </div>
     </div>
 
@@ -838,39 +844,20 @@
             const card = document.createElement('div'); card.className='card center'; card.style.maxWidth = '800px';
             card.innerHTML = `<h2>👤 Profil de ${state.pseudo}</h2>`;
             
-            // --- BOUTON SUCCÈS (VERSION BLINDÉE) ---
+            // --- BOUTON SUCCÈS (VERSION SIMPLE ET SOLIDE) ---
             const btnAch = document.createElement('button'); btnAch.className='btn'; 
             btnAch.style.background = 'var(--gold)'; btnAch.style.color = 'black'; btnAch.style.marginBottom = '20px';
             btnAch.textContent = '🏆 Voir mes Succès';
             
             btnAch.onclick = (e) => {
                 e.stopPropagation(); 
-
-                // 1. NETTOYAGE : On supprime les anciennes fenêtres mal placées s'il y en a
-                const oldModals = document.querySelectorAll('#achModal');
-                oldModals.forEach(m => m.remove());
-
-                // 2. CRÉATION DYNAMIQUE : On crée la fenêtre propre via JS
-                const modal = document.createElement('div');
-                modal.id = 'achModal';
-                modal.className = 'modal-overlay';
-                modal.style.display = 'flex'; // On l'affiche direct
-                modal.style.zIndex = '9999';  // On force l'affichage tout devant
                 
-                modal.innerHTML = `
-                    <div class="modal-content">
-                        <h2 style="color:var(--gold); margin-bottom:15px; text-align:center;">🏆 Mes Succès</h2>
-                        <div id="achContent"></div>
-                        <button id="closeAchBtn" class="btn" style="margin-top:20px;">Fermer</button>
-                    </div>
-                `;
-                document.body.appendChild(modal); // On l'ajoute à la fin du site
-
-                // 3. REMPLISSAGE DU CONTENU
-                const content = modal.querySelector('#achContent');
+                const modal = document.getElementById('achModal'); // On récupère la fenêtre HTML
+                const content = document.getElementById('achContent');
+                content.innerHTML = ''; // On vide pour pas avoir de doublons
                 
-                if(!prog.achievements) prog.achievements = []; // Sécurité
-                
+                // On remplit
+                if(!prog.achievements) prog.achievements = [];
                 ACHIEVEMENTS.forEach(ach => {
                     const unlocked = prog.achievements.includes(ach.id);
                     const row = document.createElement('div');
@@ -884,10 +871,8 @@
                     `;
                     content.appendChild(row);
                 });
-
-                // 4. GESTION FERMETURE
-                document.getElementById('closeAchBtn').onclick = () => modal.remove();
-                modal.onclick = (evt) => { if(evt.target === modal) modal.remove(); };
+                
+                modal.style.display = 'flex'; // On affiche
             };
             card.appendChild(btnAch);
 

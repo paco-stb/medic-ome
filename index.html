@@ -3,7 +3,6 @@
 <head>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a1a2e">
-
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="favicon.png">
@@ -23,6 +22,7 @@
     
     <style>
         :root {
+          /* MODE SOMBRE (Défaut) */
           --bg-dark: #020b16; --bg-light: #1e3c72;
           --glass-bg: rgba(13, 25, 48, 0.9); --glass-border: rgba(100, 200, 255, 0.15);
           --accent: #00d2ff; --accent-glow: rgba(0, 210, 255, 0.4);
@@ -33,6 +33,7 @@
         }
 
         [data-theme="light"] {
+            /* MODE CLAIR */
             --bg-dark: #e0f2fe; --bg-light: #f0f9ff;
             --glass-bg: rgba(255, 255, 255, 0.9); --glass-border: rgba(0, 114, 255, 0.2);
             --accent: #0072ff; --accent-glow: rgba(0, 114, 255, 0.2);
@@ -277,7 +278,7 @@
             "Paludisme": "Infectio", "Coqueluche": "Infectio", "Grippe": "Infectio", "Mononucléose Infectieuse": "Infectio", "Primo-Infection VIH": "Infectio", "Maladie de Lyme": "Infectio", "Tétanos": "Infectio", "Botulisme": "Infectio", "Rubéole": "Infectio", "Syphilis": "Infectio", "Oreillons": "Infectio", "Muguet Buccal": "Infectio"
         };
         
-        // ACHIEVEMENTS DEFINITIONS
+        // ACHIEVEMENTS DEFINITIONS (COMPLET)
         const ACHIEVEMENTS = [
             { id: "played_10_days", title: "Assiduité", desc: "Jouer 10 jours d'affilée", icon: "🗓️" },
             { id: "baby_doc", title: "Bébé Médecin", desc: "Identifier 1 pathologie", icon: "🍼" },

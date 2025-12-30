@@ -2,11 +2,11 @@
 <html lang="fr">
 <head>
     <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#1a1a2e">
+    <meta name="theme-color" content="#1a1a2e">
 
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="apple-touch-icon" href="favicon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="favicon.png">
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -23,14 +23,14 @@
     
     <style>
         :root {
-          /* MODE SOMBRE (Défaut) */
-          --bg-dark: #020b16; --bg-light: #1e3c72;
-          --glass-bg: rgba(13, 25, 48, 0.9); --glass-border: rgba(100, 200, 255, 0.15);
-          --accent: #00d2ff; --accent-glow: rgba(0, 210, 255, 0.4);
-          --text-main: #ffffff; --text-muted: #b0c4de;
-          --success: #00ff9d; --error: #ff4d4d; --info: #60a5fa;
-          --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32; --ruby: #e01e37;
-          --card-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            /* MODE SOMBRE (Défaut) */
+            --bg-dark: #020b16; --bg-light: #1e3c72;
+            --glass-bg: rgba(13, 25, 48, 0.9); --glass-border: rgba(100, 200, 255, 0.15);
+            --accent: #00d2ff; --accent-glow: rgba(0, 210, 255, 0.4);
+            --text-main: #ffffff; --text-muted: #b0c4de;
+            --success: #00ff9d; --error: #ff4d4d; --info: #60a5fa;
+            --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32; --ruby: #e01e37;
+            --card-shadow: 0 15px 35px rgba(0,0,0,0.6);
         }
 
         [data-theme="light"] {
@@ -263,6 +263,64 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+        // ==========================================
+        // CONFIGURATION DES AFFINAGES SYMPTÔMES (CORRECTIF)
+        // ==========================================
+        const REFINEMENTS = {
+            "douleur_thoracique": [
+                "douleur_thoracique_oppressive", "douleur_thoracique_dechirante", "douleur_thoracique_coté",
+                "irradiation_bras_machoire", "irradiation_dos", "douleur_effort", "soulage_penche_avant", "oppression_thoracique"
+            ],
+            "douleur_abdominale": [
+                "douleur_fosse_iliaque_droite", "douleur_fosse_iliaque_gauche", "douleur_hypocondre_droit",
+                "douleur_epigastrique", "douleur_transfixiante_dos", "douleur_abdominale_brutale",
+                "defense_abdominale", "ventre_dur_bois", "douleur_migration_ombilic"
+            ],
+            "toux": [
+                "toux_seche", "toux_grasse", "toux_sanglante", "toux_chronique", "toux_seche_aboyante",
+                "quintes_toux_violentes", "reprise_inspiratoire_bruyante"
+            ],
+            "dyspnee": [
+                "dyspnee_effort", "dyspnee_brutale", "orthopnee_dyspnee_couchee",
+                "dyspnee_expiratoire", "dyspnee_inspiratoire", "sifflements_respiratoires"
+            ],
+            "fievre": [
+                "fievre_elevee", "frissons_intenses", "sueurs_nocturnes", "convulsions_generalisees"
+            ],
+            "cephalees": [
+                "cephalees_intenses", "cephalees_explosives_brutales", "pulsatile_coeur_cogne",
+                "mal_tete_unilateral", "raideur_nuque", "gene_lumiere"
+            ],
+            "troubles_visuels": [
+                "vision_double", "vision_floue", "baisse_vision_brutale", "eclairs_lumineux",
+                "pluie_de_suie", "halo_autour_phares", "vision_centrale_floue", "lignes_droites_ondulees"
+            ],
+            "troubles_neuro": [
+                "paralysie_unilaterale", "troubles_parole_aphasie", "perte_connaissance", "convulsions",
+                "confusion", "tremblement_repos", "rigidite_musculaire"
+            ],
+            "anomalie_peau": [
+                "ictere_jaunisse", "purpura", "taches_rouges_peau", "eruption_vesicules_bulles",
+                "plaques_rouges", "grain_beaute_asymetrique", "croutes_jaunes_miel"
+            ],
+            "genes_urinaires": [
+                "brulures_urinaires", "sang_urines", "urines_troubles_odorantes",
+                "envie_frequente_uriner", "difficulte_uriner", "absence_urine"
+            ],
+            "douleur_membre_traumatisme": [
+                "impossibilite_marcher", "raccourcissement_jambe", "rotation_externe_pied",
+                "poignet_dos_fourchette", "douleur_jambe_brutale_intense", "absence_pouls"
+            ],
+            "douleur_dos": [
+                "douleur_lombaire_brutale", "irradiation_vers_pubis", "douleur_bas_dos_nuit",
+                "raideur_matin", "irradiation_fesse_jambe"
+            ],
+            "trouble_psy": [
+                "tristesse_permanente", "idees_noires", "delire_paranoiaque", "excitation_euphorie",
+                "peur_mourir_devenir_fou", "maigreur_extreme"
+            ]
+        };
+
         // MAPPING GROUPES
         const PATHO_GROUPS = {
             "Infarctus du myocarde": "Cardio", "Embolie pulmonaire": "Cardio", "OAP": "Cardio", "Dissection Aortique": "Cardio", "Péricardite Aiguë": "Cardio", "Fibrillation Atriale": "Cardio", "Endocardite Infectieuse": "Cardio", "Ischémie Aiguë Membre": "Cardio", "Rupture Anévrisme Aorte": "Cardio", "Choc Septique": "Cardio",
@@ -386,8 +444,9 @@
 
         async function initApp() {
             try {
+                // IMPORTANT : Ce fichier doit être dans le même dossier
                 const response = await fetch('./pathologies.json');
-                if (!response.ok) throw new Error("Impossible de lire le fichier de données");
+                if (!response.ok) throw new Error("Impossible de lire le fichier de données pathologies.json");
                 PATHOLOGIES = await response.json();
                 
                 // DEEP LINKING
@@ -851,7 +910,6 @@
             btnAch.style.background = 'var(--gold)'; btnAch.style.color = 'black'; btnAch.style.marginBottom = '20px';
             btnAch.textContent = '🏆 Voir mes Succès';
             
-            // AJOUT DE (e) et e.stopPropagation()
             btnAch.onclick = (e) => {
                 e.stopPropagation(); // EMPÊCHE LA FERMETURE IMMÉDIATE
                 const modal = q('#achModal'); 

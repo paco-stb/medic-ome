@@ -1,14 +1,23 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1a1a2e">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="favicon.png">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="google-site-verification" content="8SyBOdC5YhaXDqfNYGfzP1EZbb0iQWABpkImmZHXG30" />
     <title>Medicome - Entraînement Clinique</title>
+    
     <meta name="description" content="Simulateur de cas cliniques interactif pour étudiants en médecine.">
     <meta property="og:title" content="Medicome">
     <meta property="og:type" content="website">
     <link rel="icon" href="favicon.png">
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
@@ -72,7 +81,7 @@
         .star-rating label { font-size: 25px; color: #444; cursor: pointer; transition: color 0.2s; }
         .star-rating input:checked ~ label, .star-rating label:hover, .star-rating label:hover ~ label { color: var(--gold); }
 
-        /* MASTERY */
+        /* MASTERY & BADGES */
         .mastery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; width: 100%; margin-top: 20px; }
         .mastery-item { background: rgba(0,0,0,0.2); border-radius: 10px; padding: 15px 10px; text-align: center; border: 2px solid transparent; transition: all 0.3s; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
         .mastery-item:hover { transform: translateY(-3px); background: rgba(255,255,255,0.05); }
@@ -84,7 +93,7 @@
         .mastery-icon { font-size: 24px; }
         .mastery-name { font-size: 13px; font-weight: 600; color: white; }
         .mastery-count { font-size: 11px; color: var(--text-muted); }
-
+        
         /* BADGE TITRE */
         .specialty-badge { font-size: 16px; font-weight: bold; color: var(--text-main); background: linear-gradient(90deg, rgba(0,210,255,0.2) 0%, rgba(0,210,255,0) 100%); padding: 10px 20px; border-radius: 30px; border-left: 4px solid var(--accent); display: inline-block; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
 
@@ -207,9 +216,9 @@
     <script type="module">
         if (window.location.hostname.includes("github.io")) { window.location.href = "https://medicome.fr"; }
 
+        import { getFirestore, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, collection, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, getDocs, setDoc, addDoc, collection, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // MAPPING GROUPES
         const PATHO_GROUPS = {
@@ -525,7 +534,7 @@
                             <div class="stat-box" style="text-align:center; background:rgba(255, 77, 77, 0.1); border-color:var(--error)"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">Échecs</div></div>
                             </div>`;
             
-            const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.textContent='🩺 Lancer le défi'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; 
+            const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.textContent='🩺 Lancer le défi'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; 
             btnDiag.onclick= () => {
                 if(audioCtx.state === 'suspended') audioCtx.resume();
                 renderDemographics();
@@ -533,7 +542,7 @@
             const btnGloss = document.createElement('button'); btnGloss.className='link'; btnGloss.textContent='📚 Glossaire des pathologies'; btnGloss.style.marginTop='12px'; btnGloss.onclick=renderGlossary;
             const btnProf = document.createElement('button'); btnProf.className='link'; btnProf.textContent='👤 Mon Profil'; btnProf.style.marginTop='6px'; btnProf.onclick=renderProfile;
             
-            card.appendChild(btnDiag); card.appendChild(btnGloss); card.appendChild(btnProf); 
+            card.appendChild(btnDiag); card.appendChild(btnGloss); card.appendChild(btnProf); 
             app.appendChild(card);
         }
 
@@ -543,6 +552,7 @@
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card center';
             card.innerHTML = `<h2>⭐ Avis Utilisateurs</h2><p class="small" style="margin-bottom:20px">Ce qu'ils pensent de Medicome.</p>`;
+
 
             const formDiv = document.createElement('div');
             formDiv.style.background = 'rgba(255,255,255,0.05)'; formDiv.style.padding='15px'; formDiv.style.borderRadius='10px'; formDiv.style.width='100%'; formDiv.style.marginBottom='20px';
@@ -556,24 +566,18 @@
                 <input type="radio" id="1-star" name="rating" value="1" /><label for="1-star">★</label>
             </div>
             <textarea id="reviewText" class="input" placeholder="Votre commentaire..." style="min-height:60px;"></textarea>
-            <button id="submitReviewBtn" class="btn" style="width:100%; font-size:13px;">Publier l'avis</button>`;
+            <button id="submitReviewBtn" class="btn" style="width:100%; font-size:13px;">Envoyer (Soumis à modération)</button>`;
             
             card.appendChild(formDiv);
 
             const reviewsContainer = document.createElement('div');
             reviewsContainer.className = 'reviews-container';
             
-            // Avis statiques (pour garder le look existant)
-            reviewsContainer.innerHTML = `
-                <div class="review-card">
-                    <div class="review-header"><div class="review-avatar">A</div><div><div class="review-name">Antoine D.</div><div class="review-stars">★★★★★</div></div></div>
-                    <div class="review-text">"Super outil pour réviser mes cas cliniques avant les partiels. Simple et efficace."</div>
-                </div>
-            `;
 
-            // Charger avis Firebase
+            // Charger avis Firebase (SEULEMENT CEUX VALIDÉS : approved == true)
             try {
-                const qRev = query(collection(db, "reviews"), orderBy("date", "desc"), limit(10));
+                // NOTE : La première fois, Firebase demandera de créer un index dans la console (lien dans inspecteur)
+                const qRev = query(collection(db, "reviews"), where("approved", "==", true), orderBy("date", "desc"), limit(10));
                 const snap = await getDocs(qRev);
                 snap.forEach(doc => {
                     const r = doc.data();
@@ -582,14 +586,21 @@
                     div.className = 'review-card';
                     div.innerHTML = `
                         <div class="review-header">
-                            <div class="review-avatar">${r.pseudo.charAt(0).toUpperCase()}</div>
                             <div><div class="review-name">${r.pseudo}</div><div class="review-stars" style="color:var(--gold)">${stars}</div></div>
                         </div>
                         <div class="review-text">${r.text}</div>
                     `;
                     reviewsContainer.insertBefore(div, reviewsContainer.firstChild);
                 });
-            } catch(e) { console.log("Erreur avis", e); }
+            } catch(e) { 
+                console.log("Erreur avis (Index manquant ?)", e); 
+                // Si erreur d'index, on affiche quand même sans le tri pour éviter le bug visuel
+                if(e.code === 'failed-precondition') {
+                     const qRevBackup = query(collection(db, "reviews"), where("approved", "==", true), limit(10));
+                     const snap = await getDocs(qRevBackup);
+                     snap.forEach(doc => { /* Affichage simplifié backup */ });
+                }
+            }
 
             card.appendChild(reviewsContainer);
             const btnBack = document.createElement('button'); btnBack.className='btn'; btnBack.textContent='Retour';
@@ -604,13 +615,22 @@
                         const ratingEl = document.querySelector('input[name="rating"]:checked');
                         if(!text || !ratingEl) return showAlert("Note et message requis", "error");
                         try {
-                            await addDoc(collection(db, "reviews"), { pseudo: state.pseudo || "Anonyme", text, rating: parseInt(ratingEl.value), date: new Date() });
-                            showAlert("Merci !", "success"); renderReviews();
+                            // ICI : On ajoute approved: false
+                            await addDoc(collection(db, "reviews"), { 
+                                pseudo: state.pseudo || "Anonyme", 
+                                text, 
+                                rating: parseInt(ratingEl.value), 
+                                date: new Date(),
+                                approved: false 
+                            });
+                            showAlert("Avis envoyé ! Il sera visible après validation.", "success"); 
+                            q('#reviewText').value = ''; // On vide le champ
                         } catch(e) { showAlert("Erreur d'envoi", "error"); }
                     };
                 }
             }, 100);
         }
+
 
         // --- ABANDON MENU ---
         function renderAbandonMenu() {
@@ -674,16 +694,21 @@
                 }
             });
 
-            if(bestGroup) {
+            // On n'affiche le badge QUE si le score est >= 3
+            if(bestGroup && maxScore >= 3) {
                 card.innerHTML += `<div class="specialty-badge">🎖️ Spécialiste ${bestGroup}</div>`;
             } else {
-                card.innerHTML += `<div style="margin-bottom:20px; color:var(--text-muted); font-size:13px;">Jouez pour débloquer votre spécialité !</div>`;
+                card.innerHTML += `<div style="margin-bottom:20px; color:var(--text-muted); font-size:13px;">Jouez pour débloquer votre titre de spécialiste !</div>`;
             }
 
             // GLOBAL PROGRESS BAR
             const totalPathos = PATHOLOGIES.length;
-            const unlockedPathos = Object.keys(prog.mastery || {}).length;
-            const percentage = Math.round((unlockedPathos / totalPathos) * 100);
+            const unlockedPathos = Object.keys(prog.mastery || {}).filter(k => {
+                const d = prog.mastery[k];
+                const s = (typeof d === 'number') ? d : d.success;
+                return s > 0;
+            }).length;
+            const percentage = totalPathos > 0 ? Math.round((unlockedPathos / totalPathos) * 100) : 0;
             
             card.innerHTML += `
                 <div style="width:100%; background:rgba(255,255,255,0.1); border-radius:10px; height:10px; margin-bottom:5px; overflow:hidden;">
@@ -693,7 +718,7 @@
             `;
 
             // 2. MASTERY GRID
-            const masteryTitle = document.createElement('h3'); masteryTitle.innerHTML = 'Maitrise Clinique'; 
+            const masteryTitle = document.createElement('h3'); masteryTitle.innerHTML = 'Maitrise Clinique'; 
             card.appendChild(masteryTitle);
 
             const masteryGrid = document.createElement('div'); masteryGrid.className = 'mastery-grid';
@@ -880,22 +905,50 @@
         function canShowDiagnostic() {
             const qNum = state.asked.length;
             if(state.ranked.length===0) return false;
+            
             const top1 = state.ranked[0];
             const top2 = state.ranked[1];
+            
             if(state.previousDiagnostics.includes(top1.patho.name)) return false;
+
+            // RÈGLE 1 : FILET DE SÉCURITÉ (Max 20 questions)
+            if (qNum >= 20) return true;
+
             const score1 = parseFloat(top1.prob);
-            if (!top2) return score1 > 50;
-            const gap = score1 - parseFloat(top2.prob);
-            if (qNum >= 4 && score1 >= 75 && gap >= 30) return true;
-            if (qNum >= 9 && score1 >= 70 && gap >= 15) return true;
-            if (qNum >= 15 && score1 >= 60) return true;
+            if (!top2) return score1 > 40; 
+
+            const score2 = parseFloat(top2.prob);
+            const gap = score1 - score2;
+
+            // RÈGLE 2 : AUDACE PROGRESSIVE
+            if (qNum >= 5 && score1 >= 50 && gap >= 20) return true;
+            if (qNum >= 10 && gap >= 10) return true;
+            if (qNum >= 15) return true;
+
             return false;
         }
 
         function prepareConfirmationQuestions(topPatho) {
-            const pSigns = Object.entries(topPatho.signes).sort((a, b) => b[1] - a[1]).map(entry => entry[0]);
-            const potential = pSigns.filter(s => !state.asked.includes(s));
-            return potential.slice(0, 2);
+            // 1. Récupérer les vrais signes restants (La Checklist)
+            const pSigns = Object.entries(topPatho.signes)
+                .sort((a, b) => b[1] - a[1]) // On trie par importance
+                .map(entry => entry[0]);
+            
+            let questions = pSigns.filter(s => !state.asked.includes(s));
+            
+            // 2. Ajouter un "LEURRE" (Question Piège) pour vérifier que l'élève ne triche pas
+            // On prend un signe au hasard qui n'appartient PAS à la maladie en cours
+            const trapCandidates = state.allSigns.filter(s => !pSigns.includes(s) && !state.asked.includes(s));
+            
+            if (trapCandidates.length > 0) {
+                // On prend un piège au hasard
+                const trap = trapCandidates[Math.floor(Math.random() * trapCandidates.length)];
+                // On l'insère au début ou au milieu pour piéger l'utilisateur
+                questions.splice(1, 0, trap); 
+            }
+
+            // On limite quand même à 5 questions max pour ne pas être trop long
+            return questions.slice(0, 5);
         }
 
         function renderCurrentQuestion() {
@@ -942,6 +995,9 @@
         }
 
         function askNextQuestion() {
+            // SÉCURITÉ MORT SUBITE
+            if (state.asked.length >= 20) { showDiagnostic(); return; }
+
             if(state.asked.length > 0) {
                 const lastSign = state.asked[state.asked.length - 1];
                 const lastAnswer = state.answers[lastSign];
@@ -970,13 +1026,34 @@
 
             if (state.confirmationMode) {
                 const lastSign = state.asked[state.asked.length - 1];
-                if (state.answers[lastSign] === false) {
+                
+                // --- LOGIQUE ANTI-TRICHE ---
+                // Vérifier si le signe posé appartient vraiment à la maladie suspectée
+                const isSignPartOfPatho = Object.keys(state.confirmedPatho.signes).includes(lastSign);
+                const userSaidYes = state.answers[lastSign] === true;
+
+                // 1. Si c'était un piège (le signe n'est pas dans la maladie) ET que l'utilisateur a dit OUI -> ECHEC
+                if (!isSignPartOfPatho && userSaidYes) {
+                    state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
+                    showAlert("Aïe ! Ce symptôme ne collait pas...", "error");
+                    askNextQuestion(); return;
+                }
+
+                // 2. Si c'était un vrai signe ET que l'utilisateur a dit NON -> ECHEC (Piste abandonnée)
+                if (isSignPartOfPatho && !userSaidYes) {
                     state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
                     showAlert("Ah, fausse piste. Je continue à chercher...", "info");
-                } else if (state.confirmationQueue.length > 0) {
+                    askNextQuestion(); return;
+                }
+
+                // Si on a passé les tests, on continue la liste de confirmation
+                if (state.confirmationQueue.length > 0) {
                     const nextC = state.confirmationQueue.shift();
                     state.currentSign = nextC; state.asked.push(nextC); renderCurrentQuestion(); return;
-                } else { showDiagnostic(); return; }
+                } else { 
+                    // PLUS DE QUESTIONS -> DIAGNOSTIC FINAL CONFIRMÉ
+                    showDiagnostic(); return; 
+                }
             }
 
             prepareSigns();
@@ -1133,10 +1210,17 @@
                         });
                     }
                 };
-                createList("✅ Signes bien identifiés", correctSigns, "correct", "Validé");
-                createList("❌ Signes manqués (Faux Négatifs)", missingSigns, "missing", "Vous avez dit Non");
-                createList("ℹ️ Autres signes du tableau clinique", notAskedSigns, "neutral", "Non demandé");
-                createList("⚠️ Signes cochés à tort (Faux Positifs)", erroneousSigns, "error", "Erreur");
+                
+                if(wasManualError) {
+                    createList("❌ Signes manqués (Faux Négatifs)", missingSigns, "missing", "Vous avez dit Non");
+                    createList("ℹ️ Autres signes du tableau clinique", notAskedSigns, "neutral", "Non demandé");
+                } else {
+                    createList("✅ Signes bien identifiés", correctSigns, "correct", "Validé");
+                    if(missingSigns.length > 0) {
+                        createList("⚠️ Attention : Signes manqués", missingSigns, "missing", "Vous avez dit Non (Erreur)");
+                    }
+                    createList("ℹ️ Autres signes du tableau clinique", notAskedSigns, "neutral", "Non demandé");
+                }
                 card.appendChild(resultsDiv);
             }
 

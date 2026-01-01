@@ -541,18 +541,18 @@
             const currentStreak = state.progression.streak || 0;
             const streakDisplay = currentStreak > 0 ? ` <span style="color:#ff9f43; margin-left:8px;">🔥 ${currentStreak}</span>` : '';
 
-            if(state.pseudo){ 
-                pseudoBox.innerHTML = state.pseudo + (state.isGuest ? " (Local)" : "") + streakDisplay; 
+            if(state.pseudo){ 
+                pseudoBox.innerHTML = state.pseudo + (state.isGuest ? " (Local)" : "") + streakDisplay; 
                 pseudoBox.style.display='inline-block'; pseudoBox.onclick=renderProfile;
                 homeBtn.style.display='inline-block'; logoutBtn.style.display='inline-block';
-            } else { 
+            } else { 
                 pseudoBox.style.display='none'; homeBtn.style.display='none'; logoutBtn.style.display='none';
             }
             homeBtn.onclick=renderHome;
             logoutBtn.onclick = () => {
                 localStorage.removeItem('medicome_guest_progression'); localStorage.removeItem('medicome_guest_pseudo');
-                state.isGuest = false; state.pseudo = null; state.currentUser = null; 
-                state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0, lastDaily: null, achievements: [], bestTimes: {}, errorLog: {}, pdfDownloads: 0, speedWins: 0, socialDone: false, reviewDone: false }; 
+                state.isGuest = false; state.pseudo = null; state.currentUser = null; 
+                state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0, lastDaily: null, achievements: [], bestTimes: {}, errorLog: {}, pdfDownloads: 0, speedWins: 0, socialDone: false, reviewDone: false }; 
                 signOut(auth).then(() => { renderLogin(); updateHeader(); showAlert("Déconnecté", "success"); }).catch(() => { renderLogin(); updateHeader(); });
             };
         }
@@ -567,7 +567,7 @@
             const btnLogin = document.createElement('button'); btnLogin.className='btn'; btnLogin.textContent='Se connecter';
             btnLogin.onclick = async () => { try { await signInWithEmailAndPassword(auth, inputUser.value, inputPass.value); showAlert("Connexion réussie !", "success"); } catch (error) { showAlert("Erreur: " + error.message, "error"); } };
             
-            const btnForgot = document.createElement('div'); 
+            const btnForgot = document.createElement('div'); 
             btnForgot.className='small link'; btnForgot.style.border='none'; btnForgot.textContent='Mot de passe oublié ?';
             btnForgot.onclick = async () => {
                 if(!inputUser.value) return showAlert("Veuillez entrer votre email d'abord", "error");
@@ -616,7 +616,7 @@
             const dailyPatho = getDailyPatho();
             const todayStr = new Date().toDateString();
             const isDailyDone = prog.lastDaily === todayStr;
-            const dailyClass = isDailyDone ? "daily-title" : "daily-title"; 
+            const dailyClass = isDailyDone ? "daily-title" : "daily-title"; 
             const dailyText = isDailyDone ? "✅ Défi du jour validé !" : `☀️ Défi du ${new Date().toLocaleDateString()}`;
             const dailyContent = isDailyDone ? "Revenez demain pour une nouvelle streak !" : `Faire identifier : <strong>${dailyPatho ? dailyPatho.name : 'Chargement...'}</strong>`;
 
@@ -634,7 +634,7 @@
                             <div class="stat-box" style="text-align:center; background:rgba(255, 77, 77, 0.1); border-color:var(--error)"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">Échecs</div></div>
                             </div>`;
             
-            const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.textContent='🩺 Entraînement Libre'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; 
+            const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.textContent='🩺 Entraînement Libre'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; 
             btnDiag.onclick= () => {
                 if(audioCtx.state === 'suspended') audioCtx.resume();
                 state.dailyTarget = null;
@@ -643,7 +643,7 @@
             const btnGloss = document.createElement('button'); btnGloss.className='link'; btnGloss.textContent='📚 Glossaire des pathologies'; btnGloss.style.marginTop='12px'; btnGloss.onclick=renderGlossary;
             const btnProf = document.createElement('button'); btnProf.className='link'; btnProf.textContent='👤 Mon Profil & Succès'; btnProf.style.marginTop='6px'; btnProf.onclick=renderProfile;
             
-            card.appendChild(btnDiag); card.appendChild(btnGloss); card.appendChild(btnProf); 
+            card.appendChild(btnDiag); card.appendChild(btnGloss); card.appendChild(btnProf); 
             app.appendChild(card);
 
             // Handler Daily
@@ -701,8 +701,8 @@
                     `;
                     reviewsContainer.insertBefore(div, reviewsContainer.firstChild);
                 });
-            } catch(e) { 
-                console.log("Erreur avis", e); 
+            } catch(e) { 
+                console.log("Erreur avis", e); 
                 if(e.code === 'failed-precondition') {
                      const qRevBackup = query(collection(db, "reviews"), where("approved", "==", true), limit(10));
                      const snap = await getDocs(qRevBackup);
@@ -723,14 +723,14 @@
                         const ratingEl = document.querySelector('input[name="rating"]:checked');
                         if(!text || !ratingEl) return showAlert("Note et message requis", "error");
                         try {
-                            await addDoc(collection(db, "reviews"), { 
-                                pseudo: state.pseudo || "Anonyme", 
-                                text, 
-                                rating: parseInt(ratingEl.value), 
+                            await addDoc(collection(db, "reviews"), { 
+                                pseudo: state.pseudo || "Anonyme", 
+                                text, 
+                                rating: parseInt(ratingEl.value), 
                                 date: new Date(),
-                                approved: false 
+                                approved: false 
                             });
-                            showAlert("Avis envoyé ! Il sera visible après validation.", "success"); 
+                            showAlert("Avis envoyé ! Il sera visible après validation.", "success"); 
                             
                             // UNLOCK ACHIEVEMENT REVIEW
                             if(!state.progression.reviewDone) {
@@ -738,7 +738,7 @@
                                 saveProgression();
                             }
 
-                            q('#reviewText').value = ''; 
+                            q('#reviewText').value = ''; 
                         } catch(e) { showAlert("Erreur d'envoi", "error"); }
                     };
                 }
@@ -768,7 +768,7 @@
                 const patho = PATHOLOGIES.find(p=>p.name === select.value);
                 state.progression.incorrect++;
                 saveProgression();
-                showDiagnosticDetails({patho: patho}, true); 
+                showDiagnosticDetails({patho: patho}, true); 
             };
             divSearch.appendChild(select);
 
@@ -785,19 +785,10 @@
             const app = q('#app'); app.innerHTML='';
             const prog = state.progression;
             const card = document.createElement('div'); card.className='card center'; card.style.maxWidth = '800px';
-            card.innerHTML = `<h2>👤 Profil de ${state.pseudo}</h2>`;
             
-            // BOUTON SUCCÈS -> REDIRECTION VERS PAGE SUCCES
-            const btnAch = document.createElement('button'); 
-            btnAch.className='btn'; 
-            btnAch.style.background = 'var(--gold)'; 
-            btnAch.style.color = 'black'; 
-            btnAch.style.marginBottom = '20px';
-            btnAch.textContent = '🏆 Voir mes Succès';
-            btnAch.onclick = renderAchievementsPage; // NOUVELLE FONCTION
-            card.appendChild(btnAch);
-
-            // ... (Reste du Profil: Specialty, Stats, Mastery...)
+            // 1. Prepare HTML Content first
+            let contentHTML = `<h2>👤 Profil de ${state.pseudo}</h2>`;
+            
             const groupScores = {};
             let maxScore = 0; let bestGroup = null;
             Object.keys(prog.mastery || {}).forEach(pName => {
@@ -812,7 +803,7 @@
             });
 
             if(bestGroup && maxScore >= 3) {
-                card.innerHTML += `<div class="specialty-badge">🎖️ Spécialiste ${bestGroup}</div>`;
+                contentHTML += `<div class="specialty-badge">🎖️ Spécialiste ${bestGroup}</div>`;
             }
 
             const totalPathos = PATHOLOGIES.length;
@@ -823,13 +814,33 @@
             }).length;
             const percentage = totalPathos > 0 ? Math.round((unlockedPathos / totalPathos) * 100) : 0;
             
-            card.innerHTML += `
+            contentHTML += `
                 <div style="width:100%; background:rgba(125,125,125,0.1); border-radius:10px; height:10px; margin-bottom:5px; overflow:hidden;">
                     <div style="width:${percentage}%; background:var(--accent); height:100%;"></div>
                 </div>
                 <div class="small" style="margin-bottom:30px;">Progression globale : ${percentage}% (${unlockedPathos}/${totalPathos})</div>
             `;
+            
+            // 2. Set InnerHTML
+            card.innerHTML = contentHTML;
 
+            // 3. Create Button Element and insert it into DOM (Correcting the bug where onclick was lost)
+            const btnAch = document.createElement('button'); 
+            btnAch.className='btn'; 
+            btnAch.style.background = 'var(--gold)'; 
+            btnAch.style.color = 'black'; 
+            btnAch.style.marginBottom = '20px';
+            btnAch.textContent = '🏆 Voir mes Succès';
+            btnAch.onclick = renderAchievementsPage;
+            
+            // Insert after the title (child 0 is h2, so insert before child 1)
+            if(card.children.length > 0) {
+                card.insertBefore(btnAch, card.children[1]);
+            } else {
+                card.appendChild(btnAch);
+            }
+
+            // 4. Create and append other DOM elements
             // ERROR TRACKER
             const errorTracker = document.createElement('div');
             errorTracker.className = 'error-tracker';
@@ -849,7 +860,7 @@
             card.appendChild(errorTracker);
 
             // MASTERY GRID
-            const masteryTitle = document.createElement('h3'); masteryTitle.innerHTML = 'Maitrise Clinique'; 
+            const masteryTitle = document.createElement('h3'); masteryTitle.innerHTML = 'Maitrise Clinique'; 
             masteryTitle.style.marginTop = "30px";
             card.appendChild(masteryTitle);
 
@@ -931,7 +942,8 @@
             
             const btnBack = document.createElement('button'); btnBack.className='btn'; btnBack.textContent='Retour';
             btnBack.style.marginTop = '20px';
-            btnBack.onclick = renderHome; // RETOURNE A L'ACCUEIL
+            // CORRECTION ICI: Vérification de l'état de connexion
+            btnBack.onclick = () => { if(state.pseudo) renderHome(); else renderLogin(); };
             card.appendChild(btnBack);
             app.appendChild(card);
         }
@@ -1030,7 +1042,7 @@
             if(!state.dailyTarget) { // Pas de chrono optionnel en daily (on peut l'imposer si on veut)
                 const chronoDiv = document.createElement('div');
                 chronoDiv.style.margin = '20px 0'; chronoDiv.style.textAlign='center';
-                const chronoLabel = document.createElement('label'); 
+                const chronoLabel = document.createElement('label'); 
                 chronoLabel.innerHTML = `<input type="checkbox" id="chronoToggle" style="margin-right:8px;"> ⚡ Mode Chrono (Facultatif)`;
                 chronoLabel.style.color = 'var(--text-main)'; chronoLabel.style.cursor='pointer';
                 chronoDiv.appendChild(chronoLabel);
@@ -1039,7 +1051,7 @@
 
             const btnGroup = document.createElement('div'); btnGroup.className='button-group';
             const btnStart = document.createElement('button'); btnStart.className='btn'; btnStart.textContent='▶️ Démarrer';
-            btnStart.onclick=()=>{ 
+            btnStart.onclick=()=>{ 
                 state.demo = {
                     femme: q('#demo-sexe').value === 'femme', homme: q('#demo-sexe').value === 'homme',
                     plus_de_30ans: q('#demo-30').value === 'oui', plus_de_65ans: q('#demo-65').value === 'oui',
@@ -1113,7 +1125,7 @@
             if (qNum >= 20) return true;
 
             const score1 = parseFloat(top1.prob);
-            if (!top2) return score1 > 40; 
+            if (!top2) return score1 > 40; 
 
             const score2 = parseFloat(top2.prob);
             const gap = score1 - score2;
@@ -1139,7 +1151,7 @@
             
             if (trapCandidates.length > 0) {
                 const trap = trapCandidates[Math.floor(Math.random() * trapCandidates.length)];
-                questions.splice(1, 0, trap); 
+                questions.splice(1, 0, trap); 
             }
 
             // On limite quand même à 5 questions max pour ne pas être trop long
@@ -1171,7 +1183,7 @@
             
             const mkBtn = (txt, cls, val) => {
                 const b = document.createElement('button'); b.className=cls; b.textContent=txt;
-                b.onclick=()=>{ 
+                b.onclick=()=>{ 
                     state.history.push(JSON.stringify({
                         answers: state.answers, asked: state.asked, currentSign: state.currentSign,
                         confirmationMode: state.confirmationMode, confirmationQueue: state.confirmationQueue,
@@ -1184,7 +1196,7 @@
                         // On pourrait stocker ici que l'utilisateur a fait une erreur en direct
                     }
                     
-                    state.answers[signe]=val; askNextQuestion(); 
+                    state.answers[signe]=val; askNextQuestion(); 
                 };
                 btnGroup.appendChild(b);
             };
@@ -1263,8 +1275,8 @@
                 if (state.confirmationQueue.length > 0) {
                     const nextC = state.confirmationQueue.shift();
                     state.currentSign = nextC; state.asked.push(nextC); renderCurrentQuestion(); return;
-                } else { 
-                    showDiagnostic(); return; 
+                } else { 
+                    showDiagnostic(); return; 
                 }
             }
 
@@ -1280,8 +1292,8 @@
                 state.currentSign = randomSign; state.asked.push(randomSign); renderCurrentQuestion(); return;
             }
 
-            rankPathologies(); 
-            if(canShowDiagnostic()){ 
+            rankPathologies(); 
+            if(canShowDiagnostic()){ 
                 const topPatho = state.ranked[0].patho;
                 const confirmQuestions = prepareConfirmationQuestions(topPatho);
                 if (confirmQuestions.length > 0) {
@@ -1308,7 +1320,7 @@
                 state.diagnosticShown = true;
                 state.previousDiagnostics.push(top.patho.name);
 
-                app.innerHTML = ''; 
+                app.innerHTML = ''; 
                 const card = document.createElement('div'); card.className='card center';
                 const title = document.createElement('h2'); title.textContent='💡 Diagnostic Proposé'; card.appendChild(title);
                 
@@ -1321,7 +1333,7 @@
                 const btnGroup = document.createElement('div'); btnGroup.className='button-group';
                 
                 const btnTrue = document.createElement('button'); btnTrue.className='btn btn-success'; btnTrue.textContent='✅ Correct';
-                btnTrue.onclick = async () => { 
+                btnTrue.onclick = async () => { 
                     triggerConfetti(); playSound('success');
                     state.progression.correct++; state.progression.streak = (state.progression.streak || 0) + 1;
                     
@@ -1359,7 +1371,7 @@
 
                     // CHECK FOR MISSED SIGNS EVEN ON SUCCESS
                     Object.keys(top.patho.signes).forEach(s => {
-                        if(state.answers[s] === false) { 
+                        if(state.answers[s] === false) { 
                             if(!m.missedSigns[s]) m.missedSigns[s] = 0;
                             m.missedSigns[s]++;
                         }
@@ -1367,12 +1379,12 @@
 
                     state.progression.mastery[pName] = m;
                     
-                    updateHeader(); await saveProgression(); 
+                    updateHeader(); await saveProgression(); 
                     showAlert('Diagnostic validé !','success'); showDiagnosticDetails({patho: top.patho});
                 };
                 
                 const btnFalse = document.createElement('button'); btnFalse.className='btn btn-error'; btnFalse.textContent='❌ Incorrect';
-                btnFalse.onclick = async () => { 
+                btnFalse.onclick = async () => { 
                     playSound('error');
                     state.progression.incorrect++; state.progression.streak = 0;
                     
@@ -1388,9 +1400,9 @@
                     if(!state.progression.errorLog) state.progression.errorLog = {};
                     state.progression.errorLog[pName] = { date: Date.now(), count: (state.progression.errorLog[pName]?.count || 0) + 1 };
 
-                    updateHeader(); await saveProgression(); 
-                    showAlert('Aïe... Continuons','error'); 
-                    state.confirmationMode = false; state.diagnosticShown=false; 
+                    updateHeader(); await saveProgression(); 
+                    showAlert('Aïe... Continuons','error'); 
+                    state.confirmationMode = false; state.diagnosticShown=false; 
                     setTimeout(()=>askNextQuestion(), 800);
                 };
                 
@@ -1414,7 +1426,7 @@
                 
                 m.failures++;
                 Object.keys(top.signes).forEach(s => {
-                    if(state.answers[s] === false) { 
+                    if(state.answers[s] === false) { 
                         if(!m.missedSigns[s]) m.missedSigns[s] = 0;
                         m.missedSigns[s]++;
                     }
@@ -1433,12 +1445,12 @@
 
             const desc = document.createElement('div'); desc.className='patho-desc'; desc.textContent = top.short; desc.style.marginBottom='20px'; desc.style.textAlign='center'; card.appendChild(desc);
             
-            if(top.signes) { 
+            if(top.signes) { 
                 const pathoSigns = Object.keys(top.signes);
                 const correctSigns = [], missingSigns = [], notAskedSigns = [], erroneousSigns = [];
                 pathoSigns.forEach(s => {
                     const val = state.answers[s];
-                    if(val === true) correctSigns.push(s); 
+                    if(val === true) correctSigns.push(s); 
                     else if(val === false) missingSigns.push(s);
                     else notAskedSigns.push(s);
                 });
@@ -1482,7 +1494,7 @@
             const btnGroup = document.createElement('div'); btnGroup.className='button-group';
             
             // BOUTON REJOUER DIRECT
-            const btnReplay = document.createElement('button'); btnReplay.className='btn btn-success'; btnReplay.textContent = '🔄 Rejouer tout de suite'; 
+            const btnReplay = document.createElement('button'); btnReplay.className='btn btn-success'; btnReplay.textContent = '🔄 Rejouer tout de suite'; 
             btnReplay.onclick = () => {
                  state.dailyTarget = null; // Reset daily flag if random play
                  renderDemographics();
@@ -1495,7 +1507,7 @@
         function renderGlossary() {
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
-            const titleCard = document.createElement('div'); titleCard.className='card center'; titleCard.innerHTML='<h2>📚 Glossaire</h2>'; 
+            const titleCard = document.createElement('div'); titleCard.className='card center'; titleCard.innerHTML='<h2>📚 Glossaire</h2>'; 
             const btnBack = document.createElement('button'); btnBack.className='link'; btnBack.textContent='🏠 Retour';
             btnBack.style.marginBottom='20px'; btnBack.onclick=renderHome;
             titleCard.appendChild(btnBack); app.appendChild(titleCard);
@@ -1541,18 +1553,18 @@
             function createPathoCard(p) {
                 const card = document.createElement('div'); card.className='patho-card';
                 card.innerHTML=`<div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>`;
-                card.onclick=()=>{ 
+                card.onclick=()=>{ 
                     if(p.pdf && p.pdf !== '#') {
                         trackPdf(); // Track download on glossary click too
-                        window.open(p.pdf,'_blank'); 
-                    } else showAlert('Fiche PDF non disponible','error'); 
+                        window.open(p.pdf,'_blank'); 
+                    } else showAlert('Fiche PDF non disponible','error'); 
                 };
                 return card;
             }
             renderGrid(sortedPathos, true);
             searchInput.addEventListener('input', (e) => {
                 const term = e.target.value.toLowerCase();
-                if(term.length > 0) { sidebar.style.display = 'none'; const filtered = sortedPathos.filter(p => p.name.toLowerCase().includes(term)); renderGrid(filtered, false); } 
+                if(term.length > 0) { sidebar.style.display = 'none'; const filtered = sortedPathos.filter(p => p.name.toLowerCase().includes(term)); renderGrid(filtered, false); } 
                 else { sidebar.style.display = 'flex'; renderGrid(sortedPathos, true); }
             });
             wrapper.appendChild(content); app.appendChild(wrapper);

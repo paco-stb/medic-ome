@@ -700,7 +700,7 @@
         function renderLogin() {
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
-            const card = document.createElement('div'); card.className='card center'; card.innerHTML='<h2><i class="ph-duotone ph-cloud"></i> Connexion Cloud</h2>';
+            const card = document.createElement('div'); card.className='card center'; card.innerHTML='<h2><i class="ph-duotone ph-cloud"></i>Connexion</h2>';
             const inputUser = document.createElement('input'); inputUser.placeholder='Email'; inputUser.className='input';
             const inputPass = document.createElement('input'); inputPass.placeholder='Mot de passe'; inputPass.className='input'; inputPass.type='password';
             
@@ -927,7 +927,7 @@
             const card = document.createElement('div'); card.className='card center'; card.style.maxWidth = '800px';
             
             // 1. Prepare HTML Content first
-            let contentHTML = `<h2>👤 Profil de ${state.pseudo}</h2>`;
+            let contentHTML = `<h2>Profil de ${state.pseudo}</h2>`;
             
             const groupScores = {};
             let maxScore = 0; let bestGroup = null;

@@ -42,11 +42,29 @@
         header { display: flex; justify-content: space-between; padding: 10px 24px; background: var(--glass-bg); backdrop-filter: blur(15px); align-items: center; border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         .brand { display: flex; align-items: center; gap: 12px; cursor: pointer; }
         
-        /* SVG ICON STYLES */
-        .icon-svg { width: 1em; height: 1em; vertical-align: middle; fill: currentColor; }
-        .icon-xl { width: 60px; height: 60px; filter: drop-shadow(0 0 10px var(--accent-glow)); }
-        .icon-lg { width: 32px; height: 32px; }
-        .icon-md { width: 24px; height: 24px; }
+        /* NOUVEAUX STYLES POUR LES IMAGES ANIMEES */
+        .anim-icon {
+            display: inline-block;
+            vertical-align: middle;
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            /* Petit effet de lueur pour le style "néon" */
+            filter: drop-shadow(0 0 5px currentColor);
+        }
+        .anim-icon-sm { width: 18px; height: 18px; }
+        .anim-icon-lg { width: 32px; height: 32px; }
+        .anim-icon-xl { width: 48px; height: 48px; }
+        .anim-icon-xxl { width: 80px; height: 80px; margin-bottom: 15px; }
+
+        /* Couleurs spécifiques pour les lueurs des rangs */
+        .glow-gold { color: var(--gold); }
+        .glow-silver { color: var(--silver); }
+        .glow-bronze { color: var(--bronze); }
+        .glow-diamond { color: var(--accent); }
+        .glow-ruby { color: var(--ruby); }
+        .glow-success { color: var(--success); }
+        .glow-error { color: var(--error); }
         
         .top-right { display:flex; gap:12px; align-items:center; }
         .pseudo { color:var(--accent); font-weight:600; padding:6px 16px; background: rgba(0, 210, 255, 0.05); border: 1px solid var(--glass-border); border-radius:20px; cursor:pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; }
@@ -83,9 +101,9 @@
         .achievement-row:hover { transform: translateY(-3px); background: rgba(125,125,125,0.15); }
         .achievement-row.unlocked { border-color: var(--gold); background: rgba(255, 215, 0, 0.08); }
         
-        /* Custom Icon Container to size SVGs */
         .ach-icon-container { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; }
-        .ach-icon-container svg { width: 100%; height: 100%; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2)); }
+        .ach-icon-container img { width: 100%; height: 100%; object-fit: contain; }
+        .locked-icon img { opacity: 0.3; filter: grayscale(1); }
         
         .ach-info { width: 100%; }
         .ach-title { font-weight: bold; font-size: 13px; color: var(--text-main); margin-bottom: 4px; }
@@ -101,16 +119,17 @@
         .mastery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; width: 100%; margin-top: 20px; }
         .mastery-item { background: rgba(125,125,125,0.1); border-radius: 10px; padding: 15px 10px; text-align: center; border: 2px solid transparent; transition: all 0.3s; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
         
-        .mastery-icon-container { width: 40px; height: 40px; }
-        .mastery-icon-container svg { width: 100%; height: 100%; }
+        .mastery-icon-container { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+        .mastery-icon-container img { width: 100%; height: 100%; object-fit: contain; }
 
-        .m-locked { border-color: var(--glass-border); opacity: 0.5; filter: grayscale(1); border-style: dashed;}
+        .m-locked { border-color: var(--glass-border); opacity: 0.5; border-style: dashed;}
+        .m-locked img { filter: grayscale(1) brightness(0.7); opacity: 0.5; }
         .m-bronze { border-color: var(--bronze); background: rgba(205, 127, 50, 0.1); }
         .m-silver { border-color: var(--silver); background: rgba(192, 192, 192, 0.1); }
         .m-gold { border-color: var(--gold); background: rgba(255, 215, 0, 0.1); }
-        .m-master { border-color: var(--ruby); background: rgba(224, 30, 55, 0.15); }
+        .m-master { border-color: var(--accent); background: rgba(0, 210, 255, 0.1); }
         
-        .specialty-badge { font-size: 16px; font-weight: bold; color: var(--text-main); background: linear-gradient(90deg, rgba(0,210,255,0.2) 0%, rgba(0,210,255,0) 100%); padding: 10px 20px; border-radius: 30px; border-left: 4px solid var(--accent); display: inline-block; margin-bottom: 20px; }
+        .specialty-badge { font-size: 16px; font-weight: bold; color: var(--text-main); background: linear-gradient(90deg, rgba(0,210,255,0.2) 0%, rgba(0,210,255,0) 100%); padding: 10px 20px; border-radius: 30px; border-left: 4px solid var(--accent); display: inline-flex; align-items: center; gap: 10px; margin-bottom: 20px; }
         .error-tracker { margin-top: 20px; width: 100%; border-top: 1px solid var(--glass-border); padding-top: 15px; }
         .error-item { display: flex; justify-content: space-between; padding: 8px; background: rgba(255, 77, 77, 0.1); border-left: 3px solid var(--error); margin-bottom: 5px; border-radius: 4px; font-size: 13px; color: var(--text-main); }
 
@@ -162,7 +181,7 @@
         .social-link:hover { background: rgba(0, 210, 255, 0.1); transform: scale(1.1); }
         .social-icon { width: 20px; height: 20px; fill: var(--text-muted); transition: fill 0.3s; }
         .social-link:hover .social-icon { fill: var(--accent); }
-        .alert { padding:14px; border-radius:10px; margin:12px 0; font-size:14px; width: 100%; text-align: center; }
+        .alert { padding:14px; border-radius:10px; margin:12px 0; font-size:14px; width: 100%; text-align: center; display: flex; align-items: center; justify-content: center; gap: 10px;}
         .alert-success { background: rgba(0, 255, 157, 0.1); border:1px solid var(--success); color:var(--success); }
         .alert-error { background: rgba(255, 77, 77, 0.1); border:1px solid var(--error); color:var(--error); }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -171,37 +190,9 @@
 </head>
 <body>
 
-    <svg width="0" height="0" style="position: absolute;">
-        <defs>
-            <linearGradient id="grad-gold" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#FDB931;stop-opacity:1" />
-            </linearGradient>
-            <linearGradient id="grad-silver" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#E0E0E0;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#B0B0B0;stop-opacity:1" />
-            </linearGradient>
-            <linearGradient id="grad-bronze" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#CD7F32;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#8B4513;stop-opacity:1" />
-            </linearGradient>
-            <linearGradient id="grad-diamond" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#00d2ff;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#3a7bd5;stop-opacity:1" />
-            </linearGradient>
-            <linearGradient id="grad-fire" x1="0%" y1="100%" x2="100%" y2="0%">
-                <stop offset="0%" style="stop-color:#f12711;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#f5af19;stop-opacity:1" />
-            </linearGradient>
-        </defs>
-    </svg>
-
     <header>
         <div class="brand" id="brandLogo">
-            <svg class="icon-xl" viewBox="0 0 512 512">
-                <path fill="url(#grad-diamond)" d="M416 112c0-35.3-28.7-64-64-64-35.3 0-64 28.7-64 64v128c0 53-43 96-96 96s-96-43-96-96V112c0-35.3-28.7-64-64-64S32 76.7 32 112v128c0 88.4 71.6 160 160 160h128c88.4 0 160-71.6 160-160V112z"/>
-                <circle cx="256" cy="432" r="48" fill="url(#grad-diamond)"/>
-            </svg>
+            <img src="" id="headerLogoImg" class="anim-icon anim-icon-lg glow-diamond" alt="Medicome">
             <h1 style="font-weight:700; font-size:20px; color:var(--text-main);">Medicome</h1>
         </div>
         
@@ -226,27 +217,7 @@
     </header>
 
     <main id="app">
-        <div class="center" id="landing-content" style="padding: 20px; text-align: center;">
-            <div style="width:100px; height:100px; margin-bottom:20px;">
-                <svg viewBox="0 0 512 512" style="width:100%; height:100%;">
-                    <path fill="url(#grad-diamond)" d="M416 112c0-35.3-28.7-64-64-64-35.3 0-64 28.7-64 64v128c0 53-43 96-96 96s-96-43-96-96V112c0-35.3-28.7-64-64-64S32 76.7 32 112v128c0 88.4 71.6 160 160 160h128c88.4 0 160-71.6 160-160V112z"/>
-                    <circle cx="256" cy="432" r="48" fill="url(#grad-diamond)"/>
-                </svg>
-            </div>
-            <h1 style="font-size: 2rem; margin-bottom: 10px; color: var(--text-main);">Medicome</h1>
-            <h2 style="font-size: 1.2rem; color: var(--accent); margin-bottom: 20px; font-weight: normal;">
-                L'IA d'entraînement au diagnostic médical
-            </h2>
-            <div style="max-width: 600px; margin: 0 auto; color: var(--text-muted); line-height: 1.5;">
-                <p>Préparez vos ECN, EDN et examens de médecine grâce à notre simulateur de cas cliniques interactif. Pédagogie inversée, mode survie et glossaire complet.</p>
-            </div>
-            
-            <div style="margin-top: 40px;">
-                <div style="font-size: 30px; animation: spin 1s infinite linear;">⚙️</div>
-                <div class="small" style="margin-top: 10px;">Chargement du noyau médical...</div>
-            </div>
-        </div>
-    </main>
+        </main>
 
     <footer>
         <div class="social-links">
@@ -270,21 +241,52 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // --- GRAPHICS LIBRARY (SVG PATHS) ---
-        const GRAPHICS = {
-            streak: `<svg viewBox="0 0 24 24"><path fill="url(#grad-fire)" d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg>`,
-            medal: `<svg viewBox="0 0 24 24"><path d="M12 7l-2.5-5h5L12 7z" fill="#ccc"/><path d="M12 7l2.5-5h2.5L13 9l-1 2-1-2-4-2h2.5L12 7z" opacity="0.5" fill="#fff"/><circle cx="12" cy="15" r="7" /></svg>`, // Base medal shape
-            lock: `<svg viewBox="0 0 24 24"><path fill="currentColor" d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>`,
-            book: `<svg viewBox="0 0 24 24"><path fill="url(#grad-diamond)" d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>`,
-            star: `<svg viewBox="0 0 24 24"><path fill="url(#grad-gold)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`,
-            trophy: `<svg viewBox="0 0 24 24"><path fill="url(#grad-gold)" d="M20.2 6.5h-2.3c-.4-2.6-2.7-4.5-5.4-4.5s-5 1.9-5.4 4.5H4.8C3.8 6.5 3 7.3 3 8.3v1.8c0 2.5 1.8 4.6 4.2 5 1.4 2.1 3.7 3.6 6.3 3.8v2.3H9.5v2h6v-2h-4v-2.3c2.6-.3 4.9-1.7 6.3-3.8 2.4-.4 4.2-2.5 4.2-5V8.3c0-1-.8-1.8-1.8-1.8z"/></svg>`,
-            rocket: `<svg viewBox="0 0 24 24"><path fill="url(#grad-diamond)" d="M12 2.5s-6 8-6 13c0 3.3 2.7 6 6 6s6-2.7 6-6c0-5-6-13-6-13z"/><path fill="orange" d="M11 19h2v3h-2z"/></svg>`,
-            calendar: `<svg viewBox="0 0 24 24"><path fill="url(#grad-diamond)" d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>`,
-            gradCap: `<svg viewBox="0 0 24 24"><path fill="url(#grad-diamond)" d="M12 3L1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>`,
-            sun: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="url(#grad-gold)"/><path fill="url(#grad-gold)" d="M12 2L12 4M12 20L12 22M4 12L2 12M22 12L20 12M4.93 4.93L6.34 6.34M17.66 17.66L19.07 19.07M4.93 19.07L6.34 17.66M17.66 6.34L19.07 4.93" stroke="url(#grad-gold)" stroke-width="2" stroke-linecap="round"/></svg>`,
-            doc: `<svg viewBox="0 0 24 24"><path fill="url(#grad-diamond)" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>`,
-            heart: `<svg viewBox="0 0 24 24"><path fill="var(--ruby)" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+        // --- BIBLIOTHEQUE D'ICONES ANIMEES (BASE64) ---
+        // ⚠️ IMPORTANT : Remplacez les chaînes ci-dessous par les Base64 de vos VRAIES images animées (GIF ou WebP).
+        // J'ai mis des placeholders (cercles pulsants) pour l'exemple.
+        const ANIMATED_ICONS = {
+            // Placeholder pour le logo (cercle bleu pulsant)
+            logo: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iIzAwZDJmZiI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgdmFsdWVzPSI0MDs0NTs0MCIgZHVyPSIxLjVzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPjxhbmltYXRlIGF0dHJpYnV0ZU5hbWU9Im9wYWNpdHkiIHZhbHVlcz0iMTswLjg7MSIgZHVyPSIxLjVzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPjwvY2lyY2xlPjwvc3ZnPg==',
+            // Placeholder pour le coucou (cercle jaune pulsant)
+            wave: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2ZmZDcwMCI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgdmFsdWVzPSI0MDs0NTs0MCIgZHVyPSIxLjVzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPjwvY2lyY2xlPjwvc3ZnPg==',
+            // Placeholder pour la flamme (cercle orange pulsant)
+            fire: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2ZmNGQ0ZCI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgdmFsdWVzPSI0MDs0NTs0MCIgZHVyPSIxcyIgcmVwZWF0Q291bnQ9ImluZGVZmluaXRlIi8+PC9jaXJY2xlPjwvc3ZnPg==',
+            // Placeholder pour le soleil (cercle or pulsant)
+            sun: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2ZmZDcwMCI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0ib3BhY2l0eSIgdmFsdWVzPSIxOzAuNzsxIiBkdXI9IjJzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPjwvY2lyY2xlPjwvc3ZnPg==',
+            
+            // Rangs de maîtrise (placeholders de différentes couleurs)
+            lock: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2IwYzRkZSIvPjwvc3ZnPg==', // Gris fixe
+            medal_bronze: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2NkN2YzMiI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0ib3BhY2l0eSIgdmFsdWVzPSIxOzAuODsxIiBkdXI9IjNlIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPjwvY2lyY2xlPjwvc3ZnPg==',
+            medal_silver: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2UwZTBlMCI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0ib3BhY2l0eSIgdmFsdWVzPSIxOzAuODsxIiBkdXI9IjNlIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPjwvY2lyY2xlPjwvc3ZnPg==',
+            medal_gold: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2ZmZDcwMCI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0ib3BhY2l0eSIgdmFsdWVzPSIxOzAuODsxIiBkdXI9IjNlIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPjwvY2lyY2xlPjwvc3ZnPg==',
+            diamond: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iIzAwZDJmZiI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0ib3BhY2l0eSIgdmFsdWVzPSIxOzAuNzsxIiBkdXI9IjEuNXMzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPjwvY2lyY2xlPjwvc3ZnPg==',
+
+            // Succès (placeholders génériques)
+            trophy: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2ZmZDcwMCI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgdmFsdWVzPSI0MDs0NTs0MCIgZHVyPSIycyIgcmVwZWF0Q291bnQ9ImluZGVZmluaXRlIi8+PC9jaXJY2xlPjwvc3ZnPg==',
+            calendar: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iIzAwZDJmZiI+PC9jaXJY2xlPjwvc3ZnPg==',
+            book: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iIzAwZDJmZiI+PC9jaXJY2xlPjwvc3ZnPg==',
+            gradCap: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iIzAwZDJmZiI+PC9jaXJY2xlPjwvc3ZnPg==',
+            doc: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iIzAwZDJmZiI+PC9jaXJY2xlPjwvc3ZnPg==',
+            star: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2ZmZDcwMCI+PC9jaXJY2xlPjwvc3ZnPg==',
+            heart: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2ZmMDA1NSI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0iciIgdmFsdWVzPSI0MDs0NTs0MCIgZHVyPSIxcyIgcmVwZWF0Q291bnQ9ImluZGVZmluaXRlIi8+PC9jaXJY2xlPjwvc3ZnPg==',
+            rocket: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2ZmNGQ0ZCI+PC9jaXJY2xlPjwvc3ZnPg==',
+
+            // Alertes et divers
+            success: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iIzAwZmY5ZCI+PC9jaXJY2xlPjwvc3ZnPg==',
+            error: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2ZmNGQ0ZCI+PC9jaXJY2xlPjwvc3ZnPg==',
+            info: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iIzAwZDJmZiI+PC9jaXJY2xlPjwvc3ZnPg==',
+            badge: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iIzAwZDJmZiI+PC9jaXJY2xlPjwvc3ZnPg==',
+            load: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iIzAwZDJmZiI+PGFuaW1hdGUgYXR0cmlidXRlTmFtZT0ib3BhY2l0eSIgdmFsdWVzPSIxOzAuNTsxIiBkdXI9IjFzIiByZXBlYXRDb3VudD0iaW5kZWZpbml0ZSIvPjwvY2lyY2xlPjwvc3ZnPg==',
+            search: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2IwYzRkZSIvPjwvc3ZnPg==',
+            thought: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iI2ZmZDcwMCIvPjwvc3ZnPg==',
+            question: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iIzAwZDJmZiIvPjwvc3ZnPg=='
         };
+        
+        // Fonction utilitaire pour créer une balise img animée
+        function getAnimImg(iconKey, sizeClass = '', extraClass = '') {
+            const src = ANIMATED_ICONS[iconKey] || ANIMATED_ICONS.info;
+            return `<img src="${src}" class="anim-icon ${sizeClass} ${extraClass}" alt="${iconKey}">`;
+        }
 
         const REFINEMENTS = {
             "douleur_thoracique": ["douleur_thoracique_oppressive", "douleur_thoracique_dechirante", "douleur_thoracique_coté", "irradiation_bras_machoire", "irradiation_dos", "douleur_effort", "soulage_penche_avant", "oppression_thoracique"],
@@ -317,7 +319,7 @@
             "Paludisme": "Infectio", "Coqueluche": "Infectio", "Grippe": "Infectio", "Mononucléose Infectieuse": "Infectio", "Primo-Infection VIH": "Infectio", "Maladie de Lyme": "Infectio", "Tétanos": "Infectio", "Botulisme": "Infectio", "Rubéole": "Infectio", "Syphilis": "Infectio", "Oreillons": "Infectio", "Muguet Buccal": "Infectio"
         };
         
-        // MAPPING TO GRAPHICS LIBRARY
+        // MAPPING DES SUCCES VERS LES CLES D'ICONES ANIMEES
         const ACHIEVEMENTS = [
             { id: "played_10_days", title: "Assiduité", desc: "Jouer 10 jours d'affilée", icon: "calendar" },
             { id: "baby_doc", title: "P1 validée", desc: "Identifier 1 pathologie", icon: "book" },
@@ -330,8 +332,8 @@
             { id: "bookworm_25", title: "Archiviste", desc: "Télécharger 25 fiches PDF", icon: "book" },
             { id: "bookworm_50", title: "Bibliothécaire", desc: "Télécharger 50 fiches PDF", icon: "book" },
             { id: "bookworm_100", title: "Savoir Absolu", desc: "Télécharger 100 fiches PDF", icon: "star" },
-            { id: "master_5", title: "Major de Promo", desc: "5 pathologies au rang Maître", icon: "medal" },
-            { id: "master_30", title: "Professeur", desc: "30 pathologies au rang Maître", icon: "medal" },
+            { id: "master_5", title: "Major de Promo", desc: "5 pathologies au rang Maître", icon: "medal_gold" },
+            { id: "master_30", title: "Professeur", desc: "30 pathologies au rang Maître", icon: "medal_gold" },
             { id: "master_100", title: "Légende", desc: "100 pathologies au rang Maître", icon: "trophy" },
             { id: "encyclopedia", title: "Encyclopédie Vivante", desc: "Débloquer toutes les pathologies", icon: "book" },
             { id: "god_mode", title: "Dieu de la Médecine", desc: "Toutes pathologies en Maître", icon: "star" },
@@ -421,6 +423,9 @@
         }
 
         async function initApp() {
+            // Initialisation du logo du header
+            q('#headerLogoImg').src = ANIMATED_ICONS.logo;
+            
             try {
                 const response = await fetch('./pathologies.json');
                 if (!response.ok) throw new Error("Impossible de lire le fichier de données pathologies.json");
@@ -578,10 +583,13 @@
 
         function q(sel){ return document.querySelector(sel); }
         function formatSigneName(sign){ return sign.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase()); }
+        
         function showAlert(message,type){
             const alertDiv = document.createElement('div');
             alertDiv.className = 'alert alert-' + type;
-            alertDiv.textContent = message;
+            // Ajout d'une petite icône animée dans l'alerte
+            const iconKey = type === 'success' ? 'success' : 'error';
+            alertDiv.innerHTML = `${getAnimImg(iconKey, 'anim-icon-sm')} <span>${message}</span>`;
             const app = q('#app');
             if(app){ app.insertBefore(alertDiv,app.firstChild); setTimeout(()=>{ if(alertDiv.parentNode) alertDiv.parentNode.removeChild(alertDiv); },3000); }
         }
@@ -655,7 +663,8 @@
         function updateHeader(){
             const pseudoBox = q("#pseudoBox"); const homeBtn = q("#homeBtn"); const logoutBtn = q("#logoutBtn");
             const currentStreak = state.progression.streak || 0;
-            const streakDisplay = currentStreak > 0 ? ` <span style="display:flex; align-items:center; margin-left:8px; gap:4px;"> <span class="icon-svg" style="color:#ff9f43">${GRAPHICS.streak}</span> ${currentStreak}</span>` : '';
+            // Utilisation de l'image animée pour la série
+            const streakDisplay = currentStreak > 0 ? ` <span style="display:flex; align-items:center; margin-left:8px; gap:4px;"> ${getAnimImg('fire', '', 'glow-error')} ${currentStreak}</span>` : '';
 
             if(state.pseudo){ 
                 pseudoBox.innerHTML = state.pseudo + (state.isGuest ? " (Local)" : "") + streakDisplay; 
@@ -736,11 +745,11 @@
             const dailyText = isDailyDone ? "✅ Défi du jour validé !" : `☀️ Défi du ${new Date().toLocaleDateString()}`;
             const dailyContent = isDailyDone ? "Revenez demain pour une nouvelle streak !" : `Faire identifier : <strong>${dailyPatho ? dailyPatho.name : 'Chargement...'}</strong>`;
 
-            // Utilisation des SVG standards
-            card.innerHTML = `<h2 style="display:flex;align-items:center;gap:10px;">👋 Bonjour ${displayName}</h2>${cloudBadge}
+            // Utilisation des images animées pour le header et le daily
+            card.innerHTML = `<h2 style="display:flex;align-items:center;gap:10px;">${getAnimImg('wave', 'anim-icon-lg')} Bonjour ${displayName}</h2>${cloudBadge}
                                             
                                             <div class="daily-card">
-                                                <div class="${dailyClass}">${GRAPHICS.sun} ${dailyText}</div>
+                                                <div class="${dailyClass}">${getAnimImg('sun', '', 'glow-gold')} ${dailyText}</div>
                                                 <div style="font-size:0.9em; color:var(--text-main); margin-bottom:5px;">${dailyContent}</div>
                                                 ${!isDailyDone ? `<button id="btnDaily" class="btn" style="background:var(--gold); color:#000; font-size:12px; padding:8px 15px; margin-top:5px;">Relever le défi</button>` : ''}
                                             </div>
@@ -920,7 +929,8 @@
             });
 
             if(bestGroup && maxScore >= 3) {
-                contentHTML += `<div class="specialty-badge">🎖️ Spécialiste ${bestGroup}</div>`;
+                // Utilisation de l'icône animée pour le badge
+                contentHTML += `<div class="specialty-badge">${getAnimImg('badge', 'anim-icon-lg')} Spécialiste ${bestGroup}</div>`;
             }
 
             const totalPathos = PATHOLOGIES.length;
@@ -989,19 +999,16 @@
                 const m = masteryData[p.name];
                 const successCount = (typeof m === 'number') ? m : (m?.success || 0);
                 const mItem = document.createElement('div');
-                // ICI: On utilise des SVG intégrés pour les rangs
-                let sClass = 'm-locked', icon = GRAPHICS.lock;
-                if (successCount >= 10) { 
-                    sClass = 'm-master'; 
-                    // Master Diamond Icon (reusing medal but changing fill via generic component logic or specific color)
-                    icon = `<svg viewBox="0 0 24 24"><path fill="url(#grad-diamond)" d="M12 2l-9 4 9 16 9-16-9-4z"/></svg>`;
-                }
-                else if (successCount >= 5) { sClass = 'm-gold'; icon = GRAPHICS.medal.replace('#ccc', 'url(#grad-gold)'); }
-                else if (successCount >= 3) { sClass = 'm-silver'; icon = GRAPHICS.medal.replace('#ccc', 'url(#grad-silver)'); }
-                else if (successCount >= 1) { sClass = 'm-bronze'; icon = GRAPHICS.medal.replace('#ccc', 'url(#grad-bronze)'); }
+                
+                // ICI: On utilise des images animées pour les rangs
+                let sClass = 'm-locked', iconKey = 'lock';
+                if (successCount >= 10) { sClass = 'm-master'; iconKey = 'diamond'; }
+                else if (successCount >= 5) { sClass = 'm-gold'; iconKey = 'medal_gold'; }
+                else if (successCount >= 3) { sClass = 'm-silver'; iconKey = 'medal_silver'; }
+                else if (successCount >= 1) { sClass = 'm-bronze'; iconKey = 'medal_bronze'; }
 
                 mItem.className = `mastery-item ${sClass}`;
-                mItem.innerHTML = `<div class="mastery-icon-container">${icon}</div><div class="mastery-name">${p.name}</div><div class="mastery-count">${successCount} réussite(s)</div>`;
+                mItem.innerHTML = `<div class="mastery-icon-container ${sClass === 'm-locked' ? 'locked-icon' : ''}">${getAnimImg(iconKey)}</div><div class="mastery-name">${p.name}</div><div class="mastery-count">${successCount} réussite(s)</div>`;
                 mItem.onclick = () => renderPathoStats(p); // Click to see stats
                 masteryGrid.appendChild(mItem);
             });
@@ -1012,7 +1019,7 @@
             card.appendChild(btnBack); app.appendChild(card);
         }
 
-        // --- NOUVELLE PAGE: SUCCÈS (AVEC SVG GRAPHIQUES) ---
+        // --- NOUVELLE PAGE: SUCCÈS (AVEC IMAGES ANIMEES) ---
         function renderAchievementsPage() {
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML = '';
@@ -1030,12 +1037,12 @@
                 const row = document.createElement('div');
                 row.className = `achievement-row ${unlocked ? 'unlocked' : ''}`;
                 
-                // --- MODIFICATION: Utilisation de l'icône SVG ---
+                // --- MODIFICATION: Utilisation de l'icône animée ---
                 let iconHTML = '';
                 if (unlocked) {
-                    iconHTML = `<div class="ach-icon-container">${GRAPHICS[ach.icon] || GRAPHICS.star}</div>`;
+                    iconHTML = `<div class="ach-icon-container">${getAnimImg(ach.icon, 'anim-icon-xl')}</div>`;
                 } else {
-                    iconHTML = `<div class="ach-icon-container locked-icon">${GRAPHICS.lock}</div>`;
+                    iconHTML = `<div class="ach-icon-container locked-icon">${getAnimImg('lock', 'anim-icon-xl')}</div>`;
                 }
 
                 row.innerHTML = `
@@ -1095,14 +1102,15 @@
             const mistakes = (m?.missedSigns || {});
             const bestTime = (state.progression.bestTimes || {})[patho.name];
 
-            let rank = 'Verrouillé', icon=GRAPHICS.lock, color='var(--text-muted)';
-            if(wins >= 10) { rank='Maître'; icon=`<svg viewBox="0 0 24 24"><path fill="url(#grad-diamond)" d="M12 2l-9 4 9 16 9-16-9-4z"/></svg>`; color='var(--ruby)'; }
-            else if(wins >= 5) { rank='Or'; icon=GRAPHICS.medal.replace('#ccc', 'url(#grad-gold)'); color='var(--gold)'; }
-            else if(wins >= 3) { rank='Argent'; icon=GRAPHICS.medal.replace('#ccc', 'url(#grad-silver)'); color='var(--silver)'; }
-            else if(wins >= 1) { rank='Bronze'; icon=GRAPHICS.medal.replace('#ccc', 'url(#grad-bronze)'); color='var(--bronze)'; }
+            let rank = 'Verrouillé', iconKey='lock', color='var(--text-muted)';
+            if(wins >= 10) { rank='Maître'; iconKey='diamond'; color='var(--ruby)'; }
+            else if(wins >= 5) { rank='Or'; iconKey='medal_gold'; color='var(--gold)'; }
+            else if(wins >= 3) { rank='Argent'; iconKey='medal_silver'; color='var(--silver)'; }
+            else if(wins >= 1) { rank='Bronze'; iconKey='medal_bronze'; color='var(--bronze)'; }
 
+            // Utilisation de la grande icône animée
             card.innerHTML = `
-            <div class="icon-xl">${icon}</div>
+            ${getAnimImg(iconKey, 'anim-icon-xxl')}
             <h3 style="color:${color}; margin-bottom:10px;">Rang : ${rank}</h3>
             ${bestTime ? `<div class="small" style="color:var(--accent); margin-bottom:20px;">⚡ Record Chrono : ${bestTime.toFixed(1)}s</div>` : ''}
             <h2>${patho.name}</h2>
@@ -1160,7 +1168,7 @@
             
             // Si c'est le défi du jour, on affiche un message spécial
             if(state.dailyTarget) {
-                card.innerHTML = `<h3>☀️ Défi du Jour</h3><p class="small" style="margin-bottom:20px; color:var(--gold);">Cible : ${state.dailyTarget.name}</p>`;
+                card.innerHTML = `<h3>Let's go !</h3><p class="small" style="margin-bottom:20px; color:var(--gold);">Cible du jour : ${state.dailyTarget.name}</p>`;
             }
 
             const createSel = (lbl, id, opts) => {
@@ -1311,7 +1319,7 @@
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card center';
             const signe = state.currentSign;
-            const questionTitle = state.confirmationMode ? `<span style="color:var(--gold)">🤔 Je pense avoir une piste...</span>` : `QUESTION ${state.asked.length}`;
+            const questionTitle = state.confirmationMode ? `<span style="color:var(--gold); display:flex; align-items:center; gap:8px;">${getAnimImg('thought', 'anim-icon-sm')} Je pense avoir une piste...</span>` : `QUESTION ${state.asked.length}`;
             
             // Calcul proba pour barre
             let prob = 0;
@@ -1457,7 +1465,7 @@
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML = '';
             const loadingCard = document.createElement('div'); loadingCard.className = 'card center';
-            loadingCard.innerHTML = `<h3 style="color:var(--accent)">🔎 Analyse IA en cours...</h3><div style="margin: 30px 0; font-size: 50px; animation: spin 0.8s infinite linear;">⚙️</div><p class="small">Comparaison base de données...</p>`;
+            loadingCard.innerHTML = `<h3 style="color:var(--accent); display:flex; align-items:center; gap:10px;">${getAnimImg('search', 'anim-icon-lg')} Analyse IA en cours...</h3><div style="margin: 30px 0;">${getAnimImg('load', 'anim-icon-xxl')}</div><p class="small">Comparaison base de données...</p>`;
             app.appendChild(loadingCard);
 
             setTimeout(() => {
@@ -1563,7 +1571,7 @@
             const card = document.createElement('div'); card.className='card';
             
             if(wasManualError) {
-                card.innerHTML = `<h2 style="color:var(--error)">❌ C'était : ${top.name}</h2>`;
+                card.innerHTML = `<h2 style="color:var(--error); display:flex; align-items:center; gap:10px;">${getAnimImg('error', 'anim-icon-lg')} C'était : ${top.name}</h2>`;
                 
                 if(!state.progression.mastery) state.progression.mastery = {};
                 let m = state.progression.mastery[top.name];
@@ -1586,7 +1594,7 @@
                 saveProgression();
 
             } else {
-                card.innerHTML = `<h2>✅ ${top.name}</h2>`;
+                card.innerHTML = `<h2 style="display:flex; align-items:center; gap:10px;">${getAnimImg('success', 'anim-icon-lg')} ${top.name}</h2>`;
             }
 
             const desc = document.createElement('div'); desc.className='patho-desc'; desc.textContent = top.short; desc.style.marginBottom='20px'; desc.style.textAlign='center'; card.appendChild(desc);
@@ -1611,15 +1619,15 @@
                 // Nouvelle fonction de génération HTML plus jolie (STYLE DASHBOARD)
                 const createList = (title, items, type, typeLabel) => {
                     if(items.length > 0) {
-                        let icon = 'ℹ️';
+                        let iconKey = 'info';
                         let badgeClass = 'badge-neutral';
                         
-                        if (type === 'correct') { icon = '✅'; badgeClass = 'badge-correct'; }
-                        if (type === 'missing') { icon = '⚠️'; badgeClass = 'badge-missing'; }
+                        if (type === 'correct') { iconKey = 'success'; badgeClass = 'badge-correct'; }
+                        if (type === 'missing') { iconKey = 'error'; badgeClass = 'badge-missing'; }
                         
                         const h = document.createElement('div'); 
                         h.className = 'result-section-title';
-                        h.innerHTML = `${icon} ${title} <span style="opacity:0.6; font-size:0.9em; margin-left:auto;">${items.length}</span>`;
+                        h.innerHTML = `${getAnimImg(iconKey, 'anim-icon-sm')} ${title} <span style="opacity:0.6; font-size:0.9em; margin-left:auto;">${items.length}</span>`;
                         resultsDiv.appendChild(h);
 
                         items.forEach(s => {

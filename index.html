@@ -50,6 +50,17 @@
         main { flex:1; max-width:1000px; width:100%; margin:0 auto; padding:30px 20px; display:flex; flex-direction:column; align-items:center; }
         .card { background: var(--glass-bg); backdrop-filter: blur(12px); padding:32px; border-radius:20px; box-shadow: var(--card-shadow), inset 0 0 0 1px var(--glass-border); margin-bottom:16px; width:100%; max-width:600px; animation: fadeIn 0.5s ease-out; position: relative;}
         .input, select, textarea { width:100%; padding:14px; border-radius:10px; border:1px solid var(--glass-border); background: rgba(125,125,125,0.1); color: var(--text-main); margin-top:8px; margin-bottom:12px; font-size:14px; font-family: 'Inter', sans-serif; }
+        
+        /* CORRECTION LISIBILITÉ SELECT/OPTION (Fond Opaque) */
+        select option {
+            background-color: #020b16; /* Fond sombre solide */
+            color: #ffffff; /* Texte blanc */
+        }
+        [data-theme="light"] select option {
+            background-color: #ffffff;
+            color: #000000;
+        }
+
         .btn { background: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%); border:none; padding:14px 24px; border-radius:12px; color: #fff; cursor:pointer; font-weight:700; font-size:15px; transition:all 0.3s; width: 100%; margin-top: 10px; }
         .btn:hover { transform:translateY(-2px); box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6); }
         .btn-success { background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%); color: #fff; }

@@ -76,12 +76,28 @@
         .ai-progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--success)); width: 0%; transition: width 0.5s ease-out; }
         .daily-card { border: 1px solid var(--gold); background: rgba(255, 215, 0, 0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; width: 100%; }
         .daily-title { color: var(--gold); font-weight: bold; margin-bottom: 5px; }
-        .achievement-row { display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(125,125,125,0.1); border-radius: 8px; margin-bottom: 8px; border: 1px solid transparent; text-align: left; }
+        
+        /* CSS MODIFIÉ POUR LA GRILLE DE SUCCÈS */
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .achievement-row { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 15px; background: rgba(125,125,125,0.1); border-radius: 12px; border: 1px solid transparent; text-align: center; height: 100%; }
         .achievement-row.unlocked { border-color: var(--gold); background: rgba(255, 215, 0, 0.1); }
-        .ach-icon { font-size: 20px; min-width: 30px; }
-        .ach-info { flex: 1; }
-        .ach-title { font-weight: bold; font-size: 13px; color: var(--text-main); }
-        .ach-desc { font-size: 11px; color: var(--text-muted); }
+        .ach-icon { font-size: 30px; margin-bottom: 5px; }
+        .ach-info { width: 100%; }
+        .ach-title { font-weight: bold; font-size: 13px; color: var(--text-main); margin-bottom: 4px; }
+        .ach-desc { font-size: 11px; color: var(--text-muted); line-height: 1.3; }
+
+        /* Media Query pour mobile */
+        @media (max-width: 700px) {
+            .achievements-grid { grid-template-columns: repeat(1, 1fr); }
+            .achievement-row { flex-direction: row; text-align: left; }
+            .ach-icon { font-size: 20px; margin-bottom: 0; min-width: 30px; }
+        }
 
         .reviews-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; width: 100%; }
         .review-card { background: rgba(125,125,125,0.1); border: 1px solid var(--glass-border); border-radius: 12px; padding: 15px; text-align: left; }
@@ -316,8 +332,8 @@
         
         const ACHIEVEMENTS = [
             { id: "played_10_days", title: "Assiduité", desc: "Jouer 10 jours d'affilée", icon: "🗓️" },
-            { id: "baby_doc", title: "Bébé Médecin", desc: "Identifier 1 pathologie", icon: "🍼" },
-            { id: "med_student", title: "Étudiant en Médecine", desc: "Identifier 25 pathologies", icon: "🎓" },
+            { id: "baby_doc", title: "P1 validée", desc: "Identifier 1 pathologie", icon: "🍼" },
+            { id: "med_student", title: "Externe", desc: "Identifier 25 pathologies", icon: "🎓" },
             { id: "intern", title: "Interne", desc: "Identifier 50 pathologies", icon: "🩺" },
             { id: "chief", title: "Chef de Clinique", desc: "Identifier 100 pathologies", icon: "🏥" },
             { id: "critic", title: "Critique Médical", desc: "Publier un avis", icon: "✍️" },
@@ -475,6 +491,49 @@
                 if(brandLogo) {
                     brandLogo.onclick = () => { if (state.currentUser || state.isGuest) { renderHome(); } };
                 }
+
+                // GESTION CLAVIER AJOUTÉE
+                document.addEventListener('keydown', (e) => {
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+                    // Navigation Quiz
+                    if (q('.question-text')) {
+                        if (e.key === 'ArrowRight' || e.key === 'y' || e.key === 'o') {
+                            const btn = document.querySelector('.btn-success');
+                            if(btn) btn.click();
+                        } else if (e.key === 'ArrowLeft' || e.key === 'n') {
+                            const btn = document.querySelector('.btn-error');
+                            if(btn) btn.click();
+                        } else if (e.key === 'ArrowUp' || e.key === 'i' || e.key === ' ') {
+                            const btns = document.querySelectorAll('.button-group .link');
+                            if(btns.length > 0) btns[0].click();
+                        } else if (e.key === 'Enter') {
+                            // En jeu, Entrée peut servir à valider (par défaut OUI pour rapidité, ou focus)
+                            // Ici on mappe Entrée sur OUI pour les speedruns
+                            const btn = document.querySelector('.btn-success');
+                            if(btn) btn.click();
+                        }
+                    } else {
+                        // Navigation Hors Quiz
+                        if (e.key === 'Enter') {
+                            // Cas génériques : Bouton démarrer, Suivant, Rejouer...
+                            // On cherche un bouton principal visible
+                            const primaryBtn = q('.btn'); 
+                            if(primaryBtn && primaryBtn.offsetParent !== null) {
+                                primaryBtn.click();
+                            }
+                        }
+                    }
+                    
+                    if (e.key === 'Escape') {
+                        const notifModal = q('#notifModal');
+                        if(notifModal && notifModal.style.display === 'block') {
+                            notifModal.style.display = 'none';
+                        } else if (!q('.question-text')) {
+                            renderHome();
+                        }
+                    }
+                });
 
             } catch (err) {
                 console.error(err);
@@ -693,7 +752,7 @@
             const app = q('#app'); app.innerHTML='';
             const prog = state.progression;
             const card = document.createElement('div'); card.className='card center';
-            let cloudBadge = state.isGuest ? '<span style="color:orange; font-size:0.8em; margin-bottom:10px">💾 Mode Local (Navigateur)</span>' : '<span style="color:var(--success); font-size:0.8em; margin-bottom:10px">☁️ Sauvegarde Cloud Active</span>';
+            let cloudBadge = state.isGuest ? '<span style="color:orange; font-size:0.8em; margin-bottom:10px">💾 Mode Local (Navigateur)</span>' : '<span style="color:var(--success); font-size:0.8em; margin-bottom:10px">☁️ Sauvegarde Active</span>';
             const displayName = state.pseudo || '...';
             
             // CAS DU JOUR
@@ -714,7 +773,7 @@
 
                             <div class="stat-box" style="width:100%"><div class="stat-number">${prog.correct + prog.incorrect}</div><div class="stat-label">Cas joués</div></div>
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-top:12px;">
-                            <div class="stat-box" style="text-align:center; background:rgba(0, 255, 157, 0.1); border-color:var(--success)"><div class="stat-number" style="color:var(--success);">${prog.correct}</div><div class="stat-label">IA a trouvé</div></div>
+                            <div class="stat-box" style="text-align:center; background:rgba(0, 255, 157, 0.1); border-color:var(--success)"><div class="stat-number" style="color:var(--success);">${prog.correct}</div><div class="stat-label">Succès</div></div>
                             <div class="stat-box" style="text-align:center; background:rgba(255, 77, 77, 0.1); border-color:var(--error)"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">Échecs</div></div>
                             </div>`;
             
@@ -974,7 +1033,7 @@
             card.appendChild(btnBack); app.appendChild(card);
         }
 
-        // --- NOUVELLE PAGE: SUCCÈS (REMPLACE LA MODALE) ---
+        // --- NOUVELLE PAGE: SUCCÈS (MISE A JOUR EN GRILLE) ---
         function renderAchievementsPage() {
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML = '';
@@ -983,6 +1042,10 @@
             
             const prog = state.progression;
             
+            // Création du conteneur grille
+            const grid = document.createElement('div');
+            grid.className = 'achievements-grid';
+
             ACHIEVEMENTS.forEach(ach => {
                 const unlocked = (prog.achievements || []).includes(ach.id);
                 const row = document.createElement('div');
@@ -994,8 +1057,10 @@
                         <div class="ach-desc">${ach.desc}</div>
                     </div>
                 `;
-                card.appendChild(row);
+                grid.appendChild(row);
             });
+            
+            card.appendChild(grid);
 
             const btnBack = document.createElement('button'); btnBack.className='btn'; btnBack.textContent='Retour au Profil';
             btnBack.style.marginTop = '20px';
@@ -1548,6 +1613,10 @@
                     else notAskedSigns.push(s);
                 });
                 state.allSigns.forEach(s => { if(state.answers[s] === true && !pathoSigns.includes(s)) erroneousSigns.push(s); });
+                
+                // --- TRI PAR POIDS DIAGNOSTIC ---
+                correctSigns.sort((a, b) => (top.signes[b] || 0) - (top.signes[a] || 0));
+                missingSigns.sort((a, b) => (top.signes[b] || 0) - (top.signes[a] || 0));
                 
                 const resultsDiv = document.createElement('div'); resultsDiv.className='result-list';
                 

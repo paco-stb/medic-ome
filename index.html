@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a1a2e">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="favicon.png">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
     <title>Medicome - Entraînement pour les étudiants en Médecine</title>
-    <meta name="description" content="Testez vos connaissances sur les signes typiques de différentes pathologies. Téléchargez des fiches de révision concises adaptées au programme des EDN. Site interractif où vous êtes le patient, et l'IA doit deviner votre pathologie. ">
+    <meta name="description" content="Testez vos connaissances sur les signes typiques de différentes pathologies. Téléchargez des fiches de révision concises adaptées au programme des EDN.">
     <link rel="icon" href="favicon.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -87,7 +89,32 @@
         }
         .achievement-row { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 15px; background: rgba(125,125,125,0.1); border-radius: 12px; border: 1px solid transparent; text-align: center; height: 100%; }
         .achievement-row.unlocked { border-color: var(--gold); background: rgba(255, 215, 0, 0.1); }
-        .ach-icon { font-size: 30px; margin-bottom: 5px; }
+        
+        /* Modification pour gérer les images au lieu du texte */
+        .ach-icon { 
+            width: 40px; 
+            height: 40px; 
+            min-width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 5px;
+        }
+
+        /* Nouvelle classe pour l'image elle-même */
+        .ach-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Garde les proportions */
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2)); /* Petite ombre sympa */
+        }
+
+        /* Pour les icônes verrouillées (cadenas), on peut garder un emoji texte ou une image grise */
+        .locked-icon {
+            font-size: 24px;
+            opacity: 0.5;
+        }
+
         .ach-info { width: 100%; }
         .ach-title { font-weight: bold; font-size: 13px; color: var(--text-main); margin-bottom: 4px; }
         .ach-desc { font-size: 11px; color: var(--text-muted); line-height: 1.3; }
@@ -96,7 +123,7 @@
         @media (max-width: 700px) {
             .achievements-grid { grid-template-columns: repeat(1, 1fr); }
             .achievement-row { flex-direction: row; text-align: left; }
-            .ach-icon { font-size: 20px; margin-bottom: 0; min-width: 30px; }
+            .ach-icon { font-size: 30px; margin-bottom: 0; min-width: 40px; margin-right: 10px; }
         }
 
         .reviews-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; width: 100%; }
@@ -331,26 +358,26 @@
         };
         
         const ACHIEVEMENTS = [
-            { id: "played_10_days", title: "Assiduité", desc: "Jouer 10 jours d'affilée", icon: "🗓️" },
-            { id: "baby_doc", title: "P1 validée", desc: "Identifier 1 pathologie", icon: "🍼" },
-            { id: "med_student", title: "Externe", desc: "Identifier 25 pathologies", icon: "🎓" },
-            { id: "intern", title: "Interne", desc: "Identifier 50 pathologies", icon: "🩺" },
-            { id: "chief", title: "Chef de Clinique", desc: "Identifier 100 pathologies", icon: "🏥" },
-            { id: "critic", title: "Critique Médical", desc: "Publier un avis", icon: "✍️" },
-            { id: "fan", title: "Fan Club", desc: "Suivre sur les réseaux", icon: "❤️" },
-            { id: "bookworm_1", title: "Rat de Bibliothèque", desc: "Télécharger 1 fiche PDF", icon: "📜" },
-            { id: "bookworm_25", title: "Archiviste", desc: "Télécharger 25 fiches PDF", icon: "📚" },
-            { id: "bookworm_50", title: "Bibliothécaire", desc: "Télécharger 50 fiches PDF", icon: "🏛️" },
-            { id: "bookworm_100", title: "Savoir Absolu", desc: "Télécharger 100 fiches PDF", icon: "🧠" },
-            { id: "master_5", title: "Major de Promo", desc: "5 pathologies au rang Maître", icon: "🎖️" },
-            { id: "master_30", title: "Professeur", desc: "30 pathologies au rang Maître", icon: "👑" },
-            { id: "master_100", title: "Légende", desc: "100 pathologies au rang Maître", icon: "🧞" },
-            { id: "encyclopedia", title: "Encyclopédie Vivante", desc: "Débloquer toutes les pathologies", icon: "🌍" },
-            { id: "god_mode", title: "Dieu de la Médecine", desc: "Toutes pathologies en Maître", icon: "⚡" },
-            { id: "speed_demon", title: "Flash", desc: "10 diagnostics en moins de 30s", icon: "🚀" }, 
-            { id: "speed_50", title: "Vitesse Lumière", desc: "50 diagnostics en moins de 30s", icon: "🌠" },
-            { id: "speed_100", title: "Voyageur Temporel", desc: "100 diagnostics en moins de 30s", icon: "⏳" },
-            { id: "daily_10", title: "Expert du Quotidien", desc: "Réussir 10 défis du jour", icon: "☀️" }
+            { id: "played_10_days", title: "Assiduité", desc: "Jouer 10 jours d'affilée", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Calendar.png" },
+            { id: "baby_doc", title: "P1 validée", desc: "Identifier 1 pathologie", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Food/Baby%20Bottle.png" },
+            { id: "med_student", title: "Externe", desc: "Identifier 25 pathologies", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Graduation%20Cap.png" },
+            { id: "intern", title: "Interne", desc: "Identifier 50 pathologies", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Stethoscope.png" },
+            { id: "chief", title: "Chef de Clinique", desc: "Identifier 100 pathologies", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Hospital.png" },
+            { id: "critic", title: "Critique Médical", desc: "Publier un avis", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Memo.png" },
+            { id: "fan", title: "Fan Club", desc: "Suivre sur les réseaux", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Red%20Heart.png" },
+            { id: "bookworm_1", title: "Rat de Bibliothèque", desc: "Télécharger 1 fiche PDF", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Books.png" },
+            { id: "bookworm_25", title: "Archiviste", desc: "Télécharger 25 fiches PDF", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Card%20File%20Box.png" },
+            { id: "bookworm_50", title: "Bibliothécaire", desc: "Télécharger 50 fiches PDF", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Classical%20Building.png" },
+            { id: "bookworm_100", title: "Savoir Absolu", desc: "Télécharger 100 fiches PDF", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/People/Brain.png" },
+            { id: "master_5", title: "Major de Promo", desc: "5 pathologies au rang Maître", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/1st%20Place%20Medal.png" },
+            { id: "master_30", title: "Professeur", desc: "30 pathologies au rang Maître", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Crown.png" },
+            { id: "master_100", title: "Légende", desc: "100 pathologies au rang Maître", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/People/Woman%20Genie.png" },
+            { id: "encyclopedia", title: "Encyclopédie Vivante", desc: "Débloquer toutes les pathologies", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Globe%20Showing%20Europe-Africa.png" },
+            { id: "god_mode", title: "Dieu de la Médecine", desc: "Toutes pathologies en Maître", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Nature/High%20Voltage.png" },
+            { id: "speed_demon", title: "Flash", desc: "10 diagnostics en moins de 30s", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Rocket.png" }, 
+            { id: "speed_50", title: "Vitesse Lumière", desc: "50 diagnostics en moins de 30s", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Nature/Shooting%20Star.png" },
+            { id: "speed_100", title: "Voyageur Temporel", desc: "100 diagnostics en moins de 30s", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Hourglass%20Not%20Done.png" },
+            { id: "daily_10", title: "Expert du Quotidien", desc: "Réussir 10 défis du jour", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Sun%20with%20Face.png" }
         ];
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1033,7 +1060,7 @@
             card.appendChild(btnBack); app.appendChild(card);
         }
 
-        // --- NOUVELLE PAGE: SUCCÈS (MISE A JOUR EN GRILLE) ---
+        // --- NOUVELLE PAGE: SUCCÈS (MISE A JOUR EN GRILLE AVEC IMAGES) ---
         function renderAchievementsPage() {
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML = '';
@@ -1050,8 +1077,17 @@
                 const unlocked = (prog.achievements || []).includes(ach.id);
                 const row = document.createElement('div');
                 row.className = `achievement-row ${unlocked ? 'unlocked' : ''}`;
+                
+                // --- MODIFICATION: GESTION IMAGE VS CADENAS ---
+                let iconHTML = '';
+                if (unlocked) {
+                    iconHTML = `<img src="${ach.icon}" class="ach-img" alt="${ach.title}">`;
+                } else {
+                    iconHTML = `<div class="locked-icon">🔒</div>`;
+                }
+
                 row.innerHTML = `
-                    <div class="ach-icon">${unlocked ? ach.icon : '🔒'}</div>
+                    <div class="ach-icon">${iconHTML}</div>
                     <div class="ach-info">
                         <div class="ach-title" style="color:${unlocked ? 'var(--text-main)' : 'var(--text-muted)'}">${ach.title}</div>
                         <div class="ach-desc">${ach.desc}</div>

@@ -50,6 +50,17 @@
         main { flex:1; max-width:1000px; width:100%; margin:0 auto; padding:30px 20px; display:flex; flex-direction:column; align-items:center; }
         .card { background: var(--glass-bg); backdrop-filter: blur(12px); padding:32px; border-radius:20px; box-shadow: var(--card-shadow), inset 0 0 0 1px var(--glass-border); margin-bottom:16px; width:100%; max-width:600px; animation: fadeIn 0.5s ease-out; position: relative;}
         .input, select, textarea { width:100%; padding:14px; border-radius:10px; border:1px solid var(--glass-border); background: rgba(125,125,125,0.1); color: var(--text-main); margin-top:8px; margin-bottom:12px; font-size:14px; font-family: 'Inter', sans-serif; }
+        
+        /* CORRECTION LISIBILITÉ SELECT/OPTION (Fond Opaque) */
+        select option {
+            background-color: #020b16; /* Fond sombre solide */
+            color: #ffffff; /* Texte blanc */
+        }
+        [data-theme="light"] select option {
+            background-color: #ffffff;
+            color: #000000;
+        }
+
         .btn { background: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%); border:none; padding:14px 24px; border-radius:12px; color: #fff; cursor:pointer; font-weight:700; font-size:15px; transition:all 0.3s; width: 100%; margin-top: 10px; }
         .btn:hover { transform:translateY(-2px); box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6); }
         .btn-success { background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%); color: #fff; }
@@ -91,14 +102,30 @@
         .error-tracker { margin-top: 20px; width: 100%; border-top: 1px solid var(--glass-border); padding-top: 15px; }
         .error-item { display: flex; justify-content: space-between; padding: 8px; background: rgba(255, 77, 77, 0.1); border-left: 3px solid var(--error); margin-bottom: 5px; border-radius: 4px; font-size: 13px; color: var(--text-main); }
 
+        /* --- GLOSSARY IMPROVEMENTS --- */
         .glossary-wrapper { display: flex; align-items: flex-start; gap: 30px; width: 100%; }
-        .alphabet-sidebar { position: sticky; top: 100px; display: flex; flex-direction: column; gap: 8px; background: var(--glass-bg); padding: 15px 10px; border-radius: 20px; max-height: 80vh; overflow-y: auto; border: 1px solid var(--glass-border); min-width: 50px; align-items: center;}
-        .alpha-link { color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 700; padding: 4px 0; transition: all 0.2s; text-align: center; width: 100%; display: block;}
-        .alpha-link:hover { color: var(--text-main); transform: scale(1.2); }
+        
+        .search-container { width: 100%; max-width: 600px; margin: 0 auto 30px auto; position: relative; }
+        .search-input { width: 100%; padding: 16px 20px 16px 55px; border-radius: 50px; border: 1px solid var(--glass-border); background: var(--glass-bg); color: var(--text-main); font-size: 16px; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); backdrop-filter: blur(10px); }
+        .search-input:focus { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); outline: none; transform: translateY(-2px); }
+        .search-icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; fill: var(--text-muted); pointer-events: none; transition: fill 0.3s; }
+        .search-input:focus ~ .search-icon { fill: var(--accent); }
+
+        .alphabet-sidebar { position: sticky; top: 90px; display: flex; flex-direction: column; gap: 8px; background: var(--glass-bg); padding: 15px 8px; border-radius: 30px; max-height: 80vh; overflow-y: auto; border: 1px solid var(--glass-border); min-width: 50px; align-items: center; box-shadow: var(--card-shadow); scrollbar-width: none; }
+        .alphabet-sidebar::-webkit-scrollbar { display: none; }
+        
+        .alpha-link { color: var(--text-muted); text-decoration: none; font-size: 13px; font-weight: 700; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s; background: rgba(125,125,125,0.05); }
+        .alpha-link:hover:not(.disabled) { color: #fff; background: var(--accent); transform: scale(1.1); box-shadow: 0 0 10px var(--accent-glow); }
+        .alpha-link.disabled { opacity: 0.3; cursor: default; background: transparent; }
+
         .glossary-content { flex: 1; width: 100%; }
+        .letter-header { font-size: 2rem; font-weight: 800; color: var(--accent); margin: 30px 0 15px; border-bottom: 2px solid var(--glass-border); padding-bottom: 10px; width: 100%; }
+        
         .letter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .patho-card { background: rgba(125,125,125,0.05); padding:25px; border-radius:16px; border:1px solid var(--glass-border); transition:all 0.3s; cursor:pointer; position: relative; overflow: hidden; }
-        .patho-card:hover { transform:translateY(-5px); background: rgba(125,125,125,0.1); box-shadow: var(--card-shadow); }
+        .patho-card { background: var(--glass-bg); padding: 25px; border-radius: 16px; border: 1px solid var(--glass-border); transition: all 0.3s; cursor: pointer; position: relative; overflow: hidden; border-left: 4px solid var(--glass-border); }
+        .patho-card:hover { transform: translateY(-5px); border-left-color: var(--accent); background: rgba(125,125,125,0.1); box-shadow: var(--card-shadow); }
+        .patho-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 8px; color: var(--text-main); }
+        .patho-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.4; }
         
         .stat-box { background: rgba(125,125,125,0.1); padding:20px; border-radius:12px; margin:10px 0; border: 1px solid var(--glass-border); text-align:center; }
         .stat-number { font-size:36px; font-weight:700; color:var(--text-main); }
@@ -123,7 +150,12 @@
         .alert-success { background: rgba(0, 255, 157, 0.1); border:1px solid var(--success); color:var(--success); }
         .alert-error { background: rgba(255, 77, 77, 0.1); border:1px solid var(--error); color:var(--error); }
 
-        @media (max-width:600px){ .reviews-container, .mastery-grid, .letter-grid { grid-template-columns: repeat(1, 1fr); } .glossary-wrapper { flex-direction: column; } .alphabet-sidebar { flex-direction: row; flex-wrap: wrap; width: 100%; position: static; max-height: none; padding: 10px; justify-content: center; gap: 15px;} .alpha-link { width: auto; font-size: 16px; padding: 5px;} }
+        @media (max-width:600px){ 
+            .reviews-container, .mastery-grid, .letter-grid { grid-template-columns: repeat(1, 1fr); } 
+            .glossary-wrapper { flex-direction: column; } 
+            .alphabet-sidebar { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; width: 100%; position: sticky; top: 70px; z-index: 90; padding: 10px; justify-content: flex-start; gap: 10px; border-radius: 15px; margin-bottom: 20px;} 
+            .alpha-link { min-width: 35px; min-height: 35px; font-size: 14px; }
+        }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
     </style>
@@ -1513,8 +1545,15 @@
             titleCard.appendChild(btnBack); app.appendChild(titleCard);
 
             const searchContainer = document.createElement('div'); searchContainer.className = 'search-container';
-            const searchInput = document.createElement('input'); searchInput.className = 'search-input'; searchInput.placeholder = '🔍 Rechercher une pathologie (ex: Grippe...)'; searchInput.type = 'text';
-            searchContainer.appendChild(searchInput); app.appendChild(searchContainer);
+            const searchInput = document.createElement('input'); searchInput.className = 'search-input'; searchInput.placeholder = 'Rechercher une pathologie (ex: Grippe...)'; searchInput.type = 'text';
+            
+            // ADDED SEARCH ICON
+            const searchIcon = document.createElement('div'); 
+            searchIcon.innerHTML = `<svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>`;
+            
+            searchContainer.appendChild(searchIcon);
+            searchContainer.appendChild(searchInput); 
+            app.appendChild(searchContainer);
 
             const wrapper = document.createElement('div'); wrapper.className = 'glossary-wrapper';
             const sidebar = document.createElement('div'); sidebar.className = 'alphabet-sidebar';

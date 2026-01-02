@@ -9,7 +9,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Medicome - Entraînement pour les étudiants en Médecine</title>
-    <meta name="description" content="Testez vos connaissances sur les signes typiques de différentes pathologies. Téléchargez des fiches de révision concises adaptées au programme des EDN. Site interractif où vous êtes le patient, et l'IA doit deviner votre pathologie. ">
+    <meta name="description" content="Testez vos connaissances sur les signes typiques de différentes pathologies.">
     <link rel="icon" href="favicon.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -52,53 +52,62 @@
         .card { background: var(--glass-bg); backdrop-filter: blur(12px); padding:32px; border-radius:20px; box-shadow: var(--card-shadow), inset 0 0 0 1px var(--glass-border); margin-bottom:16px; width:100%; max-width:600px; animation: fadeIn 0.5s ease-out; position: relative;}
         .input, select, textarea { width:100%; padding:14px; border-radius:10px; border:1px solid var(--glass-border); background: rgba(125,125,125,0.1); color: var(--text-main); margin-top:8px; margin-bottom:12px; font-size:14px; font-family: 'Inter', sans-serif; }
         
-        /* CORRECTION LISIBILITÉ SELECT/OPTION (Fond Opaque) */
-        select option {
-            background-color: #020b16; /* Fond sombre solide */
-            color: #ffffff; /* Texte blanc */
-        }
-        [data-theme="light"] select option {
-            background-color: #ffffff;
-            color: #000000;
-        }
+        select option { background-color: #020b16; color: #ffffff; }
+        [data-theme="light"] select option { background-color: #ffffff; color: #000000; }
 
-        .btn { background: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%); border:none; padding:14px 24px; border-radius:12px; color: #fff; cursor:pointer; font-weight:700; font-size:15px; transition:all 0.3s; width: 100%; margin-top: 10px; }
+        .btn { background: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%); border:none; padding:14px 24px; border-radius:12px; color: #fff; cursor:pointer; font-weight:700; font-size:15px; transition:all 0.3s; width: 100%; margin-top: 10px; display:flex; align-items:center; justify-content:center; gap:8px;}
         .btn:hover { transform:translateY(-2px); box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6); }
         .btn-success { background: linear-gradient(135deg, #00b09b 0%, #96c93d 100%); color: #fff; }
         .btn-error { background: linear-gradient(135deg, #cb2d3e 0%, #ef473a 100%); color: white; }
-        .btn-back { background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 10px 20px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; margin-top: 10px; width: auto; }
+        .btn-back { background: transparent; color: var(--accent); border: 1px solid var(--accent); padding: 10px 20px; border-radius: 10px; cursor: pointer; font-size: 14px; font-weight: 600; margin-top: 10px; width: auto; display:flex; align-items:center; gap:5px;}
         .btn-back:hover { background: rgba(0, 210, 255, 0.1); color: var(--text-main); }
         .center { text-align:center; display:flex; flex-direction:column; align-items:center; }
         .button-group { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:12px; width: 100%; }
         .small { opacity:0.6; font-size:13px; color:var(--text-muted); margin-top:12px; text-align:center; }
         
+        /* 3D GRAPHICS STYLE */
+        .icon-3d {
+            width: 1.2em; height: 1.2em; vertical-align: middle;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+            transition: transform 0.3s ease;
+        }
+        .icon-3d-lg {
+            width: 80px; height: auto;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.4));
+            animation: float 3s ease-in-out infinite;
+        }
+        .icon-3d-md {
+            width: 40px; height: 40px; vertical-align: middle;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
         /* SPECIFICS */
         .ai-progress-container { width: 100%; height: 6px; background: rgba(125,125,125,0.1); border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
         .ai-progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--success)); width: 0%; transition: width 0.5s ease-out; }
-        .daily-card { border: 1px solid var(--gold); background: rgba(255, 215, 0, 0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; width: 100%; }
-        .daily-title { color: var(--gold); font-weight: bold; margin-bottom: 5px; }
+        .daily-card { border: 1px solid var(--gold); background: rgba(255, 215, 0, 0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; width: 100%; position:relative; overflow:hidden;}
+        .daily-title { color: var(--gold); font-weight: bold; margin-bottom: 5px; display:flex; align-items:center; gap:8px;}
         
         /* CSS MODIFIÉ POUR LA GRILLE DE SUCCÈS */
-        .achievements-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            width: 100%;
-            margin-bottom: 20px;
-        }
-        .achievement-row { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 15px; background: rgba(125,125,125,0.1); border-radius: 12px; border: 1px solid transparent; text-align: center; height: 100%; }
+        .achievements-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; margin-bottom: 20px; }
+        .achievement-row { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 15px; background: rgba(125,125,125,0.1); border-radius: 12px; border: 1px solid transparent; text-align: center; height: 100%; transition: transform 0.2s;}
+        .achievement-row:hover { transform: scale(1.02); }
         .achievement-row.unlocked { border-color: var(--gold); background: rgba(255, 215, 0, 0.1); }
-        .ach-icon { font-size: 30px; margin-bottom: 5px; color: var(--text-muted); }
-        .achievement-row.unlocked .ach-icon { color: var(--text-main); }
+        .ach-icon { font-size: 30px; margin-bottom: 5px; opacity: 0.5; filter: grayscale(1); transition: all 0.3s;}
+        .achievement-row.unlocked .ach-icon { opacity: 1; filter: grayscale(0) drop-shadow(0 0 10px rgba(255,215,0,0.4)); }
         .ach-info { width: 100%; }
         .ach-title { font-weight: bold; font-size: 13px; color: var(--text-main); margin-bottom: 4px; }
         .ach-desc { font-size: 11px; color: var(--text-muted); line-height: 1.3; }
 
-        /* Media Query pour mobile */
         @media (max-width: 700px) {
             .achievements-grid { grid-template-columns: repeat(1, 1fr); }
             .achievement-row { flex-direction: row; text-align: left; }
-            .ach-icon { font-size: 24px; margin-bottom: 0; min-width: 40px; }
+            .ach-icon { margin-bottom: 0; margin-right:15px; }
         }
 
         .reviews-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; width: 100%; }
@@ -110,7 +119,6 @@
 
         .mastery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; width: 100%; margin-top: 20px; }
         .mastery-item { background: rgba(125,125,125,0.1); border-radius: 10px; padding: 15px 10px; text-align: center; border: 2px solid transparent; transition: all 0.3s; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
-        .mastery-icon { font-size: 24px; }
         .m-locked { border-color: var(--glass-border); opacity: 0.5; filter: grayscale(1); border-style: dashed;}
         .m-bronze { border-color: var(--bronze); background: rgba(205, 127, 50, 0.1); }
         .m-silver { border-color: var(--silver); background: rgba(192, 192, 192, 0.1); }
@@ -121,77 +129,33 @@
         .error-tracker { margin-top: 20px; width: 100%; border-top: 1px solid var(--glass-border); padding-top: 15px; }
         .error-item { display: flex; justify-content: space-between; padding: 8px; background: rgba(255, 77, 77, 0.1); border-left: 3px solid var(--error); margin-bottom: 5px; border-radius: 4px; font-size: 13px; color: var(--text-main); }
 
-        /* --- AMÉLIORATION VISUELLE DES RÉSULTATS (DASHBOARD) --- */
-        .result-list {
-            background: rgba(0, 0, 0, 0.2); 
-            border-radius: 16px;
-            padding: 10px;
-            margin-top: 15px;
-            border: 1px solid var(--glass-border);
-        }
-        .result-section-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin: 20px 0 10px 5px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .result-item {
-            display: flex;
-            justify-content: space-between; 
-            align-items: center;
-            padding: 12px 15px;
-            background: var(--glass-bg);
-            border-bottom: 1px solid var(--glass-border);
-            transition: all 0.2s ease;
-        }
+        /* DASHBOARD RESULTS */
+        .result-list { background: rgba(0, 0, 0, 0.2); border-radius: 16px; padding: 10px; margin-top: 15px; border: 1px solid var(--glass-border); }
+        .result-section-title { font-size: 14px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 10px 5px; display: flex; align-items: center; gap: 8px; }
+        .result-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: var(--glass-bg); border-bottom: 1px solid var(--glass-border); transition: all 0.2s ease; }
         .result-item:first-of-type { border-top-left-radius: 12px; border-top-right-radius: 12px; }
         .result-item:last-of-type { border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; border-bottom: none; }
-        .result-item:hover {
-            background: rgba(255, 255, 255, 0.08); 
-            transform: translateX(5px); 
-        }
-        .result-label {
-            font-weight: 500;
-            color: var(--text-main);
-            font-size: 15px;
-        }
-        .status-badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
+        .result-item:hover { background: rgba(255, 255, 255, 0.08); transform: translateX(5px); }
+        .result-label { font-weight: 500; color: var(--text-main); font-size: 15px; }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
         .badge-correct { background: rgba(0, 255, 157, 0.15); color: var(--success); border: 1px solid rgba(0, 255, 157, 0.3); }
         .badge-missing { background: rgba(255, 77, 77, 0.15); color: var(--error); border: 1px solid rgba(255, 77, 77, 0.3); }
         .badge-neutral { background: rgba(176, 196, 222, 0.15); color: var(--text-muted); border: 1px solid rgba(176, 196, 222, 0.3); }
 
-        /* --- GLOSSARY IMPROVEMENTS --- */
+        /* GLOSSARY */
         .glossary-wrapper { display: flex; align-items: flex-start; gap: 30px; width: 100%; }
-        
         .search-container { width: 100%; max-width: 600px; margin: 0 auto 30px auto; position: relative; }
         .search-input { width: 100%; padding: 16px 20px 16px 55px; border-radius: 50px; border: 1px solid var(--glass-border); background: var(--glass-bg); color: var(--text-main); font-size: 16px; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); backdrop-filter: blur(10px); }
         .search-input:focus { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); outline: none; transform: translateY(-2px); }
         .search-icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; fill: var(--text-muted); pointer-events: none; transition: fill 0.3s; }
         .search-input:focus ~ .search-icon { fill: var(--accent); }
-
         .alphabet-sidebar { position: sticky; top: 90px; display: flex; flex-direction: column; gap: 8px; background: var(--glass-bg); padding: 15px 8px; border-radius: 30px; max-height: 80vh; overflow-y: auto; border: 1px solid var(--glass-border); min-width: 50px; align-items: center; box-shadow: var(--card-shadow); scrollbar-width: none; }
         .alphabet-sidebar::-webkit-scrollbar { display: none; }
-        
         .alpha-link { color: var(--text-muted); text-decoration: none; font-size: 13px; font-weight: 700; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s; background: rgba(125,125,125,0.05); }
         .alpha-link:hover:not(.disabled) { color: #fff; background: var(--accent); transform: scale(1.1); box-shadow: 0 0 10px var(--accent-glow); }
         .alpha-link.disabled { opacity: 0.3; cursor: default; background: transparent; }
-
         .glossary-content { flex: 1; width: 100%; }
         .letter-header { font-size: 2rem; font-weight: 800; color: var(--accent); margin: 30px 0 15px; border-bottom: 2px solid var(--glass-border); padding-bottom: 10px; width: 100%; }
-        
         .letter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
         .patho-card { background: var(--glass-bg); padding: 25px; border-radius: 16px; border: 1px solid var(--glass-border); transition: all 0.3s; cursor: pointer; position: relative; overflow: hidden; border-left: 4px solid var(--glass-border); }
         .patho-card:hover { transform: translateY(-5px); border-left-color: var(--accent); background: rgba(125,125,125,0.1); box-shadow: var(--card-shadow); }
@@ -202,15 +166,9 @@
         .stat-number { font-size:36px; font-weight:700; color:var(--text-main); }
         
         .notif-btn, .theme-btn { position: relative; background: none; border: none; cursor: pointer; padding: 5px; margin-right: 5px; }
-        .notif-icon, .theme-icon { width: 24px; height: 24px; fill: var(--text-muted); transition: fill 0.3s; }
-        /* Style pour les nouvelles icônes Phosphor */
-        i.ph, i.ph-fill, i.ph-bold, i.ph-duotone {
-            vertical-align: middle;
-            font-size: 1.2em;
-            transition: transform 0.3s ease, color 0.3s ease;
-        }
+        .notif-btn i, .theme-btn i { font-size: 24px; color: var(--text-muted); transition: color 0.3s;}
         .notif-btn:hover i, .theme-btn:hover i { color: var(--accent); }
-        .notif-btn i, .theme-btn i { font-size: 24px; color: var(--text-muted); }
+        i.ph, i.ph-fill, i.ph-bold { vertical-align: middle; font-size: 1.2em; }
 
         .notif-badge { position:absolute; top:2px; right:2px; background:var(--error); width:8px; height:8px; border-radius:50%; display:none; }
         .notif-modal { position: absolute; top: 60px; right: 20px; width: 300px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 15px; z-index: 200; box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: none; max-height: 400px; overflow-y: auto; color: var(--text-main); }
@@ -226,7 +184,7 @@
         .social-icon { width: 20px; height: 20px; fill: var(--text-muted); transition: fill 0.3s; }
         .social-link:hover .social-icon { fill: var(--accent); }
         
-        .alert { padding:14px; border-radius:10px; margin:12px 0; font-size:14px; width: 100%; text-align: center; }
+        .alert { padding:14px; border-radius:10px; margin:12px 0; font-size:14px; width: 100%; text-align: center; display:flex; align-items:center; justify-content:center; gap:10px;}
         .alert-success { background: rgba(0, 255, 157, 0.1); border:1px solid var(--success); color:var(--success); }
         .alert-error { background: rgba(255, 77, 77, 0.1); border:1px solid var(--error); color:var(--error); }
 
@@ -270,15 +228,14 @@
 
     <main id="app">
         <div class="center" id="landing-content" style="padding: 20px; text-align: center;">
-            <div style="font-size: 60px; margin-bottom: 20px; color: var(--accent);">
-                <i class="ph-fill ph-stethoscope"></i>
-            </div>
+            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Stethoscope.png" class="icon-3d-lg" alt="Stethoscope">
+            
             <h1 style="font-size: 2rem; margin-bottom: 10px; color: var(--text-main);">Medicome</h1>
             <h2 style="font-size: 1.2rem; color: var(--accent); margin-bottom: 20px; font-weight: normal;">
                 L'IA d'entraînement au diagnostic médical
             </h2>
             <div style="max-width: 600px; margin: 0 auto; color: var(--text-muted); line-height: 1.5;">
-                <p>Préparez vos ECN, EDN et examens de médecine grâce à notre simulateur de cas cliniques interactif. Pédagogie inversée, mode survie et glossaire complet.</p>
+                <p>Préparez vos ECN, EDN et examens de médecine grâce à notre simulateur de cas cliniques interactif. Pédagogie inversée, mode survie et graphismes modernes.</p>
             </div>
             
             <div style="margin-top: 40px;">
@@ -313,8 +270,21 @@
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         // ==========================================
-        // CONFIGURATION IA (REFINEMENTS)
+        // URLS IMAGES 3D (FLUENT CDN)
         // ==========================================
+        const BASE_3D = "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis";
+        const IMG_TROPHY = `${BASE_3D}/Activities/Trophy.png`;
+        const IMG_MEDAL_1 = `${BASE_3D}/Activities/1st%20Place%20Medal.png`;
+        const IMG_MEDAL_2 = `${BASE_3D}/Activities/2nd%20Place%20Medal.png`;
+        const IMG_MEDAL_3 = `${BASE_3D}/Activities/3rd%20Place%20Medal.png`;
+        const IMG_DIAMOND = `${BASE_3D}/Objects/Gem%20Stone.png`;
+        const IMG_LOCK = `${BASE_3D}/Objects/Locked.png`;
+        const IMG_CHECK = `${BASE_3D}/Symbols/Check%20Mark%20Button.png`;
+        const IMG_ERROR = `${BASE_3D}/Symbols/Cross%20Mark.png`;
+        const IMG_FIRE = `${BASE_3D}/Travel%20and%20places/Fire.png`;
+        const IMG_PARTY = `${BASE_3D}/Smilies/Partying%20Face.png`;
+        const IMG_SAD = `${BASE_3D}/Smilies/Pensive%20Face.png`;
+
         const REFINEMENTS = {
             "douleur_thoracique": ["douleur_thoracique_oppressive", "douleur_thoracique_dechirante", "douleur_thoracique_coté", "irradiation_bras_machoire", "irradiation_dos", "douleur_effort", "soulage_penche_avant", "oppression_thoracique"],
             "douleur_abdominale": ["douleur_fosse_iliaque_droite", "douleur_fosse_iliaque_gauche", "douleur_hypocondre_droit", "douleur_epigastrique", "douleur_transfixiante_dos", "douleur_abdominale_brutale", "defense_abdominale", "ventre_dur_bois", "douleur_migration_ombilic"],
@@ -346,27 +316,28 @@
             "Paludisme": "Infectio", "Coqueluche": "Infectio", "Grippe": "Infectio", "Mononucléose Infectieuse": "Infectio", "Primo-Infection VIH": "Infectio", "Maladie de Lyme": "Infectio", "Tétanos": "Infectio", "Botulisme": "Infectio", "Rubéole": "Infectio", "Syphilis": "Infectio", "Oreillons": "Infectio", "Muguet Buccal": "Infectio"
         };
         
+        // --- 3D ICONS FOR ACHIEVEMENTS ---
         const ACHIEVEMENTS = [
-            { id: "played_10_days", title: "Assiduité", desc: "Jouer 10 jours d'affilée", iconClass: "ph-fill ph-calendar-check" },
-            { id: "baby_doc", title: "P1 validée", desc: "Identifier 1 pathologie", iconClass: "ph-fill ph-baby" },
-            { id: "med_student", title: "Externe", desc: "Identifier 25 pathologies", iconClass: "ph-fill ph-student" },
-            { id: "intern", title: "Interne", desc: "Identifier 50 pathologies", iconClass: "ph-fill ph-stethoscope" },
-            { id: "chief", title: "Chef de Clinique", desc: "Identifier 100 pathologies", iconClass: "ph-fill ph-hospital" },
-            { id: "critic", title: "Critique Médical", desc: "Publier un avis", iconClass: "ph-fill ph-star" },
-            { id: "fan", title: "Fan Club", desc: "Suivre sur les réseaux", iconClass: "ph-fill ph-heart" },
-            { id: "bookworm_1", title: "Rat de Bibliothèque", desc: "Télécharger 1 fiche PDF", iconClass: "ph-fill ph-scroll" },
-            { id: "bookworm_25", title: "Archiviste", desc: "Télécharger 25 fiches PDF", iconClass: "ph-fill ph-books" },
-            { id: "bookworm_50", title: "Bibliothécaire", desc: "Télécharger 50 fiches PDF", iconClass: "ph-fill ph-library-columns" },
-            { id: "bookworm_100", title: "Savoir Absolu", desc: "Télécharger 100 fiches PDF", iconClass: "ph-fill ph-brain" },
-            { id: "master_5", title: "Major de Promo", desc: "5 pathologies au rang Maître", iconClass: "ph-fill ph-medal" },
-            { id: "master_30", title: "Professeur", desc: "30 pathologies au rang Maître", iconClass: "ph-fill ph-crown" },
-            { id: "master_100", title: "Légende", desc: "100 pathologies au rang Maître", iconClass: "ph-fill ph-trophy" },
-            { id: "encyclopedia", title: "Encyclopédie Vivante", desc: "Débloquer toutes les pathologies", iconClass: "ph-fill ph-globe" },
-            { id: "god_mode", title: "Dieu de la Médecine", desc: "Toutes pathologies en Maître", iconClass: "ph-fill ph-lightning" },
-            { id: "speed_demon", title: "Flash", desc: "10 diagnostics en moins de 30s", iconClass: "ph-fill ph-rocket" }, 
-            { id: "speed_50", title: "Vitesse Lumière", desc: "50 diagnostics en moins de 30s", iconClass: "ph-fill ph-shooting-star" },
-            { id: "speed_100", title: "Voyageur Temporel", desc: "100 diagnostics en moins de 30s", iconClass: "ph-fill ph-hourglass" },
-            { id: "daily_10", title: "Expert du Quotidien", desc: "Réussir 10 défis du jour", iconClass: "ph-fill ph-sun" }
+            { id: "played_10_days", title: "Assiduité", desc: "Jouer 10 jours d'affilée", imgSrc: `${BASE_3D}/Objects/Calendar.png` },
+            { id: "baby_doc", title: "P1 validée", desc: "Identifier 1 pathologie", imgSrc: `${BASE_3D}/People/Person/Baby.png` },
+            { id: "med_student", title: "Externe", desc: "Identifier 25 pathologies", imgSrc: `${BASE_3D}/People/Professions/Student.png` },
+            { id: "intern", title: "Interne", desc: "Identifier 50 pathologies", imgSrc: `${BASE_3D}/Objects/Stethoscope.png` },
+            { id: "chief", title: "Chef de Clinique", desc: "Identifier 100 pathologies", imgSrc: `${BASE_3D}/Travel%20and%20places/Hospital.png` },
+            { id: "critic", title: "Critique Médical", desc: "Publier un avis", imgSrc: `${BASE_3D}/Travel%20and%20places/Star.png` },
+            { id: "fan", title: "Fan Club", desc: "Suivre sur les réseaux", imgSrc: `${BASE_3D}/Smilies/Love%20Letter.png` },
+            { id: "bookworm_1", title: "Rat de Bibliothèque", desc: "Télécharger 1 fiche PDF", imgSrc: `${BASE_3D}/Objects/Scroll.png` },
+            { id: "bookworm_25", title: "Archiviste", desc: "Télécharger 25 fiches PDF", imgSrc: `${BASE_3D}/Objects/Books.png` },
+            { id: "bookworm_50", title: "Bibliothécaire", desc: "Télécharger 50 fiches PDF", imgSrc: `${BASE_3D}/Travel%20and%20places/Classical%20Building.png` },
+            { id: "bookworm_100", title: "Savoir Absolu", desc: "Télécharger 100 fiches PDF", imgSrc: `${BASE_3D}/People/Body/Brain.png` },
+            { id: "master_5", title: "Major de Promo", desc: "5 pathologies au rang Maître", imgSrc: `${BASE_3D}/Activities/Military%20Medal.png` },
+            { id: "master_30", title: "Professeur", desc: "30 pathologies au rang Maître", imgSrc: `${BASE_3D}/Objects/Crown.png` },
+            { id: "master_100", title: "Légende", desc: "100 pathologies au rang Maître", imgSrc: `${BASE_3D}/Activities/Trophy.png` },
+            { id: "encyclopedia", title: "Encyclopédie Vivante", desc: "Débloquer toutes les pathologies", imgSrc: `${BASE_3D}/Travel%20and%20places/Globe%20Showing%20Europe-Africa.png` },
+            { id: "god_mode", title: "Dieu de la Médecine", desc: "Toutes pathologies en Maître", imgSrc: `${BASE_3D}/Travel%20and%20places/High%20Voltage.png` },
+            { id: "speed_demon", title: "Flash", desc: "10 diagnostics en moins de 30s", imgSrc: `${BASE_3D}/Travel%20and%20places/Rocket.png` }, 
+            { id: "speed_50", title: "Vitesse Lumière", desc: "50 diagnostics en moins de 30s", imgSrc: `${BASE_3D}/Travel%20and%20places/Shooting%20Star.png` },
+            { id: "speed_100", title: "Voyageur Temporel", desc: "100 diagnostics en moins de 30s", imgSrc: `${BASE_3D}/Objects/Hourglass%20Not%20Done.png` },
+            { id: "daily_10", title: "Expert du Quotidien", desc: "Réussir 10 défis du jour", imgSrc: `${BASE_3D}/Travel%20and%20places/Sun.png` }
         ];
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -535,16 +506,11 @@
                             const btns = document.querySelectorAll('.button-group .link');
                             if(btns.length > 0) btns[0].click();
                         } else if (e.key === 'Enter') {
-                            // En jeu, Entrée peut servir à valider (par défaut OUI pour rapidité, ou focus)
-                            // Ici on mappe Entrée sur OUI pour les speedruns
                             const btn = document.querySelector('.btn-success');
                             if(btn) btn.click();
                         }
                     } else {
-                        // Navigation Hors Quiz
                         if (e.key === 'Enter') {
-                            // Cas génériques : Bouton démarrer, Suivant, Rejouer...
-                            // On cherche un bouton principal visible
                             const primaryBtn = q('.btn'); 
                             if(primaryBtn && primaryBtn.offsetParent !== null) {
                                 primaryBtn.click();
@@ -617,7 +583,7 @@
                         if(state.progression.streak === undefined) state.progression.streak = 0;
                         if(!state.progression.mastery) state.progression.mastery = {};
                         updateHeader(); renderHome();
-                        setTimeout(() => showAlert(`Bon retour, ${state.pseudo} !`, 'success'), 500);
+                        setTimeout(() => showAlert(`<img src="${IMG_PARTY}" class="icon-3d"> Bon retour, ${state.pseudo} !`, 'success'), 500);
                     } else {
                         state.currentUser = null; state.pseudo = null; 
                         state.progression = { 
@@ -662,7 +628,7 @@
             const unlock = (id) => {
                 if(!state.progression.achievements.includes(id)) {
                     state.progression.achievements.push(id);
-                    showAlert(`<i class="ph-fill ph-trophy"></i> Succès débloqué !`, 'success');
+                    showAlert(`<img src="${IMG_TROPHY}" class="icon-3d"> Succès débloqué !`, 'success');
                     triggerConfetti();
                 }
             };
@@ -709,7 +675,7 @@
         function updateHeader(){
             const pseudoBox = q("#pseudoBox"); const homeBtn = q("#homeBtn"); const logoutBtn = q("#logoutBtn");
             const currentStreak = state.progression.streak || 0;
-            const streakDisplay = currentStreak > 0 ? ` <span style="color:#ff9f43; margin-left:8px;"><i class="ph-fill ph-fire"></i> ${currentStreak}</span>` : '';
+            const streakDisplay = currentStreak > 0 ? ` <span style="color:#ff9f43; margin-left:8px; display:inline-flex; align-items:center; gap:4px;"><img src="${IMG_FIRE}" class="icon-3d"> ${currentStreak}</span>` : '';
 
             if(state.pseudo){ 
                 pseudoBox.innerHTML = state.pseudo + (state.isGuest ? " (Local)" : "") + streakDisplay; 
@@ -787,7 +753,7 @@
             const todayStr = new Date().toDateString();
             const isDailyDone = prog.lastDaily === todayStr;
             const dailyClass = isDailyDone ? "daily-title" : "daily-title"; 
-            const dailyText = isDailyDone ? "<i class='ph-check-circle'></i> Défi du jour validé !" : `<i class='ph-sun'></i> Défi du ${new Date().toLocaleDateString()}`;
+            const dailyText = isDailyDone ? `<img src="${IMG_CHECK}" class="icon-3d"> Défi du jour validé !` : `<img src="${IMG_FIRE}" class="icon-3d"> Défi du ${new Date().toLocaleDateString()}`;
             const dailyContent = isDailyDone ? "Revenez demain pour une nouvelle streak !" : `Faire identifier : <strong>${dailyPatho ? dailyPatho.name : 'Chargement...'}</strong>`;
 
             card.innerHTML = `<h2>👋 Bonjour ${displayName}</h2>${cloudBadge}
@@ -833,7 +799,7 @@
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card center';
-            card.innerHTML = `<h2><i class="ph-fill ph-star"></i> Avis Utilisateurs</h2><p class="small" style="margin-bottom:20px">Ce qu'ils pensent de Medicome.</p>`;
+            card.innerHTML = `<h2><img src="${IMG_DIAMOND}" class="icon-3d"> Avis Utilisateurs</h2><p class="small" style="margin-bottom:20px">Ce qu'ils pensent de Medicome.</p>`;
 
             const formDiv = document.createElement('div');
             formDiv.style.background = 'rgba(125,125,125,0.1)'; formDiv.style.padding='15px'; formDiv.style.borderRadius='10px'; formDiv.style.width='100%'; formDiv.style.marginBottom='20px';
@@ -973,7 +939,7 @@
             });
 
             if(bestGroup && maxScore >= 3) {
-                contentHTML += `<div class="specialty-badge"><i class="ph-fill ph-medal"></i> Spécialiste ${bestGroup}</div>`;
+                contentHTML += `<div class="specialty-badge"><img src="${IMG_MEDAL_1}" class="icon-3d"> Spécialiste ${bestGroup}</div>`;
             }
 
             const totalPathos = PATHOLOGIES.length;
@@ -1000,7 +966,7 @@
             btnAch.style.background = 'var(--gold)'; 
             btnAch.style.color = 'black'; 
             btnAch.style.marginBottom = '20px';
-            btnAch.innerHTML = '<i class="ph-bold ph-trophy"></i> Voir mes Succès';
+            btnAch.innerHTML = '<img src="'+IMG_TROPHY+'" class="icon-3d"> Voir mes Succès';
             btnAch.onclick = renderAchievementsPage;
             
             // Insert after the title
@@ -1043,11 +1009,11 @@
                 const successCount = (typeof m === 'number') ? m : (m?.success || 0);
                 const mItem = document.createElement('div');
                 
-                let sClass = 'm-locked', icon = '<i class="ph-fill ph-lock-key"></i>';
-                if (successCount >= 10) { sClass = 'm-master'; icon = '<i class="ph-fill ph-diamond" style="color:var(--ruby)"></i>'; }
-                else if (successCount >= 5) { sClass = 'm-gold'; icon = '<i class="ph-fill ph-trophy" style="color:var(--gold)"></i>'; }
-                else if (successCount >= 3) { sClass = 'm-silver'; icon = '<i class="ph-fill ph-medal" style="color:var(--silver)"></i>'; }
-                else if (successCount >= 1) { sClass = 'm-bronze'; icon = '<i class="ph-fill ph-medal" style="color:var(--bronze)"></i>'; }
+                let sClass = 'm-locked', icon = `<img src="${IMG_LOCK}" class="icon-3d-md">`;
+                if (successCount >= 10) { sClass = 'm-master'; icon = `<img src="${IMG_DIAMOND}" class="icon-3d-md">`; }
+                else if (successCount >= 5) { sClass = 'm-gold'; icon = `<img src="${IMG_TROPHY}" class="icon-3d-md">`; }
+                else if (successCount >= 3) { sClass = 'm-silver'; icon = `<img src="${IMG_MEDAL_2}" class="icon-3d-md">`; }
+                else if (successCount >= 1) { sClass = 'm-bronze'; icon = `<img src="${IMG_MEDAL_3}" class="icon-3d-md">`; }
 
                 mItem.className = `mastery-item ${sClass}`;
                 mItem.innerHTML = `<div class="mastery-icon">${icon}</div><div class="mastery-name">${p.name}</div><div class="mastery-count">${successCount} réussite(s)</div>`;
@@ -1066,7 +1032,7 @@
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML = '';
             const card = document.createElement('div'); card.className='card center'; card.style.maxWidth = '800px';
-            card.innerHTML = `<h2 style="color:var(--gold)"><i class="ph-fill ph-trophy"></i> Mes Succès</h2>`;
+            card.innerHTML = `<h2 style="color:var(--gold)"><img src="${IMG_TROPHY}" class="icon-3d"> Mes Succès</h2>`;
             
             const prog = state.progression;
             
@@ -1081,8 +1047,8 @@
                 
                 // Utilisation des icônes Phosphor dynamiques
                 const iconHtml = unlocked 
-                    ? `<i class="${ach.iconClass}" style="color:var(--accent);"></i>` 
-                    : `<i class="ph-fill ph-lock-key" style="opacity:0.3;"></i>`;
+                    ? `<img src="${ach.imgSrc}" class="icon-3d-md">` 
+                    : `<img src="${IMG_LOCK}" class="icon-3d-md">`;
 
                 row.innerHTML = `
                     <div class="ach-icon">${iconHtml}</div>
@@ -1140,11 +1106,11 @@
             const mistakes = (m?.missedSigns || {});
             const bestTime = (state.progression.bestTimes || {})[patho.name];
 
-            let rank = 'Verrouillé', icon='<i class="ph-fill ph-lock-key"></i>', color='var(--text-muted)';
-            if(wins >= 10) { rank='Maître'; icon='<i class="ph-fill ph-diamond"></i>'; color='var(--ruby)'; }
-            else if(wins >= 5) { rank='Or'; icon='<i class="ph-fill ph-trophy"></i>'; color='var(--gold)'; }
-            else if(wins >= 3) { rank='Argent'; icon='<i class="ph-fill ph-medal"></i>'; color='var(--silver)'; }
-            else if(wins >= 1) { rank='Bronze'; icon='<i class="ph-fill ph-medal"></i>'; color='var(--bronze)'; }
+            let rank = 'Verrouillé', icon=`<img src="${IMG_LOCK}" class="icon-3d-lg">`, color='var(--text-muted)';
+            if(wins >= 10) { rank='Maître'; icon=`<img src="${IMG_DIAMOND}" class="icon-3d-lg">`; color='var(--ruby)'; }
+            else if(wins >= 5) { rank='Or'; icon=`<img src="${IMG_TROPHY}" class="icon-3d-lg">`; color='var(--gold)'; }
+            else if(wins >= 3) { rank='Argent'; icon=`<img src="${IMG_MEDAL_2}" class="icon-3d-lg">`; color='var(--silver)'; }
+            else if(wins >= 1) { rank='Bronze'; icon=`<img src="${IMG_MEDAL_3}" class="icon-3d-lg">`; color='var(--bronze)'; }
 
             card.innerHTML = `
             <div style="font-size:40px; margin-bottom:10px; color:${color};">${icon}</div>
@@ -1571,7 +1537,7 @@
                     state.progression.mastery[pName] = m;
                     
                     updateHeader(); await saveProgression(); 
-                    showAlert('Diagnostic validé !','success'); showDiagnosticDetails({patho: top.patho});
+                    showAlert('<img src="'+IMG_CHECK+'" class="icon-3d"> Diagnostic validé !','success'); showDiagnosticDetails({patho: top.patho});
                 };
                 
                 const btnFalse = document.createElement('button'); btnFalse.className='btn btn-error'; btnFalse.textContent='❌ Incorrect';
@@ -1592,7 +1558,7 @@
                     state.progression.errorLog[pName] = { date: Date.now(), count: (state.progression.errorLog[pName]?.count || 0) + 1 };
 
                     updateHeader(); await saveProgression(); 
-                    showAlert('Aïe... Continuons','error'); 
+                    showAlert('<img src="'+IMG_ERROR+'" class="icon-3d"> Aïe... Continuons','error'); 
                     state.confirmationMode = false; state.diagnosticShown=false; 
                     setTimeout(()=>askNextQuestion(), 800);
                 };
@@ -1608,7 +1574,7 @@
             const card = document.createElement('div'); card.className='card';
             
             if(wasManualError) {
-                card.innerHTML = `<h2 style="color:var(--error)"><i class="ph-bold ph-x-circle"></i> C'était : ${top.name}</h2>`;
+                card.innerHTML = `<h2 style="color:var(--error)"><img src="${IMG_SAD}" class="icon-3d"> C'était : ${top.name}</h2>`;
                 
                 if(!state.progression.mastery) state.progression.mastery = {};
                 let m = state.progression.mastery[top.name];
@@ -1631,7 +1597,7 @@
                 saveProgression();
 
             } else {
-                card.innerHTML = `<h2><i class="ph-fill ph-check-circle" style="color:var(--success)"></i> ${top.name}</h2>`;
+                card.innerHTML = `<h2><img src="${IMG_CHECK}" class="icon-3d"> ${top.name}</h2>`;
             }
 
             const desc = document.createElement('div'); desc.className='patho-desc'; desc.textContent = top.short; desc.style.marginBottom='20px'; desc.style.textAlign='center'; card.appendChild(desc);

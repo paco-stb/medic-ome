@@ -102,6 +102,58 @@
         .error-tracker { margin-top: 20px; width: 100%; border-top: 1px solid var(--glass-border); padding-top: 15px; }
         .error-item { display: flex; justify-content: space-between; padding: 8px; background: rgba(255, 77, 77, 0.1); border-left: 3px solid var(--error); margin-bottom: 5px; border-radius: 4px; font-size: 13px; color: var(--text-main); }
 
+        /* --- AMÉLIORATION VISUELLE DES RÉSULTATS (DASHBOARD) --- */
+        .result-list {
+            background: rgba(0, 0, 0, 0.2); 
+            border-radius: 16px;
+            padding: 10px;
+            margin-top: 15px;
+            border: 1px solid var(--glass-border);
+        }
+        .result-section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 20px 0 10px 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between; 
+            align-items: center;
+            padding: 12px 15px;
+            background: var(--glass-bg);
+            border-bottom: 1px solid var(--glass-border);
+            transition: all 0.2s ease;
+        }
+        .result-item:first-of-type { border-top-left-radius: 12px; border-top-right-radius: 12px; }
+        .result-item:last-of-type { border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; border-bottom: none; }
+        .result-item:hover {
+            background: rgba(255, 255, 255, 0.08); 
+            transform: translateX(5px); 
+        }
+        .result-label {
+            font-weight: 500;
+            color: var(--text-main);
+            font-size: 15px;
+        }
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+        .badge-correct { background: rgba(0, 255, 157, 0.15); color: var(--success); border: 1px solid rgba(0, 255, 157, 0.3); }
+        .badge-missing { background: rgba(255, 77, 77, 0.15); color: var(--error); border: 1px solid rgba(255, 77, 77, 0.3); }
+        .badge-neutral { background: rgba(176, 196, 222, 0.15); color: var(--text-muted); border: 1px solid rgba(176, 196, 222, 0.3); }
+
         /* --- GLOSSARY IMPROVEMENTS --- */
         .glossary-wrapper { display: flex; align-items: flex-start; gap: 30px; width: 100%; }
         
@@ -1114,6 +1166,11 @@
 
         function rankPathologies() {
             const scores = PATHOLOGIES.map(p => {
+                // FIX: Check if previously rejected
+                if (state.previousDiagnostics.includes(p.name)) {
+                    return { patho: p, score: -1 }; 
+                }
+
                 let score = 0;
                 for(const facteur in p.facteurs){ if(state.demo[facteur] === true) score += p.facteurs[facteur]; }
                 for(const signe in p.signes){
@@ -1123,9 +1180,15 @@
                 }
                 return {patho:p, score: Math.max(0, score)};
             });
-            const totalScore = scores.reduce((sum, s) => sum + s.score, 0);
+
+            // Filter out negative scores for probability calculation
+            const validScores = scores.filter(s => s.score >= 0);
+            const totalScore = validScores.reduce((sum, s) => sum + s.score, 0);
+
             state.ranked = scores.map(s => ({
-                ...s, prob: totalScore > 0 ? ((s.score / totalScore) * 100).toFixed(1) : 0
+                ...s,
+                // If score is -1, prob is 0. Otherwise calculate normally.
+                prob: (s.score === -1 || totalScore === 0) ? 0 : ((s.score / totalScore) * 100).toFixed(1)
             })).sort((a,b)=>b.prob - a.prob);
         }
 
@@ -1256,20 +1319,17 @@
             // SÉCURITÉ MORT SUBITE
             if (state.asked.length >= 20) { showDiagnostic(); return; }
 
+            // --- CORRECTION TUNNEL VISION (Nettoyage de la file si une précision est donnée) ---
             if(state.asked.length > 0) {
                 const lastSign = state.asked[state.asked.length - 1];
                 const lastAnswer = state.answers[lastSign];
+                
                 if(lastAnswer === true) {
-                    if(REFINEMENTS[lastSign]) {
-                        const candidates = REFINEMENTS[lastSign].filter(s => state.allSigns.includes(s) && !state.asked.includes(s));
-                        state.priorityQueue.push(...candidates);
-                    } else {
-                        for (const [parent, children] of Object.entries(REFINEMENTS)) {
-                            if (children.includes(lastSign)) {
-                                const siblings = children.filter(c => c !== lastSign);
-                                state.priorityQueue = state.priorityQueue.filter(q => !siblings.includes(q));
-                                state.asked.push(...siblings.filter(s => !state.asked.includes(s)));
-                            }
+                     for (const [parent, children] of Object.entries(REFINEMENTS)) {
+                        if (children.includes(lastSign)) {
+                            const siblings = children.filter(c => c !== lastSign);
+                            // On retire les frères/sœurs de la liste prioritaire pour ne pas être lourd
+                            state.priorityQueue = state.priorityQueue.filter(q => !siblings.includes(q));
                         }
                     }
                 }
@@ -1335,6 +1395,7 @@
                 } else { showDiagnostic(); return; }
             }
             
+            // C'est ici que la magie opère maintenant : getNextSmartSign va choisir LA meilleure question
             const signe = getNextSmartSign(state.ranked, remaining);
             state.currentSign = signe; state.asked.push(signe); renderCurrentQuestion();
         }
@@ -1489,26 +1550,42 @@
                 state.allSigns.forEach(s => { if(state.answers[s] === true && !pathoSigns.includes(s)) erroneousSigns.push(s); });
                 
                 const resultsDiv = document.createElement('div'); resultsDiv.className='result-list';
+                
+                // Nouvelle fonction de génération HTML plus jolie (STYLE DASHBOARD)
                 const createList = (title, items, type, typeLabel) => {
                     if(items.length > 0) {
-                        const h = document.createElement('h4'); h.textContent = `${title} (${items.length})`; h.style.marginTop='15px'; h.style.marginBottom='5px'; h.style.color='var(--text-main)'; resultsDiv.appendChild(h);
+                        let icon = 'ℹ️';
+                        let badgeClass = 'badge-neutral';
+                        
+                        if (type === 'correct') { icon = '✅'; badgeClass = 'badge-correct'; }
+                        if (type === 'missing') { icon = '⚠️'; badgeClass = 'badge-missing'; }
+                        
+                        const h = document.createElement('div'); 
+                        h.className = 'result-section-title';
+                        h.innerHTML = `${icon} ${title} <span style="opacity:0.6; font-size:0.9em; margin-left:auto;">${items.length}</span>`;
+                        resultsDiv.appendChild(h);
+
                         items.forEach(s => {
-                            const r = document.createElement('div'); r.className='result-item result-'+type;
-                            r.innerHTML = `<div>${formatSigneName(s)}</div><div style="opacity:0.7; font-size:0.85em; font-weight:600;">${typeLabel}</div>`;
+                            const r = document.createElement('div'); 
+                            r.className = 'result-item'; 
+                            r.innerHTML = `
+                                <div class="result-label">${formatSigneName(s)}</div>
+                                <div class="status-badge ${badgeClass}">${typeLabel}</div>
+                            `;
                             resultsDiv.appendChild(r);
                         });
                     }
                 };
                 
                 if(wasManualError) {
-                    createList("❌ Signes manqués (Faux Négatifs)", missingSigns, "missing", "Vous avez dit Non");
-                    createList("ℹ️ Autres signes du tableau clinique", notAskedSigns, "neutral", "Non demandé");
+                    createList("Signes manqués (Faux Négatifs)", missingSigns, "missing", "Non");
+                    createList("Autres signes", notAskedSigns, "neutral", "Inconnu");
                 } else {
-                    createList("✅ Signes bien identifiés", correctSigns, "correct", "Validé");
+                    createList("Signes bien identifiés", correctSigns, "correct", "Validé");
                     if(missingSigns.length > 0) {
-                        createList("⚠️ Attention : Signes manqués", missingSigns, "missing", "Vous avez dit Non (Erreur)");
+                        createList("Attention : Signes manqués", missingSigns, "missing", "Erreur");
                     }
-                    createList("ℹ️ Autres signes du tableau clinique", notAskedSigns, "neutral", "Non demandé");
+                    createList("Autres signes du tableau", notAskedSigns, "neutral", "Non demandé");
                 }
                 card.appendChild(resultsDiv);
             }

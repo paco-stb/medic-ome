@@ -760,7 +760,7 @@
             const dailyText = isDailyDone ? `<i class='ph-duotone ph-check-circle color-success'></i> Défi du jour validé !` : `<i class='ph-duotone ph-sun color-gold'></i> Défi du ${new Date().toLocaleDateString()}`;
             const dailyContent = isDailyDone ? "Revenez demain pour une nouvelle streak !" : `Faire identifier : <strong>${dailyPatho ? dailyPatho.name : 'Chargement...'}</strong>`;
 
-            card.innerHTML = `<h2>👋 Bonjour ${displayName}</h2>${cloudBadge}
+            card.innerHTML = `<h2>Bonjour ${displayName}</h2>${cloudBadge}
                             
                             <div class="daily-card">
                                 <div class="${dailyClass}">${dailyText}</div>

@@ -13,6 +13,7 @@
     <link rel="icon" href="favicon.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
@@ -87,7 +88,8 @@
         }
         .achievement-row { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 15px; background: rgba(125,125,125,0.1); border-radius: 12px; border: 1px solid transparent; text-align: center; height: 100%; }
         .achievement-row.unlocked { border-color: var(--gold); background: rgba(255, 215, 0, 0.1); }
-        .ach-icon { font-size: 30px; margin-bottom: 5px; }
+        .ach-icon { font-size: 30px; margin-bottom: 5px; color: var(--text-muted); }
+        .achievement-row.unlocked .ach-icon { color: var(--text-main); }
         .ach-info { width: 100%; }
         .ach-title { font-weight: bold; font-size: 13px; color: var(--text-main); margin-bottom: 4px; }
         .ach-desc { font-size: 11px; color: var(--text-muted); line-height: 1.3; }
@@ -96,7 +98,7 @@
         @media (max-width: 700px) {
             .achievements-grid { grid-template-columns: repeat(1, 1fr); }
             .achievement-row { flex-direction: row; text-align: left; }
-            .ach-icon { font-size: 20px; margin-bottom: 0; min-width: 30px; }
+            .ach-icon { font-size: 24px; margin-bottom: 0; min-width: 40px; }
         }
 
         .reviews-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; width: 100%; }
@@ -108,6 +110,7 @@
 
         .mastery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; width: 100%; margin-top: 20px; }
         .mastery-item { background: rgba(125,125,125,0.1); border-radius: 10px; padding: 15px 10px; text-align: center; border: 2px solid transparent; transition: all 0.3s; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .mastery-icon { font-size: 24px; }
         .m-locked { border-color: var(--glass-border); opacity: 0.5; filter: grayscale(1); border-style: dashed;}
         .m-bronze { border-color: var(--bronze); background: rgba(205, 127, 50, 0.1); }
         .m-silver { border-color: var(--silver); background: rgba(192, 192, 192, 0.1); }
@@ -200,7 +203,16 @@
         
         .notif-btn, .theme-btn { position: relative; background: none; border: none; cursor: pointer; padding: 5px; margin-right: 5px; }
         .notif-icon, .theme-icon { width: 24px; height: 24px; fill: var(--text-muted); transition: fill 0.3s; }
-        .notif-btn:hover .notif-icon, .theme-btn:hover .theme-icon { fill: var(--accent); }
+        /* Style pour les nouvelles icônes Phosphor */
+        i.ph, i.ph-fill, i.ph-bold, i.ph-duotone {
+            vertical-align: middle;
+            font-size: 1.2em;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+        .notif-btn:hover i, .theme-btn:hover i { color: var(--accent); }
+        .notif-btn i, .theme-btn i { font-size: 24px; color: var(--text-muted); }
+
+        .notif-badge { position:absolute; top:2px; right:2px; background:var(--error); width:8px; height:8px; border-radius:50%; display:none; }
         .notif-modal { position: absolute; top: 60px; right: 20px; width: 300px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 15px; z-index: 200; box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: none; max-height: 400px; overflow-y: auto; color: var(--text-main); }
         .notif-item { border-bottom: 1px solid var(--glass-border); padding: 10px 0; font-size: 13px; text-align: left; }
         .notif-date { font-size: 11px; color: var(--accent); margin-bottom: 4px; }
@@ -238,15 +250,15 @@
         
         <div class="top-right">
             <button class="theme-btn" id="themeBtn" title="Changer le thème">
-                <svg class="theme-icon" viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 4a8 8 0 0 0 0 16z"/></svg>
+                <i class="ph-bold ph-moon"></i>
             </button>
 
             <button class="notif-btn" id="notifBtn" title="Nouveautés">
-                <svg class="notif-icon" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>
+                <i class="ph-bold ph-bell"></i>
                 <div class="notif-badge" id="notifBadge"></div>
             </button>
             <div class="notif-modal" id="notifModal">
-                <h4 style="color:var(--text-main); border-bottom:1px solid var(--glass-border); padding-bottom:10px; margin-bottom:10px;">🔔 Actualités</h4>
+                <h4 style="color:var(--text-main); border-bottom:1px solid var(--glass-border); padding-bottom:10px; margin-bottom:10px;"><i class="ph-bold ph-bell-ringing"></i> Actualités</h4>
                 <div id="notifContent"><div class="small">Chargement...</div></div>
             </div>
 
@@ -258,7 +270,9 @@
 
     <main id="app">
         <div class="center" id="landing-content" style="padding: 20px; text-align: center;">
-            <div style="font-size: 50px; margin-bottom: 20px;">🩺</div>
+            <div style="font-size: 60px; margin-bottom: 20px; color: var(--accent);">
+                <i class="ph-fill ph-stethoscope"></i>
+            </div>
             <h1 style="font-size: 2rem; margin-bottom: 10px; color: var(--text-main);">Medicome</h1>
             <h2 style="font-size: 1.2rem; color: var(--accent); margin-bottom: 20px; font-weight: normal;">
                 L'IA d'entraînement au diagnostic médical
@@ -268,7 +282,9 @@
             </div>
             
             <div style="margin-top: 40px;">
-                <div style="font-size: 30px; animation: spin 1s infinite linear;">⚙️</div>
+                <div style="font-size: 30px; animation: spin 1s infinite linear;">
+                    <i class="ph-duotone ph-gear"></i>
+                </div>
                 <div class="small" style="margin-top: 10px;">Chargement du noyau médical...</div>
             </div>
         </div>
@@ -331,26 +347,26 @@
         };
         
         const ACHIEVEMENTS = [
-            { id: "played_10_days", title: "Assiduité", desc: "Jouer 10 jours d'affilée", icon: "🗓️" },
-            { id: "baby_doc", title: "P1 validée", desc: "Identifier 1 pathologie", icon: "🍼" },
-            { id: "med_student", title: "Externe", desc: "Identifier 25 pathologies", icon: "🎓" },
-            { id: "intern", title: "Interne", desc: "Identifier 50 pathologies", icon: "🩺" },
-            { id: "chief", title: "Chef de Clinique", desc: "Identifier 100 pathologies", icon: "🏥" },
-            { id: "critic", title: "Critique Médical", desc: "Publier un avis", icon: "✍️" },
-            { id: "fan", title: "Fan Club", desc: "Suivre sur les réseaux", icon: "❤️" },
-            { id: "bookworm_1", title: "Rat de Bibliothèque", desc: "Télécharger 1 fiche PDF", icon: "📜" },
-            { id: "bookworm_25", title: "Archiviste", desc: "Télécharger 25 fiches PDF", icon: "📚" },
-            { id: "bookworm_50", title: "Bibliothécaire", desc: "Télécharger 50 fiches PDF", icon: "🏛️" },
-            { id: "bookworm_100", title: "Savoir Absolu", desc: "Télécharger 100 fiches PDF", icon: "🧠" },
-            { id: "master_5", title: "Major de Promo", desc: "5 pathologies au rang Maître", icon: "🎖️" },
-            { id: "master_30", title: "Professeur", desc: "30 pathologies au rang Maître", icon: "👑" },
-            { id: "master_100", title: "Légende", desc: "100 pathologies au rang Maître", icon: "🧞" },
-            { id: "encyclopedia", title: "Encyclopédie Vivante", desc: "Débloquer toutes les pathologies", icon: "🌍" },
-            { id: "god_mode", title: "Dieu de la Médecine", desc: "Toutes pathologies en Maître", icon: "⚡" },
-            { id: "speed_demon", title: "Flash", desc: "10 diagnostics en moins de 30s", icon: "🚀" }, 
-            { id: "speed_50", title: "Vitesse Lumière", desc: "50 diagnostics en moins de 30s", icon: "🌠" },
-            { id: "speed_100", title: "Voyageur Temporel", desc: "100 diagnostics en moins de 30s", icon: "⏳" },
-            { id: "daily_10", title: "Expert du Quotidien", desc: "Réussir 10 défis du jour", icon: "☀️" }
+            { id: "played_10_days", title: "Assiduité", desc: "Jouer 10 jours d'affilée", iconClass: "ph-fill ph-calendar-check" },
+            { id: "baby_doc", title: "P1 validée", desc: "Identifier 1 pathologie", iconClass: "ph-fill ph-baby" },
+            { id: "med_student", title: "Externe", desc: "Identifier 25 pathologies", iconClass: "ph-fill ph-student" },
+            { id: "intern", title: "Interne", desc: "Identifier 50 pathologies", iconClass: "ph-fill ph-stethoscope" },
+            { id: "chief", title: "Chef de Clinique", desc: "Identifier 100 pathologies", iconClass: "ph-fill ph-hospital" },
+            { id: "critic", title: "Critique Médical", desc: "Publier un avis", iconClass: "ph-fill ph-star" },
+            { id: "fan", title: "Fan Club", desc: "Suivre sur les réseaux", iconClass: "ph-fill ph-heart" },
+            { id: "bookworm_1", title: "Rat de Bibliothèque", desc: "Télécharger 1 fiche PDF", iconClass: "ph-fill ph-scroll" },
+            { id: "bookworm_25", title: "Archiviste", desc: "Télécharger 25 fiches PDF", iconClass: "ph-fill ph-books" },
+            { id: "bookworm_50", title: "Bibliothécaire", desc: "Télécharger 50 fiches PDF", iconClass: "ph-fill ph-library-columns" },
+            { id: "bookworm_100", title: "Savoir Absolu", desc: "Télécharger 100 fiches PDF", iconClass: "ph-fill ph-brain" },
+            { id: "master_5", title: "Major de Promo", desc: "5 pathologies au rang Maître", iconClass: "ph-fill ph-medal" },
+            { id: "master_30", title: "Professeur", desc: "30 pathologies au rang Maître", iconClass: "ph-fill ph-crown" },
+            { id: "master_100", title: "Légende", desc: "100 pathologies au rang Maître", iconClass: "ph-fill ph-trophy" },
+            { id: "encyclopedia", title: "Encyclopédie Vivante", desc: "Débloquer toutes les pathologies", iconClass: "ph-fill ph-globe" },
+            { id: "god_mode", title: "Dieu de la Médecine", desc: "Toutes pathologies en Maître", iconClass: "ph-fill ph-lightning" },
+            { id: "speed_demon", title: "Flash", desc: "10 diagnostics en moins de 30s", iconClass: "ph-fill ph-rocket" }, 
+            { id: "speed_50", title: "Vitesse Lumière", desc: "50 diagnostics en moins de 30s", iconClass: "ph-fill ph-shooting-star" },
+            { id: "speed_100", title: "Voyageur Temporel", desc: "100 diagnostics en moins de 30s", iconClass: "ph-fill ph-hourglass" },
+            { id: "daily_10", title: "Expert du Quotidien", desc: "Réussir 10 défis du jour", iconClass: "ph-fill ph-sun" }
         ];
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -413,11 +429,22 @@
             const newTheme = current === 'light' ? 'dark' : 'light';
             body.setAttribute('data-theme', newTheme);
             localStorage.setItem('medicome_theme', newTheme);
+            updateThemeIcon(newTheme);
+        }
+        
+        function updateThemeIcon(theme) {
+            const btn = document.getElementById('themeBtn');
+            if(btn) {
+                btn.innerHTML = theme === 'light' ? '<i class="ph-bold ph-moon"></i>' : '<i class="ph-bold ph-sun"></i>';
+            }
         }
         
         function loadTheme() {
             const saved = localStorage.getItem('medicome_theme');
-            if(saved) document.body.setAttribute('data-theme', saved);
+            if(saved) {
+                document.body.setAttribute('data-theme', saved);
+                updateThemeIcon(saved);
+            }
             const btn = document.getElementById('themeBtn');
             if(btn) btn.onclick = toggleTheme;
         }
@@ -608,7 +635,7 @@
         function showAlert(message,type){
             const alertDiv = document.createElement('div');
             alertDiv.className = 'alert alert-' + type;
-            alertDiv.textContent = message;
+            alertDiv.innerHTML = message; // innerHTML allows icons
             const app = q('#app');
             if(app){ app.insertBefore(alertDiv,app.firstChild); setTimeout(()=>{ if(alertDiv.parentNode) alertDiv.parentNode.removeChild(alertDiv); },3000); }
         }
@@ -635,7 +662,7 @@
             const unlock = (id) => {
                 if(!state.progression.achievements.includes(id)) {
                     state.progression.achievements.push(id);
-                    showAlert(`🏆 Succès débloqué !`, 'success');
+                    showAlert(`<i class="ph-fill ph-trophy"></i> Succès débloqué !`, 'success');
                     triggerConfetti();
                 }
             };
@@ -682,7 +709,7 @@
         function updateHeader(){
             const pseudoBox = q("#pseudoBox"); const homeBtn = q("#homeBtn"); const logoutBtn = q("#logoutBtn");
             const currentStreak = state.progression.streak || 0;
-            const streakDisplay = currentStreak > 0 ? ` <span style="color:#ff9f43; margin-left:8px;">🔥 ${currentStreak}</span>` : '';
+            const streakDisplay = currentStreak > 0 ? ` <span style="color:#ff9f43; margin-left:8px;"><i class="ph-fill ph-fire"></i> ${currentStreak}</span>` : '';
 
             if(state.pseudo){ 
                 pseudoBox.innerHTML = state.pseudo + (state.isGuest ? " (Local)" : "") + streakDisplay; 
@@ -703,7 +730,7 @@
         function renderLogin() {
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
-            const card = document.createElement('div'); card.className='card center'; card.innerHTML='<h2>☁️ Connexion Cloud</h2>';
+            const card = document.createElement('div'); card.className='card center'; card.innerHTML='<h2><i class="ph-cloud"></i> Connexion Cloud</h2>';
             const inputUser = document.createElement('input'); inputUser.placeholder='Email'; inputUser.className='input';
             const inputPass = document.createElement('input'); inputPass.placeholder='Mot de passe'; inputPass.className='input'; inputPass.type='password';
             
@@ -752,7 +779,7 @@
             const app = q('#app'); app.innerHTML='';
             const prog = state.progression;
             const card = document.createElement('div'); card.className='card center';
-            let cloudBadge = state.isGuest ? '<span style="color:orange; font-size:0.8em; margin-bottom:10px">💾 Mode Local (Navigateur)</span>' : '<span style="color:var(--success); font-size:0.8em; margin-bottom:10px">☁️ Sauvegarde Active</span>';
+            let cloudBadge = state.isGuest ? '<span style="color:orange; font-size:0.8em; margin-bottom:10px"><i class="ph-floppy-disk"></i> Mode Local</span>' : '<span style="color:var(--success); font-size:0.8em; margin-bottom:10px"><i class="ph-cloud-check"></i> Sauvegarde Active</span>';
             const displayName = state.pseudo || '...';
             
             // CAS DU JOUR
@@ -760,7 +787,7 @@
             const todayStr = new Date().toDateString();
             const isDailyDone = prog.lastDaily === todayStr;
             const dailyClass = isDailyDone ? "daily-title" : "daily-title"; 
-            const dailyText = isDailyDone ? "✅ Défi du jour validé !" : `☀️ Défi du ${new Date().toLocaleDateString()}`;
+            const dailyText = isDailyDone ? "<i class='ph-check-circle'></i> Défi du jour validé !" : `<i class='ph-sun'></i> Défi du ${new Date().toLocaleDateString()}`;
             const dailyContent = isDailyDone ? "Revenez demain pour une nouvelle streak !" : `Faire identifier : <strong>${dailyPatho ? dailyPatho.name : 'Chargement...'}</strong>`;
 
             card.innerHTML = `<h2>👋 Bonjour ${displayName}</h2>${cloudBadge}
@@ -777,14 +804,14 @@
                             <div class="stat-box" style="text-align:center; background:rgba(255, 77, 77, 0.1); border-color:var(--error)"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">Échecs</div></div>
                             </div>`;
             
-            const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.textContent='🩺 Entraînement Libre'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; 
+            const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.innerHTML='<i class="ph-bold ph-stethoscope"></i> Entraînement Libre'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; 
             btnDiag.onclick= () => {
                 if(audioCtx.state === 'suspended') audioCtx.resume();
                 state.dailyTarget = null;
                 renderDemographics();
             };
-            const btnGloss = document.createElement('button'); btnGloss.className='link'; btnGloss.textContent='📚 Glossaire des pathologies'; btnGloss.style.marginTop='12px'; btnGloss.onclick=renderGlossary;
-            const btnProf = document.createElement('button'); btnProf.className='link'; btnProf.textContent='👤 Mon Profil & Succès'; btnProf.style.marginTop='6px'; btnProf.onclick=renderProfile;
+            const btnGloss = document.createElement('button'); btnGloss.className='link'; btnGloss.innerHTML='<i class="ph-bold ph-book-bookmark"></i> Glossaire'; btnGloss.style.marginTop='12px'; btnGloss.onclick=renderGlossary;
+            const btnProf = document.createElement('button'); btnProf.className='link'; btnProf.innerHTML='<i class="ph-bold ph-user-circle"></i> Profil & Succès'; btnProf.style.marginTop='6px'; btnProf.onclick=renderProfile;
             
             card.appendChild(btnDiag); card.appendChild(btnGloss); card.appendChild(btnProf); 
             app.appendChild(card);
@@ -806,7 +833,7 @@
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card center';
-            card.innerHTML = `<h2>⭐ Avis Utilisateurs</h2><p class="small" style="margin-bottom:20px">Ce qu'ils pensent de Medicome.</p>`;
+            card.innerHTML = `<h2><i class="ph-fill ph-star"></i> Avis Utilisateurs</h2><p class="small" style="margin-bottom:20px">Ce qu'ils pensent de Medicome.</p>`;
 
             const formDiv = document.createElement('div');
             formDiv.style.background = 'rgba(125,125,125,0.1)'; formDiv.style.padding='15px'; formDiv.style.borderRadius='10px'; formDiv.style.width='100%'; formDiv.style.marginBottom='20px';
@@ -946,7 +973,7 @@
             });
 
             if(bestGroup && maxScore >= 3) {
-                contentHTML += `<div class="specialty-badge">🎖️ Spécialiste ${bestGroup}</div>`;
+                contentHTML += `<div class="specialty-badge"><i class="ph-fill ph-medal"></i> Spécialiste ${bestGroup}</div>`;
             }
 
             const totalPathos = PATHOLOGIES.length;
@@ -967,16 +994,16 @@
             // 2. Set InnerHTML
             card.innerHTML = contentHTML;
 
-            // 3. Create Button Element and insert it into DOM (Correcting the bug where onclick was lost)
+            // 3. Create Button Element
             const btnAch = document.createElement('button'); 
             btnAch.className='btn'; 
             btnAch.style.background = 'var(--gold)'; 
             btnAch.style.color = 'black'; 
             btnAch.style.marginBottom = '20px';
-            btnAch.textContent = '🏆 Voir mes Succès';
+            btnAch.innerHTML = '<i class="ph-bold ph-trophy"></i> Voir mes Succès';
             btnAch.onclick = renderAchievementsPage;
             
-            // Insert after the title (child 0 is h2, so insert before child 1)
+            // Insert after the title
             if(card.children.length > 0) {
                 card.insertBefore(btnAch, card.children[1]);
             } else {
@@ -987,7 +1014,7 @@
             // ERROR TRACKER
             const errorTracker = document.createElement('div');
             errorTracker.className = 'error-tracker';
-            errorTracker.innerHTML = `<h3 style="color:var(--error); font-size:16px;">⚠️ Boîte à Erreurs (Suivi)</h3>`;
+            errorTracker.innerHTML = `<h3 style="color:var(--error); font-size:16px;"><i class="ph-bold ph-warning"></i> Boîte à Erreurs (Suivi)</h3>`;
             const now = Date.now();
             let hasErrors = false;
             Object.entries(prog.errorLog || {}).forEach(([pName, data]) => {
@@ -1015,11 +1042,12 @@
                 const m = masteryData[p.name];
                 const successCount = (typeof m === 'number') ? m : (m?.success || 0);
                 const mItem = document.createElement('div');
-                let sClass = 'm-locked', icon = '🔒';
-                if (successCount >= 10) { sClass = 'm-master'; icon = '💎'; }
-                else if (successCount >= 5) { sClass = 'm-gold'; icon = '🥇'; }
-                else if (successCount >= 3) { sClass = 'm-silver'; icon = '🥈'; }
-                else if (successCount >= 1) { sClass = 'm-bronze'; icon = '🥉'; }
+                
+                let sClass = 'm-locked', icon = '<i class="ph-fill ph-lock-key"></i>';
+                if (successCount >= 10) { sClass = 'm-master'; icon = '<i class="ph-fill ph-diamond" style="color:var(--ruby)"></i>'; }
+                else if (successCount >= 5) { sClass = 'm-gold'; icon = '<i class="ph-fill ph-trophy" style="color:var(--gold)"></i>'; }
+                else if (successCount >= 3) { sClass = 'm-silver'; icon = '<i class="ph-fill ph-medal" style="color:var(--silver)"></i>'; }
+                else if (successCount >= 1) { sClass = 'm-bronze'; icon = '<i class="ph-fill ph-medal" style="color:var(--bronze)"></i>'; }
 
                 mItem.className = `mastery-item ${sClass}`;
                 mItem.innerHTML = `<div class="mastery-icon">${icon}</div><div class="mastery-name">${p.name}</div><div class="mastery-count">${successCount} réussite(s)</div>`;
@@ -1033,12 +1061,12 @@
             card.appendChild(btnBack); app.appendChild(card);
         }
 
-        // --- NOUVELLE PAGE: SUCCÈS (MISE A JOUR EN GRILLE) ---
+        // --- NOUVELLE PAGE: SUCCÈS (MISE A JOUR EN GRILLE AVEC PHOSPHOR) ---
         function renderAchievementsPage() {
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML = '';
             const card = document.createElement('div'); card.className='card center'; card.style.maxWidth = '800px';
-            card.innerHTML = `<h2 style="color:var(--gold)">🏆 Mes Succès</h2>`;
+            card.innerHTML = `<h2 style="color:var(--gold)"><i class="ph-fill ph-trophy"></i> Mes Succès</h2>`;
             
             const prog = state.progression;
             
@@ -1050,8 +1078,14 @@
                 const unlocked = (prog.achievements || []).includes(ach.id);
                 const row = document.createElement('div');
                 row.className = `achievement-row ${unlocked ? 'unlocked' : ''}`;
+                
+                // Utilisation des icônes Phosphor dynamiques
+                const iconHtml = unlocked 
+                    ? `<i class="${ach.iconClass}" style="color:var(--accent);"></i>` 
+                    : `<i class="ph-fill ph-lock-key" style="opacity:0.3;"></i>`;
+
                 row.innerHTML = `
-                    <div class="ach-icon">${unlocked ? ach.icon : '🔒'}</div>
+                    <div class="ach-icon">${iconHtml}</div>
                     <div class="ach-info">
                         <div class="ach-title" style="color:${unlocked ? 'var(--text-main)' : 'var(--text-muted)'}">${ach.title}</div>
                         <div class="ach-desc">${ach.desc}</div>
@@ -1064,7 +1098,7 @@
 
             const btnBack = document.createElement('button'); btnBack.className='btn'; btnBack.textContent='Retour au Profil';
             btnBack.style.marginTop = '20px';
-            btnBack.onclick = renderProfile; // RETOURNE AU PROFIL
+            btnBack.onclick = renderProfile; 
             card.appendChild(btnBack);
             app.appendChild(card);
         }
@@ -1091,7 +1125,6 @@
             
             const btnBack = document.createElement('button'); btnBack.className='btn'; btnBack.textContent='Retour';
             btnBack.style.marginTop = '20px';
-            // CORRECTION ICI: Vérification de l'état de connexion
             btnBack.onclick = () => { if(state.pseudo) renderHome(); else renderLogin(); };
             card.appendChild(btnBack);
             app.appendChild(card);
@@ -1107,16 +1140,16 @@
             const mistakes = (m?.missedSigns || {});
             const bestTime = (state.progression.bestTimes || {})[patho.name];
 
-            let rank = 'Verrouillé', icon='🔒', color='var(--text-muted)';
-            if(wins >= 10) { rank='Maître'; icon='💎'; color='var(--ruby)'; }
-            else if(wins >= 5) { rank='Or'; icon='🥇'; color='var(--gold)'; }
-            else if(wins >= 3) { rank='Argent'; icon='🥈'; color='var(--silver)'; }
-            else if(wins >= 1) { rank='Bronze'; icon='🥉'; color='var(--bronze)'; }
+            let rank = 'Verrouillé', icon='<i class="ph-fill ph-lock-key"></i>', color='var(--text-muted)';
+            if(wins >= 10) { rank='Maître'; icon='<i class="ph-fill ph-diamond"></i>'; color='var(--ruby)'; }
+            else if(wins >= 5) { rank='Or'; icon='<i class="ph-fill ph-trophy"></i>'; color='var(--gold)'; }
+            else if(wins >= 3) { rank='Argent'; icon='<i class="ph-fill ph-medal"></i>'; color='var(--silver)'; }
+            else if(wins >= 1) { rank='Bronze'; icon='<i class="ph-fill ph-medal"></i>'; color='var(--bronze)'; }
 
             card.innerHTML = `
-            <div style="font-size:40px; margin-bottom:10px;">${icon}</div>
+            <div style="font-size:40px; margin-bottom:10px; color:${color};">${icon}</div>
             <h3 style="color:${color}; margin-bottom:10px;">Rang : ${rank}</h3>
-            ${bestTime ? `<div class="small" style="color:var(--accent); margin-bottom:20px;">⚡ Record Chrono : ${bestTime.toFixed(1)}s</div>` : ''}
+            ${bestTime ? `<div class="small" style="color:var(--accent); margin-bottom:20px;"><i class="ph-bold ph-lightning"></i> Record Chrono : ${bestTime.toFixed(1)}s</div>` : ''}
             <h2>${patho.name}</h2>
             <div class="patho-desc" style="margin-bottom:20px;">${patho.short}</div>
             
@@ -1126,7 +1159,7 @@
             </div>`;
 
             if(Object.keys(mistakes).length > 0) {
-                card.innerHTML += `<h3 style="color:var(--error); margin-top:20px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px; width:100%;">⚠️ Vos oublis fréquents</h3>`;
+                card.innerHTML += `<h3 style="color:var(--error); margin-top:20px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px; width:100%;"><i class="ph-bold ph-warning"></i> Vos oublis fréquents</h3>`;
                 let html = '<ul style="text-align:left; color:var(--text-muted); margin-top:15px; width:100%;">';
                 Object.entries(mistakes).sort((a,b)=>b[1]-a[1]).forEach(([sign, count]) => {
                     html += `<li style="margin-bottom:5px;"><strong>${formatSigneName(sign)}</strong> <span style="opacity:0.6; font-size:0.9em;">(Oublié ${count} fois)</span></li>`;
@@ -1145,7 +1178,7 @@
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card center';
-            card.innerHTML = `<h2>✉️ Nous Contacter</h2>`;
+            card.innerHTML = `<h2><i class="ph-bold ph-envelope"></i> Nous Contacter</h2>`;
             const inputName = document.createElement('input'); inputName.className='input'; inputName.placeholder='Votre Nom';
             if(state.pseudo) inputName.value = state.pseudo;
             const inputEmail = document.createElement('input'); inputEmail.className='input'; inputEmail.placeholder='Votre Email';
@@ -1168,11 +1201,11 @@
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card';
-            card.innerHTML=`<h3>📋 Données démographiques</h3><p class="small" style="margin-bottom:20px">Paramétrez le patient virtuel.</p>`;
+            card.innerHTML=`<h3><i class="ph-bold ph-user-list"></i> Données démographiques</h3><p class="small" style="margin-bottom:20px">Paramétrez le patient virtuel.</p>`;
             
             // Si c'est le défi du jour, on affiche un message spécial
             if(state.dailyTarget) {
-                card.innerHTML = `<h3>☀️ Défi du Jour</h3><p class="small" style="margin-bottom:20px; color:var(--gold);">Cible : ${state.dailyTarget.name}</p>`;
+                card.innerHTML = `<h3><i class="ph-fill ph-sun"></i> Défi du Jour</h3><p class="small" style="margin-bottom:20px; color:var(--gold);">Cible : ${state.dailyTarget.name}</p>`;
             }
 
             const createSel = (lbl, id, opts) => {
@@ -1192,14 +1225,14 @@
                 const chronoDiv = document.createElement('div');
                 chronoDiv.style.margin = '20px 0'; chronoDiv.style.textAlign='center';
                 const chronoLabel = document.createElement('label'); 
-                chronoLabel.innerHTML = `<input type="checkbox" id="chronoToggle" style="margin-right:8px;"> ⚡ Mode Chrono (Facultatif)`;
+                chronoLabel.innerHTML = `<input type="checkbox" id="chronoToggle" style="margin-right:8px;"> <i class="ph-bold ph-lightning"></i> Mode Chrono (Facultatif)`;
                 chronoLabel.style.color = 'var(--text-main)'; chronoLabel.style.cursor='pointer';
                 chronoDiv.appendChild(chronoLabel);
                 card.appendChild(chronoDiv);
             }
 
             const btnGroup = document.createElement('div'); btnGroup.className='button-group';
-            const btnStart = document.createElement('button'); btnStart.className='btn'; btnStart.textContent='▶️ Démarrer';
+            const btnStart = document.createElement('button'); btnStart.className='btn'; btnStart.innerHTML='<i class="ph-bold ph-play"></i> Démarrer';
             btnStart.onclick=()=>{ 
                 state.demo = {
                     femme: q('#demo-sexe').value === 'femme', homme: q('#demo-sexe').value === 'homme',
@@ -1323,14 +1356,14 @@
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card center';
             const signe = state.currentSign;
-            const questionTitle = state.confirmationMode ? `<span style="color:var(--gold)">🤔 Je pense avoir une piste...</span>` : `QUESTION ${state.asked.length}`;
+            const questionTitle = state.confirmationMode ? `<span style="color:var(--gold)"><i class="ph-fill ph-brain"></i> Je pense avoir une piste...</span>` : `QUESTION ${state.asked.length}`;
             
             // Calcul proba pour barre
             let prob = 0;
             if(state.ranked.length > 0) prob = parseFloat(state.ranked[0].prob);
 
             card.innerHTML = `
-                ${state.isChrono ? '<div style="font-size:12px; color:var(--accent); margin-bottom:5px;">⚡ Chrono Actif</div>' : ''}
+                ${state.isChrono ? '<div style="font-size:12px; color:var(--accent); margin-bottom:5px;"><i class="ph-bold ph-lightning"></i> Chrono Actif</div>' : ''}
                 <div class="ai-progress-container">
                     <div class="ai-progress-bar" style="width:${prob}%"></div>
                 </div>
@@ -1367,7 +1400,7 @@
 
             const navGroup = document.createElement('div'); navGroup.style.display = 'flex'; navGroup.style.gap = '15px'; navGroup.style.marginTop = '20px';
             if(state.history.length > 0) {
-                const btnBack = document.createElement('button'); btnBack.className='btn-back'; btnBack.textContent='⬅️ Retour';
+                const btnBack = document.createElement('button'); btnBack.className='btn-back'; btnBack.innerHTML='<i class="ph-bold ph-caret-left"></i> Retour';
                 btnBack.onclick = () => {
                     const prevState = JSON.parse(state.history.pop());
                     Object.assign(state, prevState);
@@ -1469,7 +1502,7 @@
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML = '';
             const loadingCard = document.createElement('div'); loadingCard.className = 'card center';
-            loadingCard.innerHTML = `<h3 style="color:var(--accent)">🔎 Analyse IA en cours...</h3><div style="margin: 30px 0; font-size: 50px; animation: spin 0.8s infinite linear;">⚙️</div><p class="small">Comparaison base de données...</p>`;
+            loadingCard.innerHTML = `<h3 style="color:var(--accent)">🔎 Analyse IA en cours...</h3><div style="margin: 30px 0; font-size: 50px; animation: spin 0.8s infinite linear;"><i class="ph-duotone ph-gear"></i></div><p class="small">Comparaison base de données...</p>`;
             app.appendChild(loadingCard);
 
             setTimeout(() => {
@@ -1480,9 +1513,9 @@
 
                 app.innerHTML = ''; 
                 const card = document.createElement('div'); card.className='card center';
-                const title = document.createElement('h2'); title.textContent='💡 Diagnostic Proposé'; card.appendChild(title);
+                const title = document.createElement('h2'); title.innerHTML='<i class="ph-fill ph-lightbulb"></i> Diagnostic Proposé'; card.appendChild(title);
                 
-                let pdfButton = top.patho.pdf && top.patho.pdf !== '#' ? `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.patho.pdf}" target="_blank">📄 Voir fiche PDF</a>` : `<span class="small" style="opacity:0.5">📄 Pas de fiche PDF</span>`;
+                let pdfButton = top.patho.pdf && top.patho.pdf !== '#' ? `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.patho.pdf}" target="_blank"><i class="ph-bold ph-file-pdf"></i> Voir fiche PDF</a>` : `<span class="small" style="opacity:0.5">📄 Pas de fiche PDF</span>`;
                 
                 const diagDiv = document.createElement('div'); diagDiv.className='diagnostic-result';
                 diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div><div class="patho-desc" style="margin-top:8px">${top.patho.short}</div><br>${pdfButton}`;
@@ -1575,7 +1608,7 @@
             const card = document.createElement('div'); card.className='card';
             
             if(wasManualError) {
-                card.innerHTML = `<h2 style="color:var(--error)">❌ C'était : ${top.name}</h2>`;
+                card.innerHTML = `<h2 style="color:var(--error)"><i class="ph-bold ph-x-circle"></i> C'était : ${top.name}</h2>`;
                 
                 if(!state.progression.mastery) state.progression.mastery = {};
                 let m = state.progression.mastery[top.name];
@@ -1598,7 +1631,7 @@
                 saveProgression();
 
             } else {
-                card.innerHTML = `<h2>✅ ${top.name}</h2>`;
+                card.innerHTML = `<h2><i class="ph-fill ph-check-circle" style="color:var(--success)"></i> ${top.name}</h2>`;
             }
 
             const desc = document.createElement('div'); desc.className='patho-desc'; desc.textContent = top.short; desc.style.marginBottom='20px'; desc.style.textAlign='center'; card.appendChild(desc);
@@ -1623,11 +1656,11 @@
                 // Nouvelle fonction de génération HTML plus jolie (STYLE DASHBOARD)
                 const createList = (title, items, type, typeLabel) => {
                     if(items.length > 0) {
-                        let icon = 'ℹ️';
+                        let icon = '<i class="ph-bold ph-info"></i>';
                         let badgeClass = 'badge-neutral';
                         
-                        if (type === 'correct') { icon = '✅'; badgeClass = 'badge-correct'; }
-                        if (type === 'missing') { icon = '⚠️'; badgeClass = 'badge-missing'; }
+                        if (type === 'correct') { icon = '<i class="ph-fill ph-check-circle"></i>'; badgeClass = 'badge-correct'; }
+                        if (type === 'missing') { icon = '<i class="ph-fill ph-warning"></i>'; badgeClass = 'badge-missing'; }
                         
                         const h = document.createElement('div'); 
                         h.className = 'result-section-title';
@@ -1661,7 +1694,7 @@
 
             if(top.pdf && top.pdf !== '#') {
                 const pdfBtn = document.createElement('a');
-                pdfBtn.href = top.pdf; pdfBtn.target = "_blank"; pdfBtn.className = 'btn'; pdfBtn.textContent = '📄 Voir la fiche PDF complète'; pdfBtn.style.marginTop = '20px'; pdfBtn.style.display = 'block'; pdfBtn.style.textAlign = 'center';
+                pdfBtn.href = top.pdf; pdfBtn.target = "_blank"; pdfBtn.className = 'btn'; pdfBtn.innerHTML = '<i class="ph-bold ph-file-pdf"></i> Voir la fiche PDF complète'; pdfBtn.style.marginTop = '20px'; pdfBtn.style.display = 'block'; pdfBtn.style.textAlign = 'center';
                 
                 // TRACKING PDF DOWNLOAD
                 pdfBtn.onclick = trackPdf;
@@ -1672,20 +1705,20 @@
             const btnGroup = document.createElement('div'); btnGroup.className='button-group';
             
             // BOUTON REJOUER DIRECT
-            const btnReplay = document.createElement('button'); btnReplay.className='btn btn-success'; btnReplay.textContent = '🔄 Rejouer tout de suite'; 
+            const btnReplay = document.createElement('button'); btnReplay.className='btn btn-success'; btnReplay.innerHTML = '<i class="ph-bold ph-arrow-clockwise"></i> Rejouer tout de suite'; 
             btnReplay.onclick = () => {
                  state.dailyTarget = null; // Reset daily flag if random play
                  renderDemographics();
             };
 
-            const btnHome = document.createElement('button'); btnHome.className='link'; btnHome.textContent = '🏠 Retour Accueil'; btnHome.onclick = renderHome;
+            const btnHome = document.createElement('button'); btnHome.className='link'; btnHome.innerHTML = '<i class="ph-bold ph-house"></i> Accueil'; btnHome.onclick = renderHome;
             btnGroup.appendChild(btnReplay); btnGroup.appendChild(btnHome); card.appendChild(btnGroup); app.appendChild(card);
         }
 
         function renderGlossary() {
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
-            const titleCard = document.createElement('div'); titleCard.className='card center'; titleCard.innerHTML='<h2>📚 Glossaire</h2>'; 
+            const titleCard = document.createElement('div'); titleCard.className='card center'; titleCard.innerHTML='<h2><i class="ph-bold ph-book-bookmark"></i> Glossaire</h2>'; 
             const btnBack = document.createElement('button'); btnBack.className='link'; btnBack.textContent='🏠 Retour';
             btnBack.style.marginBottom='20px'; btnBack.onclick=renderHome;
             titleCard.appendChild(btnBack); app.appendChild(titleCard);

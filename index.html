@@ -752,7 +752,7 @@
             const app = q('#app'); app.innerHTML='';
             const prog = state.progression;
             const card = document.createElement('div'); card.className='card center';
-            let cloudBadge = state.isGuest ? '<span style="color:orange; font-size:0.8em; margin-bottom:10px">💾 Mode Local (Navigateur)</span>' : '<span style="color:var(--success); font-size:0.8em; margin-bottom:10px">☁️ Sauvegarde Cloud Active</span>';
+            let cloudBadge = state.isGuest ? '<span style="color:orange; font-size:0.8em; margin-bottom:10px">💾 Mode Local (Navigateur)</span>' : '<span style="color:var(--success); font-size:0.8em; margin-bottom:10px">☁️ Sauvegarde Active</span>';
             const displayName = state.pseudo || '...';
             
             // CAS DU JOUR
@@ -773,7 +773,7 @@
 
                             <div class="stat-box" style="width:100%"><div class="stat-number">${prog.correct + prog.incorrect}</div><div class="stat-label">Cas joués</div></div>
                             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-top:12px;">
-                            <div class="stat-box" style="text-align:center; background:rgba(0, 255, 157, 0.1); border-color:var(--success)"><div class="stat-number" style="color:var(--success);">${prog.correct}</div><div class="stat-label">IA a trouvé</div></div>
+                            <div class="stat-box" style="text-align:center; background:rgba(0, 255, 157, 0.1); border-color:var(--success)"><div class="stat-number" style="color:var(--success);">${prog.correct}</div><div class="stat-label">Succès</div></div>
                             <div class="stat-box" style="text-align:center; background:rgba(255, 77, 77, 0.1); border-color:var(--error)"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">Échecs</div></div>
                             </div>`;
             

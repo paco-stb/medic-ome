@@ -1114,6 +1114,12 @@
 
         function rankPathologies() {
             const scores = PATHOLOGIES.map(p => {
+                // FIX START: Check if previously rejected
+                if (state.previousDiagnostics.includes(p.name)) {
+                    return { patho: p, score: -1 }; // Force negative score
+                }
+                // FIX END
+
                 let score = 0;
                 for(const facteur in p.facteurs){ if(state.demo[facteur] === true) score += p.facteurs[facteur]; }
                 for(const signe in p.signes){
@@ -1123,9 +1129,15 @@
                 }
                 return {patho:p, score: Math.max(0, score)};
             });
-            const totalScore = scores.reduce((sum, s) => sum + s.score, 0);
+
+            // Filter out negative scores for probability calculation
+            const validScores = scores.filter(s => s.score >= 0);
+            const totalScore = validScores.reduce((sum, s) => sum + s.score, 0);
+
             state.ranked = scores.map(s => ({
-                ...s, prob: totalScore > 0 ? ((s.score / totalScore) * 100).toFixed(1) : 0
+                ...s,
+                // If score is -1, prob is 0. Otherwise calculate normally.
+                prob: (s.score === -1 || totalScore === 0) ? 0 : ((s.score / totalScore) * 100).toFixed(1)
             })).sort((a,b)=>b.prob - a.prob);
         }
 

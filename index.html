@@ -44,7 +44,7 @@
         .logo-img { height: 60px; width: auto; filter: drop-shadow(0 0 8px var(--accent-glow)); transition: transform 0.3s; }
         .brand:hover .logo-img { transform: scale(1.05); }
         .top-right { display:flex; gap:12px; align-items:center; }
-        .pseudo { color:var(--accent); font-weight:600; padding:6px 12px; background: rgba(0, 210, 255, 0.05); border: 1px solid var(--glass-border); border-radius:20px; cursor:pointer; font-size: 14px; }
+        .pseudo { color:var(--accent); font-weight:600; padding:6px 12px; background: rgba(0, 210, 255, 0.05); border: 1px solid var(--glass-border); border-radius:20px; cursor:pointer; font-size: 14px; display: flex; align-items: center; gap: 6px; }
 
         /* UI ELEMENTS */
         .link { background: rgba(125,125,125,0.1); border:1px solid var(--glass-border); color: var(--text-muted); padding:8px 16px; border-radius:8px; cursor:pointer; transition:all 0.3s; font-size:14px; }
@@ -73,14 +73,14 @@
         .daily-title { color: var(--gold); font-weight: bold; margin-bottom: 5px; }
         
         /* CSS EMOJIS & IMAGES */
-        .emoji-img { width: 1.3em; height: 1.3em; vertical-align: middle; margin-bottom: 2px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
-        .large-emoji { width: 50px; height: 50px; object-fit: contain; margin-bottom: 15px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); }
+        /* Suppression des styles pour les images d'emojis, on utilise l'Unicode */
+        .large-emoji { font-size: 3em; margin-bottom: 15px; display: block; }
         
         .achievements-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; margin-bottom: 20px; }
         .achievement-row { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 15px; background: rgba(125,125,125,0.1); border-radius: 12px; border: 1px solid transparent; text-align: center; height: 100%; }
         .achievement-row.unlocked { border-color: var(--gold); background: rgba(255, 215, 0, 0.1); }
-        .ach-icon { width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; }
-        .ach-icon img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.2)); }
+        .ach-icon { font-size: 3em; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; }
+        /* Suppression du style ach-icon img */
         .locked-icon { font-size: 24px; opacity: 0.5; }
         .ach-info { width: 100%; }
         .ach-title { font-weight: bold; font-size: 13px; color: var(--text-main); margin-bottom: 4px; }
@@ -89,7 +89,7 @@
         @media (max-width: 700px) {
             .achievements-grid { grid-template-columns: repeat(1, 1fr); }
             .achievement-row { flex-direction: row; text-align: left; }
-            .ach-icon { width: 40px; height: 40px; margin-bottom: 0; margin-right: 10px; }
+            .ach-icon { font-size: 2.5em; margin-bottom: 0; margin-right: 10px; }
         }
 
         .reviews-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; width: 100%; }
@@ -101,11 +101,12 @@
 
         .mastery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; width: 100%; margin-top: 20px; }
         .mastery-item { background: rgba(125,125,125,0.1); border-radius: 10px; padding: 15px 10px; text-align: center; border: 2px solid transparent; transition: all 0.3s; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
-        .mastery-icon img { width: 32px; height: 32px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
+        .mastery-icon { font-size: 2em; display: flex; align-items: center; justify-content: center; }
+        /* Suppression du style mastery-icon img */
         .m-locked { border-color: var(--glass-border); opacity: 0.5; filter: grayscale(1); border-style: dashed;}
         .m-bronze { border-color: var(--bronze); background: rgba(205, 127, 50, 0.1); }
         .m-silver { border-color: var(--silver); background: rgba(192, 192, 192, 0.1); }
-        .m-gold { border-color: var(--gold); background: rgba(255, 215, 0, 0.1); }
+        .m-gold { border-color: var(--gold); background: rgba(255, 127, 0, 0.1); }
         .m-master { border-color: var(--ruby); background: rgba(224, 30, 55, 0.15); }
         
         .specialty-badge { font-size: 16px; font-weight: bold; color: var(--text-main); background: linear-gradient(90deg, rgba(0,210,255,0.2) 0%, rgba(0,210,255,0) 100%); padding: 10px 20px; border-radius: 30px; border-left: 4px solid var(--accent); display: inline-block; margin-bottom: 20px; }
@@ -197,7 +198,7 @@
 
     <main id="app">
         <div class="center" id="landing-content" style="padding: 20px; text-align: center;">
-            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Stethoscope.png" alt="Stethoscope" style="width:80px; height:80px; margin-bottom:20px;">
+            <div style="font-size: 5em; margin-bottom: 20px;">🩺</div>
             <h1 style="font-size: 2rem; margin-bottom: 10px; color: var(--text-main);">Medicome</h1>
             <h2 style="font-size: 1.2rem; color: var(--accent); margin-bottom: 20px; font-weight: normal;">
                 L'IA d'entraînement au diagnostic médical
@@ -266,27 +267,28 @@
             "Paludisme": "Infectio", "Coqueluche": "Infectio", "Grippe": "Infectio", "Mononucléose Infectieuse": "Infectio", "Primo-Infection VIH": "Infectio", "Maladie de Lyme": "Infectio", "Tétanos": "Infectio", "Botulisme": "Infectio", "Rubéole": "Infectio", "Syphilis": "Infectio", "Oreillons": "Infectio", "Muguet Buccal": "Infectio"
         };
         
+        // Remplacement des URLs d'images par des emojis Unicode
         const ACHIEVEMENTS = [
-            { id: "played_10_days", title: "Assiduité", desc: "Jouer 10 jours d'affilée", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Calendar.png" },
-            { id: "baby_doc", title: "P1 validée", desc: "Identifier 1 pathologie", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Food/Baby%20Bottle.png" },
-            { id: "med_student", title: "Externe", desc: "Identifier 25 pathologies", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Graduation%20Cap.png" },
-            { id: "intern", title: "Interne", desc: "Identifier 50 pathologies", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Stethoscope.png" },
-            { id: "chief", title: "Chef de Clinique", desc: "Identifier 100 pathologies", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Hospital.png" },
-            { id: "critic", title: "Critique Médical", desc: "Publier un avis", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Memo.png" },
-            { id: "fan", title: "Fan Club", desc: "Suivre sur les réseaux", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Red%20Heart.png" },
-            { id: "bookworm_1", title: "Rat de Bibliothèque", desc: "Télécharger 1 fiche PDF", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Books.png" },
-            { id: "bookworm_25", title: "Archiviste", desc: "Télécharger 25 fiches PDF", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Card%20File%20Box.png" },
-            { id: "bookworm_50", title: "Bibliothécaire", desc: "Télécharger 50 fiches PDF", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Classical%20Building.png" },
-            { id: "bookworm_100", title: "Savoir Absolu", desc: "Télécharger 100 fiches PDF", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/People/Brain.png" },
-            { id: "master_5", title: "Major de Promo", desc: "5 pathologies au rang Maître", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/1st%20Place%20Medal.png" },
-            { id: "master_30", title: "Professeur", desc: "30 pathologies au rang Maître", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Crown.png" },
-            { id: "master_100", title: "Légende", desc: "100 pathologies au rang Maître", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/People/Woman%20Genie.png" },
-            { id: "encyclopedia", title: "Encyclopédie Vivante", desc: "Débloquer toutes les pathologies", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Globe%20Showing%20Europe-Africa.png" },
-            { id: "god_mode", title: "Dieu de la Médecine", desc: "Toutes pathologies en Maître", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Nature/High%20Voltage.png" },
-            { id: "speed_demon", title: "Flash", desc: "10 diagnostics en moins de 30s", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Rocket.png" }, 
-            { id: "speed_50", title: "Vitesse Lumière", desc: "50 diagnostics en moins de 30s", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Nature/Shooting%20Star.png" },
-            { id: "speed_100", title: "Voyageur Temporel", desc: "100 diagnostics en moins de 30s", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Hourglass%20Not%20Done.png" },
-            { id: "daily_10", title: "Expert du Quotidien", desc: "Réussir 10 défis du jour", icon: "https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Travel%20and%20places/Sun%20with%20Face.png" }
+            { id: "played_10_days", title: "Assiduité", desc: "Jouer 10 jours d'affilée", icon: "📅" },
+            { id: "baby_doc", title: "P1 validée", desc: "Identifier 1 pathologie", icon: "🍼" },
+            { id: "med_student", title: "Externe", desc: "Identifier 25 pathologies", icon: "🎓" },
+            { id: "intern", title: "Interne", desc: "Identifier 50 pathologies", icon: "🩺" },
+            { id: "chief", title: "Chef de Clinique", desc: "Identifier 100 pathologies", icon: "🏥" },
+            { id: "critic", title: "Critique Médical", desc: "Publier un avis", icon: "📝" },
+            { id: "fan", title: "Fan Club", desc: "Suivre sur les réseaux", icon: "❤️" },
+            { id: "bookworm_1", title: "Rat de Bibliothèque", desc: "Télécharger 1 fiche PDF", icon: "📚" },
+            { id: "bookworm_25", title: "Archiviste", desc: "Télécharger 25 fiches PDF", icon: "🗃️" },
+            { id: "bookworm_50", title: "Bibliothécaire", desc: "Télécharger 50 fiches PDF", icon: "🏛️" },
+            { id: "bookworm_100", title: "Savoir Absolu", desc: "Télécharger 100 fiches PDF", icon: "🧠" },
+            { id: "master_5", title: "Major de Promo", desc: "5 pathologies au rang Maître", icon: "🥇" },
+            { id: "master_30", title: "Professeur", desc: "30 pathologies au rang Maître", icon: "👑" },
+            { id: "master_100", title: "Légende", desc: "100 pathologies au rang Maître", icon: "🧞‍♀️" },
+            { id: "encyclopedia", title: "Encyclopédie Vivante", desc: "Débloquer toutes les pathologies", icon: "🌍" },
+            { id: "god_mode", title: "Dieu de la Médecine", desc: "Toutes pathologies en Maître", icon: "⚡" },
+            { id: "speed_demon", title: "Flash", desc: "10 diagnostics en moins de 30s", icon: "🚀" }, 
+            { id: "speed_50", title: "Vitesse Lumière", desc: "50 diagnostics en moins de 30s", icon: "🌠" },
+            { id: "speed_100", title: "Voyageur Temporel", desc: "100 diagnostics en moins de 30s", icon: "⏳" },
+            { id: "daily_10", title: "Expert du Quotidien", desc: "Réussir 10 défis du jour", icon: "🌞" }
         ];
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -603,7 +605,8 @@
         function updateHeader(){
             const pseudoBox = q("#pseudoBox"); const homeBtn = q("#homeBtn"); const logoutBtn = q("#logoutBtn");
             const currentStreak = state.progression.streak || 0;
-            const streakDisplay = currentStreak > 0 ? ` <span style="color:#ff9f43; margin-left:8px;"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Fire.png" style="width:1.2em;height:1.2em;vertical-align:middle;"> ${currentStreak}</span>` : '';
+            // Remplacement de l'image PNG par un emoji Unicode
+            const streakDisplay = currentStreak > 0 ? ` <span style="color:#ff9f43; margin-left:8px;">🔥 ${currentStreak}</span>` : '';
 
             if(state.pseudo){ 
                 pseudoBox.innerHTML = state.pseudo + (state.isGuest ? " (Local)" : "") + streakDisplay; 
@@ -684,19 +687,20 @@
             const dailyText = isDailyDone ? "✅ Défi du jour validé !" : `☀️ Défi du ${new Date().toLocaleDateString()}`;
             const dailyContent = isDailyDone ? "Revenez demain pour une nouvelle streak !" : `Faire identifier : <strong>${dailyPatho ? dailyPatho.name : 'Chargement...'}</strong>`;
 
-            card.innerHTML = `<h2 style="display:flex;align-items:center;gap:10px;"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Waving%20Hand.png" style="width:1.2em;height:1.2em;"> Bonjour ${displayName}</h2>${cloudBadge}
-                            
-                            <div class="daily-card">
-                                <div class="${dailyClass}">${dailyText}</div>
-                                <div style="font-size:0.9em; color:var(--text-main); margin-bottom:5px;">${dailyContent}</div>
-                                ${!isDailyDone ? `<button id="btnDaily" class="btn" style="background:var(--gold); color:#000; font-size:12px; padding:8px 15px; margin-top:5px;">Relever le défi</button>` : ''}
-                            </div>
+            // Remplacement de l'image PNG par un emoji Unicode
+            card.innerHTML = `<h2 style="display:flex;align-items:center;gap:10px;">👋 Bonjour ${displayName}</h2>${cloudBadge}
+                                            
+                                            <div class="daily-card">
+                                                <div class="${dailyClass}">${dailyText}</div>
+                                                <div style="font-size:0.9em; color:var(--text-main); margin-bottom:5px;">${dailyContent}</div>
+                                                ${!isDailyDone ? `<button id="btnDaily" class="btn" style="background:var(--gold); color:#000; font-size:12px; padding:8px 15px; margin-top:5px;">Relever le défi</button>` : ''}
+                                            </div>
 
-                            <div class="stat-box" style="width:100%"><div class="stat-number">${prog.correct + prog.incorrect}</div><div class="stat-label">Cas joués</div></div>
-                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-top:12px;">
-                            <div class="stat-box" style="text-align:center; background:rgba(0, 255, 157, 0.1); border-color:var(--success)"><div class="stat-number" style="color:var(--success);">${prog.correct}</div><div class="stat-label">Succès</div></div>
-                            <div class="stat-box" style="text-align:center; background:rgba(255, 77, 77, 0.1); border-color:var(--error)"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">Échecs</div></div>
-                            </div>`;
+                                            <div class="stat-box" style="width:100%"><div class="stat-number">${prog.correct + prog.incorrect}</div><div class="stat-label">Cas joués</div></div>
+                                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;margin-top:12px;">
+                                            <div class="stat-box" style="text-align:center; background:rgba(0, 255, 157, 0.1); border-color:var(--success)"><div class="stat-number" style="color:var(--success);">${prog.correct}</div><div class="stat-label">Succès</div></div>
+                                            <div class="stat-box" style="text-align:center; background:rgba(255, 77, 77, 0.1); border-color:var(--error)"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">Échecs</div></div>
+                                            </div>`;
             
             const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.textContent='🩺 Entraînement Libre'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; 
             btnDiag.onclick= () => {
@@ -936,11 +940,12 @@
                 const m = masteryData[p.name];
                 const successCount = (typeof m === 'number') ? m : (m?.success || 0);
                 const mItem = document.createElement('div');
-                let sClass = 'm-locked', icon = '<div class="locked-icon">🔒</div>';
-                if (successCount >= 10) { sClass = 'm-master'; icon = '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Gem%20Stone.png">'; }
-                else if (successCount >= 5) { sClass = 'm-gold'; icon = '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/1st%20Place%20Medal.png">'; }
-                else if (successCount >= 3) { sClass = 'm-silver'; icon = '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/2nd%20Place%20Medal.png">'; }
-                else if (successCount >= 1) { sClass = 'm-bronze'; icon = '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/3rd%20Place%20Medal.png">'; }
+                // Remplacement des images par des emojis Unicode
+                let sClass = 'm-locked', icon = '🔒';
+                if (successCount >= 10) { sClass = 'm-master'; icon = '💎'; }
+                else if (successCount >= 5) { sClass = 'm-gold'; icon = '🥇'; }
+                else if (successCount >= 3) { sClass = 'm-silver'; icon = '🥈'; }
+                else if (successCount >= 1) { sClass = 'm-bronze'; icon = '🥉'; }
 
                 mItem.className = `mastery-item ${sClass}`;
                 mItem.innerHTML = `<div class="mastery-icon">${icon}</div><div class="mastery-name">${p.name}</div><div class="mastery-count">${successCount} réussite(s)</div>`;
@@ -973,11 +978,12 @@
                 row.className = `achievement-row ${unlocked ? 'unlocked' : ''}`;
                 
                 // --- MODIFICATION: GESTION IMAGE VS CADENAS ---
+                // Utilisation de l'emoji Unicode défini dans l'objet ach
                 let iconHTML = '';
                 if (unlocked) {
-                    iconHTML = `<img src="${ach.icon}" class="ach-img" alt="${ach.title}">`;
+                    iconHTML = ach.icon;
                 } else {
-                    iconHTML = `<div class="locked-icon">🔒</div>`;
+                    iconHTML = '🔒';
                 }
 
                 row.innerHTML = `
@@ -1037,14 +1043,15 @@
             const mistakes = (m?.missedSigns || {});
             const bestTime = (state.progression.bestTimes || {})[patho.name];
 
-            let rank = 'Verrouillé', icon='<div class="locked-icon">🔒</div>', color='var(--text-muted)';
-            if(wins >= 10) { rank='Maître'; icon='<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Gem%20Stone.png" class="large-emoji">'; color='var(--ruby)'; }
-            else if(wins >= 5) { rank='Or'; icon='<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/1st%20Place%20Medal.png" class="large-emoji">'; color='var(--gold)'; }
-            else if(wins >= 3) { rank='Argent'; icon='<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/2nd%20Place%20Medal.png" class="large-emoji">'; color='var(--silver)'; }
-            else if(wins >= 1) { rank='Bronze'; icon='<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/3rd%20Place%20Medal.png" class="large-emoji">'; color='var(--bronze)'; }
+            // Remplacement des images par des emojis Unicode
+            let rank = 'Verrouillé', icon='🔒', color='var(--text-muted)';
+            if(wins >= 10) { rank='Maître'; icon='💎'; color='var(--ruby)'; }
+            else if(wins >= 5) { rank='Or'; icon='🥇'; color='var(--gold)'; }
+            else if(wins >= 3) { rank='Argent'; icon='🥈'; color='var(--silver)'; }
+            else if(wins >= 1) { rank='Bronze'; icon='🥉'; color='var(--bronze)'; }
 
             card.innerHTML = `
-            <div>${icon}</div>
+            <div class="large-emoji">${icon}</div>
             <h3 style="color:${color}; margin-bottom:10px;">Rang : ${rank}</h3>
             ${bestTime ? `<div class="small" style="color:var(--accent); margin-bottom:20px;">⚡ Record Chrono : ${bestTime.toFixed(1)}s</div>` : ''}
             <h2>${patho.name}</h2>
@@ -1320,7 +1327,7 @@
                 const lastAnswer = state.answers[lastSign];
                 
                 if(lastAnswer === true) {
-                     for (const [parent, children] of Object.entries(REFINEMENTS)) {
+                      for (const [parent, children] of Object.entries(REFINEMENTS)) {
                         if (children.includes(lastSign)) {
                             const siblings = children.filter(c => c !== lastSign);
                             // On retire les frères/sœurs de la liste prioritaire pour ne pas être lourd

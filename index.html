@@ -53,15 +53,8 @@
         .card { background: var(--glass-bg); backdrop-filter: blur(12px); padding:32px; border-radius:20px; box-shadow: var(--card-shadow), inset 0 0 0 1px var(--glass-border); margin-bottom:16px; width:100%; max-width:600px; animation: fadeIn 0.5s ease-out; position: relative;}
         .input, select, textarea { width:100%; padding:14px; border-radius:10px; border:1px solid var(--glass-border); background: rgba(125,125,125,0.1); color: var(--text-main); margin-top:8px; margin-bottom:12px; font-size:14px; font-family: 'Inter', sans-serif; }
         
-        /* CORRECTION LISIBILITÉ SELECT/OPTION (Fond Opaque) */
-        select option {
-            background-color: #020b16; /* Fond sombre solide */
-            color: #ffffff; /* Texte blanc */
-        }
-        [data-theme="light"] select option {
-            background-color: #ffffff;
-            color: #000000;
-        }
+        select option { background-color: #020b16; color: #ffffff; }
+        [data-theme="light"] select option { background-color: #ffffff; color: #000000; }
 
         .btn { background: linear-gradient(135deg, #0072ff 0%, #00c6ff 100%); border:none; padding:14px 24px; border-radius:12px; color: #fff; cursor:pointer; font-weight:700; font-size:15px; transition:all 0.3s; width: 100%; margin-top: 10px; }
         .btn:hover { transform:translateY(-2px); box-shadow: 0 6px 20px rgba(0, 114, 255, 0.6); }
@@ -79,51 +72,24 @@
         .daily-card { border: 1px solid var(--gold); background: rgba(255, 215, 0, 0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; width: 100%; }
         .daily-title { color: var(--gold); font-weight: bold; margin-bottom: 5px; }
         
-        /* CSS MODIFIÉ POUR LA GRILLE DE SUCCÈS */
-        .achievements-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            width: 100%;
-            margin-bottom: 20px;
-        }
+        /* CSS EMOJIS & IMAGES */
+        .emoji-img { width: 1.3em; height: 1.3em; vertical-align: middle; margin-bottom: 2px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
+        .large-emoji { width: 50px; height: 50px; object-fit: contain; margin-bottom: 15px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2)); }
+        
+        .achievements-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; margin-bottom: 20px; }
         .achievement-row { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 15px; background: rgba(125,125,125,0.1); border-radius: 12px; border: 1px solid transparent; text-align: center; height: 100%; }
         .achievement-row.unlocked { border-color: var(--gold); background: rgba(255, 215, 0, 0.1); }
-        
-        /* Modification pour gérer les images au lieu du texte */
-        .ach-icon { 
-            width: 40px; 
-            height: 40px; 
-            min-width: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 5px;
-        }
-
-        /* Nouvelle classe pour l'image elle-même */
-        .ach-img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain; /* Garde les proportions */
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2)); /* Petite ombre sympa */
-        }
-
-        /* Pour les icônes verrouillées (cadenas), on peut garder un emoji texte ou une image grise */
-        .locked-icon {
-            font-size: 24px;
-            opacity: 0.5;
-        }
-
+        .ach-icon { width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; margin-bottom: 5px; }
+        .ach-icon img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.2)); }
+        .locked-icon { font-size: 24px; opacity: 0.5; }
         .ach-info { width: 100%; }
         .ach-title { font-weight: bold; font-size: 13px; color: var(--text-main); margin-bottom: 4px; }
         .ach-desc { font-size: 11px; color: var(--text-muted); line-height: 1.3; }
 
-        /* Media Query pour mobile */
         @media (max-width: 700px) {
             .achievements-grid { grid-template-columns: repeat(1, 1fr); }
             .achievement-row { flex-direction: row; text-align: left; }
-            .ach-icon { font-size: 30px; margin-bottom: 0; min-width: 40px; margin-right: 10px; }
+            .ach-icon { width: 40px; height: 40px; margin-bottom: 0; margin-right: 10px; }
         }
 
         .reviews-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; width: 100%; }
@@ -135,6 +101,7 @@
 
         .mastery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; width: 100%; margin-top: 20px; }
         .mastery-item { background: rgba(125,125,125,0.1); border-radius: 10px; padding: 15px 10px; text-align: center; border: 2px solid transparent; transition: all 0.3s; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+        .mastery-icon img { width: 32px; height: 32px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
         .m-locked { border-color: var(--glass-border); opacity: 0.5; filter: grayscale(1); border-style: dashed;}
         .m-bronze { border-color: var(--bronze); background: rgba(205, 127, 50, 0.1); }
         .m-silver { border-color: var(--silver); background: rgba(192, 192, 192, 0.1); }
@@ -145,77 +112,32 @@
         .error-tracker { margin-top: 20px; width: 100%; border-top: 1px solid var(--glass-border); padding-top: 15px; }
         .error-item { display: flex; justify-content: space-between; padding: 8px; background: rgba(255, 77, 77, 0.1); border-left: 3px solid var(--error); margin-bottom: 5px; border-radius: 4px; font-size: 13px; color: var(--text-main); }
 
-        /* --- AMÉLIORATION VISUELLE DES RÉSULTATS (DASHBOARD) --- */
-        .result-list {
-            background: rgba(0, 0, 0, 0.2); 
-            border-radius: 16px;
-            padding: 10px;
-            margin-top: 15px;
-            border: 1px solid var(--glass-border);
-        }
-        .result-section-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin: 20px 0 10px 5px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .result-item {
-            display: flex;
-            justify-content: space-between; 
-            align-items: center;
-            padding: 12px 15px;
-            background: var(--glass-bg);
-            border-bottom: 1px solid var(--glass-border);
-            transition: all 0.2s ease;
-        }
+        /* RESULT LIST */
+        .result-list { background: rgba(0, 0, 0, 0.2); border-radius: 16px; padding: 10px; margin-top: 15px; border: 1px solid var(--glass-border); }
+        .result-section-title { font-size: 14px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 10px 5px; display: flex; align-items: center; gap: 8px; }
+        .result-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: var(--glass-bg); border-bottom: 1px solid var(--glass-border); transition: all 0.2s ease; }
         .result-item:first-of-type { border-top-left-radius: 12px; border-top-right-radius: 12px; }
         .result-item:last-of-type { border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; border-bottom: none; }
-        .result-item:hover {
-            background: rgba(255, 255, 255, 0.08); 
-            transform: translateX(5px); 
-        }
-        .result-label {
-            font-weight: 500;
-            color: var(--text-main);
-            font-size: 15px;
-        }
-        .status-badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-        }
+        .result-item:hover { background: rgba(255, 255, 255, 0.08); transform: translateX(5px); }
+        .result-label { font-weight: 500; color: var(--text-main); font-size: 15px; }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
         .badge-correct { background: rgba(0, 255, 157, 0.15); color: var(--success); border: 1px solid rgba(0, 255, 157, 0.3); }
         .badge-missing { background: rgba(255, 77, 77, 0.15); color: var(--error); border: 1px solid rgba(255, 77, 77, 0.3); }
         .badge-neutral { background: rgba(176, 196, 222, 0.15); color: var(--text-muted); border: 1px solid rgba(176, 196, 222, 0.3); }
 
-        /* --- GLOSSARY IMPROVEMENTS --- */
         .glossary-wrapper { display: flex; align-items: flex-start; gap: 30px; width: 100%; }
-        
         .search-container { width: 100%; max-width: 600px; margin: 0 auto 30px auto; position: relative; }
         .search-input { width: 100%; padding: 16px 20px 16px 55px; border-radius: 50px; border: 1px solid var(--glass-border); background: var(--glass-bg); color: var(--text-main); font-size: 16px; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); backdrop-filter: blur(10px); }
         .search-input:focus { border-color: var(--accent); box-shadow: 0 0 20px var(--accent-glow); outline: none; transform: translateY(-2px); }
         .search-icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; fill: var(--text-muted); pointer-events: none; transition: fill 0.3s; }
         .search-input:focus ~ .search-icon { fill: var(--accent); }
-
         .alphabet-sidebar { position: sticky; top: 90px; display: flex; flex-direction: column; gap: 8px; background: var(--glass-bg); padding: 15px 8px; border-radius: 30px; max-height: 80vh; overflow-y: auto; border: 1px solid var(--glass-border); min-width: 50px; align-items: center; box-shadow: var(--card-shadow); scrollbar-width: none; }
         .alphabet-sidebar::-webkit-scrollbar { display: none; }
-        
         .alpha-link { color: var(--text-muted); text-decoration: none; font-size: 13px; font-weight: 700; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s; background: rgba(125,125,125,0.05); }
         .alpha-link:hover:not(.disabled) { color: #fff; background: var(--accent); transform: scale(1.1); box-shadow: 0 0 10px var(--accent-glow); }
         .alpha-link.disabled { opacity: 0.3; cursor: default; background: transparent; }
-
         .glossary-content { flex: 1; width: 100%; }
         .letter-header { font-size: 2rem; font-weight: 800; color: var(--accent); margin: 30px 0 15px; border-bottom: 2px solid var(--glass-border); padding-bottom: 10px; width: 100%; }
-        
         .letter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
         .patho-card { background: var(--glass-bg); padding: 25px; border-radius: 16px; border: 1px solid var(--glass-border); transition: all 0.3s; cursor: pointer; position: relative; overflow: hidden; border-left: 4px solid var(--glass-border); }
         .patho-card:hover { transform: translateY(-5px); border-left-color: var(--accent); background: rgba(125,125,125,0.1); box-shadow: var(--card-shadow); }
@@ -224,14 +146,12 @@
         
         .stat-box { background: rgba(125,125,125,0.1); padding:20px; border-radius:12px; margin:10px 0; border: 1px solid var(--glass-border); text-align:center; }
         .stat-number { font-size:36px; font-weight:700; color:var(--text-main); }
-        
         .notif-btn, .theme-btn { position: relative; background: none; border: none; cursor: pointer; padding: 5px; margin-right: 5px; }
         .notif-icon, .theme-icon { width: 24px; height: 24px; fill: var(--text-muted); transition: fill 0.3s; }
         .notif-btn:hover .notif-icon, .theme-btn:hover .theme-icon { fill: var(--accent); }
         .notif-modal { position: absolute; top: 60px; right: 20px; width: 300px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 15px; z-index: 200; box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: none; max-height: 400px; overflow-y: auto; color: var(--text-main); }
         .notif-item { border-bottom: 1px solid var(--glass-border); padding: 10px 0; font-size: 13px; text-align: left; }
         .notif-date { font-size: 11px; color: var(--accent); margin-bottom: 4px; }
-
         footer { text-align:center; padding:30px 20px; background: rgba(0,0,0,0.5); font-size:13px; border-top: 1px solid var(--glass-border); display: flex; flex-direction: column; align-items: center; gap: 15px; }
         .footer-nav { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;}
         .footer-link { color: var(--text-muted); text-decoration: none; cursor: pointer; } .footer-link:hover { color: var(--accent); }
@@ -240,17 +160,9 @@
         .social-link:hover { background: rgba(0, 210, 255, 0.1); transform: scale(1.1); }
         .social-icon { width: 20px; height: 20px; fill: var(--text-muted); transition: fill 0.3s; }
         .social-link:hover .social-icon { fill: var(--accent); }
-        
         .alert { padding:14px; border-radius:10px; margin:12px 0; font-size:14px; width: 100%; text-align: center; }
         .alert-success { background: rgba(0, 255, 157, 0.1); border:1px solid var(--success); color:var(--success); }
         .alert-error { background: rgba(255, 77, 77, 0.1); border:1px solid var(--error); color:var(--error); }
-
-        @media (max-width:600px){ 
-            .reviews-container, .mastery-grid, .letter-grid { grid-template-columns: repeat(1, 1fr); } 
-            .glossary-wrapper { flex-direction: column; } 
-            .alphabet-sidebar { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; width: 100%; position: sticky; top: 70px; z-index: 90; padding: 10px; justify-content: flex-start; gap: 10px; border-radius: 15px; margin-bottom: 20px;} 
-            .alpha-link { min-width: 35px; min-height: 35px; font-size: 14px; }
-        }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
     </style>
@@ -285,7 +197,7 @@
 
     <main id="app">
         <div class="center" id="landing-content" style="padding: 20px; text-align: center;">
-            <div style="font-size: 50px; margin-bottom: 20px;">🩺</div>
+            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Stethoscope.png" alt="Stethoscope" style="width:80px; height:80px; margin-bottom:20px;">
             <h1 style="font-size: 2rem; margin-bottom: 10px; color: var(--text-main);">Medicome</h1>
             <h2 style="font-size: 1.2rem; color: var(--accent); margin-bottom: 20px; font-weight: normal;">
                 L'IA d'entraînement au diagnostic médical
@@ -323,9 +235,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // ==========================================
-        // CONFIGURATION IA (REFINEMENTS)
-        // ==========================================
         const REFINEMENTS = {
             "douleur_thoracique": ["douleur_thoracique_oppressive", "douleur_thoracique_dechirante", "douleur_thoracique_coté", "irradiation_bras_machoire", "irradiation_dos", "douleur_effort", "soulage_penche_avant", "oppression_thoracique"],
             "douleur_abdominale": ["douleur_fosse_iliaque_droite", "douleur_fosse_iliaque_gauche", "douleur_hypocondre_droit", "douleur_epigastrique", "douleur_transfixiante_dos", "douleur_abdominale_brutale", "defense_abdominale", "ventre_dur_bois", "douleur_migration_ombilic"],
@@ -433,7 +342,6 @@
             isChrono: false, startTime: null, dailyTarget: null
         };
 
-        // --- THEME LOGIC ---
         function toggleTheme() {
             const body = document.body;
             const current = body.getAttribute('data-theme');
@@ -449,7 +357,6 @@
             if(btn) btn.onclick = toggleTheme;
         }
 
-        // --- DAILY CHALLENGE LOGIC ---
         function getDailyPatho() {
             if(PATHOLOGIES.length === 0) return null;
             const today = new Date().toDateString(); 
@@ -463,12 +370,10 @@
 
         async function initApp() {
             try {
-                // Chargement des données
                 const response = await fetch('./pathologies.json');
                 if (!response.ok) throw new Error("Impossible de lire le fichier de données pathologies.json");
                 PATHOLOGIES = await response.json();
                 
-                // DEEP LINKING
                 const urlParams = new URLSearchParams(window.location.search);
                 const ficheDemandee = urlParams.get('fiche');
                 if (ficheDemandee) {
@@ -484,8 +389,6 @@
                 startAuthListener();
                 fetchNotifications();
                 
-                // === INIT BUTTON LISTENERS ===
-                // On remplace les onclicks HTML par des listeners JS solides
                 const btnLegal = q('#legalLink');
                 if(btnLegal) btnLegal.onclick = renderLegalPage;
                 
@@ -495,13 +398,11 @@
                 const rLink = q('#reviewsLink');
                 if(rLink) rLink.onclick = renderReviews;
 
-                // Social Links
                 ['linkInsta', 'linkTiktok', 'linkX'].forEach(id => {
                     const el = document.getElementById(id);
                     if(el) el.addEventListener('click', trackSocial);
                 });
 
-                // Notifs
                 const notifBtn = q('#notifBtn');
                 const notifModal = q('#notifModal');
                 if(notifBtn) {
@@ -519,11 +420,9 @@
                     brandLogo.onclick = () => { if (state.currentUser || state.isGuest) { renderHome(); } };
                 }
 
-                // GESTION CLAVIER AJOUTÉE
                 document.addEventListener('keydown', (e) => {
                     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
-                    // Navigation Quiz
                     if (q('.question-text')) {
                         if (e.key === 'ArrowRight' || e.key === 'y' || e.key === 'o') {
                             const btn = document.querySelector('.btn-success');
@@ -535,16 +434,11 @@
                             const btns = document.querySelectorAll('.button-group .link');
                             if(btns.length > 0) btns[0].click();
                         } else if (e.key === 'Enter') {
-                            // En jeu, Entrée peut servir à valider (par défaut OUI pour rapidité, ou focus)
-                            // Ici on mappe Entrée sur OUI pour les speedruns
                             const btn = document.querySelector('.btn-success');
                             if(btn) btn.click();
                         }
                     } else {
-                        // Navigation Hors Quiz
                         if (e.key === 'Enter') {
-                            // Cas génériques : Bouton démarrer, Suivant, Rejouer...
-                            // On cherche un bouton principal visible
                             const primaryBtn = q('.btn'); 
                             if(primaryBtn && primaryBtn.offsetParent !== null) {
                                 primaryBtn.click();
@@ -645,7 +539,7 @@
         }
 
         async function saveProgression() {
-            checkAchievements(); // Vérifier les succès avant de sauvegarder
+            checkAchievements();
             if (!state.isGuest && state.currentUser) {
                 try {
                     const userRef = doc(db, "users", state.currentUser.uid);
@@ -709,7 +603,7 @@
         function updateHeader(){
             const pseudoBox = q("#pseudoBox"); const homeBtn = q("#homeBtn"); const logoutBtn = q("#logoutBtn");
             const currentStreak = state.progression.streak || 0;
-            const streakDisplay = currentStreak > 0 ? ` <span style="color:#ff9f43; margin-left:8px;">🔥 ${currentStreak}</span>` : '';
+            const streakDisplay = currentStreak > 0 ? ` <span style="color:#ff9f43; margin-left:8px;"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Fire.png" style="width:1.2em;height:1.2em;vertical-align:middle;"> ${currentStreak}</span>` : '';
 
             if(state.pseudo){ 
                 pseudoBox.innerHTML = state.pseudo + (state.isGuest ? " (Local)" : "") + streakDisplay; 
@@ -790,7 +684,7 @@
             const dailyText = isDailyDone ? "✅ Défi du jour validé !" : `☀️ Défi du ${new Date().toLocaleDateString()}`;
             const dailyContent = isDailyDone ? "Revenez demain pour une nouvelle streak !" : `Faire identifier : <strong>${dailyPatho ? dailyPatho.name : 'Chargement...'}</strong>`;
 
-            card.innerHTML = `<h2>👋 Bonjour ${displayName}</h2>${cloudBadge}
+            card.innerHTML = `<h2 style="display:flex;align-items:center;gap:10px;"><img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Hand%20gestures/Waving%20Hand.png" style="width:1.2em;height:1.2em;"> Bonjour ${displayName}</h2>${cloudBadge}
                             
                             <div class="daily-card">
                                 <div class="${dailyClass}">${dailyText}</div>
@@ -1042,11 +936,11 @@
                 const m = masteryData[p.name];
                 const successCount = (typeof m === 'number') ? m : (m?.success || 0);
                 const mItem = document.createElement('div');
-                let sClass = 'm-locked', icon = '🔒';
-                if (successCount >= 10) { sClass = 'm-master'; icon = '💎'; }
-                else if (successCount >= 5) { sClass = 'm-gold'; icon = '🥇'; }
-                else if (successCount >= 3) { sClass = 'm-silver'; icon = '🥈'; }
-                else if (successCount >= 1) { sClass = 'm-bronze'; icon = '🥉'; }
+                let sClass = 'm-locked', icon = '<div class="locked-icon">🔒</div>';
+                if (successCount >= 10) { sClass = 'm-master'; icon = '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Gem%20Stone.png">'; }
+                else if (successCount >= 5) { sClass = 'm-gold'; icon = '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/1st%20Place%20Medal.png">'; }
+                else if (successCount >= 3) { sClass = 'm-silver'; icon = '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/2nd%20Place%20Medal.png">'; }
+                else if (successCount >= 1) { sClass = 'm-bronze'; icon = '<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/3rd%20Place%20Medal.png">'; }
 
                 mItem.className = `mastery-item ${sClass}`;
                 mItem.innerHTML = `<div class="mastery-icon">${icon}</div><div class="mastery-name">${p.name}</div><div class="mastery-count">${successCount} réussite(s)</div>`;
@@ -1143,14 +1037,14 @@
             const mistakes = (m?.missedSigns || {});
             const bestTime = (state.progression.bestTimes || {})[patho.name];
 
-            let rank = 'Verrouillé', icon='🔒', color='var(--text-muted)';
-            if(wins >= 10) { rank='Maître'; icon='💎'; color='var(--ruby)'; }
-            else if(wins >= 5) { rank='Or'; icon='🥇'; color='var(--gold)'; }
-            else if(wins >= 3) { rank='Argent'; icon='🥈'; color='var(--silver)'; }
-            else if(wins >= 1) { rank='Bronze'; icon='🥉'; color='var(--bronze)'; }
+            let rank = 'Verrouillé', icon='<div class="locked-icon">🔒</div>', color='var(--text-muted)';
+            if(wins >= 10) { rank='Maître'; icon='<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Gem%20Stone.png" class="large-emoji">'; color='var(--ruby)'; }
+            else if(wins >= 5) { rank='Or'; icon='<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/1st%20Place%20Medal.png" class="large-emoji">'; color='var(--gold)'; }
+            else if(wins >= 3) { rank='Argent'; icon='<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/2nd%20Place%20Medal.png" class="large-emoji">'; color='var(--silver)'; }
+            else if(wins >= 1) { rank='Bronze'; icon='<img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Activities/3rd%20Place%20Medal.png" class="large-emoji">'; color='var(--bronze)'; }
 
             card.innerHTML = `
-            <div style="font-size:40px; margin-bottom:10px;">${icon}</div>
+            <div>${icon}</div>
             <h3 style="color:${color}; margin-bottom:10px;">Rang : ${rank}</h3>
             ${bestTime ? `<div class="small" style="color:var(--accent); margin-bottom:20px;">⚡ Record Chrono : ${bestTime.toFixed(1)}s</div>` : ''}
             <h2>${patho.name}</h2>

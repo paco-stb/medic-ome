@@ -24,7 +24,7 @@
             --accent: #00d2ff; --accent-glow: rgba(0, 210, 255, 0.4);
             --text-main: #ffffff; --text-muted: #b0c4de;
             --success: #00ff9d; --error: #ff4d4d;
-            --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32; --ruby: #e01e37;
+            --gold: #ffd700; --silver: #e0e0e0; --bronze: #cd7f32; --ruby: #ff0055;
             --card-shadow: 0 15px 35px rgba(0,0,0,0.6);
         }
         [data-theme="light"] {
@@ -41,7 +41,12 @@
         /* HEADER */
         header { display: flex; justify-content: space-between; padding: 10px 24px; background: var(--glass-bg); backdrop-filter: blur(15px); align-items: center; border-bottom: 1px solid var(--glass-border); position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         .brand { display: flex; align-items: center; gap: 12px; cursor: pointer; }
-        .logo-img { height: 40px; width: auto; font-size: 30px; } /* Remplacement image par emoji text */
+        
+        /* SVG ICON STYLES */
+        .icon-svg { width: 1em; height: 1em; vertical-align: middle; fill: currentColor; }
+        .icon-xl { width: 60px; height: 60px; filter: drop-shadow(0 0 10px var(--accent-glow)); }
+        .icon-lg { width: 32px; height: 32px; }
+        .icon-md { width: 24px; height: 24px; }
         
         .top-right { display:flex; gap:12px; align-items:center; }
         .pseudo { color:var(--accent); font-weight:600; padding:6px 16px; background: rgba(0, 210, 255, 0.05); border: 1px solid var(--glass-border); border-radius:20px; cursor:pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; }
@@ -72,19 +77,16 @@
         .daily-card { border: 1px solid var(--gold); background: rgba(255, 215, 0, 0.05); padding: 20px; border-radius: 16px; margin-bottom: 20px; width: 100%; text-align: center; }
         .daily-title { color: var(--gold); font-weight: bold; margin-bottom: 5px; font-size: 1.1em; display: flex; align-items: center; justify-content: center; gap: 8px;}
         
-        /* CORRECTED EMOJI STYLES */
-        .emoji-icon { font-style: normal; display: inline-block; vertical-align: middle; line-height: 1; }
-        .emoji-lg { font-size: 1.5em; }
-        .emoji-xl { font-size: 3em; margin-bottom: 10px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2)); }
-        .emoji-xxl { font-size: 5em; margin-bottom: 15px; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.3)); }
-        
+        /* ACHIEVEMENT & MASTERY GRID */
         .achievements-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; width: 100%; margin-bottom: 20px; }
-        .achievement-row { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 20px 10px; background: rgba(125,125,125,0.08); border-radius: 16px; border: 1px solid transparent; text-align: center; height: 100%; transition: transform 0.2s; }
+        .achievement-row { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 20px 10px; background: rgba(125,125,125,0.08); border-radius: 16px; border: 1px solid transparent; text-align: center; height: 100%; transition: transform 0.2s; }
         .achievement-row:hover { transform: translateY(-3px); background: rgba(125,125,125,0.15); }
         .achievement-row.unlocked { border-color: var(--gold); background: rgba(255, 215, 0, 0.08); }
         
-        .ach-icon { font-size: 2.5em; margin-bottom: 5px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); }
-        .locked-icon { font-size: 2em; opacity: 0.3; filter: grayscale(1); }
+        /* Custom Icon Container to size SVGs */
+        .ach-icon-container { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; }
+        .ach-icon-container svg { width: 100%; height: 100%; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2)); }
+        
         .ach-info { width: 100%; }
         .ach-title { font-weight: bold; font-size: 13px; color: var(--text-main); margin-bottom: 4px; }
         .ach-desc { font-size: 11px; color: var(--text-muted); line-height: 1.3; }
@@ -98,8 +100,10 @@
 
         .mastery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; width: 100%; margin-top: 20px; }
         .mastery-item { background: rgba(125,125,125,0.1); border-radius: 10px; padding: 15px 10px; text-align: center; border: 2px solid transparent; transition: all 0.3s; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; }
-        .mastery-icon { font-size: 2em; margin-bottom: 5px; }
         
+        .mastery-icon-container { width: 40px; height: 40px; }
+        .mastery-icon-container svg { width: 100%; height: 100%; }
+
         .m-locked { border-color: var(--glass-border); opacity: 0.5; filter: grayscale(1); border-style: dashed;}
         .m-bronze { border-color: var(--bronze); background: rgba(205, 127, 50, 0.1); }
         .m-silver { border-color: var(--silver); background: rgba(192, 192, 192, 0.1); }
@@ -167,9 +171,37 @@
 </head>
 <body>
 
+    <svg width="0" height="0" style="position: absolute;">
+        <defs>
+            <linearGradient id="grad-gold" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#FDB931;stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="grad-silver" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#E0E0E0;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#B0B0B0;stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="grad-bronze" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#CD7F32;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#8B4513;stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="grad-diamond" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#00d2ff;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#3a7bd5;stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="grad-fire" x1="0%" y1="100%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#f12711;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#f5af19;stop-opacity:1" />
+            </linearGradient>
+        </defs>
+    </svg>
+
     <header>
         <div class="brand" id="brandLogo">
-            <span style="font-size:30px; margin-right:8px;">🩺</span>
+            <svg class="icon-xl" viewBox="0 0 512 512">
+                <path fill="url(#grad-diamond)" d="M416 112c0-35.3-28.7-64-64-64-35.3 0-64 28.7-64 64v128c0 53-43 96-96 96s-96-43-96-96V112c0-35.3-28.7-64-64-64S32 76.7 32 112v128c0 88.4 71.6 160 160 160h128c88.4 0 160-71.6 160-160V112z"/>
+                <circle cx="256" cy="432" r="48" fill="url(#grad-diamond)"/>
+            </svg>
             <h1 style="font-weight:700; font-size:20px; color:var(--text-main);">Medicome</h1>
         </div>
         
@@ -195,7 +227,12 @@
 
     <main id="app">
         <div class="center" id="landing-content" style="padding: 20px; text-align: center;">
-            <div class="emoji-xxl">🩺</div>
+            <div style="width:100px; height:100px; margin-bottom:20px;">
+                <svg viewBox="0 0 512 512" style="width:100%; height:100%;">
+                    <path fill="url(#grad-diamond)" d="M416 112c0-35.3-28.7-64-64-64-35.3 0-64 28.7-64 64v128c0 53-43 96-96 96s-96-43-96-96V112c0-35.3-28.7-64-64-64S32 76.7 32 112v128c0 88.4 71.6 160 160 160h128c88.4 0 160-71.6 160-160V112z"/>
+                    <circle cx="256" cy="432" r="48" fill="url(#grad-diamond)"/>
+                </svg>
+            </div>
             <h1 style="font-size: 2rem; margin-bottom: 10px; color: var(--text-main);">Medicome</h1>
             <h2 style="font-size: 1.2rem; color: var(--accent); margin-bottom: 20px; font-weight: normal;">
                 L'IA d'entraînement au diagnostic médical
@@ -233,6 +270,22 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+        // --- GRAPHICS LIBRARY (SVG PATHS) ---
+        const GRAPHICS = {
+            streak: `<svg viewBox="0 0 24 24"><path fill="url(#grad-fire)" d="M13.5.67s.74 2.65.74 4.8c0 2.06-1.35 3.73-3.41 3.73-2.07 0-3.63-1.67-3.63-3.73l.03-.36C5.21 7.51 4 10.62 4 14c0 4.42 3.58 8 8 8s8-3.58 8-8C20 8.61 17.41 3.8 13.5.67zM11.71 19c-1.78 0-3.22-1.4-3.22-3.14 0-1.62 1.05-2.76 2.81-3.12 1.77-.36 3.6-1.21 4.62-2.58.39 1.29.59 2.65.59 4.04 0 2.65-2.15 4.8-4.8 4.8z"/></svg>`,
+            medal: `<svg viewBox="0 0 24 24"><path d="M12 7l-2.5-5h5L12 7z" fill="#ccc"/><path d="M12 7l2.5-5h2.5L13 9l-1 2-1-2-4-2h2.5L12 7z" opacity="0.5" fill="#fff"/><circle cx="12" cy="15" r="7" /></svg>`, // Base medal shape
+            lock: `<svg viewBox="0 0 24 24"><path fill="currentColor" d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>`,
+            book: `<svg viewBox="0 0 24 24"><path fill="url(#grad-diamond)" d="M18 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>`,
+            star: `<svg viewBox="0 0 24 24"><path fill="url(#grad-gold)" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>`,
+            trophy: `<svg viewBox="0 0 24 24"><path fill="url(#grad-gold)" d="M20.2 6.5h-2.3c-.4-2.6-2.7-4.5-5.4-4.5s-5 1.9-5.4 4.5H4.8C3.8 6.5 3 7.3 3 8.3v1.8c0 2.5 1.8 4.6 4.2 5 1.4 2.1 3.7 3.6 6.3 3.8v2.3H9.5v2h6v-2h-4v-2.3c2.6-.3 4.9-1.7 6.3-3.8 2.4-.4 4.2-2.5 4.2-5V8.3c0-1-.8-1.8-1.8-1.8z"/></svg>`,
+            rocket: `<svg viewBox="0 0 24 24"><path fill="url(#grad-diamond)" d="M12 2.5s-6 8-6 13c0 3.3 2.7 6 6 6s6-2.7 6-6c0-5-6-13-6-13z"/><path fill="orange" d="M11 19h2v3h-2z"/></svg>`,
+            calendar: `<svg viewBox="0 0 24 24"><path fill="url(#grad-diamond)" d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>`,
+            gradCap: `<svg viewBox="0 0 24 24"><path fill="url(#grad-diamond)" d="M12 3L1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>`,
+            sun: `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5" fill="url(#grad-gold)"/><path fill="url(#grad-gold)" d="M12 2L12 4M12 20L12 22M4 12L2 12M22 12L20 12M4.93 4.93L6.34 6.34M17.66 17.66L19.07 19.07M4.93 19.07L6.34 17.66M17.66 6.34L19.07 4.93" stroke="url(#grad-gold)" stroke-width="2" stroke-linecap="round"/></svg>`,
+            doc: `<svg viewBox="0 0 24 24"><path fill="url(#grad-diamond)" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>`,
+            heart: `<svg viewBox="0 0 24 24"><path fill="var(--ruby)" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`
+        };
+
         const REFINEMENTS = {
             "douleur_thoracique": ["douleur_thoracique_oppressive", "douleur_thoracique_dechirante", "douleur_thoracique_coté", "irradiation_bras_machoire", "irradiation_dos", "douleur_effort", "soulage_penche_avant", "oppression_thoracique"],
             "douleur_abdominale": ["douleur_fosse_iliaque_droite", "douleur_fosse_iliaque_gauche", "douleur_hypocondre_droit", "douleur_epigastrique", "douleur_transfixiante_dos", "douleur_abdominale_brutale", "defense_abdominale", "ventre_dur_bois", "douleur_migration_ombilic"],
@@ -264,28 +317,28 @@
             "Paludisme": "Infectio", "Coqueluche": "Infectio", "Grippe": "Infectio", "Mononucléose Infectieuse": "Infectio", "Primo-Infection VIH": "Infectio", "Maladie de Lyme": "Infectio", "Tétanos": "Infectio", "Botulisme": "Infectio", "Rubéole": "Infectio", "Syphilis": "Infectio", "Oreillons": "Infectio", "Muguet Buccal": "Infectio"
         };
         
-        // CORRECTION MAJEURE: Passage aux Emojis Natifs (Unicode) pour éviter les images cassées et charger instantanément
+        // MAPPING TO GRAPHICS LIBRARY
         const ACHIEVEMENTS = [
-            { id: "played_10_days", title: "Assiduité", desc: "Jouer 10 jours d'affilée", icon: "📅" },
-            { id: "baby_doc", title: "P1 validée", desc: "Identifier 1 pathologie", icon: "🍼" },
-            { id: "med_student", title: "Externe", desc: "Identifier 25 pathologies", icon: "🎓" },
-            { id: "intern", title: "Interne", desc: "Identifier 50 pathologies", icon: "🩺" },
-            { id: "chief", title: "Chef de Clinique", desc: "Identifier 100 pathologies", icon: "🏥" },
-            { id: "critic", title: "Critique Médical", desc: "Publier un avis", icon: "📝" },
-            { id: "fan", title: "Fan Club", desc: "Suivre sur les réseaux", icon: "❤️" },
-            { id: "bookworm_1", title: "Rat de Bibliothèque", desc: "Télécharger 1 fiche PDF", icon: "📚" },
-            { id: "bookworm_25", title: "Archiviste", desc: "Télécharger 25 fiches PDF", icon: "🗃️" },
-            { id: "bookworm_50", title: "Bibliothécaire", desc: "Télécharger 50 fiches PDF", icon: "🏛️" },
-            { id: "bookworm_100", title: "Savoir Absolu", desc: "Télécharger 100 fiches PDF", icon: "🧠" },
-            { id: "master_5", title: "Major de Promo", desc: "5 pathologies au rang Maître", icon: "🥇" },
-            { id: "master_30", title: "Professeur", desc: "30 pathologies au rang Maître", icon: "👑" },
-            { id: "master_100", title: "Légende", desc: "100 pathologies au rang Maître", icon: "🧞" },
-            { id: "encyclopedia", title: "Encyclopédie Vivante", desc: "Débloquer toutes les pathologies", icon: "🌍" },
-            { id: "god_mode", title: "Dieu de la Médecine", desc: "Toutes pathologies en Maître", icon: "⚡" },
-            { id: "speed_demon", title: "Flash", desc: "10 diagnostics en moins de 30s", icon: "🚀" }, 
-            { id: "speed_50", title: "Vitesse Lumière", desc: "50 diagnostics en moins de 30s", icon: "🌠" },
-            { id: "speed_100", title: "Voyageur Temporel", desc: "100 diagnostics en moins de 30s", icon: "⏳" },
-            { id: "daily_10", title: "Expert du Quotidien", desc: "Réussir 10 défis du jour", icon: "🌞" }
+            { id: "played_10_days", title: "Assiduité", desc: "Jouer 10 jours d'affilée", icon: "calendar" },
+            { id: "baby_doc", title: "P1 validée", desc: "Identifier 1 pathologie", icon: "book" },
+            { id: "med_student", title: "Externe", desc: "Identifier 25 pathologies", icon: "gradCap" },
+            { id: "intern", title: "Interne", desc: "Identifier 50 pathologies", icon: "doc" },
+            { id: "chief", title: "Chef de Clinique", desc: "Identifier 100 pathologies", icon: "star" },
+            { id: "critic", title: "Critique Médical", desc: "Publier un avis", icon: "doc" },
+            { id: "fan", title: "Fan Club", desc: "Suivre sur les réseaux", icon: "heart" },
+            { id: "bookworm_1", title: "Rat de Bibliothèque", desc: "Télécharger 1 fiche PDF", icon: "book" },
+            { id: "bookworm_25", title: "Archiviste", desc: "Télécharger 25 fiches PDF", icon: "book" },
+            { id: "bookworm_50", title: "Bibliothécaire", desc: "Télécharger 50 fiches PDF", icon: "book" },
+            { id: "bookworm_100", title: "Savoir Absolu", desc: "Télécharger 100 fiches PDF", icon: "star" },
+            { id: "master_5", title: "Major de Promo", desc: "5 pathologies au rang Maître", icon: "medal" },
+            { id: "master_30", title: "Professeur", desc: "30 pathologies au rang Maître", icon: "medal" },
+            { id: "master_100", title: "Légende", desc: "100 pathologies au rang Maître", icon: "trophy" },
+            { id: "encyclopedia", title: "Encyclopédie Vivante", desc: "Débloquer toutes les pathologies", icon: "book" },
+            { id: "god_mode", title: "Dieu de la Médecine", desc: "Toutes pathologies en Maître", icon: "star" },
+            { id: "speed_demon", title: "Flash", desc: "10 diagnostics en moins de 30s", icon: "rocket" }, 
+            { id: "speed_50", title: "Vitesse Lumière", desc: "50 diagnostics en moins de 30s", icon: "rocket" },
+            { id: "speed_100", title: "Voyageur Temporel", desc: "100 diagnostics en moins de 30s", icon: "rocket" },
+            { id: "daily_10", title: "Expert du Quotidien", desc: "Réussir 10 défis du jour", icon: "sun" }
         ];
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -602,12 +655,11 @@
         function updateHeader(){
             const pseudoBox = q("#pseudoBox"); const homeBtn = q("#homeBtn"); const logoutBtn = q("#logoutBtn");
             const currentStreak = state.progression.streak || 0;
-            // ICI: On utilise l'emoji natif avec un style span, plus d'image cassée !
-            const streakDisplay = currentStreak > 0 ? ` <span style="color:#ff9f43; margin-left:8px; font-size:1.2em;">🔥 ${currentStreak}</span>` : '';
+            const streakDisplay = currentStreak > 0 ? ` <span style="display:flex; align-items:center; margin-left:8px; gap:4px;"> <span class="icon-svg" style="color:#ff9f43">${GRAPHICS.streak}</span> ${currentStreak}</span>` : '';
 
             if(state.pseudo){ 
                 pseudoBox.innerHTML = state.pseudo + (state.isGuest ? " (Local)" : "") + streakDisplay; 
-                pseudoBox.style.display='inline-block'; pseudoBox.onclick=renderProfile;
+                pseudoBox.style.display='inline-flex'; pseudoBox.onclick=renderProfile;
                 homeBtn.style.display='inline-block'; logoutBtn.style.display='inline-block';
             } else { 
                 pseudoBox.style.display='none'; homeBtn.style.display='none'; logoutBtn.style.display='none';
@@ -684,11 +736,11 @@
             const dailyText = isDailyDone ? "✅ Défi du jour validé !" : `☀️ Défi du ${new Date().toLocaleDateString()}`;
             const dailyContent = isDailyDone ? "Revenez demain pour une nouvelle streak !" : `Faire identifier : <strong>${dailyPatho ? dailyPatho.name : 'Chargement...'}</strong>`;
 
-            // Utilisation des Emojis standards stylisés
-            card.innerHTML = `<h2 style="display:flex;align-items:center;gap:10px;"><span class="emoji-icon emoji-lg">👋</span> Bonjour ${displayName}</h2>${cloudBadge}
+            // Utilisation des SVG standards
+            card.innerHTML = `<h2 style="display:flex;align-items:center;gap:10px;">👋 Bonjour ${displayName}</h2>${cloudBadge}
                                             
                                             <div class="daily-card">
-                                                <div class="${dailyClass}">${dailyText}</div>
+                                                <div class="${dailyClass}">${GRAPHICS.sun} ${dailyText}</div>
                                                 <div style="font-size:0.9em; color:var(--text-main); margin-bottom:5px;">${dailyContent}</div>
                                                 ${!isDailyDone ? `<button id="btnDaily" class="btn" style="background:var(--gold); color:#000; font-size:12px; padding:8px 15px; margin-top:5px;">Relever le défi</button>` : ''}
                                             </div>
@@ -937,15 +989,19 @@
                 const m = masteryData[p.name];
                 const successCount = (typeof m === 'number') ? m : (m?.success || 0);
                 const mItem = document.createElement('div');
-                // ICI: On utilise des emojis natifs pour les rangs de maîtrise
-                let sClass = 'm-locked', icon = '🔒';
-                if (successCount >= 10) { sClass = 'm-master'; icon = '💎'; }
-                else if (successCount >= 5) { sClass = 'm-gold'; icon = '🥇'; }
-                else if (successCount >= 3) { sClass = 'm-silver'; icon = '🥈'; }
-                else if (successCount >= 1) { sClass = 'm-bronze'; icon = '🥉'; }
+                // ICI: On utilise des SVG intégrés pour les rangs
+                let sClass = 'm-locked', icon = GRAPHICS.lock;
+                if (successCount >= 10) { 
+                    sClass = 'm-master'; 
+                    // Master Diamond Icon (reusing medal but changing fill via generic component logic or specific color)
+                    icon = `<svg viewBox="0 0 24 24"><path fill="url(#grad-diamond)" d="M12 2l-9 4 9 16 9-16-9-4z"/></svg>`;
+                }
+                else if (successCount >= 5) { sClass = 'm-gold'; icon = GRAPHICS.medal.replace('#ccc', 'url(#grad-gold)'); }
+                else if (successCount >= 3) { sClass = 'm-silver'; icon = GRAPHICS.medal.replace('#ccc', 'url(#grad-silver)'); }
+                else if (successCount >= 1) { sClass = 'm-bronze'; icon = GRAPHICS.medal.replace('#ccc', 'url(#grad-bronze)'); }
 
                 mItem.className = `mastery-item ${sClass}`;
-                mItem.innerHTML = `<div class="mastery-icon">${icon}</div><div class="mastery-name">${p.name}</div><div class="mastery-count">${successCount} réussite(s)</div>`;
+                mItem.innerHTML = `<div class="mastery-icon-container">${icon}</div><div class="mastery-name">${p.name}</div><div class="mastery-count">${successCount} réussite(s)</div>`;
                 mItem.onclick = () => renderPathoStats(p); // Click to see stats
                 masteryGrid.appendChild(mItem);
             });
@@ -956,7 +1012,7 @@
             card.appendChild(btnBack); app.appendChild(card);
         }
 
-        // --- NOUVELLE PAGE: SUCCÈS (MISE A JOUR EN GRILLE AVEC IMAGES) ---
+        // --- NOUVELLE PAGE: SUCCÈS (AVEC SVG GRAPHIQUES) ---
         function renderAchievementsPage() {
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML = '';
@@ -974,12 +1030,12 @@
                 const row = document.createElement('div');
                 row.className = `achievement-row ${unlocked ? 'unlocked' : ''}`;
                 
-                // --- MODIFICATION: Utilisation de l'icône emoji stockée dans l'objet ---
+                // --- MODIFICATION: Utilisation de l'icône SVG ---
                 let iconHTML = '';
                 if (unlocked) {
-                    iconHTML = `<div class="ach-icon">${ach.icon}</div>`;
+                    iconHTML = `<div class="ach-icon-container">${GRAPHICS[ach.icon] || GRAPHICS.star}</div>`;
                 } else {
-                    iconHTML = `<div class="ach-icon locked-icon">🔒</div>`;
+                    iconHTML = `<div class="ach-icon-container locked-icon">${GRAPHICS.lock}</div>`;
                 }
 
                 row.innerHTML = `
@@ -1039,14 +1095,14 @@
             const mistakes = (m?.missedSigns || {});
             const bestTime = (state.progression.bestTimes || {})[patho.name];
 
-            let rank = 'Verrouillé', icon='🔒', color='var(--text-muted)';
-            if(wins >= 10) { rank='Maître'; icon='💎'; color='var(--ruby)'; }
-            else if(wins >= 5) { rank='Or'; icon='🥇'; color='var(--gold)'; }
-            else if(wins >= 3) { rank='Argent'; icon='🥈'; color='var(--silver)'; }
-            else if(wins >= 1) { rank='Bronze'; icon='🥉'; color='var(--bronze)'; }
+            let rank = 'Verrouillé', icon=GRAPHICS.lock, color='var(--text-muted)';
+            if(wins >= 10) { rank='Maître'; icon=`<svg viewBox="0 0 24 24"><path fill="url(#grad-diamond)" d="M12 2l-9 4 9 16 9-16-9-4z"/></svg>`; color='var(--ruby)'; }
+            else if(wins >= 5) { rank='Or'; icon=GRAPHICS.medal.replace('#ccc', 'url(#grad-gold)'); color='var(--gold)'; }
+            else if(wins >= 3) { rank='Argent'; icon=GRAPHICS.medal.replace('#ccc', 'url(#grad-silver)'); color='var(--silver)'; }
+            else if(wins >= 1) { rank='Bronze'; icon=GRAPHICS.medal.replace('#ccc', 'url(#grad-bronze)'); color='var(--bronze)'; }
 
             card.innerHTML = `
-            <div class="emoji-xl">${icon}</div>
+            <div class="icon-xl">${icon}</div>
             <h3 style="color:${color}; margin-bottom:10px;">Rang : ${rank}</h3>
             ${bestTime ? `<div class="small" style="color:var(--accent); margin-bottom:20px;">⚡ Record Chrono : ${bestTime.toFixed(1)}s</div>` : ''}
             <h2>${patho.name}</h2>

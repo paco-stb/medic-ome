@@ -157,7 +157,7 @@
         "name": "Torsion du Testicule",
         "short": "Urgence urologique",
         "pdf": "fiches/torsion.pdf",
-        "signes": {"genes_urinaires": 5, "douleur_testicule_brutale": 20, "testicule_remonte": 18, "nausees_vomissements": 12, "douleur_abdominale": 6, "bouse_rouge_gonflee": 10, "urines_indolores": 10},
+        "signes": {"genes_urinaires": 5, "douleur_testicule_brutale": 20, "testicule_remonte": 18, "nausees_vomissements": 12, "douleur_abdominale": 6, "bourse_rouge_gonflee": 10, "urines_indolores": 10},
         "facteurs": {"homme": 10, "jeune": 5}
     },
     {

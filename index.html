@@ -806,7 +806,7 @@
             const isDailyDone = prog.lastDaily === todayStr;
             const dailyClass = isDailyDone ? "daily-title" : "daily-title"; 
             const dailyText = isDailyDone ? `<i class='ph-duotone ph-check-circle color-success'></i> Défi du jour validé !` : `<i class='ph-duotone ph-sun color-gold'></i> Défi du ${new Date().toLocaleDateString()}`;
-            const dailyContent = isDailyDone ? "Revenez demain pour une nouvelle streak !" : `Faire identifier : <strong>${dailyPatho ? dailyPatho.name : 'Chargement...'}</strong>`;
+            const dailyContent = isDailyDone ? "Revenez demain pour un nouveau défi du jour!" : `Faire identifier : <strong>${dailyPatho ? dailyPatho.name : 'Chargement...'}</strong>`;
 
             card.innerHTML = `<h2>Bonjour ${displayName}</h2>${cloudBadge}
                             

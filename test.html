@@ -117,10 +117,10 @@
             width: 100%; 
             position: relative; 
             overflow: hidden;
-            display: flex; /* Flexbox pour centrer */
-            flex-direction: column; /* Colonne pour empiler titre et texte */
-            align-items: center; /* Centrage horizontal */
-            text-align: center; /* Centrage du texte interne */
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            text-align: center; 
         }
         .daily-title { 
             color: var(--gold); 
@@ -129,7 +129,7 @@
             display: flex; 
             align-items: center; 
             gap: 8px;
-            justify-content: center; /* Centrage du contenu du titre */
+            justify-content: center; 
         }
         
         /* CSS SUCCÈS */
@@ -1219,7 +1219,8 @@
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card';
-            card.innerHTML=`<h3><i class="ph-duotone ph-user-list"></i> Données démographiques</h3><p class="small" style="margin-bottom:20px">Paramétrez le patient virtuel.</p>`;
+            // MODIFICATION 1 : AJOUT DE style="text-align:center" AU TITRE H3
+            card.innerHTML=`<h3 style="text-align:center; margin-bottom:15px;"><i class="ph-duotone ph-user-list"></i> Données démographiques</h3><p class="small" style="margin-bottom:20px">Paramétrez le patient virtuel.</p>`;
             
             // Si c'est le défi du jour, on affiche un message spécial
             if(state.dailyTarget) {
@@ -1660,7 +1661,8 @@
                 pathoSigns.forEach(s => {
                     const val = state.answers[s];
                     if(val === true) correctSigns.push(s); 
-                    else if(val === false) missingSigns.push(s);
+                    // MODIFICATION 2 : Si la réponse est NON (false) OU Je ne sais pas (null), c'est une erreur/signe manqué
+                    else if(val === false || val === null) missingSigns.push(s);
                     else notAskedSigns.push(s);
                 });
                 state.allSigns.forEach(s => { if(state.answers[s] === true && !pathoSigns.includes(s)) erroneousSigns.push(s); });

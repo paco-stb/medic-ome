@@ -106,8 +106,31 @@
         /* SPECIFICS */
         .ai-progress-container { width: 100%; height: 6px; background: rgba(125,125,125,0.1); border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
         .ai-progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--success)); width: 0%; transition: width 0.5s ease-out; }
-        .daily-card { border: 1px solid var(--gold); background: rgba(255, 215, 0, 0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; width: 100%; position:relative; overflow:hidden;}
-        .daily-title { color: var(--gold); font-weight: bold; margin-bottom: 5px; display:flex; align-items:center; gap:8px;}
+        
+        /* MODIFICATION POUR RECENTRER LE DÉFI DU JOUR */
+        .daily-card { 
+            border: 1px solid var(--gold); 
+            background: rgba(255, 215, 0, 0.05); 
+            padding: 15px; 
+            border-radius: 12px; 
+            margin-bottom: 20px; 
+            width: 100%; 
+            position: relative; 
+            overflow: hidden;
+            display: flex; /* Flexbox pour centrer */
+            flex-direction: column; /* Colonne pour empiler titre et texte */
+            align-items: center; /* Centrage horizontal */
+            text-align: center; /* Centrage du texte interne */
+        }
+        .daily-title { 
+            color: var(--gold); 
+            font-weight: bold; 
+            margin-bottom: 5px; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px;
+            justify-content: center; /* Centrage du contenu du titre */
+        }
         
         /* CSS SUCCÈS */
         .achievements-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; margin-bottom: 20px; }
@@ -319,11 +342,23 @@
         
         // --- 3D-STYLE ICONS (USING PHOSPHOR DUOTONE) ---
         const ACHIEVEMENTS = [
-            { id: "played_10_days", title: "Assiduité", desc: "Jouer 10 jours d'affilée", iconClass: "ph-duotone ph-calendar-check color-accent" },
+            { id: "played_10_days", title: "Habitué", desc: "Connexion 10 jours", iconClass: "ph-duotone ph-calendar-check color-bronze" },
+            { id: "played_30_days", title: "Fidèle", desc: "Connexion 30 jours", iconClass: "ph-duotone ph-calendar-check color-silver" },
+            { id: "played_90_days", title: "Addict", desc: "Connexion 90 jours", iconClass: "ph-duotone ph-calendar-check color-gold" },
+
             { id: "baby_doc", title: "P1 validée", desc: "Identifier 1 pathologie", iconClass: "ph-duotone ph-baby color-silver" },
             { id: "med_student", title: "Externe", desc: "Identifier 25 pathologies", iconClass: "ph-duotone ph-student color-accent" },
             { id: "intern", title: "Interne", desc: "Identifier 50 pathologies", iconClass: "ph-duotone ph-stethoscope color-accent" },
             { id: "chief", title: "Chef de Clinique", desc: "Identifier 100 pathologies", iconClass: "ph-duotone ph-hospital color-gold" },
+            
+            { id: "cases_100", title: "Débutant", desc: "100 cas joués", iconClass: "ph-duotone ph-folder-open color-bronze" },
+            { id: "cases_1000", title: "Expérimenté", desc: "1000 cas joués", iconClass: "ph-duotone ph-folder-open color-silver" },
+            { id: "cases_5000", title: "Vétéran", desc: "5000 cas joués", iconClass: "ph-duotone ph-folder-open color-gold" },
+
+            { id: "daily_10", title: "Expert du Quotidien", desc: "10 défis du jour", iconClass: "ph-duotone ph-sun color-bronze" },
+            { id: "daily_50", title: "Champion du Jour", desc: "50 défis du jour", iconClass: "ph-duotone ph-sun color-silver" },
+            { id: "daily_150", title: "Légende Solaire", desc: "150 défis du jour", iconClass: "ph-duotone ph-sun color-gold" },
+
             { id: "critic", title: "Critique Médical", desc: "Publier un avis", iconClass: "ph-duotone ph-star color-gold" },
             { id: "fan", title: "Fan Club", desc: "Suivre sur les réseaux", iconClass: "ph-duotone ph-heart color-ruby" },
             { id: "bookworm_1", title: "Rat de Bibliothèque", desc: "Télécharger 1 fiche PDF", iconClass: "ph-duotone ph-scroll color-bronze" },
@@ -337,8 +372,7 @@
             { id: "god_mode", title: "Dieu de la Médecine", desc: "Toutes pathologies en Maître", iconClass: "ph-duotone ph-lightning color-gold" },
             { id: "speed_demon", title: "Flash", desc: "10 diagnostics en moins de 30s", iconClass: "ph-duotone ph-rocket color-ruby" }, 
             { id: "speed_50", title: "Vitesse Lumière", desc: "50 diagnostics en moins de 30s", iconClass: "ph-duotone ph-shooting-star color-gold" },
-            { id: "speed_100", title: "Voyageur Temporel", desc: "100 diagnostics en moins de 30s", iconClass: "ph-duotone ph-hourglass color-accent" },
-            { id: "daily_10", title: "Expert du Quotidien", desc: "Réussir 10 défis du jour", iconClass: "ph-duotone ph-sun color-gold" }
+            { id: "speed_100", title: "Voyageur Temporel", desc: "100 diagnostics en moins de 30s", iconClass: "ph-duotone ph-hourglass color-accent" }
         ];
 
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -634,6 +668,9 @@
             };
             
             const p = state.progression;
+            const totalPlayed = p.correct + p.incorrect;
+            const dailyVal = p.dailyStreak || 0;
+
             if(p.correct >= 1) unlock('baby_doc');
             if(p.correct >= 25) unlock('med_student');
             if(p.correct >= 50) unlock('intern');
@@ -644,10 +681,25 @@
             if(p.pdfDownloads >= 25) unlock('bookworm_25');
             if(p.pdfDownloads >= 50) unlock('bookworm_50');
             if(p.pdfDownloads >= 100) unlock('bookworm_100');
-            if((p.dailyStreak || 0) >= 10) unlock('daily_10');
+            
             if(p.speedWins >= 10) unlock('speed_demon'); 
             if(p.speedWins >= 50) unlock('speed_50');
             if(p.speedWins >= 100) unlock('speed_100');
+            
+            // Total Played Cases
+            if (totalPlayed >= 100) unlock('cases_100');
+            if (totalPlayed >= 1000) unlock('cases_1000');
+            if (totalPlayed >= 5000) unlock('cases_5000');
+
+            // Login streaks (using dailyStreak as proxy in this logic)
+            if (dailyVal >= 10) unlock('played_10_days');
+            if (dailyVal >= 30) unlock('played_30_days');
+            if (dailyVal >= 90) unlock('played_90_days');
+
+            // Daily challenges
+            if (dailyVal >= 10) unlock('daily_10');
+            if (dailyVal >= 50) unlock('daily_50');
+            if (dailyVal >= 150) unlock('daily_150');
             
             const unlockedCount = Object.keys(p.mastery || {}).filter(k => p.mastery[k].success > 0).length;
             const masterCount = Object.keys(p.mastery || {}).filter(k => p.mastery[k].success >= 10).length;
@@ -754,7 +806,7 @@
             const isDailyDone = prog.lastDaily === todayStr;
             const dailyClass = isDailyDone ? "daily-title" : "daily-title"; 
             const dailyText = isDailyDone ? `<i class='ph-duotone ph-check-circle color-success'></i> Défi du jour validé !` : `<i class='ph-duotone ph-sun color-gold'></i> Défi du ${new Date().toLocaleDateString()}`;
-            const dailyContent = isDailyDone ? "Revenez demain pour une nouvelle streak !" : `Faire identifier : <strong>${dailyPatho ? dailyPatho.name : 'Chargement...'}</strong>`;
+            const dailyContent = isDailyDone ? "Revenez demain pour un nouveau défi du jour!" : `Faire identifier : <strong>${dailyPatho ? dailyPatho.name : 'Chargement...'}</strong>`;
 
             card.innerHTML = `<h2>Bonjour ${displayName}</h2>${cloudBadge}
                             

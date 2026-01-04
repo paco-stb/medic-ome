@@ -853,6 +853,20 @@
                             <div class="stat-box" style="text-align:center; background:rgba(255, 77, 77, 0.1); border-color:var(--error)"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">Échecs</div></div>
                             </div>`;
             
+            // 2. AJOUT : Carte explicative "Comment ça marche"
+            const howToCard = document.createElement('div');
+            howToCard.style.cssText = "background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); padding:15px; border-radius:12px; margin-top:20px; width:100%; text-align:left;";
+            howToCard.innerHTML = `
+                <div style="font-weight:bold; color:var(--accent); margin-bottom:8px;"><i class="ph-duotone ph-info"></i> Comment ça marche ?</div>
+                <div style="font-size:0.9em; color:var(--text-muted); line-height:1.4;">
+                    1. Réfléchissez à une pathologie et ses signes cliniques associés.<br>
+                    2. Faites deviner à l'IA la pathologie à laquelle vous pensez.<br>
+                    3. Répondez correctement aux questions de l'IA .<br>
+                    4. La pathologie est découverte si les signes cliniques sont corrects!
+                </div>
+            `;
+            card.appendChild(howToCard);
+
             const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.innerHTML='<i class="ph-duotone ph-stethoscope"></i> Entraînement Libre'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; 
             btnDiag.onclick= () => {
                 if(audioCtx.state === 'suspended') audioCtx.resume();
@@ -1078,6 +1092,45 @@
             if(!hasErrors) errorTracker.innerHTML += `<div class="small">Aucune pathologie oubliée depuis 1 semaine. Bien joué !</div>`;
             card.appendChild(errorTracker);
 
+            // 5. AJOUT : GLOBAL WEAKNESSES (Erreurs fréquentes globales)
+            // On aggrège toutes les erreurs de signes manqués de toutes les pathologies
+            const globalMissedSigns = {};
+            Object.values(prog.mastery || {}).forEach(m => {
+                if(m.missedSigns) {
+                    Object.entries(m.missedSigns).forEach(([sign, count]) => {
+                        if(!globalMissedSigns[sign]) globalMissedSigns[sign] = 0;
+                        globalMissedSigns[sign] += count;
+                    });
+                }
+            });
+
+            // On ne garde que les signes manqués au moins 3 fois au total
+            const frequentMisses = Object.entries(globalMissedSigns)
+                .filter(([s, c]) => c >= 3)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5); // Top 5
+
+            if(frequentMisses.length > 0) {
+                const weakDiv = document.createElement('div');
+                weakDiv.style.marginTop = "20px";
+                weakDiv.style.padding = "15px";
+                weakDiv.style.background = "rgba(255, 77, 77, 0.05)";
+                weakDiv.style.borderRadius = "12px";
+                weakDiv.style.border = "1px solid rgba(255, 77, 77, 0.2)";
+                
+                let weakHTML = `<h3 style="color:var(--error); font-size:16px; margin-bottom:10px;"><i class="ph-duotone ph-trend-down"></i> Vos points faibles (Global)</h3>`;
+                weakHTML += `<div class="small" style="margin-bottom:10px;">Signes cliniques souvent oubliés ou erronés :</div>`;
+                weakHTML += `<ul style="text-align:left; padding-left:20px; color:var(--text-main);">`;
+                
+                frequentMisses.forEach(([sign, count]) => {
+                    weakHTML += `<li style="margin-bottom:4px;"><strong>${formatSigneName(sign)}</strong> (${count} erreurs)</li>`;
+                });
+                
+                weakHTML += `</ul>`;
+                weakDiv.innerHTML = weakHTML;
+                card.appendChild(weakDiv);
+            }
+
             // MASTERY GRID
             const masteryTitle = document.createElement('h3'); masteryTitle.innerHTML = 'Maitrise Clinique'; 
             masteryTitle.style.marginTop = "30px";
@@ -1208,12 +1261,61 @@
             </div>`;
 
             if(Object.keys(mistakes).length > 0) {
-                card.innerHTML += `<h3 style="color:var(--error); margin-top:20px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px; width:100%;"><i class="ph-duotone ph-warning"></i> Vos oublis fréquents</h3>`;
-                let html = '<ul style="text-align:left; color:var(--text-muted); margin-top:15px; width:100%;">';
-                Object.entries(mistakes).sort((a,b)=>b[1]-a[1]).forEach(([sign, count]) => {
-                    html += `<li style="margin-bottom:5px;"><strong>${formatSigneName(sign)}</strong> <span style="opacity:0.6; font-size:0.9em;">(Oublié ${count} fois)</span></li>`;
+                // LOGIQUE DE TRI SÉPARÉE
+                const missedRealSigns = []; // Oublis (Faux Négatifs)
+                const wronglySelectedSigns = []; // Confusions (Faux Positifs)
+
+                Object.entries(mistakes).forEach(([sign, count]) => {
+                    // Si le signe fait partie de la pathologie (poids > 0)
+                    if(patho.signes[sign] && patho.signes[sign] > 0) {
+                        missedRealSigns.push({sign, count, weight: patho.signes[sign]});
+                    } else {
+                        wronglySelectedSigns.push({sign, count});
+                    }
                 });
-                html += '</ul>';
+
+                // Fonction de tri commune: Count DESC, puis Weight DESC
+                const sortFn = (a, b) => {
+                    if (b.count !== a.count) return b.count - a.count;
+                    return (b.weight || 0) - (a.weight || 0);
+                };
+
+                missedRealSigns.sort(sortFn);
+                wronglySelectedSigns.sort((a,b) => b.count - a.count);
+
+                let html = '<div style="text-align:left; width:100%; margin-top:15px;">';
+
+                // 1. Affichage des OUBLIS (Signes manqués) - Priorité Haute
+                if(missedRealSigns.length > 0) {
+                    html += `<h4 style="color:var(--error); margin-bottom:10px; border-bottom:1px solid rgba(255,77,77,0.3); padding-bottom:5px;">
+                        <i class="ph-duotone ph-warning-circle"></i> Symptômes manqués (Oublis)
+                    </h4>
+                    <ul style="color:var(--text-muted); margin-bottom:20px;">`;
+                    missedRealSigns.forEach(item => {
+                        html += `<li style="margin-bottom:5px;">
+                            <strong>${formatSigneName(item.sign)}</strong> 
+                            <span style="opacity:0.6; font-size:0.9em;">(Oublié ${item.count} fois)</span>
+                        </li>`;
+                    });
+                    html += '</ul>';
+                }
+
+                // 2. Affichage des CONFUSIONS (Signes ajoutés à tort)
+                if(wronglySelectedSigns.length > 0) {
+                    html += `<h4 style="color:#ff9f43; margin-bottom:10px; border-bottom:1px solid rgba(255,159,67,0.3); padding-bottom:5px;">
+                        <i class="ph-duotone ph-prohibit"></i> Confusions (Signes ajoutés à tort)
+                    </h4>
+                    <ul style="color:var(--text-muted);">`;
+                    wronglySelectedSigns.forEach(item => {
+                        html += `<li style="margin-bottom:5px;">
+                            <strong>${formatSigneName(item.sign)}</strong> 
+                            <span style="opacity:0.6; font-size:0.9em;">(Erreur ${item.count} fois)</span>
+                        </li>`;
+                    });
+                    html += '</ul>';
+                }
+
+                html += '</div>';
                 card.innerHTML += html;
             }
 
@@ -1420,6 +1522,9 @@
                 <div class="ai-progress-label">Confiance IA : ${prob}%</div>
                 
                 <div class="small" style="margin-bottom:12px; color:var(--accent)">${questionTitle}</div>
+                <div style="margin-bottom: 15px; border-radius: 8px; overflow: hidden;">
+                    
+                </div>
                 <div class="question-text">Le patient présente-t-il :<br><strong style="font-size:1.2em; color:var(--text-main);">${formatSigneName(signe)}</strong> ?</div>`;
             
             const btnGroup = document.createElement('div'); btnGroup.className='button-group';
@@ -1473,7 +1578,7 @@
                 const lastAnswer = state.answers[lastSign];
                 
                 if(lastAnswer === true) {
-                     for (const [parent, children] of Object.entries(REFINEMENTS)) {
+                      for (const [parent, children] of Object.entries(REFINEMENTS)) {
                         if (children.includes(lastSign)) {
                             const siblings = children.filter(c => c !== lastSign);
                             // On retire les frères/sœurs de la liste prioritaire pour ne pas être lourd
@@ -1568,7 +1673,11 @@
                 let pdfButton = top.patho.pdf && top.patho.pdf !== '#' ? `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.patho.pdf}" target="_blank"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF</a>` : `<span class="small" style="opacity:0.5"><i class="ph-duotone ph-file-x"></i> Pas de fiche PDF</span>`;
                 
                 const diagDiv = document.createElement('div'); diagDiv.className='diagnostic-result';
-                diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div><div class="patho-desc" style="margin-top:8px">${top.patho.short}</div><br>${pdfButton}`;
+                diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div>
+                <div style="margin: 15px 0; max-width: 100%;">
+                    
+                </div>
+                <div class="patho-desc" style="margin-top:8px">${top.patho.short}</div><br>${pdfButton}`;
                 card.appendChild(diagDiv);
                 
                 const btnGroup = document.createElement('div'); btnGroup.className='button-group';
@@ -1610,9 +1719,18 @@
                         }
                     }
 
-                    // CHECK FOR MISSED SIGNS EVEN ON SUCCESS
+                    // CHECK FOR MISSED SIGNS (FALSE NEGATIVES) AND FALSE POSITIVES EVEN ON SUCCESS
+                    // 1. False Negatives (Signs in patho but user said NO/IDK)
                     Object.keys(top.patho.signes).forEach(s => {
-                        if(state.answers[s] === false) { 
+                        if(state.answers[s] === false || state.answers[s] === null) { 
+                            if(!m.missedSigns[s]) m.missedSigns[s] = 0;
+                            m.missedSigns[s]++;
+                        }
+                    });
+                    
+                    // 2. False Positives (Signs NOT in patho but user said YES)
+                    Object.keys(state.answers).forEach(s => {
+                        if (state.answers[s] === true && !top.patho.signes[s]) {
                             if(!m.missedSigns[s]) m.missedSigns[s] = 0;
                             m.missedSigns[s]++;
                         }
@@ -1666,12 +1784,23 @@
                 if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
                 
                 m.failures++;
+                
+                // Track False Negatives
                 Object.keys(top.signes).forEach(s => {
-                    if(state.answers[s] === false) { 
+                    if(state.answers[s] === false || state.answers[s] === null) { 
                         if(!m.missedSigns[s]) m.missedSigns[s] = 0;
                         m.missedSigns[s]++;
                     }
                 });
+                
+                // Track False Positives
+                Object.keys(state.answers).forEach(s => {
+                    if (state.answers[s] === true && !top.signes[s]) {
+                        if(!m.missedSigns[s]) m.missedSigns[s] = 0;
+                        m.missedSigns[s]++;
+                    }
+                });
+
                 state.progression.mastery[top.name] = m;
                 
                 // ERROR LOGGING
@@ -1821,7 +1950,11 @@
             }
             function createPathoCard(p) {
                 const card = document.createElement('div'); card.className='patho-card';
-                card.innerHTML=`<div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>`;
+                card.innerHTML=`
+                <div style="margin-bottom:10px; height: 100px; overflow:hidden; border-radius:8px;">
+                    
+                </div>
+                <div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>`;
                 card.onclick=()=>{ 
                     if(p.pdf && p.pdf !== '#') {
                         trackPdf(); // Track download on glossary click too

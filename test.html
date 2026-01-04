@@ -514,7 +514,17 @@
                         e.stopPropagation();
                         const isVisible = notifModal.style.display === 'block';
                         notifModal.style.display = isVisible ? 'none' : 'block';
-                        if(!isVisible) { const badge = q('#notifBadge'); if(badge) badge.style.display = 'none'; }
+                        
+                        // Si on ouvre la fenêtre (donc elle n'était pas visible avant le clic)
+                        if(!isVisible) { 
+                            const badge = q('#notifBadge'); 
+                            if(badge) badge.style.display = 'none'; 
+                            
+                            // SAUVEGARDE : On note dans le navigateur qu'on a vu la dernière notif
+                            if(state.latestNotifId) {
+                                localStorage.setItem('medicome_last_read_notif', state.latestNotifId);
+                            }
+                        }
                     };
                 }
                 window.onclick = () => { if(notifModal) notifModal.style.display = 'none'; };
@@ -574,8 +584,19 @@
                 const qRef = query(collection(db, "notifications"), orderBy("date", "desc"), limit(5));
                 const snapshot = await getDocs(qRef);
                 const container = q('#notifContent');
-                if (snapshot.empty) { container.innerHTML = '<div class="small">Aucune nouveauté pour le moment.</div>'; return; }
+                
+                if (snapshot.empty) { 
+                    container.innerHTML = '<div class="small">Aucune nouveauté pour le moment.</div>'; 
+                    return; 
+                }
+                
                 container.innerHTML = '';
+                
+                // On récupère l'ID de la notification la plus récente (la première de la liste)
+                const latestNotifId = snapshot.docs[0].id;
+                // On stocke cet ID dans l'état global pour l'utiliser lors du clic
+                state.latestNotifId = latestNotifId; 
+
                 snapshot.forEach(doc => {
                     const n = doc.data();
                     const div = document.createElement('div');
@@ -584,8 +605,18 @@
                     div.innerHTML = `<div class="notif-date">${dateStr}</div><div style="color:var(--text-main);">${n.message}</div>`;
                     container.appendChild(div);
                 });
+
+                // LOGIQUE DE BADGE CORRIGÉE :
                 const badge = q('#notifBadge');
-                if(badge) badge.style.display = 'block';
+                const lastReadId = localStorage.getItem('medicome_last_read_notif');
+
+                // Si l'ID de la dernière notif est différent de celui sauvegardé, on affiche le badge
+                if(badge && latestNotifId !== lastReadId) {
+                    badge.style.display = 'block';
+                } else if (badge) {
+                    badge.style.display = 'none';
+                }
+
             } catch (e) { console.log("Erreur notifs", e); }
         }
 

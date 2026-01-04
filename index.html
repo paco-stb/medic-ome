@@ -25,7 +25,8 @@
         "price": "0",
         "priceCurrency": "EUR"
       },
-      "description": "Simulateur de diagnostic médical assisté par IA pour étudiants en médecine."
+      "description": "Simulateur de diagnostic médical assisté par IA pour étudiants en médecine.",
+      "image": "https://medicome.fr/favicon.png"
     }
     </script>
     <link rel="icon" href="favicon.png">
@@ -232,13 +233,13 @@
         .notif-item { border-bottom: 1px solid var(--glass-border); padding: 10px 0; font-size: 13px; text-align: left; }
         .notif-date { font-size: 11px; color: var(--accent); margin-bottom: 4px; }
 
-        footer { text-align:center; padding:30px 20px; background: rgba(0,0,0,0.5); font-size:13px; border-top: 1px solid var(--glass-border); display: flex; flex-direction: column; align-items: center; gap: 15px; }
-        .footer-nav { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;}
-        .footer-link { color: var(--text-muted); text-decoration: none; cursor: pointer; } .footer-link:hover { color: var(--accent); }
-        .social-links { display: flex; gap: 20px; margin-bottom: 10px; }
-        .social-link { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; background: rgba(125,125,125,0.1); border-radius: 50%; transition: all 0.3s; text-decoration: none; cursor: pointer; }
+        footer { text-align:center; padding:20px 15px; background: rgba(0,0,0,0.5); font-size:12px; border-top: 1px solid var(--glass-border); display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        .footer-nav { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-bottom:5px;}
+        .footer-link { color: var(--text-muted); text-decoration: none; cursor: pointer; opacity:0.8; transition:0.3s;} .footer-link:hover { color: var(--accent); opacity:1;}
+        .social-links { display: flex; gap: 15px; margin-bottom: 5px; }
+        .social-link { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: rgba(125,125,125,0.1); border-radius: 50%; transition: all 0.3s; text-decoration: none; cursor: pointer; }
         .social-link:hover { background: rgba(0, 210, 255, 0.1); transform: scale(1.1); }
-        .social-icon { width: 20px; height: 20px; fill: var(--text-muted); transition: fill 0.3s; }
+        .social-icon { width: 18px; height: 18px; fill: var(--text-muted); transition: fill 0.3s; }
         .social-link:hover .social-icon { fill: var(--accent); }
         
         .alert { padding:14px; border-radius:10px; margin:12px 0; font-size:14px; width: 100%; text-align: center; display:flex; align-items:center; justify-content:center; gap:10px;}
@@ -317,11 +318,10 @@
             <span class="footer-link" id="contactLink">Nous Contacter</span>
             <span class="footer-link" id="legalLink">Mentions Légales & Confidentialité</span>
         </div>
-        <section style="margin:20px auto; max-width:800px; text-align:left; color:var(--text-muted); font-size:0.85em; line-height:1.6; padding:0 20px;">
-            <h3 style="color:var(--text-main); font-size:1em; margin-bottom:5px;">À propos de Medicome</h3>
-            <p>Medicome est une application éducative gratuite destinée aux étudiants en médecine (externes, internes) préparant les ECNi, EDN et R2C. Notre simulateur de cas cliniques interactif utilise une méthode de pédagogie inversée pour renforcer le raisonnement clinique et la sémiologie.</p>
+        <section style="max-width:800px; text-align:center; color:var(--text-muted); font-size:0.8em; line-height:1.4; padding:0 15px; margin-bottom:5px;">
+            <p style="margin:0;">Medicome : Simulateur de cas cliniques (ECNi, EDN, R2C) et entraînement au diagnostic par pédagogie inversée.</p>
         </section>
-        <div style="margin-top:10px; opacity:0.6;">Medicome © 2025 - Outil pédagogique</div>
+        <div style="opacity:0.5; font-size:11px;">Medicome © 2025</div>
     </footer>
 
     <script type="module">
@@ -1277,6 +1277,10 @@
             <h3 style="color:${color}; margin-bottom:10px;">Rang : ${rank}</h3>
             ${bestTime ? `<div class="small" style="color:var(--accent); margin-bottom:20px;"><i class="ph-duotone ph-lightning"></i> Record Chrono : ${bestTime.toFixed(1)}s</div>` : ''}
             <h2>${patho.name}</h2>
+            
+            <div style="margin: 15px 0; max-width: 100%;">
+                            </div>
+
             <div class="patho-desc" style="margin-bottom:20px;">${patho.short}</div>
             
             <div style="display:flex; gap:15px; width:100%; margin-bottom:20px; justify-content:center;">
@@ -1547,8 +1551,7 @@
                 
                 <div class="small" style="margin-bottom:12px; color:var(--accent)">${questionTitle}</div>
                 <div style="margin-bottom: 15px; border-radius: 8px; overflow: hidden;">
-                    
-                </div>
+                                    </div>
                 <div class="question-text">Le patient présente-t-il :<br><strong style="font-size:1.2em; color:var(--text-main);">${formatSigneName(signe)}</strong> ?</div>`;
             
             const btnGroup = document.createElement('div'); btnGroup.className='button-group';
@@ -1699,8 +1702,7 @@
                 const diagDiv = document.createElement('div'); diagDiv.className='diagnostic-result';
                 diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div>
                 <div style="margin: 15px 0; max-width: 100%;">
-                    
-                </div>
+                                    </div>
                 <div class="patho-desc" style="margin-top:8px">${top.patho.short}</div><br>${pdfButton}`;
                 card.appendChild(diagDiv);
                 
@@ -1976,8 +1978,7 @@
                 const card = document.createElement('div'); card.className='patho-card';
                 card.innerHTML=`
                 <div style="margin-bottom:10px; height: 100px; overflow:hidden; border-radius:8px;">
-                    
-                </div>
+                                    </div>
                 <div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>`;
                 card.onclick=()=>{ 
                     if(p.pdf && p.pdf !== '#') {

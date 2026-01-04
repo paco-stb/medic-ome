@@ -1261,24 +1261,61 @@
             </div>`;
 
             if(Object.keys(mistakes).length > 0) {
-                card.innerHTML += `<h3 style="color:var(--error); margin-top:20px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px; width:100%;"><i class="ph-duotone ph-warning"></i> Vos oublis fréquents</h3>`;
-                let html = '<ul style="text-align:left; color:var(--text-muted); margin-top:15px; width:100%;">';
-                
-                // Sorting logic: First by count (desc), then by diagnostic weight (desc)
-                const sortedMistakes = Object.entries(mistakes).sort((a, b) => {
-                    const countDiff = b[1] - a[1];
-                    if (countDiff !== 0) return countDiff;
-                    // Tie-breaker: Weight of the symptom in the diagnosis
-                    // Note: If false positive (not in signs), weight is 0
-                    const wA = patho.signes[a[0]] || 0;
-                    const wB = patho.signes[b[0]] || 0;
-                    return wB - wA;
+                // LOGIQUE DE TRI SÉPARÉE
+                const missedRealSigns = []; // Oublis (Faux Négatifs)
+                const wronglySelectedSigns = []; // Confusions (Faux Positifs)
+
+                Object.entries(mistakes).forEach(([sign, count]) => {
+                    // Si le signe fait partie de la pathologie (poids > 0)
+                    if(patho.signes[sign] && patho.signes[sign] > 0) {
+                        missedRealSigns.push({sign, count, weight: patho.signes[sign]});
+                    } else {
+                        wronglySelectedSigns.push({sign, count});
+                    }
                 });
 
-                sortedMistakes.forEach(([sign, count]) => {
-                    html += `<li style="margin-bottom:5px;"><strong>${formatSigneName(sign)}</strong> <span style="opacity:0.6; font-size:0.9em;">(Erreur ${count} fois)</span></li>`;
-                });
-                html += '</ul>';
+                // Fonction de tri commune: Count DESC, puis Weight DESC
+                const sortFn = (a, b) => {
+                    if (b.count !== a.count) return b.count - a.count;
+                    return (b.weight || 0) - (a.weight || 0);
+                };
+
+                missedRealSigns.sort(sortFn);
+                wronglySelectedSigns.sort((a,b) => b.count - a.count);
+
+                let html = '<div style="text-align:left; width:100%; margin-top:15px;">';
+
+                // 1. Affichage des OUBLIS (Signes manqués) - Priorité Haute
+                if(missedRealSigns.length > 0) {
+                    html += `<h4 style="color:var(--error); margin-bottom:10px; border-bottom:1px solid rgba(255,77,77,0.3); padding-bottom:5px;">
+                        <i class="ph-duotone ph-warning-circle"></i> Symptômes manqués (Oublis)
+                    </h4>
+                    <ul style="color:var(--text-muted); margin-bottom:20px;">`;
+                    missedRealSigns.forEach(item => {
+                        html += `<li style="margin-bottom:5px;">
+                            <strong>${formatSigneName(item.sign)}</strong> 
+                            <span style="opacity:0.6; font-size:0.9em;">(Oublié ${item.count} fois)</span>
+                        </li>`;
+                    });
+                    html += '</ul>';
+                }
+
+                // 2. Affichage des CONFUSIONS (Signes ajoutés à tort)
+                if(wronglySelectedSigns.length > 0) {
+                    html += `<h4 style="color:#ff9f43; margin-bottom:10px; border-bottom:1px solid rgba(255,159,67,0.3); padding-bottom:5px;">
+                        <i class="ph-duotone ph-prohibit"></i> Confusions (Signes ajoutés à tort)
+                    </h4>
+                    <ul style="color:var(--text-muted);">`;
+                    wronglySelectedSigns.forEach(item => {
+                        html += `<li style="margin-bottom:5px;">
+                            <strong>${formatSigneName(item.sign)}</strong> 
+                            <span style="opacity:0.6; font-size:0.9em;">(Erreur ${item.count} fois)</span>
+                        </li>`;
+                    });
+                    html += '</ul>';
+                }
+
+                html += '</div>';
                 card.innerHTML += html;
             }
 
@@ -1486,7 +1523,8 @@
                 
                 <div class="small" style="margin-bottom:12px; color:var(--accent)">${questionTitle}</div>
                 <div style="margin-bottom: 15px; border-radius: 8px; overflow: hidden;">
-                                    </div>
+                    
+                </div>
                 <div class="question-text">Le patient présente-t-il :<br><strong style="font-size:1.2em; color:var(--text-main);">${formatSigneName(signe)}</strong> ?</div>`;
             
             const btnGroup = document.createElement('div'); btnGroup.className='button-group';
@@ -1637,7 +1675,8 @@
                 const diagDiv = document.createElement('div'); diagDiv.className='diagnostic-result';
                 diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div>
                 <div style="margin: 15px 0; max-width: 100%;">
-                                    </div>
+                    
+                </div>
                 <div class="patho-desc" style="margin-top:8px">${top.patho.short}</div><br>${pdfButton}`;
                 card.appendChild(diagDiv);
                 
@@ -1913,7 +1952,8 @@
                 const card = document.createElement('div'); card.className='patho-card';
                 card.innerHTML=`
                 <div style="margin-bottom:10px; height: 100px; overflow:hidden; border-radius:8px;">
-                                    </div>
+                    
+                </div>
                 <div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>`;
                 card.onclick=()=>{ 
                     if(p.pdf && p.pdf !== '#') {

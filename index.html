@@ -1263,8 +1263,20 @@
             if(Object.keys(mistakes).length > 0) {
                 card.innerHTML += `<h3 style="color:var(--error); margin-top:20px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px; width:100%;"><i class="ph-duotone ph-warning"></i> Vos oublis fréquents</h3>`;
                 let html = '<ul style="text-align:left; color:var(--text-muted); margin-top:15px; width:100%;">';
-                Object.entries(mistakes).sort((a,b)=>b[1]-a[1]).forEach(([sign, count]) => {
-                    html += `<li style="margin-bottom:5px;"><strong>${formatSigneName(sign)}</strong> <span style="opacity:0.6; font-size:0.9em;">(Oublié ${count} fois)</span></li>`;
+                
+                // Sorting logic: First by count (desc), then by diagnostic weight (desc)
+                const sortedMistakes = Object.entries(mistakes).sort((a, b) => {
+                    const countDiff = b[1] - a[1];
+                    if (countDiff !== 0) return countDiff;
+                    // Tie-breaker: Weight of the symptom in the diagnosis
+                    // Note: If false positive (not in signs), weight is 0
+                    const wA = patho.signes[a[0]] || 0;
+                    const wB = patho.signes[b[0]] || 0;
+                    return wB - wA;
+                });
+
+                sortedMistakes.forEach(([sign, count]) => {
+                    html += `<li style="margin-bottom:5px;"><strong>${formatSigneName(sign)}</strong> <span style="opacity:0.6; font-size:0.9em;">(Erreur ${count} fois)</span></li>`;
                 });
                 html += '</ul>';
                 card.innerHTML += html;
@@ -1473,6 +1485,8 @@
                 <div class="ai-progress-label">Confiance IA : ${prob}%</div>
                 
                 <div class="small" style="margin-bottom:12px; color:var(--accent)">${questionTitle}</div>
+                <div style="margin-bottom: 15px; border-radius: 8px; overflow: hidden;">
+                                    </div>
                 <div class="question-text">Le patient présente-t-il :<br><strong style="font-size:1.2em; color:var(--text-main);">${formatSigneName(signe)}</strong> ?</div>`;
             
             const btnGroup = document.createElement('div'); btnGroup.className='button-group';
@@ -1621,7 +1635,10 @@
                 let pdfButton = top.patho.pdf && top.patho.pdf !== '#' ? `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.patho.pdf}" target="_blank"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF</a>` : `<span class="small" style="opacity:0.5"><i class="ph-duotone ph-file-x"></i> Pas de fiche PDF</span>`;
                 
                 const diagDiv = document.createElement('div'); diagDiv.className='diagnostic-result';
-                diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div><div class="patho-desc" style="margin-top:8px">${top.patho.short}</div><br>${pdfButton}`;
+                diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div>
+                <div style="margin: 15px 0; max-width: 100%;">
+                                    </div>
+                <div class="patho-desc" style="margin-top:8px">${top.patho.short}</div><br>${pdfButton}`;
                 card.appendChild(diagDiv);
                 
                 const btnGroup = document.createElement('div'); btnGroup.className='button-group';
@@ -1663,9 +1680,18 @@
                         }
                     }
 
-                    // CHECK FOR MISSED SIGNS EVEN ON SUCCESS
+                    // CHECK FOR MISSED SIGNS (FALSE NEGATIVES) AND FALSE POSITIVES EVEN ON SUCCESS
+                    // 1. False Negatives (Signs in patho but user said NO/IDK)
                     Object.keys(top.patho.signes).forEach(s => {
-                        if(state.answers[s] === false) { 
+                        if(state.answers[s] === false || state.answers[s] === null) { 
+                            if(!m.missedSigns[s]) m.missedSigns[s] = 0;
+                            m.missedSigns[s]++;
+                        }
+                    });
+                    
+                    // 2. False Positives (Signs NOT in patho but user said YES)
+                    Object.keys(state.answers).forEach(s => {
+                        if (state.answers[s] === true && !top.patho.signes[s]) {
                             if(!m.missedSigns[s]) m.missedSigns[s] = 0;
                             m.missedSigns[s]++;
                         }
@@ -1719,12 +1745,23 @@
                 if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
                 
                 m.failures++;
+                
+                // Track False Negatives
                 Object.keys(top.signes).forEach(s => {
-                    if(state.answers[s] === false) { 
+                    if(state.answers[s] === false || state.answers[s] === null) { 
                         if(!m.missedSigns[s]) m.missedSigns[s] = 0;
                         m.missedSigns[s]++;
                     }
                 });
+                
+                // Track False Positives
+                Object.keys(state.answers).forEach(s => {
+                    if (state.answers[s] === true && !top.signes[s]) {
+                        if(!m.missedSigns[s]) m.missedSigns[s] = 0;
+                        m.missedSigns[s]++;
+                    }
+                });
+
                 state.progression.mastery[top.name] = m;
                 
                 // ERROR LOGGING
@@ -1874,7 +1911,10 @@
             }
             function createPathoCard(p) {
                 const card = document.createElement('div'); card.className='patho-card';
-                card.innerHTML=`<div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>`;
+                card.innerHTML=`
+                <div style="margin-bottom:10px; height: 100px; overflow:hidden; border-radius:8px;">
+                                    </div>
+                <div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>`;
                 card.onclick=()=>{ 
                     if(p.pdf && p.pdf !== '#') {
                         trackPdf(); // Track download on glossary click too

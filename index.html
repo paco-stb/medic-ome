@@ -8,8 +8,26 @@
     <link rel="apple-touch-icon" href="favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Medicome - Entraînement pour les étudiants en Médecine</title>
-    <meta name="description" content="Testez vos connaissances sur les signes typiques de différentes pathologies.">
+    
+    <title>Medicome - Cas Cliniques Interactifs ECN / EDN & Quiz Médecine</title>
+    <meta name="description" content="Simulateur gratuit de diagnostic médical pour préparer les ECN et EDN (R2C). Entraînez-vous sur +100 pathologies (Cardio, Pneumo, Neuro...) avec notre IA pédagogique.">
+    <meta name="keywords" content="ECN, EDN, R2C, cas clinique, médecine, quiz médical, diagnostic, sémiologie, révisions médecine, externat">
+    
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Medicome",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "EUR"
+      },
+      "description": "Simulateur de diagnostic médical assisté par IA pour étudiants en médecine."
+    }
+    </script>
     <link rel="icon" href="favicon.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -299,16 +317,22 @@
             <span class="footer-link" id="contactLink">Nous Contacter</span>
             <span class="footer-link" id="legalLink">Mentions Légales & Confidentialité</span>
         </div>
+        <section style="margin:20px auto; max-width:800px; text-align:left; color:var(--text-muted); font-size:0.85em; line-height:1.6; padding:0 20px;">
+            <h3 style="color:var(--text-main); font-size:1em; margin-bottom:5px;">À propos de Medicome</h3>
+            <p>Medicome est une application éducative gratuite destinée aux étudiants en médecine (externes, internes) préparant les ECNi, EDN et R2C. Notre simulateur de cas cliniques interactif utilise une méthode de pédagogie inversée pour renforcer le raisonnement clinique et la sémiologie.</p>
+        </section>
         <div style="margin-top:10px; opacity:0.6;">Medicome © 2025 - Outil pédagogique</div>
     </footer>
 
     <script type="module">
+        // ... (Le script JS reste inchangé pour cette demande)
         if (window.location.hostname.includes("github.io")) { window.location.href = "https://medicome.fr"; }
 
         import { getFirestore, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, collection, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+        // ... (Reste du code JS identique) ...
         const REFINEMENTS = {
             "douleur_thoracique": ["douleur_thoracique_oppressive", "douleur_thoracique_dechirante", "douleur_thoracique_coté", "irradiation_bras_machoire", "irradiation_dos", "douleur_effort", "soulage_penche_avant", "oppression_thoracique"],
             "douleur_abdominale": ["douleur_fosse_iliaque_droite", "douleur_fosse_iliaque_gauche", "douleur_hypocondre_droit", "douleur_epigastrique", "douleur_transfixiante_dos", "douleur_abdominale_brutale", "defense_abdominale", "ventre_dur_bois", "douleur_migration_ombilic"],

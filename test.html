@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1a1a2e">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
@@ -29,6 +24,11 @@
       "image": "https://medicome.fr/favicon.png"
     }
     </script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="favicon.png">
     <link rel="icon" href="favicon.png">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -84,74 +84,20 @@
         .button-group { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:12px; width: 100%; }
         .small { opacity:0.6; font-size:13px; color:var(--text-muted); margin-top:12px; text-align:center; }
         
-        /* STYLE DES ICÔNES MODERNES (DUOTONE) */
-        i.ph, i.ph-fill, i.ph-bold, i.ph-duotone {
-            vertical-align: middle;
-            font-size: 1.3em;
-            transition: transform 0.3s ease, color 0.3s ease;
-        }
-        
-        .ph-duotone {
-            --secondary-opacity: 0.4;
-        }
+        i.ph, i.ph-fill, i.ph-bold, i.ph-duotone { vertical-align: middle; font-size: 1.3em; transition: transform 0.3s ease, color 0.3s ease; }
+        .ph-duotone { --secondary-opacity: 0.4; }
+        .icon-lg { font-size: 4em !important; filter: drop-shadow(0 0 15px rgba(0, 210, 255, 0.3)); margin-bottom: 10px; animation: float 3s ease-in-out infinite; }
+        .icon-md { font-size: 2em !important; }
+        .color-gold { color: var(--gold); } .color-silver { color: var(--silver); } .color-bronze { color: var(--bronze); } .color-ruby { color: var(--ruby); } .color-success { color: var(--success); } .color-error { color: var(--error); } .color-accent { color: var(--accent); }
 
-        /* Icônes géantes */
-        .icon-lg {
-            font-size: 4em !important;
-            filter: drop-shadow(0 0 15px rgba(0, 210, 255, 0.3));
-            margin-bottom: 10px;
-            animation: float 3s ease-in-out infinite;
-        }
-        
-        .icon-md {
-            font-size: 2em !important;
-        }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
 
-        /* Couleurs spécifiques */
-        .color-gold { color: var(--gold); }
-        .color-silver { color: var(--silver); }
-        .color-bronze { color: var(--bronze); }
-        .color-ruby { color: var(--ruby); }
-        .color-success { color: var(--success); }
-        .color-error { color: var(--error); }
-        .color-accent { color: var(--accent); }
-
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-8px); }
-            100% { transform: translateY(0px); }
-        }
-
-        /* SPECIFICS */
         .ai-progress-container { width: 100%; height: 6px; background: rgba(125,125,125,0.1); border-radius: 10px; margin-bottom: 20px; overflow: hidden; }
         .ai-progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--success)); width: 0%; transition: width 0.5s ease-out; }
         
-        /* MODIFICATION POUR RECENTRER LE DÉFI DU JOUR */
-        .daily-card { 
-            border: 1px solid var(--gold); 
-            background: rgba(255, 215, 0, 0.05); 
-            padding: 15px; 
-            border-radius: 12px; 
-            margin-bottom: 20px; 
-            width: 100%; 
-            position: relative; 
-            overflow: hidden;
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            text-align: center; 
-        }
-        .daily-title { 
-            color: var(--gold); 
-            font-weight: bold; 
-            margin-bottom: 5px; 
-            display: flex; 
-            align-items: center; 
-            gap: 8px;
-            justify-content: center; 
-        }
+        .daily-card { border: 1px solid var(--gold); background: rgba(255, 215, 0, 0.05); padding: 15px; border-radius: 12px; margin-bottom: 20px; width: 100%; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .daily-title { color: var(--gold); font-weight: bold; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; justify-content: center; }
         
-        /* CSS SUCCÈS */
         .achievements-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; margin-bottom: 20px; }
         .achievement-row { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 15px; background: rgba(125,125,125,0.1); border-radius: 12px; border: 1px solid transparent; text-align: center; height: 100%; transition: transform 0.2s;}
         .achievement-row:hover { transform: scale(1.02); }
@@ -188,7 +134,6 @@
         .error-tracker { margin-top: 20px; width: 100%; border-top: 1px solid var(--glass-border); padding-top: 15px; }
         .error-item { display: flex; justify-content: space-between; padding: 8px; background: rgba(255, 77, 77, 0.1); border-left: 3px solid var(--error); margin-bottom: 5px; border-radius: 4px; font-size: 13px; color: var(--text-main); }
 
-        /* DASHBOARD RESULTS */
         .result-list { background: rgba(0, 0, 0, 0.2); border-radius: 16px; padding: 10px; margin-top: 15px; border: 1px solid var(--glass-border); }
         .result-section-title { font-size: 14px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 10px 5px; display: flex; align-items: center; gap: 8px; }
         .result-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: var(--glass-bg); border-bottom: 1px solid var(--glass-border); transition: all 0.2s ease; }
@@ -201,7 +146,6 @@
         .badge-missing { background: rgba(255, 77, 77, 0.15); color: var(--error); border: 1px solid rgba(255, 77, 77, 0.3); }
         .badge-neutral { background: rgba(176, 196, 222, 0.15); color: var(--text-muted); border: 1px solid rgba(176, 196, 222, 0.3); }
 
-        /* GLOSSARY */
         .glossary-wrapper { display: flex; align-items: flex-start; gap: 30px; width: 100%; }
         .search-container { width: 100%; max-width: 600px; margin: 0 auto 30px auto; position: relative; }
         .search-input { width: 100%; padding: 16px 20px 16px 55px; border-radius: 50px; border: 1px solid var(--glass-border); background: var(--glass-bg); color: var(--text-main); font-size: 16px; transition: all 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); backdrop-filter: blur(10px); }
@@ -291,17 +235,17 @@
             </div>
             <h1 style="font-size: 2rem; margin-bottom: 10px; color: var(--text-main);">Medicome</h1>
             <h2 style="font-size: 1.2rem; color: var(--accent); margin-bottom: 20px; font-weight: normal;">
-                L'IA d'entraînement au diagnostic médical
+                Version Bêta : Imagerie Médicale
             </h2>
             <div style="max-width: 600px; margin: 0 auto; color: var(--text-muted); line-height: 1.5;">
-                <p>Préparez vos ECN, EDN et examens de médecine grâce à notre simulateur de cas cliniques interactif. Pédagogie inversée, mode survie et glossaire complet.</p>
+                <p>Préparez vos ECN, EDN et examens de médecine grâce à notre simulateur de cas cliniques interactif. Cette version inclut l'imagerie médicale.</p>
             </div>
             
             <div style="margin-top: 40px;">
                 <div style="font-size: 30px; animation: spin 1s infinite linear;">
                     <i class="ph-duotone ph-gear"></i>
                 </div>
-                <div class="small" style="margin-top: 10px;">Chargement du noyau médical...</div>
+                <div class="small" style="margin-top: 10px;">Chargement du noyau médical avec images...</div>
             </div>
         </div>
     </main>
@@ -325,14 +269,16 @@
     </footer>
 
     <script type="module">
-        // ... (Le script JS reste inchangé pour cette demande)
         if (window.location.hostname.includes("github.io")) { window.location.href = "https://medicome.fr"; }
 
         import { getFirestore, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, collection, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // ... (Reste du code JS identique) ...
+        // --- NEW GLOBAL IMAGE MAP ---
+        // Cette variable va stocker toutes les associations Signe -> Image au chargement du JSON
+        let GLOBAL_IMG_MAP = {};
+
         const REFINEMENTS = {
             "douleur_thoracique": ["douleur_thoracique_oppressive", "douleur_thoracique_dechirante", "douleur_thoracique_coté", "irradiation_bras_machoire", "irradiation_dos", "douleur_effort", "soulage_penche_avant", "oppression_thoracique"],
             "douleur_abdominale": ["douleur_fosse_iliaque_droite", "douleur_fosse_iliaque_gauche", "douleur_hypocondre_droit", "douleur_epigastrique", "douleur_transfixiante_dos", "douleur_abdominale_brutale", "defense_abdominale", "ventre_dur_bois", "douleur_migration_ombilic"],
@@ -498,6 +444,17 @@
                 if (!response.ok) throw new Error("Impossible de lire le fichier de données pathologies.json");
                 PATHOLOGIES = await response.json();
                 
+                // --- NEW : GENERATE GLOBAL IMAGE MAP FROM JSON DATA ---
+                // This allows renderCurrentQuestion to access images easily
+                PATHOLOGIES.forEach(p => {
+                    if(p.images) {
+                        for (const [signKey, imgUrl] of Object.entries(p.images)) {
+                            GLOBAL_IMG_MAP[signKey] = imgUrl;
+                        }
+                    }
+                });
+                console.log("Images loaded:", Object.keys(GLOBAL_IMG_MAP).length);
+                
                 // DEEP LINKING
                 const urlParams = new URLSearchParams(window.location.search);
                 const ficheDemandee = urlParams.get('fiche');
@@ -539,12 +496,10 @@
                         const isVisible = notifModal.style.display === 'block';
                         notifModal.style.display = isVisible ? 'none' : 'block';
                         
-                        // Si on ouvre la fenêtre (donc elle n'était pas visible avant le clic)
                         if(!isVisible) { 
                             const badge = q('#notifBadge'); 
                             if(badge) badge.style.display = 'none'; 
                             
-                            // SAUVEGARDE : On note dans le navigateur qu'on a vu la dernière notif
                             if(state.latestNotifId) {
                                 localStorage.setItem('medicome_last_read_notif', state.latestNotifId);
                             }
@@ -616,9 +571,7 @@
                 
                 container.innerHTML = '';
                 
-                // On récupère l'ID de la notification la plus récente (la première de la liste)
                 const latestNotifId = snapshot.docs[0].id;
-                // On stocke cet ID dans l'état global pour l'utiliser lors du clic
                 state.latestNotifId = latestNotifId; 
 
                 snapshot.forEach(doc => {
@@ -630,11 +583,9 @@
                     container.appendChild(div);
                 });
 
-                // LOGIQUE DE BADGE CORRIGÉE :
                 const badge = q('#notifBadge');
                 const lastReadId = localStorage.getItem('medicome_last_read_notif');
 
-                // Si l'ID de la dernière notif est différent de celui sauvegardé, on affiche le badge
                 if(badge && latestNotifId !== lastReadId) {
                     badge.style.display = 'block';
                 } else if (badge) {
@@ -690,7 +641,7 @@
         function showAlert(message,type){
             const alertDiv = document.createElement('div');
             alertDiv.className = 'alert alert-' + type;
-            alertDiv.innerHTML = message; // innerHTML allows icons
+            alertDiv.innerHTML = message; 
             const app = q('#app');
             if(app){ app.insertBefore(alertDiv,app.firstChild); setTimeout(()=>{ if(alertDiv.parentNode) alertDiv.parentNode.removeChild(alertDiv); },3000); }
         }
@@ -700,7 +651,7 @@
         }
 
         async function saveProgression() {
-            checkAchievements(); // Vérifier les succès avant de sauvegarder
+            checkAchievements();
             if (!state.isGuest && state.currentUser) {
                 try {
                     const userRef = doc(db, "users", state.currentUser.uid);
@@ -741,17 +692,14 @@
             if(p.speedWins >= 50) unlock('speed_50');
             if(p.speedWins >= 100) unlock('speed_100');
             
-            // Total Played Cases
             if (totalPlayed >= 100) unlock('cases_100');
             if (totalPlayed >= 1000) unlock('cases_1000');
             if (totalPlayed >= 5000) unlock('cases_5000');
 
-            // Login streaks (using dailyStreak as proxy in this logic)
             if (dailyVal >= 10) unlock('played_10_days');
             if (dailyVal >= 30) unlock('played_30_days');
             if (dailyVal >= 90) unlock('played_90_days');
 
-            // Daily challenges
             if (dailyVal >= 10) unlock('daily_10');
             if (dailyVal >= 50) unlock('daily_50');
             if (dailyVal >= 150) unlock('daily_150');
@@ -855,7 +803,6 @@
             let cloudBadge = state.isGuest ? '<span style="color:orange; font-size:0.8em; margin-bottom:10px"><i class="ph-duotone ph-floppy-disk"></i> Mode Local</span>' : '<span style="color:var(--success); font-size:0.8em; margin-bottom:10px"><i class="ph-duotone ph-cloud-check"></i> Sauvegarde Active</span>';
             const displayName = state.pseudo || '...';
             
-            // CAS DU JOUR
             const dailyPatho = getDailyPatho();
             const todayStr = new Date().toDateString();
             const isDailyDone = prog.lastDaily === todayStr;
@@ -877,7 +824,6 @@
                             <div class="stat-box" style="text-align:center; background:rgba(255, 77, 77, 0.1); border-color:var(--error)"><div class="stat-number" style="color:var(--error);">${prog.incorrect}</div><div class="stat-label">Échecs</div></div>
                             </div>`;
             
-            // 2. AJOUT : Carte explicative "Comment ça marche"
             const howToCard = document.createElement('div');
             howToCard.style.cssText = "background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); padding:15px; border-radius:12px; margin-top:20px; width:100%; text-align:left;";
             howToCard.innerHTML = `
@@ -885,7 +831,7 @@
                 <div style="font-size:0.9em; color:var(--text-muted); line-height:1.4;">
                     1. Réfléchissez à une pathologie et ses signes cliniques associés.<br>
                     2. Faites deviner à l'IA la pathologie à laquelle vous pensez.<br>
-                    3. Répondez correctement aux questions de l'IA .<br>
+                    3. Répondez correctement aux questions de l'IA.<br>
                     4. La pathologie est découverte si les signes cliniques sont corrects!
                 </div>
             `;
@@ -903,19 +849,17 @@
             card.appendChild(btnDiag); card.appendChild(btnGloss); card.appendChild(btnProf); 
             app.appendChild(card);
 
-            // Handler Daily
             const btnDaily = q('#btnDaily');
             if(btnDaily) {
                 btnDaily.onclick = () => {
                     if(audioCtx.state === 'suspended') audioCtx.resume();
                     state.dailyTarget = dailyPatho;
-                    state.isChrono = false; // Pas de chrono forcé en daily
+                    state.isChrono = false; 
                     renderDemographics();
                 };
             }
         }
 
-        // --- NEW REVIEWS SYSTEM ---
         async function renderReviews() {
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
@@ -941,7 +885,6 @@
             const reviewsContainer = document.createElement('div');
             reviewsContainer.className = 'reviews-container';
             
-            // Charger avis Firebase
             try {
                 const qRev = query(collection(db, "reviews"), where("approved", "==", true), orderBy("date", "desc"), limit(10));
                 const snap = await getDocs(qRev);
@@ -989,7 +932,6 @@
                             });
                             showAlert("Avis envoyé ! Il sera visible après validation.", "success"); 
                             
-                            // UNLOCK ACHIEVEMENT REVIEW
                             if(!state.progression.reviewDone) {
                                 state.progression.reviewDone = true;
                                 saveProgression();
@@ -1002,7 +944,6 @@
             }, 100);
         }
 
-        // --- ABANDON MENU ---
         function renderAbandonMenu() {
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML = '';
@@ -1036,14 +977,12 @@
             app.appendChild(card);
         }
 
-        // --- PROFILE & BADGES ---
         function renderProfile() {
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
             const prog = state.progression;
             const card = document.createElement('div'); card.className='card center'; card.style.maxWidth = '800px';
             
-            // 1. Prepare HTML Content first
             let contentHTML = `<h2>Profil de ${state.pseudo}</h2>`;
             
             const groupScores = {};
@@ -1078,10 +1017,8 @@
                 <div class="small" style="margin-bottom:30px;">Progression globale : ${percentage}% (${unlockedPathos}/${totalPathos})</div>
             `;
             
-            // 2. Set InnerHTML
             card.innerHTML = contentHTML;
 
-            // 3. Create Button Element
             const btnAch = document.createElement('button'); 
             btnAch.className='btn'; 
             btnAch.style.background = 'var(--gold)'; 
@@ -1090,15 +1027,12 @@
             btnAch.innerHTML = '<i class="ph-duotone ph-trophy"></i> Voir mes Succès';
             btnAch.onclick = renderAchievementsPage;
             
-            // Insert after the title
             if(card.children.length > 0) {
                 card.insertBefore(btnAch, card.children[1]);
             } else {
                 card.appendChild(btnAch);
             }
 
-            // 4. Create and append other DOM elements
-            // ERROR TRACKER
             const errorTracker = document.createElement('div');
             errorTracker.className = 'error-tracker';
             errorTracker.innerHTML = `<h3 style="color:var(--error); font-size:16px;"><i class="ph-duotone ph-warning"></i> Boîte à Erreurs (Suivi)</h3>`;
@@ -1116,8 +1050,6 @@
             if(!hasErrors) errorTracker.innerHTML += `<div class="small">Aucune pathologie oubliée depuis 1 semaine. Bien joué !</div>`;
             card.appendChild(errorTracker);
 
-            // 5. AJOUT : GLOBAL WEAKNESSES (Erreurs fréquentes globales)
-            // On aggrège toutes les erreurs de signes manqués de toutes les pathologies
             const globalMissedSigns = {};
             Object.values(prog.mastery || {}).forEach(m => {
                 if(m.missedSigns) {
@@ -1128,11 +1060,10 @@
                 }
             });
 
-            // On ne garde que les signes manqués au moins 3 fois au total
             const frequentMisses = Object.entries(globalMissedSigns)
                 .filter(([s, c]) => c >= 3)
                 .sort((a, b) => b[1] - a[1])
-                .slice(0, 5); // Top 5
+                .slice(0, 5);
 
             if(frequentMisses.length > 0) {
                 const weakDiv = document.createElement('div');
@@ -1155,7 +1086,6 @@
                 card.appendChild(weakDiv);
             }
 
-            // MASTERY GRID
             const masteryTitle = document.createElement('h3'); masteryTitle.innerHTML = 'Maitrise Clinique'; 
             masteryTitle.style.marginTop = "30px";
             card.appendChild(masteryTitle);
@@ -1177,7 +1107,7 @@
 
                 mItem.className = `mastery-item ${sClass}`;
                 mItem.innerHTML = `<div class="mastery-icon">${icon}</div><div class="mastery-name">${p.name}</div><div class="mastery-count">${successCount} réussite(s)</div>`;
-                mItem.onclick = () => renderPathoStats(p); // Click to see stats
+                mItem.onclick = () => renderPathoStats(p); 
                 masteryGrid.appendChild(mItem);
             });
             card.appendChild(masteryGrid);
@@ -1187,7 +1117,6 @@
             card.appendChild(btnBack); app.appendChild(card);
         }
 
-        // --- NOUVELLE PAGE: SUCCÈS (MISE A JOUR EN GRILLE AVEC PHOSPHOR DUOTONE) ---
         function renderAchievementsPage() {
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML = '';
@@ -1196,7 +1125,6 @@
             
             const prog = state.progression;
             
-            // Création du conteneur grille
             const grid = document.createElement('div');
             grid.className = 'achievements-grid';
 
@@ -1205,7 +1133,6 @@
                 const row = document.createElement('div');
                 row.className = `achievement-row ${unlocked ? 'unlocked' : ''}`;
                 
-                // Utilisation des icônes Phosphor dynamiques (Duotone)
                 const iconHtml = unlocked 
                     ? `<i class="${ach.iconClass} icon-md"></i>` 
                     : `<i class="ph-duotone ph-lock-key icon-md"></i>`;
@@ -1229,12 +1156,107 @@
             app.appendChild(card);
         }
 
-        // --- NOUVELLE PAGE: MENTIONS LÉGALES (REMPLACE LA MODALE) ---
         function renderLegalPage() {
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML = '';
             const card = document.createElement('div'); card.className='card center';
             
+            const creditsHtml = `
+                <h3 style="margin-top:20px; border-top:1px solid var(--glass-border); padding-top:15px;">4. Crédits Images</h3>
+                <p style="font-size:0.9em; color:var(--text-muted); margin-bottom:10px;">
+                    Les images médicales sont issues de banques d'images libres (Wikimedia, Open-i, Wellcome) sous licence Creative Commons.
+                </p>
+                
+                <div style="text-align:left; font-size:0.8em; max-height:300px; overflow-y:auto; background:rgba(0,0,0,0.2); padding:15px; border-radius:8px; line-height:1.4;">
+                    
+                    <strong style="color:var(--accent); display:block; margin-top:10px;">🫀 Cardio & Vasculaire</strong>
+                    <div>• <strong>st_elevation_ecg.png</strong> : Wikimedia Commons / Own work</div>
+                    <div>• <strong>dvt_leg_swelling.png</strong> : Wikimedia Commons / James Heilman, MD</div>
+                    <div>• <strong>hemoptysis_tissue.png</strong> : Wikimedia Commons / Dezidor</div>
+                    <div>• <strong>cyanosis_lips.png</strong> : Wikimedia Commons / Thomas Godart</div>
+                    <div>• <strong>livedo_reticularis.png</strong> : Wikimedia Commons / Uva L</div>
+                    <div>• <strong>pale_leg_ischemia.png</strong> : Open-i / Park CB et al. (2014)</div>
+
+                    <strong style="color:var(--accent); display:block; margin-top:10px;">🧴 Dermatologie</strong>
+                    <div>• <strong>erysipelas_leg.png</strong> : Wikimedia Commons / Grook Da Oger</div>
+                    <div>• <strong>urticaria_hives.png</strong> : Wikimedia Commons / Verysmallkisses</div>
+                    <div>• <strong>psoriasis_plaque.png</strong> : Wikimedia Commons / MediaJet</div>
+                    <div>• <strong>eczema_flexural.png</strong> : Wikimedia Commons / Gzzz</div>
+                    <div>• <strong>anaphylaxis_rash.png</strong> : Wikimedia Commons / מ.י.ש.הו 0</div>
+                    <div>• <strong>erythema_migrans.png</strong> : Wikimedia Commons / BruceBlaus</div>
+                    <div>• <strong>lupus_butterfly_rash.png</strong> : Wikimedia Commons / Doktorinternet</div>
+                    <div>• <strong>cushing_striae.png</strong> : Wikimedia Commons / PanaromicTiger</div>
+                    <div>• <strong>addison_hyperpigmentation.png</strong> : Wellcome Collection</div>
+                    <div>• <strong>peau_d_orange_breast.png</strong> : Open-i / Nouh MA et al. (2011)</div>
+                    <div>• <strong>shingles_zoster.png</strong> : Wikimedia Commons / N.M. Matheson</div>
+                    <div>• <strong>chickenpox_rash.png</strong> : OPEN-I / Singh R, Xess I</div>
+                    <div>• <strong>rubella_rash.png</strong> : Wikimedia Commons / CDC</div>
+                    <div>• <strong>severe_acne_face.png</strong> : Wikimedia Commons / Sedef94</div>
+                    <div>• <strong>pcos_acne.png</strong> : Wikimedia Commons / Medical Photographic Library</div>
+                    <div>• <strong>impetigo_crusts.png</strong> : Open-i / Lakshmi C. et al</div>
+                    <div>• <strong>scabies_burrow.png</strong> : Open-i / Sugathan P. et al</div>
+                    <div>• <strong>syphilis_chancre.png</strong> : Open-i / Burnett A</div>
+                    <div>• <strong>melanoma.png</strong> : Wikimedia Commons / J.C.T. Braga</div>
+                    <div>• <strong>basal_cell_carcinoma.png</strong> : Open-i / Cureus</div>
+                    <div>• <strong>hirsutism_face.png</strong> : Wikimedia Commons / Gacaferri Lumezi B</div>
+                    <div>• <strong>cervical_lymphadenopathy.png</strong> : Wikimedia Commons / Hudson Bernard</div>
+                    <div>• <strong>purpura_skin.png</strong> : Wikimedia Commons / Hektor</div>
+                    <div>• <strong>janeway_lesions.png</strong> : Wikimedia Commons / Warfieldian</div>
+                    <div>• <strong>henoch_schonlein_purpura.png</strong> : Wikimedia Commons / Diasbuenasio</div>
+                    <div>• <strong>ecchymoses_petechiae.png</strong> : Wikimedia Commons / James Heilman, MD</div>
+
+                    <strong style="color:var(--accent); display:block; margin-top:10px;">😶 Visage & Yeux</strong>
+                    <div>• <strong>facial_droop.png</strong> : Wikimedia Commons / Another-anon-artist-234</div>
+                    <div>• <strong>myxedema_face.png</strong> : Wikimedia Commons / Scientific Animations</div>
+                    <div>• <strong>moon_face_cushing.png</strong> : Wikimedia Commons / Ozlem Celik</div>
+                    <div>• <strong>acromegaly_face.png</strong> : Wikimedia Commons / P. Chanson</div>
+                    <div>• <strong>nuchal_rigidity_exam.png</strong> : Wikimedia Commons / L.A. Marty, M.D</div>
+                    <div>• <strong>mumps_parotitis.png</strong> : Wikimedia Commons / Fischer, Louis</div>
+                    <div>• <strong>conjunctivitis_red_eye.png</strong> : Wikimedia Commons / Tanalai</div>
+                    <div>• <strong>scleral_icterus.png</strong> : Wikimedia Commons / Unknown author</div>
+                    <div>• <strong>exophthalmos.png</strong> : Wikimedia Commons / CDC / Dr. Sellers</div>
+                    <div>• <strong>fixed_dilated_pupil.png</strong> : Wikimedia Commons / Jonathan Trobe, M.D.</div>
+                    <div>• <strong>stye_hordeolum.png</strong> : Wikimedia Commons / Andre Riemann</div>
+                    <div>• <strong>ptosis_eye.png</strong> : Wikimedia Commons / Mohankumar Kurukumbi</div>
+                    <div>• <strong>amsler_grid_distortion.png</strong> : Wikimedia Commons / Isislunsky</div>
+
+                    <strong style="color:var(--accent); display:block; margin-top:10px;">👅 Bouche & Gorge</strong>
+                    <div>• <strong>coated_tongue.png</strong> : Wikimedia Commons / Grook da oger</div>
+                    <div>• <strong>strawberry_tongue.png</strong> : Wikimedia Commons / Martin Kronawitter</div>
+                    <div>• <strong>atrophic_glossitis.png</strong> : Wikimedia Commons / Jihoon Kim</div>
+                    <div>• <strong>oral_thrush.png</strong> : Wikimedia Commons / Sol Silverman</div>
+                    <div>• <strong>tonsillar_exudate.png</strong> : Wikimedia Commons / Nick Berman</div>
+                    <div>• <strong>mono_tonsils.png</strong> : Wikimedia Commons / Fateagued</div>
+                    <div>• <strong>koplik_spots.png</strong> : Wikimedia Commons / Dctrzl</div>
+
+                    <strong style="color:var(--accent); display:block; margin-top:10px;">🦴 Os & Articulations</strong>
+                    <div>• <strong>colles_fracture_fork.png</strong> : Wikimedia Commons / Sylvain Letuffe</div>
+                    <div>• <strong>hip_fracture_rotation.png</strong> : Wikimedia Commons / DocP</div>
+                    <div>• <strong>leg_shortening.png</strong> : Wikimedia Commons / Fischer, Louis</div>
+                    <div>• <strong>septic_arthritis_knee.png</strong> : Wikimedia Commons / CDC (NIH)</div>
+                    <div>• <strong>gout_toe_podagra.png</strong> : Wikimedia Commons / Gonzosft</div>
+                    <div>• <strong>dactylitis_toe.png</strong> : Wikimedia Commons / Graham, Edwin Eldon</div>
+                    <div>• <strong>rheumatoid_hands.png</strong> : Wikimedia Commons / Dr. G. Narasimhamurthy</div>
+                    <div>• <strong>hemarthrosis_knee.png</strong> : Wikimedia Commons / James Heilman, MD</div>
+                    <div>• <strong>kyphosis_dowagers_hump.png</strong> : Wikimedia Commons / BruceBlaus</div>
+                    <div>• <strong>ankle_sprain_swelling.png</strong> : Wikimedia Commons / James Heilman, MD</div>
+
+                    <strong style="color:var(--accent); display:block; margin-top:10px;">🚽 Abdomen & Fluides</strong>
+                    <div>• <strong>abdominal_distension.png</strong> : Wikimedia Commons / James Heilman, MD</div>
+                    <div>• <strong>ascites_abdomen.png</strong> : Wikimedia Commons / Thomas Godart</div>
+                    <div>• <strong>inguinal_hernia.png</strong> : Wikimedia Commons / IkeTheSloth</div>
+                    <div>• <strong>bladder_distension.png</strong> : Wikimedia Commons / Treves & Hutchinson</div>
+                    <div>• <strong>testicular_torsion_swelling.png</strong> : Wikimedia Commons / Javier.montero.arredondo</div>
+                    <div>• <strong>anal_fistula.png</strong> : Open-i / Liaqat N. et al</div>
+                    <div>• <strong>hematuria_urine.png</strong> : Wikimedia Commons / Own Work</div>
+                    <div>• <strong>gross_hematuria.png</strong> : Wikimedia Commons / James Heilman, MD</div>
+                    <div>• <strong>melena_stool.png</strong> : Wikimedia Commons / Ahmed Shawky Mohammedin</div>
+                    <div>• <strong>bloody_stool.png</strong> : Wikimedia Commons / Togabi</div>
+                    <div>• <strong>pitting_edema.png</strong> : Wikimedia Commons / James Heilman, MD</div>
+                    <div>• <strong>currant_jelly_stool.png</strong> : EMNote / jackcfchong</div>
+                </div>
+            `;
+
             card.innerHTML = `
                 <h2 style="color:var(--text-main); margin-bottom:15px;">Mentions Légales</h2>
                 <div style="text-align:left; line-height:1.6;">
@@ -1246,6 +1268,7 @@
                     <br>
                     <h3>3. Données Personnelles</h3>
                     <p>Email uniquement pour authentification. Aucune revente.</p>
+                    ${creditsHtml}
                 </div>
             `;
             
@@ -1279,7 +1302,7 @@
             <h2>${patho.name}</h2>
             
             <div style="margin: 15px 0; max-width: 100%;">
-                            </div>
+            </div>
 
             <div class="patho-desc" style="margin-bottom:20px;">${patho.short}</div>
             
@@ -1289,12 +1312,10 @@
             </div>`;
 
             if(Object.keys(mistakes).length > 0) {
-                // LOGIQUE DE TRI SÉPARÉE
-                const missedRealSigns = []; // Oublis (Faux Négatifs)
-                const wronglySelectedSigns = []; // Confusions (Faux Positifs)
+                const missedRealSigns = []; 
+                const wronglySelectedSigns = []; 
 
                 Object.entries(mistakes).forEach(([sign, count]) => {
-                    // Si le signe fait partie de la pathologie (poids > 0)
                     if(patho.signes[sign] && patho.signes[sign] > 0) {
                         missedRealSigns.push({sign, count, weight: patho.signes[sign]});
                     } else {
@@ -1302,7 +1323,6 @@
                     }
                 });
 
-                // Fonction de tri commune: Count DESC, puis Weight DESC
                 const sortFn = (a, b) => {
                     if (b.count !== a.count) return b.count - a.count;
                     return (b.weight || 0) - (a.weight || 0);
@@ -1313,7 +1333,6 @@
 
                 let html = '<div style="text-align:left; width:100%; margin-top:15px;">';
 
-                // 1. Affichage des OUBLIS (Signes manqués) - Priorité Haute
                 if(missedRealSigns.length > 0) {
                     html += `<h4 style="color:var(--error); margin-bottom:10px; border-bottom:1px solid rgba(255,77,77,0.3); padding-bottom:5px;">
                         <i class="ph-duotone ph-warning-circle"></i> Symptômes manqués (Oublis)
@@ -1328,7 +1347,6 @@
                     html += '</ul>';
                 }
 
-                // 2. Affichage des CONFUSIONS (Signes ajoutés à tort)
                 if(wronglySelectedSigns.length > 0) {
                     html += `<h4 style="color:#ff9f43; margin-bottom:10px; border-bottom:1px solid rgba(255,159,67,0.3); padding-bottom:5px;">
                         <i class="ph-duotone ph-prohibit"></i> Confusions (Signes ajoutés à tort)
@@ -1380,10 +1398,8 @@
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card';
-            // MODIFICATION 1 : AJOUT DE style="text-align:center" AU TITRE H3
             card.innerHTML=`<h3 style="text-align:center; margin-bottom:15px;"><i class="ph-duotone ph-user-list"></i> Données démographiques</h3><p class="small" style="margin-bottom:20px">Paramétrez le patient virtuel.</p>`;
             
-            // Si c'est le défi du jour, on affiche un message spécial
             if(state.dailyTarget) {
                 card.innerHTML = `<h3><i class="ph-duotone ph-sun color-gold"></i> Défi du Jour</h3><p class="small" style="margin-bottom:20px; color:var(--gold);">Cible : ${state.dailyTarget.name}</p>`;
             }
@@ -1400,8 +1416,7 @@
             createSel("Antécédents familiaux ?", "demo-atcd", [["rien","Je ne sais pas"],["oui","Oui"],["non","Non"]]);
             createSel("Fumeur ?", "demo-tabac", [["rien","Je ne sais pas"],["oui","Oui"],["non","Non"]]);
             
-            // CHRONO TOGGLE
-            if(!state.dailyTarget) { // Pas de chrono optionnel en daily (on peut l'imposer si on veut)
+            if(!state.dailyTarget) { 
                 const chronoDiv = document.createElement('div');
                 chronoDiv.style.margin = '20px 0'; chronoDiv.style.textAlign='center';
                 const chronoLabel = document.createElement('label'); 
@@ -1423,8 +1438,7 @@
                 state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
                 state.priorityQueue = [];
                 
-                // Chrono logic
-                if(state.dailyTarget) state.isChrono = false; // ou true si on veut timer le daily
+                if(state.dailyTarget) state.isChrono = false; 
                 else state.isChrono = q('#chronoToggle')?.checked || false;
                 
                 if(state.isChrono) state.startTime = Date.now();
@@ -1444,7 +1458,6 @@
 
         function rankPathologies() {
             const scores = PATHOLOGIES.map(p => {
-                // FIX: Check if previously rejected
                 if (state.previousDiagnostics.includes(p.name)) {
                     return { patho: p, score: -1 }; 
                 }
@@ -1459,13 +1472,11 @@
                 return {patho:p, score: Math.max(0, score)};
             });
 
-            // Filter out negative scores for probability calculation
             const validScores = scores.filter(s => s.score >= 0);
             const totalScore = validScores.reduce((sum, s) => sum + s.score, 0);
 
             state.ranked = scores.map(s => ({
                 ...s,
-                // If score is -1, prob is 0. Otherwise calculate normally.
                 prob: (s.score === -1 || totalScore === 0) ? 0 : ((s.score / totalScore) * 100).toFixed(1)
             })).sort((a,b)=>b.prob - a.prob);
         }
@@ -1494,7 +1505,6 @@
             
             if(state.previousDiagnostics.includes(top1.patho.name)) return false;
 
-            // RÈGLE 1 : FILET DE SÉCURITÉ (Max 20 questions)
             if (qNum >= 20) return true;
 
             const score1 = parseFloat(top1.prob);
@@ -1503,7 +1513,6 @@
             const score2 = parseFloat(top2.prob);
             const gap = score1 - score2;
 
-            // RÈGLE 2 : AUDACE PROGRESSIVE
             if (qNum >= 5 && score1 >= 50 && gap >= 20) return true;
             if (qNum >= 10 && gap >= 10) return true;
             if (qNum >= 15) return true;
@@ -1512,14 +1521,12 @@
         }
 
         function prepareConfirmationQuestions(topPatho) {
-            // 1. Récupérer les vrais signes restants (La Checklist)
             const pSigns = Object.entries(topPatho.signes)
-                .sort((a, b) => b[1] - a[1]) // On trie par importance
+                .sort((a, b) => b[1] - a[1]) 
                 .map(entry => entry[0]);
             
             let questions = pSigns.filter(s => !state.asked.includes(s));
             
-            // 2. Ajouter un "LEURRE" (Question Piège) pour vérifier que l'élève ne triche pas
             const trapCandidates = state.allSigns.filter(s => !pSigns.includes(s) && !state.asked.includes(s));
             
             if (trapCandidates.length > 0) {
@@ -1527,7 +1534,6 @@
                 questions.splice(1, 0, trap); 
             }
 
-            // On limite quand même à 5 questions max pour ne pas être trop long
             return questions.slice(0, 5);
         }
 
@@ -1538,9 +1544,12 @@
             const signe = state.currentSign;
             const questionTitle = state.confirmationMode ? `<span style="color:var(--gold)"><i class="ph-duotone ph-brain"></i> Je pense avoir une piste...</span>` : `QUESTION ${state.asked.length}`;
             
-            // Calcul proba pour barre
             let prob = 0;
             if(state.ranked.length > 0) prob = parseFloat(state.ranked[0].prob);
+
+            // --- IMAGE DISPLAY LOGIC ---
+            const imgUrl = GLOBAL_IMG_MAP[signe];
+            const imgHTML = imgUrl ? `<img src="${imgUrl}" style="max-width:100%; height:auto; max-height:300px; border-radius:8px; margin-bottom:15px; border:1px solid var(--glass-border); box-shadow: 0 4px 12px rgba(0,0,0,0.3);">` : '';
 
             card.innerHTML = `
                 ${state.isChrono ? '<div style="font-size:12px; color:var(--accent); margin-bottom:5px;"><i class="ph-duotone ph-lightning"></i> Chrono Actif</div>' : ''}
@@ -1550,8 +1559,9 @@
                 <div class="ai-progress-label">Confiance IA : ${prob}%</div>
                 
                 <div class="small" style="margin-bottom:12px; color:var(--accent)">${questionTitle}</div>
-                <div style="margin-bottom: 15px; border-radius: 8px; overflow: hidden;">
-                                    </div>
+                
+                ${imgHTML}
+
                 <div class="question-text">Le patient présente-t-il :<br><strong style="font-size:1.2em; color:var(--text-main);">${formatSigneName(signe)}</strong> ?</div>`;
             
             const btnGroup = document.createElement('div'); btnGroup.className='button-group';
@@ -1566,9 +1576,7 @@
                         isChrono: state.isChrono, startTime: state.startTime, dailyTarget: state.dailyTarget
                     }));
                     
-                    // Si clic NON sur un vrai signe (erreur anticipée pour feedback visuel futur, ou log)
                     if(state.dailyTarget && val === false && state.dailyTarget.signes[signe]) {
-                        // On pourrait stocker ici que l'utilisateur a fait une erreur en direct
                     }
                     
                     state.answers[signe]=val; askNextQuestion(); 
@@ -1596,10 +1604,8 @@
         }
 
         function askNextQuestion() {
-            // SÉCURITÉ MORT SUBITE
             if (state.asked.length >= 20) { showDiagnostic(); return; }
 
-            // --- CORRECTION TUNNEL VISION (Nettoyage de la file si une précision est donnée) ---
             if(state.asked.length > 0) {
                 const lastSign = state.asked[state.asked.length - 1];
                 const lastAnswer = state.answers[lastSign];
@@ -1608,7 +1614,6 @@
                       for (const [parent, children] of Object.entries(REFINEMENTS)) {
                         if (children.includes(lastSign)) {
                             const siblings = children.filter(c => c !== lastSign);
-                            // On retire les frères/sœurs de la liste prioritaire pour ne pas être lourd
                             state.priorityQueue = state.priorityQueue.filter(q => !siblings.includes(q));
                         }
                     }
@@ -1625,19 +1630,15 @@
             if (state.confirmationMode) {
                 const lastSign = state.asked[state.asked.length - 1];
                 
-                // --- LOGIQUE ANTI-TRICHE ---
                 const isSignPartOfPatho = Object.keys(state.confirmedPatho.signes).includes(lastSign);
                 const userSaidYes = state.answers[lastSign] === true;
 
-                // 1. Si c'était un piège (le signe n'est pas dans la maladie) ET que l'utilisateur a dit OUI -> ECHEC
                 if (!isSignPartOfPatho && userSaidYes) {
-                    // LOG ERROR VISUELLE
                     state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
                     showAlert("Aïe ! Ce symptôme ne collait pas...", "error");
                     askNextQuestion(); return;
                 }
 
-                // 2. Si c'était un vrai signe ET que l'utilisateur a dit NON -> ECHEC (Piste abandonnée)
                 if (isSignPartOfPatho && !userSaidYes) {
                     state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
                     showAlert("Ah, fausse piste. Je continue à chercher...", "info");
@@ -1675,7 +1676,6 @@
                 } else { showDiagnostic(); return; }
             }
             
-            // C'est ici que la magie opère maintenant : getNextSmartSign va choisir LA meilleure question
             const signe = getNextSmartSign(state.ranked, remaining);
             state.currentSign = signe; state.asked.push(signe); renderCurrentQuestion();
         }
@@ -1702,7 +1702,7 @@
                 const diagDiv = document.createElement('div'); diagDiv.className='diagnostic-result';
                 diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div>
                 <div style="margin: 15px 0; max-width: 100%;">
-                                    </div>
+                </div>
                 <div class="patho-desc" style="margin-top:8px">${top.patho.short}</div><br>${pdfButton}`;
                 card.appendChild(diagDiv);
                 
@@ -1713,7 +1713,6 @@
                     triggerConfetti(); playSound('success');
                     state.progression.correct++; state.progression.streak = (state.progression.streak || 0) + 1;
                     
-                    // GESTION DU DAILY
                     if(state.dailyTarget && state.dailyTarget.name === top.patho.name) {
                         const today = new Date().toDateString();
                         if(state.progression.lastDaily !== today) {
@@ -1731,11 +1730,9 @@
                     
                     m.success++;
                     
-                    // CHRONO SAVE
                     if(state.isChrono && state.startTime) {
                         const duration = (Date.now() - state.startTime) / 1000;
                         if(duration < 30) {
-                            // Increment speed counter for achievements
                             state.progression.speedWins = (state.progression.speedWins || 0) + 1;
                         }
                         if(!state.progression.bestTimes) state.progression.bestTimes = {};
@@ -1745,8 +1742,6 @@
                         }
                     }
 
-                    // CHECK FOR MISSED SIGNS (FALSE NEGATIVES) AND FALSE POSITIVES EVEN ON SUCCESS
-                    // 1. False Negatives (Signs in patho but user said NO/IDK)
                     Object.keys(top.patho.signes).forEach(s => {
                         if(state.answers[s] === false || state.answers[s] === null) { 
                             if(!m.missedSigns[s]) m.missedSigns[s] = 0;
@@ -1754,7 +1749,6 @@
                         }
                     });
                     
-                    // 2. False Positives (Signs NOT in patho but user said YES)
                     Object.keys(state.answers).forEach(s => {
                         if (state.answers[s] === true && !top.patho.signes[s]) {
                             if(!m.missedSigns[s]) m.missedSigns[s] = 0;
@@ -1781,7 +1775,6 @@
                     m.failures++;
                     state.progression.mastery[pName] = m;
 
-                    // ERROR LOGGING
                     if(!state.progression.errorLog) state.progression.errorLog = {};
                     state.progression.errorLog[pName] = { date: Date.now(), count: (state.progression.errorLog[pName]?.count || 0) + 1 };
 
@@ -1811,7 +1804,6 @@
                 
                 m.failures++;
                 
-                // Track False Negatives
                 Object.keys(top.signes).forEach(s => {
                     if(state.answers[s] === false || state.answers[s] === null) { 
                         if(!m.missedSigns[s]) m.missedSigns[s] = 0;
@@ -1819,7 +1811,6 @@
                     }
                 });
                 
-                // Track False Positives
                 Object.keys(state.answers).forEach(s => {
                     if (state.answers[s] === true && !top.signes[s]) {
                         if(!m.missedSigns[s]) m.missedSigns[s] = 0;
@@ -1829,7 +1820,6 @@
 
                 state.progression.mastery[top.name] = m;
                 
-                // ERROR LOGGING
                 if(!state.progression.errorLog) state.progression.errorLog = {};
                 state.progression.errorLog[top.name] = { date: Date.now(), count: (state.progression.errorLog[top.name]?.count || 0) + 1 };
                 
@@ -1847,19 +1837,16 @@
                 pathoSigns.forEach(s => {
                     const val = state.answers[s];
                     if(val === true) correctSigns.push(s); 
-                    // MODIFICATION 2 : Si la réponse est NON (false) OU Je ne sais pas (null), c'est une erreur/signe manqué
                     else if(val === false || val === null) missingSigns.push(s);
                     else notAskedSigns.push(s);
                 });
                 state.allSigns.forEach(s => { if(state.answers[s] === true && !pathoSigns.includes(s)) erroneousSigns.push(s); });
                 
-                // --- TRI PAR POIDS DIAGNOSTIC ---
                 correctSigns.sort((a, b) => (top.signes[b] || 0) - (top.signes[a] || 0));
                 missingSigns.sort((a, b) => (top.signes[b] || 0) - (top.signes[a] || 0));
                 
                 const resultsDiv = document.createElement('div'); resultsDiv.className='result-list';
                 
-                // Nouvelle fonction de génération HTML plus jolie (STYLE DASHBOARD)
                 const createList = (title, items, type, typeLabel) => {
                     if(items.length > 0) {
                         let icon = '<i class="ph-duotone ph-info"></i>';
@@ -1902,7 +1889,6 @@
                 const pdfBtn = document.createElement('a');
                 pdfBtn.href = top.pdf; pdfBtn.target = "_blank"; pdfBtn.className = 'btn'; pdfBtn.innerHTML = '<i class="ph-duotone ph-file-pdf"></i> Voir la fiche PDF complète'; pdfBtn.style.marginTop = '20px'; pdfBtn.style.display = 'block'; pdfBtn.style.textAlign = 'center';
                 
-                // TRACKING PDF DOWNLOAD
                 pdfBtn.onclick = trackPdf;
 
                 card.appendChild(pdfBtn);
@@ -1910,10 +1896,9 @@
             
             const btnGroup = document.createElement('div'); btnGroup.className='button-group';
             
-            // BOUTON REJOUER DIRECT
             const btnReplay = document.createElement('button'); btnReplay.className='btn btn-success'; btnReplay.innerHTML = '<i class="ph-duotone ph-arrow-clockwise"></i> Rejouer tout de suite'; 
             btnReplay.onclick = () => {
-                 state.dailyTarget = null; // Reset daily flag if random play
+                 state.dailyTarget = null; 
                  renderDemographics();
             };
 
@@ -1932,7 +1917,6 @@
             const searchContainer = document.createElement('div'); searchContainer.className = 'search-container';
             const searchInput = document.createElement('input'); searchInput.className = 'search-input'; searchInput.placeholder = 'Rechercher une pathologie (ex: Grippe...)'; searchInput.type = 'text';
             
-            // ADDED SEARCH ICON
             const searchIcon = document.createElement('div'); 
             searchIcon.innerHTML = `<svg class="search-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>`;
             
@@ -1982,7 +1966,7 @@
                 <div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>`;
                 card.onclick=()=>{ 
                     if(p.pdf && p.pdf !== '#') {
-                        trackPdf(); // Track download on glossary click too
+                        trackPdf(); 
                         window.open(p.pdf,'_blank'); 
                     } else showAlert('Fiche PDF non disponible','error'); 
                 };

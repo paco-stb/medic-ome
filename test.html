@@ -796,6 +796,67 @@
             card.appendChild(inputCode); card.appendChild(btnCode); app.appendChild(card);
         }
 
+        // --- ICI LA FONCTION MANQUANTE QUI EMPECHAIT L'ENTRAINEMENT DE DEMARRER ---
+        function renderDemographics() {
+            window.scrollTo(0,0);
+            const app = q('#app'); app.innerHTML='';
+            const card = document.createElement('div'); card.className='card';
+            
+            if(state.dailyTarget) {
+                card.innerHTML = `<h3><i class="ph-duotone ph-sun color-gold"></i> Défi du Jour</h3><p class="small" style="margin-bottom:20px; color:var(--gold);">Cible : ${state.dailyTarget.name}</p>`;
+            } else {
+                 card.innerHTML=`<h3 style="text-align:center; margin-bottom:15px;"><i class="ph-duotone ph-user-list"></i> Données démographiques</h3><p class="small" style="margin-bottom:20px">Paramétrez le patient virtuel.</p>`;
+            }
+
+            const createSel = (lbl, id, opts) => {
+                const l = document.createElement('label'); l.textContent=lbl; l.style.color='var(--accent)';
+                const s = document.createElement('select'); s.id=id; s.className='input';
+                opts.forEach(o=> { const op=document.createElement('option'); op.value=o[0]; op.textContent=o[1]; s.appendChild(op); });
+                card.appendChild(l); card.appendChild(s);
+            };
+            createSel("Sexe", "demo-sexe", [["rien","Aléatoire / Inconnu"],["femme","Femme"],["homme","Homme"]]);
+            createSel("Plus de 30 ans ?", "demo-30", [["rien","Je ne sais pas"],["oui","Oui"],["non","Non"]]);
+            createSel("Plus de 65 ans ?", "demo-65", [["rien","Je ne sais pas"],["oui","Oui"],["non","Non"]]);
+            createSel("Antécédents familiaux ?", "demo-atcd", [["rien","Je ne sais pas"],["oui","Oui"],["non","Non"]]);
+            createSel("Fumeur ?", "demo-tabac", [["rien","Je ne sais pas"],["oui","Oui"],["non","Non"]]);
+            
+            if(!state.dailyTarget) { 
+                const chronoDiv = document.createElement('div');
+                chronoDiv.style.margin = '20px 0'; chronoDiv.style.textAlign='center';
+                const chronoLabel = document.createElement('label'); 
+                chronoLabel.innerHTML = `<input type="checkbox" id="chronoToggle" style="margin-right:8px;"> <i class="ph-duotone ph-lightning"></i> Mode Chrono (Facultatif)`;
+                chronoLabel.style.color = 'var(--text-main)'; chronoLabel.style.cursor='pointer';
+                chronoDiv.appendChild(chronoLabel);
+                card.appendChild(chronoDiv);
+            }
+
+            const btnGroup = document.createElement('div'); btnGroup.className='button-group';
+            const btnStart = document.createElement('button'); btnStart.className='btn'; btnStart.innerHTML='<i class="ph-duotone ph-play"></i> Démarrer';
+            
+            btnStart.onclick=()=>{ 
+                state.demo = {
+                    femme: q('#demo-sexe').value === 'femme', homme: q('#demo-sexe').value === 'homme',
+                    plus_de_30ans: q('#demo-30').value === 'oui', plus_de_65ans: q('#demo-65').value === 'oui',
+                    atcd_famille: q('#demo-atcd').value === 'oui', tabac: q('#demo-tabac').value === 'oui'
+                };
+                state.answers={}; state.asked=[]; state.diagnosticShown=false; state.previousDiagnostics=[]; state.history=[];
+                state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
+                state.priorityQueue = [];
+                state.consecutiveNon = 0; 
+
+                if(state.dailyTarget) state.isChrono = false; 
+                else state.isChrono = q('#chronoToggle')?.checked || false;
+                
+                if(state.isChrono) state.startTime = Date.now();
+                else state.startTime = null;
+
+                askNextQuestion();
+            };
+
+            const btnCancel = document.createElement('button'); btnCancel.className='link'; btnCancel.textContent='Annuler'; btnCancel.onclick=renderHome;
+            btnGroup.appendChild(btnStart); btnGroup.appendChild(btnCancel); card.appendChild(btnGroup); app.appendChild(card);
+        }
+
         function renderHome() {
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';

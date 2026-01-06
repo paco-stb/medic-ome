@@ -198,6 +198,65 @@
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        /* NOUVEAU CSS POUR LES BADGES (CHIPS) */
+.chips-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.chip {
+    background: rgba(125, 125, 125, 0.15);
+    border: 1px solid var(--glass-border);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.chip:hover {
+    background: rgba(125, 125, 125, 0.3);
+    color: var(--text-main);
+}
+
+.chip.selected {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+    box-shadow: 0 0 10px var(--accent-glow);
+    font-weight: 600;
+}
+
+.gender-selector {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    width: 100%;
+}
+.gender-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(125, 125, 125, 0.1);
+    border: 1px solid var(--glass-border);
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 24px;
+    transition: 0.2s;
+}
+.gender-btn.active {
+    background: var(--accent);
+    color: white;
+    box-shadow: 0 0 15px var(--accent-glow);
+}
     </style>
 </head>
 <body>
@@ -1473,61 +1532,188 @@
         }
 
         function renderDemographics() {
-            setDocTitle("Paramètres Patient");
-            window.scrollTo(0,0);
-            const app = q('#app'); app.innerHTML='';
-            const card = document.createElement('div'); card.className='card';
-            card.innerHTML=`<h3 style="text-align:center; margin-bottom:15px;"><i class="ph-duotone ph-user-list"></i> Données démographiques</h3><p class="small" style="margin-bottom:20px">Paramétrez le patient virtuel.</p>`;
-            
-            if(state.dailyTarget) {
-                card.innerHTML = `<h3><i class="ph-duotone ph-sun color-gold"></i> Défi du Jour</h3><p class="small" style="margin-bottom:20px; color:var(--gold);">Cible : ${state.dailyTarget.name}</p>`;
+    setDocTitle("Paramètres Patient");
+    window.scrollTo(0, 0);
+    const app = q('#app');
+    app.innerHTML = '';
+    const card = document.createElement('div');
+    card.className = 'card center';
+
+    // --- EN-TÊTE ---
+    if (state.dailyTarget) {
+        card.innerHTML = `<h3><i class="ph-duotone ph-sun color-gold"></i> Défi du Jour</h3><p class="small" style="margin-bottom:20px; color:var(--gold);">Cible : ${state.dailyTarget.name}</p>`;
+    } else {
+        card.innerHTML = `<h3 style="text-align:center; margin-bottom:15px;"><i class="ph-duotone ph-user-list"></i> Nouveau Patient</h3><p class="small" style="margin-bottom:20px">Configurez le profil clinique.</p>`;
+    }
+
+    // --- 1. SEXE (Boutons larges) ---
+    const genderContainer = document.createElement('div');
+    genderContainer.className = 'gender-selector';
+    genderContainer.innerHTML = `
+        <button class="gender-btn" id="btn-femme" onclick="selectGender('femme')"><i class="ph-duotone ph-person-simple-skirt"></i></button>
+        <button class="gender-btn" id="btn-homme" onclick="selectGender('homme')"><i class="ph-duotone ph-person-simple"></i></button>
+    `;
+    card.appendChild(document.createElement('label')).textContent = "Sexe";
+    card.appendChild(genderContainer);
+
+    // Variable locale pour stocker le sexe sélectionné
+    let selectedGender = null;
+    window.selectGender = (g) => {
+        selectedGender = g;
+        document.getElementById('btn-femme').className = `gender-btn ${g === 'femme' ? 'active' : ''}`;
+        document.getElementById('btn-homme').className = `gender-btn ${g === 'homme' ? 'active' : ''}`;
+        
+        // Afficher/Masquer les tags spécifiques au sexe
+        toggleGenderSpecificTags(g);
+    };
+
+    // --- 2. ÂGE (Menu déroulant unifié) ---
+    const lAge = document.createElement('label'); lAge.textContent = "Tranche d'âge"; lAge.style.marginTop = "10px";
+    const sAge = document.createElement('select'); sAge.id = 'demo-age'; sAge.className = 'input';
+    const ages = [
+        { val: "nourrisson", txt: "Nourrisson (0 - 2 ans)" },
+        { val: "enfant", txt: "Enfant (2 - 12 ans)" },
+        { val: "adolescent", txt: "Adolescent (13 - 18 ans)" },
+        { val: "jeune", txt: "Jeune Adulte (19 - 35 ans)" },
+        { val: "adulte", txt: "Adulte (36 - 65 ans)" },
+        { val: "senior", txt: "Senior (> 65 ans)" }
+    ];
+    ages.forEach(a => {
+        const op = document.createElement('option'); op.value = a.val; op.textContent = a.txt;
+        if (a.val === 'adulte') op.selected = true; // Défaut
+        sAge.appendChild(op);
+    });
+    card.appendChild(lAge); card.appendChild(sAge);
+
+    // --- 3. FACTEURS DE RISQUE (Chips/Badges) ---
+    const lFact = document.createElement('label'); 
+    lFact.innerHTML = `Contexte & Antécédents <span style="opacity:0.5; font-weight:normal; font-size:0.9em">(Facultatif)</span>`;
+    lFact.style.marginTop = "20px"; card.appendChild(lFact);
+
+    const chipsDiv = document.createElement('div');
+    chipsDiv.className = 'chips-container';
+
+    // Liste des facteurs disponibles (ID JSON, Label, Icone, Sexe requis)
+    const factorsList = [
+        { id: 'tabac', label: 'Tabac', icon: 'ph-cigarette' },
+        { id: 'alcool', label: 'Alcool', icon: 'ph-beer-bottle' },
+        { id: 'surpoids', label: 'Surpoids / Obésité', icon: 'ph-hamburger' },
+        { id: 'hta', label: 'Hypertension', icon: 'ph-heart-break' },
+        { id: 'diabete', label: 'Diabète', icon: 'ph-drop' },
+        { id: 'atcd_famille', label: 'Hérédité', icon: 'ph-dna' },
+        { id: 'voyage_recent', label: 'Voyage récent', icon: 'ph-airplane' },
+        { id: 'stress', label: 'Stress / Anxiété', icon: 'ph-mask-sad' },
+        { id: 'hiver', label: 'Hiver / Épidémie', icon: 'ph-snowflake' },
+        { id: 'sport', label: 'Sportif / Trauma', icon: 'ph-soccer-ball' },
+        // Spécifiques Femmes
+        { id: 'grossesse', label: 'Grossesse', icon: 'ph-baby', gender: 'femme' },
+        { id: 'sterilet', label: 'Stérilet', icon: 'ph-anchor', gender: 'femme' },
+        { id: 'menopause', label: 'Ménopause', icon: 'ph-flower', gender: 'femme' }
+    ];
+
+    const selectedFactors = new Set();
+
+    factorsList.forEach(f => {
+        const chip = document.createElement('div');
+        chip.className = 'chip';
+        chip.id = `chip-${f.id}`;
+        chip.innerHTML = `<i class="ph-duotone ${f.icon}"></i> ${f.label}`;
+        
+        if (f.gender) chip.dataset.gender = f.gender; // Pour filtrer
+        
+        chip.onclick = () => {
+            if (selectedFactors.has(f.id)) {
+                selectedFactors.delete(f.id);
+                chip.classList.remove('selected');
+            } else {
+                selectedFactors.add(f.id);
+                chip.classList.add('selected');
             }
+        };
+        chipsDiv.appendChild(chip);
+    });
+    card.appendChild(chipsDiv);
 
-            const createSel = (lbl, id, opts) => {
-                const l = document.createElement('label'); l.textContent=lbl; l.style.color='var(--accent)';
-                const s = document.createElement('select'); s.id=id; s.className='input';
-                opts.forEach(o=> { const op=document.createElement('option'); op.value=o[0]; op.textContent=o[1]; s.appendChild(op); });
-                card.appendChild(l); card.appendChild(s);
-            };
-            createSel("Sexe", "demo-sexe", [["rien","Aléatoire / Inconnu"],["femme","Femme"],["homme","Homme"]]);
-            createSel("Plus de 30 ans ?", "demo-30", [["rien","Je ne sais pas"],["oui","Oui"],["non","Non"]]);
-            createSel("Plus de 65 ans ?", "demo-65", [["rien","Je ne sais pas"],["oui","Oui"],["non","Non"]]);
-            createSel("Antécédents familiaux ?", "demo-atcd", [["rien","Je ne sais pas"],["oui","Oui"],["non","Non"]]);
-            createSel("Fumeur ?", "demo-tabac", [["rien","Je ne sais pas"],["oui","Oui"],["non","Non"]]);
-            
-            if(!state.dailyTarget) { 
-                const chronoDiv = document.createElement('div');
-                chronoDiv.style.margin = '20px 0'; chronoDiv.style.textAlign='center';
-                const chronoLabel = document.createElement('label'); 
-                chronoLabel.innerHTML = `<input type="checkbox" id="chronoToggle" style="margin-right:8px;"> <i class="ph-duotone ph-lightning"></i> Mode Chrono (Facultatif)`;
-                chronoLabel.style.color = 'var(--text-main)'; chronoLabel.style.cursor='pointer';
-                chronoDiv.appendChild(chronoLabel);
-                card.appendChild(chronoDiv);
+    // Fonction pour cacher les options incohérentes (ex: Grossesse chez un Homme)
+    window.toggleGenderSpecificTags = (g) => {
+        factorsList.forEach(f => {
+            if (f.gender) {
+                const el = document.getElementById(`chip-${f.id}`);
+                if (el) {
+                    if (g === f.gender) el.style.display = 'flex';
+                    else {
+                        el.style.display = 'none';
+                        selectedFactors.delete(f.id); // Décoche si on change de sexe
+                        el.classList.remove('selected');
+                    }
+                }
             }
+        });
+    };
+    
+    // Initialisation affichage tags (masquer tags femme par défaut ou non)
+    toggleGenderSpecificTags(null); 
 
-            const btnGroup = document.createElement('div'); btnGroup.className='button-group';
-            const btnStart = document.createElement('button'); btnStart.className='btn'; btnStart.innerHTML='<i class="ph-duotone ph-play"></i> Démarrer';
-            btnStart.onclick=()=>{ 
-                state.demo = {
-                    femme: q('#demo-sexe').value === 'femme', homme: q('#demo-sexe').value === 'homme',
-                    plus_de_30ans: q('#demo-30').value === 'oui', plus_de_65ans: q('#demo-65').value === 'oui',
-                    atcd_famille: q('#demo-atcd').value === 'oui', tabac: q('#demo-tabac').value === 'oui'
-                };
-                state.answers={}; state.asked=[]; state.diagnosticShown=false; state.previousDiagnostics=[]; state.history=[];
-                state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
-                state.priorityQueue = [];
-                
-                if(state.dailyTarget) state.isChrono = false; 
-                else state.isChrono = q('#chronoToggle')?.checked || false;
-                
-                if(state.isChrono) state.startTime = Date.now();
-                else state.startTime = null;
+    // --- 4. CHRONO ---
+    if (!state.dailyTarget) {
+        const chronoDiv = document.createElement('div');
+        chronoDiv.style.margin = '10px 0 20px 0'; chronoDiv.style.textAlign = 'center';
+        chronoDiv.innerHTML = `<label style="cursor:pointer; color:var(--text-muted); font-size:13px;"><input type="checkbox" id="chronoToggle" style="margin-right:6px; vertical-align:middle;"> <i class="ph-duotone ph-lightning"></i> Activer le Chrono</label>`;
+        card.appendChild(chronoDiv);
+    }
 
-                askNextQuestion();
-            };
-            const btnCancel = document.createElement('button'); btnCancel.className='link'; btnCancel.textContent='Annuler'; btnCancel.onclick=renderHome;
-            btnGroup.appendChild(btnStart); btnGroup.appendChild(btnCancel); card.appendChild(btnGroup); app.appendChild(card);
+    // --- BOUTONS ---
+    const btnGroup = document.createElement('div'); btnGroup.className = 'button-group';
+    const btnStart = document.createElement('button'); btnStart.className = 'btn'; btnStart.innerHTML = '<i class="ph-duotone ph-play"></i> Lancer le cas';
+    
+    btnStart.onclick = () => {
+        if (!selectedGender && !state.dailyTarget) { // Si pas de sexe choisi (sauf si défi du jour qui peut imposer)
+             // On peut forcer un choix, ou mettre "Aléatoire" par défaut. Ici on force pour la pédagogie.
+             // Pour être cool, si null, on met aléatoire en background
+             if(Math.random() > 0.5) selectedGender = 'femme'; else selectedGender = 'homme';
         }
+
+        // --- MAPPING LOGIQUE : Âge ---
+        const ageVal = q('#demo-age').value;
+        const demoData = {
+            homme: selectedGender === 'homme',
+            femme: selectedGender === 'femme',
+            // Logique de cascade pour les âges
+            nourrisson: ageVal === 'nourrisson',
+            enfant: ageVal === 'enfant',
+            adolescent: ageVal === 'adolescent',
+            jeune: ageVal === 'jeune' || ageVal === 'adolescent', // Un adolescent est "jeune"
+            plus_de_30ans: ageVal === 'adulte' || ageVal === 'senior',
+            plus_de_65ans: ageVal === 'senior',
+            adulte: ageVal === 'adulte'
+        };
+
+        // --- MAPPING LOGIQUE : Facteurs ---
+        selectedFactors.forEach(id => {
+            demoData[id] = true;
+        });
+
+        // --- LANCEMENT ---
+        state.demo = demoData;
+        state.answers = {}; state.asked = []; state.diagnosticShown = false; state.previousDiagnostics = []; state.history = [];
+        state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
+        state.priorityQueue = [];
+
+        if (state.dailyTarget) state.isChrono = false;
+        else state.isChrono = q('#chronoToggle')?.checked || false;
+
+        if (state.isChrono) state.startTime = Date.now();
+        else state.startTime = null;
+
+        askNextQuestion();
+    };
+
+    const btnCancel = document.createElement('button'); btnCancel.className = 'link'; btnCancel.textContent = 'Annuler'; btnCancel.onclick = renderHome;
+    btnGroup.appendChild(btnStart); btnGroup.appendChild(btnCancel); card.appendChild(btnGroup); app.appendChild(card);
+    
+    // Initialisation visuelle par défaut (Optionnel: sélectionner un genre par défaut pour gagner un clic ?)
+    // selectGender('femme'); // Décommenter pour présélectionner
+}
 
         function prepareSigns() {
             let allSignsSet = new Set();

@@ -731,7 +731,7 @@
         "name": "Anorexie Mentale",
         "short": "TCA",
         "pdf": "fiches/anorexie.pdf",
-        "signes": {"trouble_psy": 5, "maigreur_extreme": 20, "absence_regles_chez_la_femme": 18, "le_patient_se_voit_gros": 20, "sport_excessif": 12, "refus_manger": 18, "nie_etre_maigre": 15, "frilosite": 10},
+        "signes": {"trouble_psy": 5, "maigreur_extreme": 20, "absence_regles": 18, "le_patient_se_voit_gros": 20, "sport_excessif": 12, "refus_manger": 18, "nie_etre_maigre": 15, "frilosite": 10},
         "facteurs": {"femme": 8, "adolescente": 5, "perfectionnisme": 3}
     },
     {

@@ -2430,19 +2430,41 @@
                 }
             }
             function createPathoCard(p) {
-                const card = document.createElement('div'); card.className='patho-card';
-                card.innerHTML=`
-                <div style="margin-bottom:10px; height: 100px; overflow:hidden; border-radius:8px;">
-                                    </div>
-                <div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>`;
-                card.onclick=()=>{ 
-                    if(p.pdf && p.pdf !== '#') {
-                        trackPdf(); 
-                        window.open(p.pdf,'_blank'); 
-                    } else showAlert('Fiche PDF non disponible','error'); 
-                };
-                return card;
+            const card = document.createElement('div'); 
+            card.className = 'patho-card';
+
+            // 1. On prépare le HTML de l'image SEULEMENT si une image existe
+            let imageHTML = ''; 
+            if (p.images && Object.values(p.images).length > 0) {
+                // On prend la première image disponible
+                const urlImage = Object.values(p.images)[0];
+                // On crée le conteneur de l'image
+                imageHTML = `
+                    <div style="margin-bottom:10px; height: 120px; overflow:hidden; border-radius:8px; background:#020b16; display:flex; align-items:center; justify-content:center;">
+                        <img src="${urlImage}" style="width:100%; height:100%; object-fit:cover;" alt="${p.name}">
+                    </div>
+                `;
             }
+
+            // 2. On injecte le HTML (imageHTML sera vide s'il n'y a pas d'image)
+            card.innerHTML = `
+                ${imageHTML}
+                <div class="patho-name">${p.name}</div>
+                <div class="patho-desc">${p.short}</div>
+            `;
+
+            // Gestion du clic pour le PDF
+            card.onclick = () => { 
+                if(p.pdf && p.pdf !== '#') {
+                    trackPdf(); 
+                    window.open(p.pdf,'_blank'); 
+                } else {
+                    showAlert('Fiche PDF non disponible','error'); 
+                }
+            };
+
+            return card;
+        }
             renderGrid(sortedPathos, true);
             searchInput.addEventListener('input', (e) => {
                 const term = e.target.value.toLowerCase();

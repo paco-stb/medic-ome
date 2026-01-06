@@ -198,6 +198,75 @@
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+        /* --- STYLE FORMULAIRE CONTACT --- */
+.contact-form-container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.contact-input {
+    width: 100%;
+    background-color: rgba(30, 41, 59, 0.7); /* Fond bleu nuit sombre */
+    border: 1px solid rgba(255, 255, 255, 0.2); /* Bordure subtile */
+    color: #ffffff;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-family: 'Inter', sans-serif;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.contact-input::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* L'effet de focus blanc comme sur l'image */
+.contact-input:focus {
+    border-color: #ffffff;
+    background-color: rgba(30, 41, 59, 1);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.btn-cyan-large {
+    background: #00a8ff; /* Le bleu cyan vif */
+    color: white;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 16px;
+    border-radius: 12px;
+    border: none;
+    width: 100%;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(0, 168, 255, 0.3);
+}
+
+.btn-cyan-large:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(0, 168, 255, 0.5);
+    background: #1cb5ff;
+}
+
+.btn-cancel-dark {
+    background: rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    padding: 10px 24px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 5px;
+    transition: all 0.2s;
+}
+
+.btn-cancel-dark:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
     </style>
 </head>
 <body>
@@ -927,15 +996,84 @@
 
         function renderContact() {
             window.scrollTo(0,0);
-            const app = q('#app'); app.innerHTML='';
-            const card = document.createElement('div'); card.className='card center';
-            card.innerHTML = `<h2>Nous Contacter</h2><p>Une suggestion ou un bug ?</p>`;
-            const input = document.createElement('textarea'); input.className='input'; input.placeholder='Votre message...';
-            const btn = document.createElement('button'); btn.className='btn'; btn.textContent='Envoyer';
-            btn.onclick = () => { showAlert('Message envoyé (Simulation)', 'success'); renderHome(); };
-            const back = document.createElement('button'); back.className='btn-back'; back.textContent='Retour'; back.onclick=renderHome;
-            card.append(input, btn, back);
+            const app = q('#app'); 
+            app.innerHTML='';
+            
+            const card = document.createElement('div'); 
+            card.className='card center';
+            // Style spécifique pour matcher le fond sombre de l'image si besoin
+            card.style.background = 'rgba(13, 25, 48, 0.95)'; 
+            card.style.maxWidth = '500px';
+
+            // Titre avec l'icône enveloppe
+            const headerHtml = `
+                <h2 style="margin-bottom: 25px; color: white; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                    <i class="ph-fill ph-envelope"></i> Nous Contacter
+                </h2>
+            `;
+
+            // Création des inputs
+            const formHtml = `
+                <div class="contact-form-container">
+                    <input type="text" id="contactName" class="contact-input" placeholder="Votre Nom" value="${state.pseudo || ''}">
+                    
+                    <input type="email" id="contactEmail" class="contact-input" placeholder="Votre Email" value="${state.currentUser ? state.currentUser.email : ''}">
+                    
+                    <textarea id="contactMsg" class="contact-input" placeholder="Votre message..." rows="4" style="resize: vertical; min-height: 120px;"></textarea>
+                    
+                    <button id="sendContactBtn" class="btn-cyan-large">Envoyer</button>
+                    
+                    <div style="display:flex; justify-content:center;">
+                        <button id="cancelContactBtn" class="btn-cancel-dark">Annuler</button>
+                    </div>
+                </div>
+            `;
+
+            card.innerHTML = headerHtml + formHtml;
             app.appendChild(card);
+
+            // Gestionnaire du bouton Envoyer
+            q('#sendContactBtn').onclick = async () => {
+                const nom = q('#contactName').value;
+                const email = q('#contactEmail').value;
+                const msg = q('#contactMsg').value;
+
+                if(!nom || !email || !msg) {
+                    showAlert("Veuillez remplir tous les champs", "error");
+                    return;
+                }
+
+                // Animation de chargement sur le bouton
+                const btn = q('#sendContactBtn');
+                const originalText = btn.innerText;
+                btn.innerText = "Envoi en cours...";
+                btn.style.opacity = "0.7";
+
+                try {
+                    // Envoi vers Firebase (Optionnel : si vous voulez vraiment sauvegarder)
+                    await addDoc(collection(db, "messages"), {
+                        nom: nom,
+                        email: email,
+                        message: msg,
+                        date: new Date(),
+                        uid: state.currentUser ? state.currentUser.uid : 'anonymous'
+                    });
+
+                    playSound('success');
+                    showAlert("Message envoyé avec succès !", "success");
+                    renderHome();
+                } catch (e) {
+                    console.error(e);
+                    // Fallback si pas de connexion database ou erreur
+                    showAlert("Message envoyé (Simulation)", "success");
+                    renderHome();
+                }
+            };
+
+            // Gestionnaire du bouton Annuler
+            q('#cancelContactBtn').onclick = () => {
+                renderHome();
+            };
         }
 
         function prepareSigns() {

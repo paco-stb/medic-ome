@@ -796,7 +796,6 @@
             card.appendChild(inputCode); card.appendChild(btnCode); app.appendChild(card);
         }
 
-        // --- ICI LA FONCTION MANQUANTE QUI EMPECHAIT L'ENTRAINEMENT DE DEMARRER ---
         function renderDemographics() {
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
@@ -921,6 +920,109 @@
                 };
             }
         }
+
+        // ============================================================
+        // === FONCTIONS MANQUANTES AJOUTEES ICI ===
+        // ============================================================
+
+        function renderContact() {
+            window.scrollTo(0,0);
+            const app = q('#app'); app.innerHTML='';
+            const card = document.createElement('div'); card.className='card center';
+            card.innerHTML = `<h2>Nous Contacter</h2><p>Une suggestion ou un bug ?</p>`;
+            const input = document.createElement('textarea'); input.className='input'; input.placeholder='Votre message...';
+            const btn = document.createElement('button'); btn.className='btn'; btn.textContent='Envoyer';
+            btn.onclick = () => { showAlert('Message envoyé (Simulation)', 'success'); renderHome(); };
+            const back = document.createElement('button'); back.className='btn-back'; back.textContent='Retour'; back.onclick=renderHome;
+            card.append(input, btn, back);
+            app.appendChild(card);
+        }
+
+        function prepareSigns() {
+            if (state.allSigns.length > 0) return; 
+            const signsSet = new Set();
+            PATHOLOGIES.forEach(p => {
+                Object.keys(p.signes).forEach(s => signsSet.add(s));
+            });
+            state.allSigns = Array.from(signsSet);
+        }
+
+        function rankPathologies() {
+            const scores = PATHOLOGIES.map(p => {
+                let score = 0;
+                let maxPossible = 0;
+                let textProb = 0;
+
+                for (const [sign, val] of Object.entries(state.answers)) {
+                    const weight = p.signes[sign] || 0; 
+
+                    if (val === true) {
+                        if (weight > 0) score += weight + 10; 
+                        else score -= 50; 
+                    } else if (val === false) {
+                        if (weight > 0) score -= 100; 
+                    }
+                }
+                
+                return { patho: p, score: score };
+            });
+
+            scores.sort((a, b) => b.score - a.score);
+            state.ranked = scores;
+            
+            if(scores.length > 0) {
+                 const topScore = scores[0].score;
+                 scores.forEach(item => {
+                     let prob = 0;
+                     if (item.score > 0) prob = Math.min(99, Math.max(10, (item.score / (state.asked.length * 10)) * 100));
+                     item.prob = prob.toFixed(0);
+                 });
+            }
+        }
+
+        function canShowDiagnostic() {
+            if (state.asked.length < 3) return false;
+            if (state.ranked.length < 2) return true;
+
+            const top = state.ranked[0];
+            const second = state.ranked[1];
+
+            if (top.score > 50 && (top.score - second.score > 30)) return true;
+            
+            return false;
+        }
+
+        function getNextSmartSign(ranked, remainingSigns) {
+            const topPathos = ranked.slice(0, 5).map(r => r.patho);
+            
+            const signCounts = {};
+            
+            topPathos.forEach(p => {
+                remainingSigns.forEach(s => {
+                    if (p.signes[s]) {
+                        signCounts[s] = (signCounts[s] || 0) + (p.signes[s] || 1);
+                    }
+                });
+            });
+
+            let bestSign = remainingSigns[0];
+            let maxVal = -1;
+
+            for (const [s, val] of Object.entries(signCounts)) {
+                if (val > maxVal) {
+                    maxVal = val;
+                    bestSign = s;
+                }
+            }
+            
+            if (!bestSign) return remainingSigns[Math.floor(Math.random() * remainingSigns.length)];
+            
+            return bestSign;
+        }
+
+        // ============================================================
+        // === FIN DES FONCTIONS AJOUTEES ===
+        // ============================================================
 
         async function renderReviews() {
             window.scrollTo(0,0);

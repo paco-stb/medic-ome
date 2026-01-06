@@ -257,6 +257,100 @@
     color: white;
     box-shadow: 0 0 15px var(--accent-glow);
 }
+        /* --- NOUVEAU CSS POUR LE PROFIL PATIENT --- */
+
+        /* 1. Titres des catégories (Habitudes, Contexte...) */
+        .section-label {
+            width: 100%;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent);
+            margin: 25px 0 10px 0;
+            padding-left: 5px;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 8px;
+            opacity: 0.9;
+        }
+
+        /* 2. Conteneur des badges (Chips) */
+        .chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: flex-start; /* Aligné à gauche pour la lecture */
+            margin-bottom: 10px;
+        }
+
+        /* 3. Le Badge (Chip) individuel */
+        .chip {
+            background: rgba(125, 125, 125, 0.08);
+            border: 1px solid var(--glass-border);
+            padding: 10px 18px;
+            border-radius: 50px; /* Plus arrondi */
+            font-size: 13px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chip i { font-size: 1.2em; } /* Icônes un peu plus grandes */
+
+        .chip:hover {
+            background: rgba(125, 125, 125, 0.2);
+            color: var(--text-main);
+            transform: translateY(-2px);
+        }
+
+        /* Quand le badge est sélectionné */
+        .chip.selected {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+            box-shadow: 0 4px 15px var(--accent-glow);
+            font-weight: 600;
+        }
+
+        /* 4. Les gros boutons Homme/Femme */
+        .gender-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .gender-btn {
+            flex: 1;
+            padding: 20px; /* Plus grand */
+            border-radius: 16px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 32px;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); /* Effet rebond */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gender-btn:hover {
+            background: rgba(125,125,125,0.1);
+        }
+
+        .gender-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+            box-shadow: 0 10px 30px var(--accent-glow);
+            transform: scale(1.05); /* Grossit un peu quand actif */
+        }
     </style>
 </head>
 <body>
@@ -1543,35 +1637,30 @@
     if (state.dailyTarget) {
         card.innerHTML = `<h3><i class="ph-duotone ph-sun color-gold"></i> Défi du Jour</h3><p class="small" style="margin-bottom:20px; color:var(--gold);">Cible : ${state.dailyTarget.name}</p>`;
     } else {
-        card.innerHTML = `<h3 style="text-align:center; margin-bottom:15px;"><i class="ph-duotone ph-user-list"></i> Nouveau Patient</h3><p class="small" style="margin-bottom:20px">Configurez le profil clinique.</p>`;
+        card.innerHTML = `<h3 style="text-align:center; margin-bottom:15px;"><i class="ph-duotone ph-user-list"></i> Profil Patient</h3><p class="small" style="margin-bottom:20px">Définissez le terrain et le contexte clinique.</p>`;
     }
 
-    // --- 1. SEXE (Boutons larges) ---
+    // --- 1. IDENTITÉ (Sexe & Âge) ---
     const genderContainer = document.createElement('div');
     genderContainer.className = 'gender-selector';
     genderContainer.innerHTML = `
-        <button class="gender-btn" id="btn-femme" onclick="selectGender('femme')"><i class="ph-duotone ph-gender-female"></i></button>
-        <button class="gender-btn" id="btn-homme" onclick="selectGender('homme')"><i class="ph-duotone ph-gender-male"></i></button>
+        <button class="gender-btn" id="btn-femme" onclick="selectGender('femme')" title="Femme"><i class="ph-duotone ph-gender-female"></i></button>
+        <button class="gender-btn" id="btn-homme" onclick="selectGender('homme')" title="Homme"><i class="ph-duotone ph-gender-male"></i></button>
     `;
-    card.appendChild(document.createElement('label')).textContent = "Sexe";
+    card.appendChild(document.createElement('label')).textContent = "Identité";
     card.appendChild(genderContainer);
 
-    // Variable locale pour stocker le sexe sélectionné
     let selectedGender = null;
     window.selectGender = (g) => {
         selectedGender = g;
         document.getElementById('btn-femme').className = `gender-btn ${g === 'femme' ? 'active' : ''}`;
         document.getElementById('btn-homme').className = `gender-btn ${g === 'homme' ? 'active' : ''}`;
-        
-        // Afficher/Masquer les tags spécifiques au sexe
         toggleGenderSpecificTags(g);
     };
 
-    // --- 2. ÂGE (Menu déroulant unifié) ---
-    const lAge = document.createElement('label'); lAge.textContent = "Tranche d'âge"; lAge.style.marginTop = "10px";
     const sAge = document.createElement('select'); sAge.id = 'demo-age'; sAge.className = 'input';
     const ages = [
-        { val: "nourrisson", txt: "Nourrisson (0 - 2 ans)" },
+        { val: "nourrisson", txt: "Nourrisson (< 2 ans)" },
         { val: "enfant", txt: "Enfant (2 - 12 ans)" },
         { val: "adolescent", txt: "Adolescent (13 - 18 ans)" },
         { val: "jeune", txt: "Jeune Adulte (19 - 35 ans)" },
@@ -1580,85 +1669,114 @@
     ];
     ages.forEach(a => {
         const op = document.createElement('option'); op.value = a.val; op.textContent = a.txt;
-        if (a.val === 'adulte') op.selected = true; // Défaut
+        if (a.val === 'adulte') op.selected = true; 
         sAge.appendChild(op);
     });
-    card.appendChild(lAge); card.appendChild(sAge);
+    card.appendChild(sAge);
 
-    // --- 3. FACTEURS DE RISQUE (Chips/Badges) ---
-    const lFact = document.createElement('label'); 
-    lFact.innerHTML = `Contexte & Antécédents <span style="opacity:0.5; font-weight:normal; font-size:0.9em">(Facultatif)</span>`;
-    lFact.style.marginTop = "20px"; card.appendChild(lFact);
-
+    // --- 3. TERRAIN & ANTÉCÉDENTS (Chips organisés) ---
+    // On regroupe par logique clinique : Toxiques, Métabolique, Contexte aigu...
+    
     const chipsDiv = document.createElement('div');
     chipsDiv.className = 'chips-container';
 
-    // Liste des facteurs disponibles (ID JSON, Label, Icone, Sexe requis)
-    const factorsList = [
-        { id: 'tabac', label: 'Tabac', icon: 'ph-cigarette' },
-        { id: 'alcool', label: 'Alcool', icon: 'ph-beer-bottle' },
-        { id: 'surpoids', label: 'Surpoids / Obésité', icon: 'ph-hamburger' },
-        { id: 'hta', label: 'Hypertension', icon: 'ph-heart-break' },
-        { id: 'diabete', label: 'Diabète', icon: 'ph-drop' },
-        { id: 'atcd_famille', label: 'Hérédité', icon: 'ph-dna' },
-        { id: 'voyage_recent', label: 'Voyage récent', icon: 'ph-airplane' },
-        { id: 'stress', label: 'Stress / Anxiété', icon: 'ph-mask-sad' },
-        { id: 'hiver', label: 'Hiver / Épidémie', icon: 'ph-snowflake' },
-        { id: 'sport', label: 'Sportif / Trauma', icon: 'ph-soccer-ball' },
-        // Spécifiques Femmes
-        { id: 'grossesse', label: 'Grossesse', icon: 'ph-baby', gender: 'femme' },
-        { id: 'sterilet', label: 'Stérilet', icon: 'ph-anchor', gender: 'femme' },
-        { id: 'menopause', label: 'Ménopause', icon: 'ph-flower', gender: 'femme' }
+    // Définition des groupes pour l'affichage (Purement visuel)
+    const groups = [
+        {
+            title: "Habitudes & Métabolisme",
+            items: [
+                { id: 'tabac', label: 'Tabac', icon: 'ph-cigarette' },
+                { id: 'alcool', label: 'Alcool', icon: 'ph-beer-bottle' },
+                { id: 'surpoids', label: 'Surpoids / Obésité', icon: 'ph-hamburger' },
+                { id: 'metabolique', label: 'Diabète / HTA', icon: 'ph-heart-break' } // Regroupement intelligent
+            ]
+        },
+        {
+            title: "Contexte Aigu / Déclencheur",
+            items: [
+                { id: 'trauma', label: 'Chute / Trauma / Effort', icon: 'ph-bone' }, // Couvre Fracture, IDM, Entorse...
+                { id: 'chirurgie', label: 'Chirurgie / Alité', icon: 'ph-bed' }, // Couvre Embolie
+                { id: 'voyage', label: 'Voyage / Plein Air', icon: 'ph-airplane' }, // Couvre Palu, Lyme, Tétanos
+                { id: 'medicaments', label: 'Médicaments / Allergie', icon: 'ph-pill' } // Couvre Choc, AINS, Anticoag...
+            ]
+        },
+        {
+            title: "Terrain Fragile",
+            items: [
+                { id: 'immuno', label: 'Cancer / Immuno.', icon: 'ph-ribbon' }, // Couvre ID, Cancer, Corticoïdes
+                { id: 'psy', label: 'Contexte Psy / Stress', icon: 'ph-brain' }, // Couvre Panique, TCA
+                { id: 'hiver', label: 'Hiver / Épidémie', icon: 'ph-snowflake' } // Couvre Grippe, Bronchio
+            ]
+        },
+        {
+            title: "Gynécologie",
+            genderSpecific: 'femme', // Sera caché si Homme
+            items: [
+                { id: 'grossesse', label: 'Grossesse', icon: 'ph-baby' },
+                { id: 'sterilet', label: 'Stérilet', icon: 'ph-anchor' },
+                { id: 'menopause', label: 'Ménopause', icon: 'ph-hourglass' }
+            ]
+        }
     ];
 
     const selectedFactors = new Set();
 
-    factorsList.forEach(f => {
-        const chip = document.createElement('div');
-        chip.className = 'chip';
-        chip.id = `chip-${f.id}`;
-        chip.innerHTML = `<i class="ph-duotone ${f.icon}"></i> ${f.label}`;
-        
-        if (f.gender) chip.dataset.gender = f.gender; // Pour filtrer
-        
-        chip.onclick = () => {
-            if (selectedFactors.has(f.id)) {
-                selectedFactors.delete(f.id);
-                chip.classList.remove('selected');
-            } else {
-                selectedFactors.add(f.id);
-                chip.classList.add('selected');
-            }
-        };
-        chipsDiv.appendChild(chip);
+    groups.forEach(group => {
+        // Création du titre de section (ex: HABITUDES)
+        const label = document.createElement('div');
+        label.className = 'section-label';
+        label.textContent = group.title;
+        if(group.genderSpecific) label.id = `label-${group.genderSpecific}`; // Pour le cacher
+        chipsDiv.appendChild(label);
+
+        // Création des chips
+        group.items.forEach(f => {
+            const chip = document.createElement('div');
+            chip.className = 'chip';
+            chip.id = `chip-${f.id}`;
+            chip.innerHTML = `<i class="ph-duotone ${f.icon}"></i> ${f.label}`;
+            if (group.genderSpecific) chip.dataset.gender = group.genderSpecific;
+
+            chip.onclick = () => {
+                if (selectedFactors.has(f.id)) {
+                    selectedFactors.delete(f.id);
+                    chip.classList.remove('selected');
+                } else {
+                    selectedFactors.add(f.id);
+                    chip.classList.add('selected');
+                }
+            };
+            chipsDiv.appendChild(chip);
+        });
     });
     card.appendChild(chipsDiv);
 
-    // Fonction pour cacher les options incohérentes (ex: Grossesse chez un Homme)
+    // Fonction de gestion d'affichage Homme/Femme
     window.toggleGenderSpecificTags = (g) => {
-        factorsList.forEach(f => {
-            if (f.gender) {
-                const el = document.getElementById(`chip-${f.id}`);
-                if (el) {
-                    if (g === f.gender) el.style.display = 'flex';
-                    else {
-                        el.style.display = 'none';
-                        selectedFactors.delete(f.id); // Décoche si on change de sexe
-                        el.classList.remove('selected');
-                    }
-                }
+        // Gérer les titres de sections
+        const labelFemme = document.getElementById('label-femme');
+        if(labelFemme) labelFemme.style.display = (g === 'femme') ? 'block' : 'none';
+
+        // Gérer les chips
+        const chips = document.querySelectorAll('[data-gender="femme"]');
+        chips.forEach(c => {
+            if (g === 'femme') c.style.display = 'flex';
+            else {
+                c.style.display = 'none';
+                c.classList.remove('selected');
+                selectedFactors.delete(c.id.replace('chip-', ''));
             }
         });
     };
     
-    // Initialisation affichage tags (masquer tags femme par défaut ou non)
+    // Initialisation
     toggleGenderSpecificTags(null); 
 
     // --- 4. CHRONO ---
     if (!state.dailyTarget) {
         const chronoDiv = document.createElement('div');
         chronoDiv.style.margin = '10px 0 20px 0'; chronoDiv.style.textAlign = 'center';
-        chronoDiv.innerHTML = `<label style="cursor:pointer; color:var(--text-muted); font-size:13px;"><input type="checkbox" id="chronoToggle" style="margin-right:6px; vertical-align:middle;"> <i class="ph-duotone ph-lightning"></i> Activer le Chrono</label>`;
+        chronoDiv.innerHTML = `<label style="cursor:pointer; color:var(--text-muted); font-size:13px;"><input type="checkbox" id="chronoToggle" style="margin-right:6px; vertical-align:middle;"> <i class="ph-duotone ph-lightning"></i> Mode Chrono</label>`;
         card.appendChild(chronoDiv);
     }
 
@@ -1667,31 +1785,105 @@
     const btnStart = document.createElement('button'); btnStart.className = 'btn'; btnStart.innerHTML = '<i class="ph-duotone ph-play"></i> Lancer le cas';
     
     btnStart.onclick = () => {
-        if (!selectedGender && !state.dailyTarget) { // Si pas de sexe choisi (sauf si défi du jour qui peut imposer)
-             // On peut forcer un choix, ou mettre "Aléatoire" par défaut. Ici on force pour la pédagogie.
-             // Pour être cool, si null, on met aléatoire en background
+        if (!selectedGender && !state.dailyTarget) { 
              if(Math.random() > 0.5) selectedGender = 'femme'; else selectedGender = 'homme';
         }
 
-        // --- MAPPING LOGIQUE : Âge ---
         const ageVal = q('#demo-age').value;
         const demoData = {
             homme: selectedGender === 'homme',
             femme: selectedGender === 'femme',
-            // Logique de cascade pour les âges
             nourrisson: ageVal === 'nourrisson',
             enfant: ageVal === 'enfant',
             adolescent: ageVal === 'adolescent',
-            jeune: ageVal === 'jeune' || ageVal === 'adolescent', // Un adolescent est "jeune"
+            jeune: ageVal === 'jeune' || ageVal === 'adolescent',
             plus_de_30ans: ageVal === 'adulte' || ageVal === 'senior',
             plus_de_65ans: ageVal === 'senior',
             adulte: ageVal === 'adulte'
         };
 
-        // --- MAPPING LOGIQUE : Facteurs ---
-        selectedFactors.forEach(id => {
-            demoData[id] = true;
+        // --- MAPPING INTELLIGENT --- 
+        // C'est ici que la magie opère pour traduire les boutons "Cliniques" en facteurs JSON précis
+        
+        // 1. Bouton "Diabète / HTA"
+        if(selectedFactors.has('metabolique')) {
+            demoData['diabete'] = true;
+            demoData['hta'] = true;
+            demoData['dyslipidemie'] = true; // Souvent associé
+            // Bonus : HTA est un facteur de risque cardiovasculaire majeur
+            demoData['fibrillation_atriale'] = true; 
+            demoData['insuffisance_cardiaque'] = true;
+        }
+
+        // 2. Bouton "Chute / Trauma / Effort"
+        if(selectedFactors.has('trauma')) {
+            demoData['chute'] = true; 
+            demoData['chute_main'] = true; // Pouteau-Colles
+            demoData['traumatisme_cranien'] = true; // Hématomes
+            demoData['effort'] = true; // Infarctus, Hernie discal
+            demoData['sport'] = true; // Entorse
+            demoData['frottement_yeux'] = true; // Orgelet (Trauma mineur)
+        }
+
+        // 3. Bouton "Chirurgie / Alité"
+        if(selectedFactors.has('chirurgie')) {
+            demoData['chirurgie_recente'] = true;
+            demoData['chirurgie_abdominale'] = true; // Occlusion
+            demoData['alitement'] = true; // Phlébite
+            demoData['chirurgie_cataracte'] = true; // Décollement rétine
+        }
+
+        // 4. Bouton "Voyage / Plein Air"
+        if(selectedFactors.has('voyage')) {
+            demoData['voyage_recent'] = true; // Palu
+            demoData['foret'] = true; // Lyme
+            demoData['jardinage'] = true; // Tétanos
+        }
+
+        // 5. Bouton "Médicaments / Allergies"
+        if(selectedFactors.has('medicaments')) {
+            demoData['medicaments'] = true;
+            demoData['allergie_connue'] = true; // Choc
+            demoData['allergies'] = true; // Asthme
+            demoData['ains'] = true; // Ulcère
+            demoData['anticoagulants'] = true; // Saignements
+            demoData['antibiotiques_recents'] = true; // Mycose / Muguet
+        }
+
+        // 6. Bouton "Cancer / Immuno"
+        if(selectedFactors.has('immuno')) {
+            demoData['cancer'] = true;
+            demoData['immunodepression'] = true; // Pneumopathie, Zona
+            demoData['auto_immun'] = true; // Lupus, Biermer
+            demoData['corticoides'] = true; // Cushing, Cataracte
+        }
+
+        // 7. Bouton "Psy / Stress"
+        if(selectedFactors.has('psy')) {
+            demoData['stress'] = true;
+            demoData['depression'] = true;
+            demoData['perfectionnisme'] = true; // Anorexie
+        }
+
+        // 8. Bouton "Hiver / Épidémie"
+        if(selectedFactors.has('hiver')) {
+            demoData['hiver'] = true;
+            demoData['epidemie'] = true; // Grippe
+            demoData['contage'] = true; // Maladies infantiles
+            demoData['collectivite'] = true; // Gastro
+            demoData['entourage_malade'] = true; // Méningite
+        }
+
+        // Mapping direct des boutons simples
+        ['tabac', 'alcool', 'surpoids', 'atcd_famille', 'grossesse', 'sterilet', 'menopause'].forEach(id => {
+            if(selectedFactors.has(id)) demoData[id] = true;
         });
+
+        // 9. Facteurs implicites (Jeune = Risque IST souvent)
+        if(demoData['jeune'] || demoData['adolescent']) {
+            demoData['rapport_risque'] = true;
+            demoData['partenaires_multiples'] = true;
+        }
 
         // --- LANCEMENT ---
         state.demo = demoData;
@@ -1710,9 +1902,6 @@
 
     const btnCancel = document.createElement('button'); btnCancel.className = 'link'; btnCancel.textContent = 'Annuler'; btnCancel.onclick = renderHome;
     btnGroup.appendChild(btnStart); btnGroup.appendChild(btnCancel); card.appendChild(btnGroup); app.appendChild(card);
-    
-    // Initialisation visuelle par défaut (Optionnel: sélectionner un genre par défaut pour gagner un clic ?)
-    // selectGender('femme'); // Décommenter pour présélectionner
 }
 
         function prepareSigns() {

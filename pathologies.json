@@ -731,7 +731,7 @@
         "name": "Anorexie Mentale",
         "short": "TCA",
         "pdf": "fiches/anorexie.pdf",
-        "signes": {"trouble_psy": 5, "maigreur_extreme": 20, "absence_regles": 18, "se_voit_grosse": 20, "sport_excessif": 12, "refus_manger": 18, "nie_etre_maigre": 15, "frilosite": 10},
+        "signes": {"trouble_psy": 5, "maigreur_extreme": 20, "absence_regles_chez_la_femme": 18, "le_patient_se_voit_gros": 20, "sport_excessif": 12, "refus_manger": 18, "nie_etre_maigre": 15, "frilosite": 10},
         "facteurs": {"femme": 8, "adolescente": 5, "perfectionnisme": 3}
     },
     {
@@ -944,14 +944,14 @@
         "name": "Cystite Aiguë",
         "short": "Infection urinaire basse",
         "pdf": "fiches/cystite.pdf",
-        "signes": {"genes_urinaires": 5, "brulures_urinaires": 20, "envie_frequente_uriner": 18, "urines_troubles_odorantes": 12, "douleur_sus_pubienne": 10, "absence_de_fievre": 15},
+        "signes": {"genes_urinaires": 5, "brulures_urinaires": 20, "envie_frequente_uriner": 18, "urines_troubles_odorantes": 12, "douleur_sus_pubienne": 10, "absence_de_fievre_specifique": 15},
         "facteurs": {"femme": 10, "rapports_recents": 5}
     },
     {
         "name": "Kyste Ovarien",
         "short": "Tuméfaction ovarienne",
         "pdf": "fiches/kyste_ovaire.pdf",
-        "signes": {"douleur_pelvienne": 5, "douleur_pelvienne_unilaterale": 18, "pesanteur_bas_ventre": 15, "troubles_regles": 10, "absence_de_fievre": 10},
+        "signes": {"douleur_pelvienne": 5, "douleur_pelvienne_unilaterale": 18, "pesanteur_bas_ventre": 15, "troubles_regles": 10, "absence_de_fievre_specifique": 10},
         "facteurs": {"femme": 10, "jeune": 5}
     },
     {
@@ -994,7 +994,7 @@
         "name": "Lithiase Biliaire",
         "short": "Colique hépatique",
         "pdf": "fiches/lithiase.pdf",
-        "signes": {"douleur_abdominale": 5, "douleur_hypocondre_droit": 20, "irradiation_epaule_droite": 15, "arret_respi_inspiration": 15, "absence_de_fievre": 12, "nausees": 10},
+        "signes": {"douleur_abdominale": 5, "douleur_hypocondre_droit": 20, "irradiation_epaule_droite": 15, "arret_respi_inspiration": 15, "absence_de_fievre_specifique": 12, "nausees": 10},
         "facteurs": {"femme": 5, "surpoids": 5, "plus_de_30ans": 5}
     },
     {
@@ -1107,7 +1107,7 @@
         "name": "Impétigo",
         "short": "Infection cutanée",
         "pdf": "fiches/impetigo.pdf",
-        "signes": {"anomalie_peau": 5, "croutes_jaunes_miel": 20, "autour_bouche_nez": 18, "bulles_peau": 12, "absence_de_fievre": 10, "grattage": 10},
+        "signes": {"anomalie_peau": 5, "croutes_jaunes_miel": 20, "autour_bouche_nez": 18, "bulles_peau": 12, "absence_de_fievre_specifique": 10, "grattage": 10},
         "images": {"croutes_jaunes_miel": "images/impetigo_crusts.png"},
         "facteurs": {"enfant": 10, "ete": 3}
     },

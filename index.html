@@ -1481,19 +1481,57 @@
             })).sort((a,b)=>b.prob - a.prob);
         }
 
-        function getNextSmartSign(rankedPathos, remainingSigns) {
-            if (rankedPathos.length < 2) return remainingSigns[Math.floor(Math.random() * remainingSigns.length)];
-            const top1 = rankedPathos[0].patho; const top2 = rankedPathos[1].patho;
-            let candidates = remainingSigns.map(s => {
-                const w1 = top1.signes[s] || 0; const w2 = top2.signes[s] || 0;
-                return { sign: s, score: Math.abs(w1 - w2) + (Math.random() * 0.1) };
+        function getNextSmartSign(ranked, remainingSigns) {
+            const topPathos = ranked.slice(0, 5).map(r => r.patho);
+            
+            // Liste des signes à "garder pour la fin" (Examens complémentaires)
+            const examSigns = new Set();
+            
+            // Mots-clés pour identifier les examens si le poids ne suffit pas
+            const examKeywords = ['radio', 'scanner', 'irm', 'ecg', 'biologie', 'analyse', 'echographie'];
+
+            topPathos.forEach(p => {
+                for (const [s, weight] of Object.entries(p.signes)) {
+                    // CRITÈRE : Poids lourd (>=40) ET (a une image OU contient un mot clé d'examen)
+                    // Cela laisse passer les signes cliniques forts (ex: poids 30)
+                    const isExamKeyword = examKeywords.some(k => s.includes(k));
+                    const hasImage = p.images && p.images[s];
+                    
+                    if (weight >= 40 && (hasImage || isExamKeyword)) {
+                        examSigns.add(s);
+                    }
+                }
             });
-            candidates.sort((a, b) => b.score - a.score);
-            let usefulCandidates = candidates.filter(c => c.score > 0.1);
-            if (usefulCandidates.length === 0) usefulCandidates = candidates;
-            const poolSize = Math.min(usefulCandidates.length, 5);
-            const topPool = usefulCandidates.slice(0, poolSize);
-            return topPool[Math.floor(Math.random() * topPool.length)].sign;
+
+            // On crée un pool "Clinique" (tout sauf les examens complémentaires)
+            let clinicalPool = remainingSigns.filter(s => !examSigns.has(s));
+
+            // Si on a encore des questions cliniques, on les priorise.
+            // Sinon (si on a tout épuisé), on sort les radios/scanners.
+            let pool = clinicalPool.length > 0 ? clinicalPool : remainingSigns;
+
+            const signCounts = {};
+            topPathos.forEach(p => {
+                pool.forEach(s => {
+                    if (p.signes[s]) {
+                        signCounts[s] = (signCounts[s] || 0) + (p.signes[s] || 1);
+                    }
+                });
+            });
+
+            let bestSign = pool[0];
+            let maxVal = -1;
+
+            for (const [s, val] of Object.entries(signCounts)) {
+                if (val > maxVal) {
+                    maxVal = val;
+                    bestSign = s;
+                }
+            }
+            
+            if (!bestSign && pool.length > 0) return pool[Math.floor(Math.random() * pool.length)];
+            
+            return bestSign;
         }
 
         function canShowDiagnostic() {
@@ -1521,20 +1559,39 @@
         }
 
         function prepareConfirmationQuestions(topPatho) {
-            const pSigns = Object.entries(topPatho.signes)
-                .sort((a, b) => b[1] - a[1]) 
-                .map(entry => entry[0]);
+            const pSigns = Object.keys(topPatho.signes); 
+            const unaskedCorrect = pSigns.filter(s => !state.asked.includes(s));
             
-            let questions = pSigns.filter(s => !state.asked.includes(s));
+            // 1. Identifier l'examen complémentaire (La "Preuve")
+            // On cherche un signe non posé avec un poids >= 40 (Radio, ECG...)
+            let proofSign = unaskedCorrect.find(s => topPatho.signes[s] >= 40);
+
+            // 2. Sélectionner les signes CLINIQUES restants (en excluant la preuve)
+            let poolCorrect = unaskedCorrect.filter(s => s !== proofSign);
+            poolCorrect.sort(() => 0.5 - Math.random());
             
-            const trapCandidates = state.allSigns.filter(s => !pSigns.includes(s) && !state.asked.includes(s));
-            
-            if (trapCandidates.length > 0) {
-                const trap = trapCandidates[Math.floor(Math.random() * trapCandidates.length)];
-                questions.splice(1, 0, trap); 
+            // On prend 2 signes cliniques si on a une preuve, sinon 3
+            let limitCorrect = proofSign ? 2 : 3;
+            let selectedCorrect = poolCorrect.slice(0, limitCorrect);
+
+            // 3. Sélectionner les PIÈGES (Faux signes)
+            const unaskedTraps = state.allSigns.filter(s => !pSigns.includes(s) && !state.asked.includes(s));
+            unaskedTraps.sort(() => 0.5 - Math.random());
+            let selectedTraps = unaskedTraps.slice(0, 3); 
+
+            // 4. Mélanger les questions CLINIQUES et les PIÈGES
+            let queue = [...selectedCorrect, ...selectedTraps];
+            queue.sort(() => 0.5 - Math.random());
+
+            // 5. Ajouter l'EXAMEN COMPLÉMENTAIRE à la toute fin (comme le "Boss final")
+            if (proofSign) {
+                queue.push(proofSign);
+            } else if (selectedCorrect.length < 3 && poolCorrect.length > limitCorrect) {
+                 // Cas rare : pas d'examen dispo, on complète avec du clinique
+                 queue.push(poolCorrect[limitCorrect]);
             }
 
-            return questions.slice(0, 5);
+            return queue;
         }
 
         function renderCurrentQuestion() {

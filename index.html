@@ -544,42 +544,58 @@
                 });
 
                 // GESTION CLAVIER AJOUTÉE
-                document.addEventListener('keydown', (e) => {
-                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                // GESTION CLAVIER CORRIGÉE
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
-                    // Navigation Quiz
-                    if (q('.question-text')) {
-                        if (e.key === 'ArrowRight' || e.key === 'y' || e.key === 'o') {
-                            const btn = document.querySelector('.btn-success');
-                            if(btn) btn.click();
-                        } else if (e.key === 'ArrowLeft' || e.key === 'n') {
-                            const btn = document.querySelector('.btn-error');
-                            if(btn) btn.click();
-                        } else if (e.key === 'ArrowUp' || e.key === 'i' || e.key === ' ') {
-                            const btns = document.querySelectorAll('.button-group .link');
-                            if(btns.length > 0) btns[0].click();
-                        } else if (e.key === 'Enter') {
-                            const btn = document.querySelector('.btn-success');
-                            if(btn) btn.click();
-                        }
-                    } else {
-                        if (e.key === 'Enter') {
-                            const primaryBtn = q('.btn'); 
-                            if(primaryBtn && primaryBtn.offsetParent !== null) {
-                                primaryBtn.click();
-                            }
+            // Navigation Quiz
+            if (q('.question-text')) {
+                if (e.key === 'ArrowRight' || e.key === 'y' || e.key === 'o') {
+                    const btn = document.querySelector('.btn-success');
+                    if(btn) btn.click();
+                } else if (e.key === 'ArrowLeft' || e.key === 'n') {
+                    const btn = document.querySelector('.btn-error');
+                    if(btn) btn.click();
+                } else if (e.key === 'ArrowUp' || e.key === 'i' || e.key === ' ') {
+                    e.preventDefault();
+                    const btns = document.querySelectorAll('.button-group .link');
+                    if(btns.length > 0) btns[0].click();
+                } else if (e.key === 'Enter') {
+                    const btn = document.querySelector('.btn-success');
+                    if(btn) btn.click();
+                }
+            } else {
+                // Navigation Menus / Accueil
+                if (e.key === 'Enter') {
+                    // On vérifie si l'utilisateur est déjà sur un élément cliquable (via TAB)
+                    const active = document.activeElement;
+                    const isInteractive = active && (
+                        active.tagName === 'BUTTON' || 
+                        active.tagName === 'A' || 
+                        active.classList.contains('link') || 
+                        active.classList.contains('footer-link') ||
+                        active.classList.contains('social-link')
+                    );
+
+                    // Si on n'est PAS sur un élément interactif, on clique sur le bouton principal
+                    if (!isInteractive) {
+                        const primaryBtn = q('.btn'); 
+                        if(primaryBtn && primaryBtn.offsetParent !== null) {
+                            primaryBtn.click();
                         }
                     }
-                    
-                    if (e.key === 'Escape') {
-                        const notifModal = q('#notifModal');
-                        if(notifModal && notifModal.style.display === 'block') {
-                            notifModal.style.display = 'none';
-                        } else if (!q('.question-text')) {
-                            renderHome();
-                        }
-                    }
-                });
+                }
+            }
+            
+            if (e.key === 'Escape') {
+                const notifModal = q('#notifModal');
+                if(notifModal && notifModal.style.display === 'block') {
+                    notifModal.style.display = 'none';
+                } else if (!q('.question-text') && state.currentUser) {
+                    renderHome();
+                }
+            }
+        });
 
             } catch (err) {
                 console.error(err);
@@ -977,6 +993,30 @@
             }, 100);
         }
 
+        function renderContact() {
+            setDocTitle("Nous Contacter");
+            window.scrollTo(0,0);
+            const app = q('#app'); app.innerHTML='';
+            const card = document.createElement('div'); card.className='card center';
+            card.innerHTML = `<h2><i class="ph-duotone ph-envelope"></i> Nous Contacter</h2>`;
+            const inputName = document.createElement('input'); inputName.className='input'; inputName.placeholder='Votre Nom';
+            if(state.pseudo) inputName.value = state.pseudo;
+            const inputEmail = document.createElement('input'); inputEmail.className='input'; inputEmail.placeholder='Votre Email';
+            if(state.currentUser) inputEmail.value = state.currentUser.email;
+            const inputText = document.createElement('textarea'); inputText.className='input'; inputText.placeholder='Votre message...';
+            const btnSend = document.createElement('button'); btnSend.className='btn'; btnSend.textContent='Envoyer';
+            btnSend.onclick = async () => {
+                if(!inputText.value) return;
+                try {
+                    await addDoc(collection(db, "messages"), { name: inputName.value, email: inputEmail.value, message: inputText.value, date: new Date(), uid: state.currentUser ? state.currentUser.uid : 'guest' });
+                    showAlert("Envoyé !", "success"); setTimeout(() => { if(state.pseudo) renderHome(); else renderLogin(); }, 1500);
+                } catch(e) { showAlert("Erreur", "error"); }
+            };
+            const btnCancel = document.createElement('button'); btnCancel.className='link'; btnCancel.textContent='Annuler';
+            btnCancel.onclick = () => { if(state.pseudo) renderHome(); else renderLogin(); };
+            card.append(inputName, inputEmail, inputText, btnSend, btnCancel); app.appendChild(card);
+        }
+        
         function renderAbandonMenu() {
             setDocTitle("Abandon ?");
             window.scrollTo(0,0);

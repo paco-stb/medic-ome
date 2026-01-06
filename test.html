@@ -1550,8 +1550,8 @@
     const genderContainer = document.createElement('div');
     genderContainer.className = 'gender-selector';
     genderContainer.innerHTML = `
-        <button class="gender-btn" id="btn-femme" onclick="selectGender('femme')"><i class="ph-duotone ph-person-simple-skirt"></i></button>
-        <button class="gender-btn" id="btn-homme" onclick="selectGender('homme')"><i class="ph-duotone ph-person-simple"></i></button>
+        <button class="gender-btn" id="btn-femme" onclick="selectGender('femme')"><i class="ph-duotone ph-gender-female"></i></button>
+        <button class="gender-btn" id="btn-homme" onclick="selectGender('homme')"><i class="ph-duotone ph-gender-male"></i></button>
     `;
     card.appendChild(document.createElement('label')).textContent = "Sexe";
     card.appendChild(genderContainer);

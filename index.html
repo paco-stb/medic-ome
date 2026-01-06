@@ -1622,36 +1622,93 @@
         }
 
         function prepareConfirmationQuestions(topPatho) {
-            const pSigns = Object.keys(topPatho.signes); 
+            const pSigns = Object.keys(topPatho.signes);
             const unaskedCorrect = pSigns.filter(s => !state.asked.includes(s));
-            
-            // 1. Identifier l'examen complémentaire (La "Preuve")
-            // On cherche un signe non posé avec un poids >= 40 (Radio, ECG...)
+
+            // 1. Identifier l'examen complémentaire (La "Preuve" / Boss Final)
             let proofSign = unaskedCorrect.find(s => topPatho.signes[s] >= 40);
 
-            // 2. Sélectionner les signes CLINIQUES restants (en excluant la preuve)
+            // 2. Préparer le pool de signes CORRECTS restants (sans la preuve)
             let poolCorrect = unaskedCorrect.filter(s => s !== proofSign);
             poolCorrect.sort(() => 0.5 - Math.random());
-            
-            // On prend 2 signes cliniques si on a une preuve, sinon 3
-            let limitCorrect = proofSign ? 2 : 3;
-            let selectedCorrect = poolCorrect.slice(0, limitCorrect);
 
-            // 3. Sélectionner les PIÈGES (Faux signes)
-            const unaskedTraps = state.allSigns.filter(s => !pSigns.includes(s) && !state.asked.includes(s));
-            unaskedTraps.sort(() => 0.5 - Math.random());
-            let selectedTraps = unaskedTraps.slice(0, 3); 
+            // 3. Préparer le pool de signes PIÈGES (Diagnostic Différentiel)
+            // On va chercher les signes des pathologies classées 2, 3, 4 et 5
+            let differentialSigns = new Set();
+            // On limite la recherche aux 5 premiers résultats max
+            const maxRank = Math.min(state.ranked.length, 5); 
 
-            // 4. Mélanger les questions CLINIQUES et les PIÈGES
-            let queue = [...selectedCorrect, ...selectedTraps];
+            for (let i = 1; i < maxRank; i++) {
+                if (state.ranked[i]) {
+                    const competitorPatho = state.ranked[i].patho;
+                    Object.keys(competitorPatho.signes).forEach(s => {
+                        // On ajoute le signe SI :
+                        // - Il n'appartient PAS à la maladie correcte (sinon ce n'est pas un piège)
+                        // - Il n'a pas déjà été posé
+                        if (!pSigns.includes(s) && !state.asked.includes(s)) {
+                            differentialSigns.add(s);
+                        }
+                    });
+                }
+            }
+
+            let poolTraps = Array.from(differentialSigns);
+            poolTraps.sort(() => 0.5 - Math.random()); // Mélanger les pièges pertinents
+
+            // FALLBACK : Si pas assez de pièges pertinents (cas rare), on complète avec du hasard
+            if (poolTraps.length < 3) {
+                const randomTraps = state.allSigns.filter(s => 
+                    !pSigns.includes(s) && !state.asked.includes(s) && !poolTraps.includes(s)
+                );
+                randomTraps.sort(() => 0.5 - Math.random());
+                poolTraps = [...poolTraps, ...randomTraps];
+            }
+
+            // 4. Construction de la file d'attente avec RATIO ALÉATOIRE
+            // On choisit une longueur de séquence entre 3 et 5 questions (hors preuve)
+            const sequenceLength = Math.floor(Math.random() * 3) + 3; // 3, 4 ou 5
+            let queue = [];
+
+            // Remplissage aléatoire des slots
+            for (let i = 0; i < sequenceLength; i++) {
+                // 50% de chance de vouloir un signe correct, 50% un piège
+                const wantCorrect = Math.random() > 0.5;
+
+                if (wantCorrect && poolCorrect.length > 0) {
+                    queue.push(poolCorrect.shift());
+                } else if (poolTraps.length > 0) {
+                    queue.push(poolTraps.shift());
+                } else if (poolCorrect.length > 0) {
+                    // Si on voulait un piège mais qu'il n'y en a plus, on met un correct
+                    queue.push(poolCorrect.shift());
+                } else {
+                    // Plus de questions dispo
+                    break;
+                }
+            }
+
+            // 5. Sécurité Anti-Pattern
+            // On s'assure qu'il y a au moins 1 vrai et 1 faux dans le lot (si possible)
+            // pour ne pas avoir une série de 5 "NON" ou 5 "OUI" trop évidente
+            const hasCorrect = queue.some(s => pSigns.includes(s));
+            const hasTrap = queue.some(s => !pSigns.includes(s));
+
+            if (!hasCorrect && poolCorrect.length > 0 && queue.length > 0) {
+                queue[0] = poolCorrect.shift(); // On force un vrai
+            }
+            if (!hasTrap && poolTraps.length > 0 && queue.length > 0) {
+                queue[queue.length - 1] = poolTraps.shift(); // On force un faux
+            }
+
+            // 6. Mélanger la file d'attente finale
             queue.sort(() => 0.5 - Math.random());
 
-            // 5. Ajouter l'EXAMEN COMPLÉMENTAIRE à la toute fin (comme le "Boss final")
+            // 7. Ajouter la PREUVE à la toute fin
             if (proofSign) {
                 queue.push(proofSign);
-            } else if (selectedCorrect.length < 3 && poolCorrect.length > limitCorrect) {
-                 // Cas rare : pas d'examen dispo, on complète avec du clinique
-                 queue.push(poolCorrect[limitCorrect]);
+            } else if (poolCorrect.length > 0) {
+                // Si pas de preuve absolue, on met un dernier signe correct pour valider
+                queue.push(poolCorrect.shift());
             }
 
             return queue;

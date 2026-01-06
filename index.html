@@ -1432,30 +1432,6 @@
             card.appendChild(btnBack); app.appendChild(card);
         }
 
-        function renderContact() {
-            setDocTitle("Contact");
-            window.scrollTo(0,0);
-            const app = q('#app'); app.innerHTML='';
-            const card = document.createElement('div'); card.className='card center';
-            card.innerHTML = `<h2><i class="ph-duotone ph-envelope"></i> Nous Contacter</h2>`;
-            const inputName = document.createElement('input'); inputName.className='input'; inputName.placeholder='Votre Nom';
-            if(state.pseudo) inputName.value = state.pseudo;
-            const inputEmail = document.createElement('input'); inputEmail.className='input'; inputEmail.placeholder='Votre Email';
-            if(state.currentUser) inputEmail.value = state.currentUser.email;
-            const inputText = document.createElement('textarea'); inputText.className='input'; inputText.placeholder='Votre message...';
-            const btnSend = document.createElement('button'); btnSend.className='btn'; btnSend.textContent='Envoyer';
-            btnSend.onclick = async () => {
-                if(!inputText.value) return;
-                try {
-                    await addDoc(collection(db, "messages"), { name: inputName.value, email: inputEmail.value, message: inputText.value, date: new Date(), uid: state.currentUser ? state.currentUser.uid : 'guest' });
-                    showAlert("Envoyé !", "success"); setTimeout(() => { if(state.pseudo) renderHome(); else renderLogin(); }, 1500);
-                } catch(e) { showAlert("Erreur", "error"); }
-            };
-            const btnCancel = document.createElement('button'); btnCancel.className='link'; btnCancel.textContent='Annuler';
-            btnCancel.onclick = () => { if(state.pseudo) renderHome(); else renderLogin(); };
-            card.append(inputName, inputEmail, inputText, btnSend, btnCancel); app.appendChild(card);
-        }
-
         function renderDemographics() {
             setDocTitle("Paramètres Patient");
             window.scrollTo(0,0);
@@ -1714,6 +1690,74 @@
             return queue;
         }
 
+        // --- FONCTIONS "PLAISANTIN" (Easter Eggs) ---
+        function checkPlaisantin() {
+            // On ne vérifie qu'exactement à la 15ème question
+            if (state.asked.length !== 15) return false;
+
+            // Vérifier si toutes les réponses sont NON
+            const allNo = state.asked.every(sign => state.answers[sign] === false);
+            if (allNo) {
+                renderPlaisantinEnd("healthy");
+                return true; // On stoppe le jeu
+            }
+
+            // Vérifier si toutes les réponses sont OUI
+            const allYes = state.asked.every(sign => state.answers[sign] === true);
+            if (allYes) {
+                renderPlaisantinEnd("hypochondriac");
+                return true; // On stoppe le jeu
+            }
+
+            return false; // On continue le jeu normalement
+        }
+
+        function renderPlaisantinEnd(type) {
+            setDocTitle("Diagnostic Surprise");
+            window.scrollTo(0,0);
+            const app = q('#app'); app.innerHTML = '';
+            const card = document.createElement('div'); card.className = 'card center';
+            
+            // On joue un petit son si possible
+            playSound(type === "healthy" ? 'success' : 'error');
+
+            if (type === "healthy") {
+                // Cas : 15 NON d'affilée
+                card.innerHTML = `
+                    <div class="icon-lg color-success"><i class="ph-duotone ph-person-simple-walk"></i></div>
+                    <h2 style="color:var(--success)">Diagnostic : Touriste !</h2>
+                    <p style="margin-top:15px; font-weight:bold;">Ce patient n'a RIEN.</p>
+                    <p class="small" style="margin-top:10px; line-height:1.6;">
+                        Après 15 questions négatives, il semblerait que ce patient se soit juste perdu dans l'hôpital en cherchant la machine à café.<br>
+                        Rentrez chez vous, vous êtes en parfaite santé !
+                    </p>
+                `;
+            } else {
+                // Cas : 15 OUI d'affilée
+                card.innerHTML = `
+                    <div class="icon-lg color-ruby"><i class="ph-duotone ph-mask-happy"></i></div>
+                    <h2 style="color:var(--ruby)">Diagnostic : Malade Imaginaire</h2>
+                    <p style="margin-top:15px; font-weight:bold;">Syndrome de l'Hypocondriaque Massif</p>
+                    <p class="small" style="margin-top:10px; line-height:1.6;">
+                        Le patient a TOUS les symptômes. Statistiquement, il devrait avoir explosé il y a 10 minutes.<br>
+                        Appelez Dr House, ou un psychiatre, c'est au choix.
+                    </p>
+                `;
+            }
+
+            const btn = document.createElement('button');
+            btn.className = 'btn'; 
+            btn.innerHTML = '<i class="ph-duotone ph-arrow-counter-clockwise"></i> Recommencer sérieusement';
+            btn.style.marginTop = "20px";
+            btn.onclick = () => { 
+                state.dailyTarget = null; 
+                renderDemographics(); 
+            };
+            
+            card.appendChild(btn);
+            app.appendChild(card);
+        }
+
         function renderCurrentQuestion() {
             setDocTitle(`Question ${state.asked.length}`);
             window.scrollTo(0,0);
@@ -1782,6 +1826,10 @@
         }
 
         function askNextQuestion() {
+            // --- VERIFICATION PLAISANTIN ---
+            if (checkPlaisantin()) return; 
+            // -------------------------------
+
             if (state.asked.length >= 20) { showDiagnostic(); return; }
 
             if(state.asked.length > 0) {

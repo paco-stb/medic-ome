@@ -1001,7 +1001,7 @@
             
             const card = document.createElement('div'); 
             card.className='card center';
-            // Style spécifique pour matcher le fond sombre de l'image si besoin
+            // Style spécifique pour matcher le fond sombre
             card.style.background = 'rgba(13, 25, 48, 0.95)'; 
             card.style.maxWidth = '500px';
 
@@ -1043,14 +1043,11 @@
                     return;
                 }
 
-                // Animation de chargement sur le bouton
                 const btn = q('#sendContactBtn');
-                const originalText = btn.innerText;
                 btn.innerText = "Envoi en cours...";
                 btn.style.opacity = "0.7";
 
                 try {
-                    // Envoi vers Firebase (Optionnel : si vous voulez vraiment sauvegarder)
                     await addDoc(collection(db, "messages"), {
                         nom: nom,
                         email: email,
@@ -1061,21 +1058,29 @@
 
                     playSound('success');
                     showAlert("Message envoyé avec succès !", "success");
-                    renderHome();
+                    // Redirection intelligente après succès aussi
+                    if (state.currentUser || state.isGuest) renderHome();
+                    else renderLogin();
+
                 } catch (e) {
                     console.error(e);
-                    // Fallback si pas de connexion database ou erreur
                     showAlert("Message envoyé (Simulation)", "success");
-                    renderHome();
+                    // Redirection intelligente après erreur/simulation aussi
+                    if (state.currentUser || state.isGuest) renderHome();
+                    else renderLogin();
                 }
             };
 
-            // Gestionnaire du bouton Annuler
+            // Gestionnaire du bouton Annuler (CORRIGÉ ICI)
             q('#cancelContactBtn').onclick = () => {
-                renderHome();
+                if (state.currentUser || state.isGuest) {
+                    renderHome();
+                } else {
+                    renderLogin();
+                }
             };
         }
-
+        
         function prepareSigns() {
             if (state.allSigns.length > 0) return; 
             const signsSet = new Set();

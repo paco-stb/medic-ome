@@ -1615,6 +1615,21 @@
 
         function canShowDiagnostic() {
             const qNum = state.asked.length;
+            
+            // --- FIX PLAISANTIN DEBUT ---
+            // Si le joueur est en train de tenter l'Easter Egg (moins de 15 questions)
+            // On empêche l'IA de conclure, même si elle est sûre d'elle.
+            if (qNum < 15 && qNum > 0) {
+                // Vérifie si on a que des "Vrai" jusqu'à présent
+                const allYes = state.asked.every(s => state.answers[s] === true);
+                // Vérifie si on a que des "Faux" jusqu'à présent
+                const allNo = state.asked.every(s => state.answers[s] === false);
+                
+                // Si on est dans une série parfaite, on force le jeu à continuer
+                if (allYes || allNo) return false; 
+            }
+            // --- FIX PLAISANTIN FIN ---
+
             if(state.ranked.length===0) return false;
             
             const top1 = state.ranked[0];

@@ -198,75 +198,6 @@
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
-        /* --- STYLE FORMULAIRE CONTACT --- */
-.contact-form-container {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.contact-input {
-    width: 100%;
-    background-color: rgba(30, 41, 59, 0.7); /* Fond bleu nuit sombre */
-    border: 1px solid rgba(255, 255, 255, 0.2); /* Bordure subtile */
-    color: #ffffff;
-    padding: 16px;
-    border-radius: 12px;
-    font-size: 16px;
-    font-family: 'Inter', sans-serif;
-    outline: none;
-    transition: all 0.3s ease;
-}
-
-.contact-input::placeholder {
-    color: rgba(255, 255, 255, 0.4);
-}
-
-/* L'effet de focus blanc comme sur l'image */
-.contact-input:focus {
-    border-color: #ffffff;
-    background-color: rgba(30, 41, 59, 1);
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
-}
-
-.btn-cyan-large {
-    background: #00a8ff; /* Le bleu cyan vif */
-    color: white;
-    font-size: 18px;
-    font-weight: 700;
-    padding: 16px;
-    border-radius: 12px;
-    border: none;
-    width: 100%;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 4px 20px rgba(0, 168, 255, 0.3);
-}
-
-.btn-cyan-large:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 25px rgba(0, 168, 255, 0.5);
-    background: #1cb5ff;
-}
-
-.btn-cancel-dark {
-    background: rgba(255, 255, 255, 0.1);
-    color: #94a3b8;
-    padding: 10px 24px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    margin-top: 5px;
-    transition: all 0.2s;
-}
-
-.btn-cancel-dark:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
-}
     </style>
 </head>
 <body>
@@ -464,8 +395,7 @@
             history: [],
             confirmationMode: false, confirmationQueue: [], confirmedPatho: null,
             priorityQueue: [],
-            isChrono: false, startTime: null, dailyTarget: null,
-            consecutiveNon: 0 // COMPTEUR ANTI-TROLL
+            isChrono: false, startTime: null, dailyTarget: null
         };
 
         // --- THEME LOGIC ---
@@ -865,66 +795,6 @@
             card.appendChild(inputCode); card.appendChild(btnCode); app.appendChild(card);
         }
 
-        function renderDemographics() {
-            window.scrollTo(0,0);
-            const app = q('#app'); app.innerHTML='';
-            const card = document.createElement('div'); card.className='card';
-            
-            if(state.dailyTarget) {
-                card.innerHTML = `<h3><i class="ph-duotone ph-sun color-gold"></i> Défi du Jour</h3><p class="small" style="margin-bottom:20px; color:var(--gold);">Cible : ${state.dailyTarget.name}</p>`;
-            } else {
-                 card.innerHTML=`<h3 style="text-align:center; margin-bottom:15px;"><i class="ph-duotone ph-user-list"></i> Données démographiques</h3><p class="small" style="margin-bottom:20px">Paramétrez le patient virtuel.</p>`;
-            }
-
-            const createSel = (lbl, id, opts) => {
-                const l = document.createElement('label'); l.textContent=lbl; l.style.color='var(--accent)';
-                const s = document.createElement('select'); s.id=id; s.className='input';
-                opts.forEach(o=> { const op=document.createElement('option'); op.value=o[0]; op.textContent=o[1]; s.appendChild(op); });
-                card.appendChild(l); card.appendChild(s);
-            };
-            createSel("Sexe", "demo-sexe", [["rien","Aléatoire / Inconnu"],["femme","Femme"],["homme","Homme"]]);
-            createSel("Plus de 30 ans ?", "demo-30", [["rien","Je ne sais pas"],["oui","Oui"],["non","Non"]]);
-            createSel("Plus de 65 ans ?", "demo-65", [["rien","Je ne sais pas"],["oui","Oui"],["non","Non"]]);
-            createSel("Antécédents familiaux ?", "demo-atcd", [["rien","Je ne sais pas"],["oui","Oui"],["non","Non"]]);
-            createSel("Fumeur ?", "demo-tabac", [["rien","Je ne sais pas"],["oui","Oui"],["non","Non"]]);
-            
-            if(!state.dailyTarget) { 
-                const chronoDiv = document.createElement('div');
-                chronoDiv.style.margin = '20px 0'; chronoDiv.style.textAlign='center';
-                const chronoLabel = document.createElement('label'); 
-                chronoLabel.innerHTML = `<input type="checkbox" id="chronoToggle" style="margin-right:8px;"> <i class="ph-duotone ph-lightning"></i> Mode Chrono (Facultatif)`;
-                chronoLabel.style.color = 'var(--text-main)'; chronoLabel.style.cursor='pointer';
-                chronoDiv.appendChild(chronoLabel);
-                card.appendChild(chronoDiv);
-            }
-
-            const btnGroup = document.createElement('div'); btnGroup.className='button-group';
-            const btnStart = document.createElement('button'); btnStart.className='btn'; btnStart.innerHTML='<i class="ph-duotone ph-play"></i> Démarrer';
-            
-            btnStart.onclick=()=>{ 
-                state.demo = {
-                    femme: q('#demo-sexe').value === 'femme', homme: q('#demo-sexe').value === 'homme',
-                    plus_de_30ans: q('#demo-30').value === 'oui', plus_de_65ans: q('#demo-65').value === 'oui',
-                    atcd_famille: q('#demo-atcd').value === 'oui', tabac: q('#demo-tabac').value === 'oui'
-                };
-                state.answers={}; state.asked=[]; state.diagnosticShown=false; state.previousDiagnostics=[]; state.history=[];
-                state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
-                state.priorityQueue = [];
-                state.consecutiveNon = 0; 
-
-                if(state.dailyTarget) state.isChrono = false; 
-                else state.isChrono = q('#chronoToggle')?.checked || false;
-                
-                if(state.isChrono) state.startTime = Date.now();
-                else state.startTime = null;
-
-                askNextQuestion();
-            };
-
-            const btnCancel = document.createElement('button'); btnCancel.className='link'; btnCancel.textContent='Annuler'; btnCancel.onclick=renderHome;
-            btnGroup.appendChild(btnStart); btnGroup.appendChild(btnCancel); card.appendChild(btnGroup); app.appendChild(card);
-        }
-
         function renderHome() {
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
@@ -989,183 +859,6 @@
                 };
             }
         }
-
-        // ============================================================
-        // === FONCTIONS MANQUANTES AJOUTEES ICI ===
-        // ============================================================
-
-        function renderContact() {
-            window.scrollTo(0,0);
-            const app = q('#app'); 
-            app.innerHTML='';
-            
-            const card = document.createElement('div'); 
-            card.className='card center';
-            // Style spécifique pour matcher le fond sombre
-            card.style.background = 'rgba(13, 25, 48, 0.95)'; 
-            card.style.maxWidth = '500px';
-
-            // Titre avec l'icône enveloppe
-            const headerHtml = `
-                <h2 style="margin-bottom: 25px; color: white; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                    <i class="ph-fill ph-envelope"></i> Nous Contacter
-                </h2>
-            `;
-
-            // Création des inputs
-            const formHtml = `
-                <div class="contact-form-container">
-                    <input type="text" id="contactName" class="contact-input" placeholder="Votre Nom" value="${state.pseudo || ''}">
-                    
-                    <input type="email" id="contactEmail" class="contact-input" placeholder="Votre Email" value="${state.currentUser ? state.currentUser.email : ''}">
-                    
-                    <textarea id="contactMsg" class="contact-input" placeholder="Votre message..." rows="4" style="resize: vertical; min-height: 120px;"></textarea>
-                    
-                    <button id="sendContactBtn" class="btn-cyan-large">Envoyer</button>
-                    
-                    <div style="display:flex; justify-content:center;">
-                        <button id="cancelContactBtn" class="btn-cancel-dark">Annuler</button>
-                    </div>
-                </div>
-            `;
-
-            card.innerHTML = headerHtml + formHtml;
-            app.appendChild(card);
-
-            // Gestionnaire du bouton Envoyer
-            q('#sendContactBtn').onclick = async () => {
-                const nom = q('#contactName').value;
-                const email = q('#contactEmail').value;
-                const msg = q('#contactMsg').value;
-
-                if(!nom || !email || !msg) {
-                    showAlert("Veuillez remplir tous les champs", "error");
-                    return;
-                }
-
-                const btn = q('#sendContactBtn');
-                btn.innerText = "Envoi en cours...";
-                btn.style.opacity = "0.7";
-
-                try {
-                    await addDoc(collection(db, "messages"), {
-                        nom: nom,
-                        email: email,
-                        message: msg,
-                        date: new Date(),
-                        uid: state.currentUser ? state.currentUser.uid : 'anonymous'
-                    });
-
-                    playSound('success');
-                    showAlert("Message envoyé avec succès !", "success");
-                    // Redirection intelligente après succès aussi
-                    if (state.currentUser || state.isGuest) renderHome();
-                    else renderLogin();
-
-                } catch (e) {
-                    console.error(e);
-                    showAlert("Message envoyé (Simulation)", "success");
-                    // Redirection intelligente après erreur/simulation aussi
-                    if (state.currentUser || state.isGuest) renderHome();
-                    else renderLogin();
-                }
-            };
-
-            // Gestionnaire du bouton Annuler (CORRIGÉ ICI)
-            q('#cancelContactBtn').onclick = () => {
-                if (state.currentUser || state.isGuest) {
-                    renderHome();
-                } else {
-                    renderLogin();
-                }
-            };
-        }
-        
-        function prepareSigns() {
-            if (state.allSigns.length > 0) return; 
-            const signsSet = new Set();
-            PATHOLOGIES.forEach(p => {
-                Object.keys(p.signes).forEach(s => signsSet.add(s));
-            });
-            state.allSigns = Array.from(signsSet);
-        }
-
-        function rankPathologies() {
-            const scores = PATHOLOGIES.map(p => {
-                let score = 0;
-                let maxPossible = 0;
-                let textProb = 0;
-
-                for (const [sign, val] of Object.entries(state.answers)) {
-                    const weight = p.signes[sign] || 0; 
-
-                    if (val === true) {
-                        if (weight > 0) score += weight + 10; 
-                        else score -= 50; 
-                    } else if (val === false) {
-                        if (weight > 0) score -= 100; 
-                    }
-                }
-                
-                return { patho: p, score: score };
-            });
-
-            scores.sort((a, b) => b.score - a.score);
-            state.ranked = scores;
-            
-            if(scores.length > 0) {
-                 const topScore = scores[0].score;
-                 scores.forEach(item => {
-                     let prob = 0;
-                     if (item.score > 0) prob = Math.min(99, Math.max(10, (item.score / (state.asked.length * 10)) * 100));
-                     item.prob = prob.toFixed(0);
-                 });
-            }
-        }
-
-        function canShowDiagnostic() {
-            if (state.asked.length < 3) return false;
-            if (state.ranked.length < 2) return true;
-
-            const top = state.ranked[0];
-            const second = state.ranked[1];
-
-            if (top.score > 50 && (top.score - second.score > 30)) return true;
-            
-            return false;
-        }
-
-        function getNextSmartSign(ranked, remainingSigns) {
-            const topPathos = ranked.slice(0, 5).map(r => r.patho);
-            
-            const signCounts = {};
-            
-            topPathos.forEach(p => {
-                remainingSigns.forEach(s => {
-                    if (p.signes[s]) {
-                        signCounts[s] = (signCounts[s] || 0) + (p.signes[s] || 1);
-                    }
-                });
-            });
-
-            let bestSign = remainingSigns[0];
-            let maxVal = -1;
-
-            for (const [s, val] of Object.entries(signCounts)) {
-                if (val > maxVal) {
-                    maxVal = val;
-                    bestSign = s;
-                }
-            }
-            
-            if (!bestSign) return remainingSigns[Math.floor(Math.random() * remainingSigns.length)];
-            
-            return bestSign;
-        }
-
-        // ============================================================
-        // === FIN DES FONCTIONS AJOUTEES ===
-        // ============================================================
 
         async function renderReviews() {
             window.scrollTo(0,0);
@@ -1678,59 +1371,227 @@
             card.appendChild(btnBack); app.appendChild(card);
         }
 
+        function renderContact() {
+            window.scrollTo(0,0);
+            const app = q('#app'); app.innerHTML='';
+            const card = document.createElement('div'); card.className='card center';
+            card.innerHTML = `<h2><i class="ph-duotone ph-envelope"></i> Nous Contacter</h2>`;
+            const inputName = document.createElement('input'); inputName.className='input'; inputName.placeholder='Votre Nom';
+            if(state.pseudo) inputName.value = state.pseudo;
+            const inputEmail = document.createElement('input'); inputEmail.className='input'; inputEmail.placeholder='Votre Email';
+            if(state.currentUser) inputEmail.value = state.currentUser.email;
+            const inputText = document.createElement('textarea'); inputText.className='input'; inputText.placeholder='Votre message...';
+            const btnSend = document.createElement('button'); btnSend.className='btn'; btnSend.textContent='Envoyer';
+            btnSend.onclick = async () => {
+                if(!inputText.value) return;
+                try {
+                    await addDoc(collection(db, "messages"), { name: inputName.value, email: inputEmail.value, message: inputText.value, date: new Date(), uid: state.currentUser ? state.currentUser.uid : 'guest' });
+                    showAlert("Envoyé !", "success"); setTimeout(() => { if(state.pseudo) renderHome(); else renderLogin(); }, 1500);
+                } catch(e) { showAlert("Erreur", "error"); }
+            };
+            const btnCancel = document.createElement('button'); btnCancel.className='link'; btnCancel.textContent='Annuler';
+            btnCancel.onclick = () => { if(state.pseudo) renderHome(); else renderLogin(); };
+            card.append(inputName, inputEmail, inputText, btnSend, btnCancel); app.appendChild(card);
+        }
+
+        function renderDemographics() {
+            window.scrollTo(0,0);
+            const app = q('#app'); app.innerHTML='';
+            const card = document.createElement('div'); card.className='card';
+            card.innerHTML=`<h3 style="text-align:center; margin-bottom:15px;"><i class="ph-duotone ph-user-list"></i> Données démographiques</h3><p class="small" style="margin-bottom:20px">Paramétrez le patient virtuel.</p>`;
+            
+            if(state.dailyTarget) {
+                card.innerHTML = `<h3><i class="ph-duotone ph-sun color-gold"></i> Défi du Jour</h3><p class="small" style="margin-bottom:20px; color:var(--gold);">Cible : ${state.dailyTarget.name}</p>`;
+            }
+
+            const createSel = (lbl, id, opts) => {
+                const l = document.createElement('label'); l.textContent=lbl; l.style.color='var(--accent)';
+                const s = document.createElement('select'); s.id=id; s.className='input';
+                opts.forEach(o=> { const op=document.createElement('option'); op.value=o[0]; op.textContent=o[1]; s.appendChild(op); });
+                card.appendChild(l); card.appendChild(s);
+            };
+            createSel("Sexe", "demo-sexe", [["rien","Aléatoire / Inconnu"],["femme","Femme"],["homme","Homme"]]);
+            createSel("Plus de 30 ans ?", "demo-30", [["rien","Je ne sais pas"],["oui","Oui"],["non","Non"]]);
+            createSel("Plus de 65 ans ?", "demo-65", [["rien","Je ne sais pas"],["oui","Oui"],["non","Non"]]);
+            createSel("Antécédents familiaux ?", "demo-atcd", [["rien","Je ne sais pas"],["oui","Oui"],["non","Non"]]);
+            createSel("Fumeur ?", "demo-tabac", [["rien","Je ne sais pas"],["oui","Oui"],["non","Non"]]);
+            
+            if(!state.dailyTarget) { 
+                const chronoDiv = document.createElement('div');
+                chronoDiv.style.margin = '20px 0'; chronoDiv.style.textAlign='center';
+                const chronoLabel = document.createElement('label'); 
+                chronoLabel.innerHTML = `<input type="checkbox" id="chronoToggle" style="margin-right:8px;"> <i class="ph-duotone ph-lightning"></i> Mode Chrono (Facultatif)`;
+                chronoLabel.style.color = 'var(--text-main)'; chronoLabel.style.cursor='pointer';
+                chronoDiv.appendChild(chronoLabel);
+                card.appendChild(chronoDiv);
+            }
+
+            const btnGroup = document.createElement('div'); btnGroup.className='button-group';
+            const btnStart = document.createElement('button'); btnStart.className='btn'; btnStart.innerHTML='<i class="ph-duotone ph-play"></i> Démarrer';
+            btnStart.onclick=()=>{ 
+                state.demo = {
+                    femme: q('#demo-sexe').value === 'femme', homme: q('#demo-sexe').value === 'homme',
+                    plus_de_30ans: q('#demo-30').value === 'oui', plus_de_65ans: q('#demo-65').value === 'oui',
+                    atcd_famille: q('#demo-atcd').value === 'oui', tabac: q('#demo-tabac').value === 'oui'
+                };
+                state.answers={}; state.asked=[]; state.diagnosticShown=false; state.previousDiagnostics=[]; state.history=[];
+                state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
+                state.priorityQueue = [];
+                
+                if(state.dailyTarget) state.isChrono = false; 
+                else state.isChrono = q('#chronoToggle')?.checked || false;
+                
+                if(state.isChrono) state.startTime = Date.now();
+                else state.startTime = null;
+
+                askNextQuestion();
+            };
+            const btnCancel = document.createElement('button'); btnCancel.className='link'; btnCancel.textContent='Annuler'; btnCancel.onclick=renderHome;
+            btnGroup.appendChild(btnStart); btnGroup.appendChild(btnCancel); card.appendChild(btnGroup); app.appendChild(card);
+        }
+
+        function prepareSigns() {
+            let allSignsSet = new Set();
+            PATHOLOGIES.forEach(p => { Object.keys(p.signes).forEach(s => allSignsSet.add(s)); });
+            state.allSigns = Array.from(allSignsSet);
+        }
+
+        function rankPathologies() {
+            const scores = PATHOLOGIES.map(p => {
+                if (state.previousDiagnostics.includes(p.name)) {
+                    return { patho: p, score: -1 }; 
+                }
+
+                let score = 0;
+                for(const facteur in p.facteurs){ if(state.demo[facteur] === true) score += p.facteurs[facteur]; }
+                for(const signe in p.signes){
+                    const ans = state.answers[signe];
+                    if(ans === true) score += p.signes[signe];
+                    else if(ans === false) score -= (p.signes[signe] * 0.5);
+                }
+                return {patho:p, score: Math.max(0, score)};
+            });
+
+            const validScores = scores.filter(s => s.score >= 0);
+            const totalScore = validScores.reduce((sum, s) => sum + s.score, 0);
+
+            state.ranked = scores.map(s => ({
+                ...s,
+                prob: (s.score === -1 || totalScore === 0) ? 0 : ((s.score / totalScore) * 100).toFixed(1)
+            })).sort((a,b)=>b.prob - a.prob);
+        }
+
+        function getNextSmartSign(ranked, remainingSigns) {
+            const topPathos = ranked.slice(0, 5).map(r => r.patho);
+            
+            // Liste des signes à "garder pour la fin" (Examens complémentaires)
+            const examSigns = new Set();
+            
+            // Mots-clés pour identifier les examens si le poids ne suffit pas
+            const examKeywords = ['radio', 'scanner', 'irm', 'ecg', 'biologie', 'analyse', 'echographie'];
+
+            topPathos.forEach(p => {
+                for (const [s, weight] of Object.entries(p.signes)) {
+                    // CRITÈRE : Poids lourd (>=40) ET (a une image OU contient un mot clé d'examen)
+                    // Cela laisse passer les signes cliniques forts (ex: poids 30)
+                    const isExamKeyword = examKeywords.some(k => s.includes(k));
+                    const hasImage = p.images && p.images[s];
+                    
+                    if (weight >= 40 && (hasImage || isExamKeyword)) {
+                        examSigns.add(s);
+                    }
+                }
+            });
+
+            // On crée un pool "Clinique" (tout sauf les examens complémentaires)
+            let clinicalPool = remainingSigns.filter(s => !examSigns.has(s));
+
+            // Si on a encore des questions cliniques, on les priorise.
+            // Sinon (si on a tout épuisé), on sort les radios/scanners.
+            let pool = clinicalPool.length > 0 ? clinicalPool : remainingSigns;
+
+            const signCounts = {};
+            topPathos.forEach(p => {
+                pool.forEach(s => {
+                    if (p.signes[s]) {
+                        signCounts[s] = (signCounts[s] || 0) + (p.signes[s] || 1);
+                    }
+                });
+            });
+
+            let bestSign = pool[0];
+            let maxVal = -1;
+
+            for (const [s, val] of Object.entries(signCounts)) {
+                if (val > maxVal) {
+                    maxVal = val;
+                    bestSign = s;
+                }
+            }
+            
+            if (!bestSign && pool.length > 0) return pool[Math.floor(Math.random() * pool.length)];
+            
+            return bestSign;
+        }
+
+        function canShowDiagnostic() {
+            const qNum = state.asked.length;
+            if(state.ranked.length===0) return false;
+            
+            const top1 = state.ranked[0];
+            const top2 = state.ranked[1];
+            
+            if(state.previousDiagnostics.includes(top1.patho.name)) return false;
+
+            if (qNum >= 20) return true;
+
+            const score1 = parseFloat(top1.prob);
+            if (!top2) return score1 > 40; 
+
+            const score2 = parseFloat(top2.prob);
+            const gap = score1 - score2;
+
+            if (qNum >= 5 && score1 >= 50 && gap >= 20) return true;
+            if (qNum >= 10 && gap >= 10) return true;
+            if (qNum >= 15) return true;
+
+            return false;
+        }
+
         function prepareConfirmationQuestions(topPatho) {
-            // Logique 3 vraies / 3 fausses + Radio à la fin
             const pSigns = Object.keys(topPatho.signes); 
             const unaskedCorrect = pSigns.filter(s => !state.asked.includes(s));
             
-            // 1. Chercher si un signe "Radio/Image" existe dans les non-posés
-            let radioSign = null;
-            if(topPatho.images) {
-                radioSign = unaskedCorrect.find(s => topPatho.images[s]);
-            }
+            // 1. Identifier l'examen complémentaire (La "Preuve")
+            // On cherche un signe non posé avec un poids >= 40 (Radio, ECG...)
+            let proofSign = unaskedCorrect.find(s => topPatho.signes[s] >= 40);
 
-            // 2. Sélectionner les signes CORRECTS (sans la radio pour l'instant)
-            let poolCorrect = unaskedCorrect.filter(s => s !== radioSign);
-            // On mélange
+            // 2. Sélectionner les signes CLINIQUES restants (en excluant la preuve)
+            let poolCorrect = unaskedCorrect.filter(s => s !== proofSign);
             poolCorrect.sort(() => 0.5 - Math.random());
             
-            // Si on a une radio, on prend 2 autres corrects (Total 3 vrais). Sinon 3.
-            let limitCorrect = radioSign ? 2 : 3;
+            // On prend 2 signes cliniques si on a une preuve, sinon 3
+            let limitCorrect = proofSign ? 2 : 3;
             let selectedCorrect = poolCorrect.slice(0, limitCorrect);
 
-            // 3. Sélectionner les signes PIÈGES (Faux)
+            // 3. Sélectionner les PIÈGES (Faux signes)
             const unaskedTraps = state.allSigns.filter(s => !pSigns.includes(s) && !state.asked.includes(s));
             unaskedTraps.sort(() => 0.5 - Math.random());
-            let selectedTraps = unaskedTraps.slice(0, 3); // Exactement 3 pièges
+            let selectedTraps = unaskedTraps.slice(0, 3); 
 
-            // 4. Combiner et Mélanger (Sauf la radio)
+            // 4. Mélanger les questions CLINIQUES et les PIÈGES
             let queue = [...selectedCorrect, ...selectedTraps];
             queue.sort(() => 0.5 - Math.random());
 
-            // 5. Ajouter la Radio À LA FIN (si elle existe)
-            if (radioSign) {
-                queue.push(radioSign);
+            // 5. Ajouter l'EXAMEN COMPLÉMENTAIRE à la toute fin (comme le "Boss final")
+            if (proofSign) {
+                queue.push(proofSign);
             } else if (selectedCorrect.length < 3 && poolCorrect.length > limitCorrect) {
+                 // Cas rare : pas d'examen dispo, on complète avec du clinique
                  queue.push(poolCorrect[limitCorrect]);
             }
 
             return queue;
-        }
-
-        function renderTrollScreen() {
-            window.scrollTo(0,0);
-            const app = q('#app'); app.innerHTML='';
-            const card = document.createElement('div'); card.className='card center';
-            card.innerHTML = `
-                <div class="icon-lg" style="color:var(--text-muted)"><i class="ph-duotone ph-smiley-wink"></i></div>
-                <h2 style="color:var(--accent)">Petit plaisantin ?</h2>
-                <p style="margin:20px 0; line-height:1.6;">
-                    Vous avez répondu <strong>NON</strong> 15 fois d'affilée dès le début...<br>
-                    Soit ce patient est en parfaite santé (miracle !), soit vous essayez de tester ma patience d'IA. 🤖
-                </p>
-                <button class="btn" onclick="location.reload()">Recommencer sérieusement</button>
-            `;
-            app.appendChild(card);
         }
 
         function renderCurrentQuestion() {
@@ -1765,23 +1626,15 @@
             const mkBtn = (txt, cls, val) => {
                 const b = document.createElement('button'); b.className=cls; b.innerHTML=txt;
                 b.onclick=()=>{ 
-                    // ANTI-TROLL LOGIC
-                    if (val === false) {
-                        state.consecutiveNon++;
-                        if (state.consecutiveNon >= 15 && state.asked.length === 15) {
-                            renderTrollScreen();
-                            return;
-                        }
-                    } else {
-                        state.consecutiveNon = 0;
-                    }
-
                     state.history.push(JSON.stringify({
                         answers: state.answers, asked: state.asked, currentSign: state.currentSign,
                         confirmationMode: state.confirmationMode, confirmationQueue: state.confirmationQueue,
                         confirmedPatho: state.confirmedPatho, priorityQueue: state.priorityQueue,
                         isChrono: state.isChrono, startTime: state.startTime, dailyTarget: state.dailyTarget
                     }));
+                    
+                    if(state.dailyTarget && val === false && state.dailyTarget.signes[signe]) {
+                    }
                     
                     state.answers[signe]=val; askNextQuestion(); 
                 };

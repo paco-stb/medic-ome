@@ -895,7 +895,7 @@
         "pdf": "fiches/lupus.pdf",
         "signes": {"anomalie_peau": 5, "erytheme_visage_loup": 20, "douleur_articulaire": 15, "fievre": 10, "fatigue": 12, "gene_lumiere_soleil": 15},
         "images": {"erytheme_visage_loup": "images/lupus_butterfly_rash.png"},
-        "facteurs": {"femme": 10, "jeune": 5, "auto_immun": 5}
+        "facteurs": {"femme": 7, "jeune": 5, "auto_immun": 5}
     },
     {
         "name": "Hernie Discale",

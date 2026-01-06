@@ -3,8 +3,8 @@
         "name": "Infarctus du myocarde",
         "short": "SCA ST+ (Nécrose ischémique)",
         "pdf": "fiches/infarctus.pdf",
-        "signes": {"douleur_thoracique": 5, "douleur_thoracique_oppressive": 25, "irradiation_bras_machoire": 20, "sueurs_froides": 10, "nausees_vomissements": 8, "angoisse_mort_imminente": 10, "dyspnee": 6, "paleur": 8, "douleur_effort": 15},
-        "images": {"douleur_thoracique_oppressive": "images/st_elevation_ecg.png"},
+        "signes": {"douleur_thoracique": 5, "douleur_thoracique_oppressive": 25, "irradiation_bras_machoire": 20, "sueurs_froides": 10, "nausees_vomissements": 8, "angoisse_mort_imminente": 10, "dyspnee": 6, "paleur": 8, "douleur_effort": 15, "sus_decalage_st_ecg": 50},
+        "images": {"sus_decalage_st_ecg": "images/st_elevation_ecg.png"},
         "facteurs": {"homme": 3, "plus_de_65ans": 5, "tabac": 4, "atcd_famille": 3, "diabete": 4}
     },
     {
@@ -19,7 +19,8 @@
         "name": "Pneumopathie Franche",
         "short": "Infection pulmonaire à Pneumocoque",
         "pdf": "fiches/pneumopathie.pdf",
-        "signes": {"douleur_thoracique": 5, "toux": 5, "fievre": 18, "frissons_intenses": 15, "toux_grasse": 12, "douleur_thoracique_point_cote": 10, "crepitants_audibles": 15, "dyspnee": 8, "toux_sanglante": 5, "fatigue": 8},
+        "signes": {"douleur_thoracique": 5, "toux": 5, "fievre": 18, "frissons_intenses": 15, "toux_grasse": 12, "douleur_thoracique_point_cote": 10, "crepitants_audibles": 15, "dyspnee": 8, "toux_sanglante": 5, "fatigue": 8, "foyer_opacite_radio": 50},
+        "images": { "foyer_opacite_radio": "images/pneumonia_xray.png" },
         "facteurs": {"plus_de_65ans": 4, "tabac": 3, "immunodepression": 4}
     },
     {
@@ -110,14 +111,16 @@
         "name": "Péricardite Aiguë",
         "short": "Inflammation du péricarde",
         "pdf": "fiches/pericardite.pdf",
-        "signes": {"douleur_thoracique": 15, "soulage_penche_avant": 20, "fievre": 8, "toux_seche": 6, "dyspnee": 5, "douleur_inspiration": 12, "rhume_recent": 8},
+        "signes": {"douleur_thoracique": 15, "soulage_penche_avant": 20, "fievre": 8, "toux_seche": 6, "dyspnee": 5, "douleur_inspiration": 12, "rhume_recent": 8, "sus_decalage_concave_ecg": 50},
+        "images": { "sus_decalage_concave_ecg": "images/pericarditis_ecg.png" },
         "facteurs": {"homme": 2, "jeune": 3}
     },
     {
         "name": "Pneumothorax",
         "short": "Air dans la plèvre",
         "pdf": "fiches/pneumothorax.pdf",
-        "signes": {"douleur_thoracique": 5, "dyspnee": 5, "douleur_thoracique_coté": 20, "dyspnee_brutale": 18, "toux_seche": 10, "angoisse": 6, "diminution_bruits_respiratoires": 25, "tympanisme": 15},
+        "signes": {"douleur_thoracique": 5, "dyspnee": 5, "douleur_thoracique_coté": 20, "dyspnee_brutale": 18, "toux_seche": 10, "angoisse": 6, "diminution_bruits_respiratoires": 25, "tympanisme": 15, "decollement_pleural_radio": 50},
+        "images": { "decollement_pleural_radio": "images/pneumothorax_xray.png" },
         "facteurs": {"homme": 3, "tabac": 5, "grand_mince": 4}
     },
     {
@@ -131,8 +134,11 @@
         "name": "Occlusion Intestinale",
         "short": "Arrêt du transit",
         "pdf": "fiches/occlusion.pdf",
-        "signes": {"douleur_abdominale": 5, "arret_gaz_selles": 20, "douleur_abdominale_diffuse": 15, "nausees_vomissements": 15, "ventre_gonfle": 12, "deshydratation": 8, "cicatrice_ventre": 10},
-        "images": {"ventre_gonfle": "images/abdominal_distension.png"},
+        "signes": {"douleur_abdominale": 5, "arret_gaz_selles": 20, "douleur_abdominale_diffuse": 15, "nausees_vomissements": 15, "ventre_gonfle": 12, "deshydratation": 8, "cicatrice_ventre": 10, "niveaux_hydro_aeriques_radio": 50},
+        "images": { 
+            "ventre_gonfle": "images/abdominal_distension.png",
+            "niveaux_hydro_aeriques_radio": "images/bowel_obstruction_xray.png"
+        },
         "facteurs": {"plus_de_65ans": 3, "chirurgie_abdominale": 5}
     },
     {
@@ -185,8 +191,11 @@
         "name": "Fracture Col Fémur",
         "short": "Traumatisme hanche sujet âgé",
         "pdf": "fiches/col_femur.pdf",
-        "signes": {"douleur_membre_traumatisme": 5, "impossibilite_marcher": 18, "raccourcissement_jambe": 15, "rotation_externe_pied": 18, "douleur_aine_hanche": 15, "douleur_mobilisation": 12, "hematome": 5, "chute": 10},
-        "images": {"rotation_externe_pied": "images/hip_fracture_rotation.png", "raccourcissement_jambe": "images/leg_shortening.png"},
+        "signes": {"douleur_membre_traumatisme": 5, "impossibilite_marcher": 18, "raccourcissement_jambe": 15, "rotation_externe_pied": 18, "douleur_aine_hanche": 15, "douleur_mobilisation": 12, "hematome": 5, "chute": 10, "trait_fracture_col_radio": 50},
+        "images": { 
+            "rotation_externe_pied": "images/hip_fracture_rotation.png",
+            "trait_fracture_col_radio": "images/hip_fracture_xray.png" 
+        },
         "facteurs": {"plus_de_65ans": 8, "femme": 3}
     },
     {
@@ -208,8 +217,11 @@
         "name": "Crise de Goutte",
         "short": "Arthrite microcristalline",
         "pdf": "fiches/goutte.pdf",
-        "signes": {"douleur_membre_traumatisme": 5, "douleur_gros_orteil": 20, "orteil_rouge_gonfle": 18, "douleur_nocturne_insomniante": 15, "intolerance_drap_lit": 12, "fievre": 5, "tophus_boule_sous_peau": 6},
-        "images": {"orteil_rouge_gonfle": "images/gout_toe_podagra.png"},
+        "signes": {"douleur_membre_traumatisme": 5, "douleur_gros_orteil": 20, "orteil_rouge_gonfle": 18, "douleur_nocturne_insomniante": 15, "intolerance_drap_lit": 12, "fievre": 5, "tophus_boule_sous_peau": 6, "erosions_osseuses_radio": 40},
+        "images": { 
+            "orteil_rouge_gonfle": "images/gout_toe_podagra.png",
+            "erosions_osseuses_radio": "images/gout_erosion_xray.png"
+        },
         "facteurs": {"homme": 4, "plus_de_30ans": 4, "alcool": 3, "surpoids": 3}
     },
     {
@@ -375,8 +387,11 @@
         "name": "Fracture Pouteau-Colles",
         "short": "Fracture poignet",
         "pdf": "fiches/pouteau.pdf",
-        "signes": {"douleur_membre_traumatisme": 5, "poignet_dos_fourchette": 20, "douleur_poignet": 18, "impossibilite_bouger_main": 15, "gonflement": 12, "bleu_ecchymose": 10, "chute_main": 10},
-        "images": {"poignet_dos_fourchette": "images/colles_fracture_fork.png"},
+        "signes": {"douleur_membre_traumatisme": 5, "poignet_dos_fourchette": 20, "douleur_poignet": 18, "impossibilite_bouger_main": 15, "gonflement": 12, "bleu_ecchymose": 10, "chute_main": 10, "trait_fracture_poignet_radio": 50},
+        "images": { 
+            "poignet_dos_fourchette": "images/colles_fracture_fork.png",
+            "trait_fracture_poignet_radio": "images/wrist_fracture_xray.png" 
+        },
         "facteurs": {"femme": 3, "plus_de_65ans": 5, "chute_main": 8}
     },
     {
@@ -391,7 +406,8 @@
         "name": "Fibrillation Atriale",
         "short": "Trouble du rythme cardiaque",
         "pdf": "fiches/fa.pdf",
-        "signes": {"dyspnee": 5, "palpitations": 20, "dyspnee_effort": 12, "douleur_thoracique": 6, "pouls_irregulier": 20, "fatigue": 10, "vertiges": 8},
+        "signes": {"dyspnee": 5, "palpitations": 20, "dyspnee_effort": 12, "douleur_thoracique": 6, "pouls_irregulier": 20, "fatigue": 10, "vertiges": 8, "rythme_irregulier_ecg": 50},
+        "images": { "rythme_irregulier_ecg": "images/afib_ecg.png" },
         "facteurs": {"plus_de_65ans": 5, "homme": 1, "hta": 3, "alcool": 3}
     },
     {
@@ -507,8 +523,11 @@
         "name": "Ostéoporose Fracturaire",
         "short": "Fragilité osseuse",
         "pdf": "fiches/osteoporose.pdf",
-        "signes": {"douleur_dos": 5, "douleur_membre_traumatisme": 5, "perte_taille": 15, "dos_courbe": 12, "fracture_poignet": 10, "fracture_col_femur": 10, "douleur_dos_brutale": 15, "asymptomatique_avant_fracture": 12},
-        "images": {"dos_courbe": "images/kyphosis_dowagers_hump.png"},
+        "signes": {"douleur_dos": 5, "douleur_membre_traumatisme": 5, "perte_taille": 15, "dos_courbe": 12, "fracture_poignet": 10, "fracture_col_femur": 10, "douleur_dos_brutale": 15, "asymptomatique_avant_fracture": 12, "tassement_vertebral_radio": 50},
+        "images": { 
+            "dos_courbe": "images/kyphosis_dowagers_hump.png",
+            "tassement_vertebral_radio": "images/vertebral_compression_xray.png"
+        },
         "facteurs": {"femme": 5, "plus_de_65ans": 8, "corticoides": 4, "maigreur": 3}
     },
     {
@@ -544,7 +563,8 @@
         "name": "Hématome Sous-Dural",
         "short": "Hémorragie intracrânienne",
         "pdf": "fiches/hsd.pdf",
-        "signes": {"troubles_neuro": 5, "maux_tete": 15, "confusion_mentale": 18, "faiblesse_cote_corps": 12, "somnolence": 15, "chute_recente_trauma": 18, "ralentissement_idees": 10, "marche_difficile": 10},
+        "signes": {"troubles_neuro": 5, "maux_tete": 15, "confusion_mentale": 18, "faiblesse_cote_corps": 12, "somnolence": 15, "chute_recente_trauma": 18, "ralentissement_idees": 10, "marche_difficile": 10, "image_croissant_banane_scanner": 50},
+        "images": { "image_croissant_banane_scanner": "images/subdural_hematoma_ct.png" },
         "facteurs": {"plus_de_65ans": 8, "homme": 2, "alcool": 4, "anticoagulants": 5}
     },
     {
@@ -835,7 +855,8 @@
         "name": "Hématome Extra-Dural",
         "short": "Hémorragie intracrânienne artérielle",
         "pdf": "fiches/hed.pdf",
-        "signes": {"chute_recente": 20, "perte_connaissance_initiale": 18, "intervalle_libre": 20, "aggravation_secondaire": 18, "troubles_visuels": 10},
+        "signes": {"chute_recente": 20, "perte_connaissance_initiale": 18, "intervalle_libre": 20, "aggravation_secondaire": 18, "troubles_visuels": 10, "image_lentille_biconvexe_scanner": 50},
+        "images": { "image_lentille_biconvexe_scanner": "images/epidural_hematoma_ct.png" },
         "facteurs": {"jeune": 5, "homme": 2}
     },
     {
@@ -864,7 +885,8 @@
         "name": "Arthrose",
         "short": "Usure du cartilage",
         "pdf": "fiches/arthrose.pdf",
-        "signes": {"douleur_membre_traumatisme": 5, "douleur_articulaire": 15, "douleur_mouvement": 18, "derouillage_matin_court": 15, "craquements": 10, "etat_general_conserve": 10},
+        "signes": {"douleur_membre_traumatisme": 5, "douleur_articulaire": 15, "douleur_mouvement": 18, "derouillage_matin_court": 15, "craquements": 10, "etat_general_conserve": 10, "pincement_articulaire_radio": 50},
+        "images": { "pincement_articulaire_radio": "images/osteoarthritis_xray.png" },
         "facteurs": {"plus_de_65ans": 10, "surpoids": 5}
     },
     {
@@ -879,7 +901,8 @@
         "name": "Hernie Discale",
         "short": "Conflit discal",
         "pdf": "fiches/hernie_discale.pdf",
-        "signes": {"douleur_dos": 5, "douleur_lombaire": 15, "irradiation_fesse_jambe": 20, "impulsivite_toux": 15, "fourmillements_pied": 10},
+        "signes": {"douleur_dos": 5, "douleur_lombaire": 15, "irradiation_fesse_jambe": 20, "impulsivite_toux": 15, "fourmillements_pied": 10, "hernie_discale_irm": 50},
+        "images": { "hernie_discale_irm": "images/herniated_disc_mri.png" },
         "facteurs": {"effort": 5, "jeune": 5}
     },
     {

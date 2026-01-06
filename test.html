@@ -275,6 +275,16 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+        // --- FONCTION POUR CHANGER LE TITRE DYNAMIQUEMENT ---
+        function setDocTitle(titre) {
+            const baseName = "Medicome";
+            if (titre) {
+                document.title = `${titre} • ${baseName}`;
+            } else {
+                document.title = `${baseName} - Cas Cliniques Interactifs`;
+            }
+        }
+
         // --- NEW GLOBAL IMAGE MAP ---
         // Cette variable va stocker toutes les associations Signe -> Image au chargement du JSON
         let GLOBAL_IMG_MAP = {};
@@ -513,43 +523,79 @@
                     brandLogo.onclick = () => { if (state.currentUser || state.isGuest) { renderHome(); } };
                 }
 
-                // GESTION CLAVIER AJOUTÉE
-                document.addEventListener('keydown', (e) => {
-                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-
-                    // Navigation Quiz
-                    if (q('.question-text')) {
-                        if (e.key === 'ArrowRight' || e.key === 'y' || e.key === 'o') {
-                            const btn = document.querySelector('.btn-success');
-                            if(btn) btn.click();
-                        } else if (e.key === 'ArrowLeft' || e.key === 'n') {
-                            const btn = document.querySelector('.btn-error');
-                            if(btn) btn.click();
-                        } else if (e.key === 'ArrowUp' || e.key === 'i' || e.key === ' ') {
-                            const btns = document.querySelectorAll('.button-group .link');
-                            if(btns.length > 0) btns[0].click();
-                        } else if (e.key === 'Enter') {
-                            const btn = document.querySelector('.btn-success');
-                            if(btn) btn.click();
-                        }
+                // GESTION DE LA VISIBILITÉ DE L'ONGLET (TITRE)
+                document.addEventListener("visibilitychange", () => {
+                    if (document.hidden) {
+                        // L'utilisateur a changé d'onglet
+                        document.title = "⚠️ Le patient attend !";
                     } else {
-                        if (e.key === 'Enter') {
-                            const primaryBtn = q('.btn'); 
-                            if(primaryBtn && primaryBtn.offsetParent !== null) {
-                                primaryBtn.click();
-                            }
-                        }
-                    }
-                    
-                    if (e.key === 'Escape') {
-                        const notifModal = q('#notifModal');
-                        if(notifModal && notifModal.style.display === 'block') {
-                            notifModal.style.display = 'none';
-                        } else if (!q('.question-text')) {
-                            renderHome();
+                        // L'utilisateur est revenu
+                        if(q('.question-text')) {
+                             setDocTitle(`Question ${state.asked.length}`);
+                        } else if(state.diagnosticShown && state.ranked.length > 0) {
+                             setDocTitle(`Diagnostic : ${state.ranked[0].patho.name}`);
+                        } else if(state.currentUser) {
+                             // Si on est connecté mais pas en quiz, on peut mettre Accueil ou laisser générique
+                             document.title = "Medicome";
+                        } else {
+                             document.title = "Medicome";
                         }
                     }
                 });
+
+                // GESTION CLAVIER AJOUTÉE
+                // GESTION CLAVIER CORRIGÉE
+        document.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+            // Navigation Quiz
+            if (q('.question-text')) {
+                if (e.key === 'ArrowRight' || e.key === 'y' || e.key === 'o') {
+                    const btn = document.querySelector('.btn-success');
+                    if(btn) btn.click();
+                } else if (e.key === 'ArrowLeft' || e.key === 'n') {
+                    const btn = document.querySelector('.btn-error');
+                    if(btn) btn.click();
+                } else if (e.key === 'ArrowUp' || e.key === 'i' || e.key === ' ') {
+                    e.preventDefault();
+                    const btns = document.querySelectorAll('.button-group .link');
+                    if(btns.length > 0) btns[0].click();
+                } else if (e.key === 'Enter') {
+                    const btn = document.querySelector('.btn-success');
+                    if(btn) btn.click();
+                }
+            } else {
+                // Navigation Menus / Accueil
+                if (e.key === 'Enter') {
+                    // On vérifie si l'utilisateur est déjà sur un élément cliquable (via TAB)
+                    const active = document.activeElement;
+                    const isInteractive = active && (
+                        active.tagName === 'BUTTON' || 
+                        active.tagName === 'A' || 
+                        active.classList.contains('link') || 
+                        active.classList.contains('footer-link') ||
+                        active.classList.contains('social-link')
+                    );
+
+                    // Si on n'est PAS sur un élément interactif, on clique sur le bouton principal
+                    if (!isInteractive) {
+                        const primaryBtn = q('.btn'); 
+                        if(primaryBtn && primaryBtn.offsetParent !== null) {
+                            primaryBtn.click();
+                        }
+                    }
+                }
+            }
+            
+            if (e.key === 'Escape') {
+                const notifModal = q('#notifModal');
+                if(notifModal && notifModal.style.display === 'block') {
+                    notifModal.style.display = 'none';
+                } else if (!q('.question-text') && state.currentUser) {
+                    renderHome();
+                }
+            }
+        });
 
             } catch (err) {
                 console.error(err);
@@ -749,6 +795,7 @@
         }
 
         function renderLogin() {
+            setDocTitle("Connexion");
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card center'; card.innerHTML='<h2><i class="ph-duotone ph-cloud"></i>Connexion</h2>';
@@ -796,6 +843,7 @@
         }
 
         function renderHome() {
+            setDocTitle("Accueil");
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
             const prog = state.progression;
@@ -861,6 +909,7 @@
         }
 
         async function renderReviews() {
+            setDocTitle("Avis Utilisateurs");
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card center';
@@ -944,7 +993,32 @@
             }, 100);
         }
 
+        function renderContact() {
+            setDocTitle("Nous Contacter");
+            window.scrollTo(0,0);
+            const app = q('#app'); app.innerHTML='';
+            const card = document.createElement('div'); card.className='card center';
+            card.innerHTML = `<h2><i class="ph-duotone ph-envelope"></i> Nous Contacter</h2>`;
+            const inputName = document.createElement('input'); inputName.className='input'; inputName.placeholder='Votre Nom';
+            if(state.pseudo) inputName.value = state.pseudo;
+            const inputEmail = document.createElement('input'); inputEmail.className='input'; inputEmail.placeholder='Votre Email';
+            if(state.currentUser) inputEmail.value = state.currentUser.email;
+            const inputText = document.createElement('textarea'); inputText.className='input'; inputText.placeholder='Votre message...';
+            const btnSend = document.createElement('button'); btnSend.className='btn'; btnSend.textContent='Envoyer';
+            btnSend.onclick = async () => {
+                if(!inputText.value) return;
+                try {
+                    await addDoc(collection(db, "messages"), { name: inputName.value, email: inputEmail.value, message: inputText.value, date: new Date(), uid: state.currentUser ? state.currentUser.uid : 'guest' });
+                    showAlert("Envoyé !", "success"); setTimeout(() => { if(state.pseudo) renderHome(); else renderLogin(); }, 1500);
+                } catch(e) { showAlert("Erreur", "error"); }
+            };
+            const btnCancel = document.createElement('button'); btnCancel.className='link'; btnCancel.textContent='Annuler';
+            btnCancel.onclick = () => { if(state.pseudo) renderHome(); else renderLogin(); };
+            card.append(inputName, inputEmail, inputText, btnSend, btnCancel); app.appendChild(card);
+        }
+        
         function renderAbandonMenu() {
+            setDocTitle("Abandon ?");
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML = '';
             const card = document.createElement('div'); card.className='card center';
@@ -978,6 +1052,7 @@
         }
 
         function renderProfile() {
+            setDocTitle("Profil");
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
             const prog = state.progression;
@@ -1118,6 +1193,7 @@
         }
 
         function renderAchievementsPage() {
+            setDocTitle("Succès");
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML = '';
             const card = document.createElement('div'); card.className='card center'; card.style.maxWidth = '800px';
@@ -1157,6 +1233,7 @@
         }
 
         function renderLegalPage() {
+            setDocTitle("Mentions Légales");
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML = '';
             const card = document.createElement('div'); card.className='card center';
@@ -1164,12 +1241,12 @@
             const creditsHtml = `
                 <h3 style="margin-top:20px; border-top:1px solid var(--glass-border); padding-top:15px;">4. Crédits Images</h3>
                 <p style="font-size:0.9em; color:var(--text-muted); margin-bottom:10px;">
-                    Les images médicales sont issues de banques d'images libres (Wikimedia, Open-i, Wellcome) sous licence Creative Commons.
+                    Les images médicales sont issues de banques d'images libres (Wikimedia Commons, Open-i, Wellcome Collection) sous licence Creative Commons (CC-BY, SA, ou Domaine Public).
                 </p>
                 
                 <div style="text-align:left; font-size:0.8em; max-height:300px; overflow-y:auto; background:rgba(0,0,0,0.2); padding:15px; border-radius:8px; line-height:1.4;">
                     
-                    <strong style="color:var(--accent); display:block; margin-top:10px;">🫀 Cardio & Vasculaire</strong>
+                    <strong style="color:var(--accent); display:block; margin-top:10px;"> Cardio & Vasculaire</strong>
                     <div>• <strong>st_elevation_ecg.png</strong> : Wikimedia Commons / Own work</div>
                     <div>• <strong>dvt_leg_swelling.png</strong> : Wikimedia Commons / James Heilman, MD</div>
                     <div>• <strong>hemoptysis_tissue.png</strong> : Wikimedia Commons / Dezidor</div>
@@ -1177,7 +1254,7 @@
                     <div>• <strong>livedo_reticularis.png</strong> : Wikimedia Commons / Uva L</div>
                     <div>• <strong>pale_leg_ischemia.png</strong> : Open-i / Park CB et al. (2014)</div>
 
-                    <strong style="color:var(--accent); display:block; margin-top:10px;">🧴 Dermatologie</strong>
+                    <strong style="color:var(--accent); display:block; margin-top:10px;"> Dermatologie : Rougeurs & Éruptions</strong>
                     <div>• <strong>erysipelas_leg.png</strong> : Wikimedia Commons / Grook Da Oger</div>
                     <div>• <strong>urticaria_hives.png</strong> : Wikimedia Commons / Verysmallkisses</div>
                     <div>• <strong>psoriasis_plaque.png</strong> : Wikimedia Commons / MediaJet</div>
@@ -1189,29 +1266,35 @@
                     <div>• <strong>addison_hyperpigmentation.png</strong> : Wellcome Collection</div>
                     <div>• <strong>peau_d_orange_breast.png</strong> : Open-i / Nouh MA et al. (2011)</div>
                     <div>• <strong>shingles_zoster.png</strong> : Wikimedia Commons / N.M. Matheson</div>
-                    <div>• <strong>chickenpox_rash.png</strong> : OPEN-I / Singh R, Xess I</div>
+                    <div>• <strong>chickenpox_rash.png</strong> : Open-i / Singh R, Xess I (2010)</div>
                     <div>• <strong>rubella_rash.png</strong> : Wikimedia Commons / CDC</div>
+
+                    <strong style="color:var(--accent); display:block; margin-top:10px;"> Dermatologie : Lésions & Tumeurs</strong>
                     <div>• <strong>severe_acne_face.png</strong> : Wikimedia Commons / Sedef94</div>
                     <div>• <strong>pcos_acne.png</strong> : Wikimedia Commons / Medical Photographic Library</div>
                     <div>• <strong>impetigo_crusts.png</strong> : Open-i / Lakshmi C. et al</div>
-                    <div>• <strong>scabies_burrow.png</strong> : Open-i / Sugathan P. et al</div>
-                    <div>• <strong>syphilis_chancre.png</strong> : Open-i / Burnett A</div>
-                    <div>• <strong>melanoma.png</strong> : Wikimedia Commons / J.C.T. Braga</div>
+                    <div>• <strong>scabies_burrow.png</strong> : Open-i / Sugathan P. et al (2010)</div>
+                    <div>• <strong>syphilis_chancre.png</strong> : Open-i / Burnett A (2014)</div>
+                    <div>• <strong>melanoma.png</strong> : Wikimedia Commons / J.C.T. Braga et al.</div>
                     <div>• <strong>basal_cell_carcinoma.png</strong> : Open-i / Cureus</div>
-                    <div>• <strong>hirsutism_face.png</strong> : Wikimedia Commons / Gacaferri Lumezi B</div>
+                    <div>• <strong>hirsutism_face.png</strong> : Wikimedia Commons / Gacaferri Lumezi B et al.</div>
                     <div>• <strong>cervical_lymphadenopathy.png</strong> : Wikimedia Commons / Hudson Bernard</div>
+
+                    <strong style="color:var(--accent); display:block; margin-top:10px;"> Dermatologie : Sang </strong>
                     <div>• <strong>purpura_skin.png</strong> : Wikimedia Commons / Hektor</div>
                     <div>• <strong>janeway_lesions.png</strong> : Wikimedia Commons / Warfieldian</div>
                     <div>• <strong>henoch_schonlein_purpura.png</strong> : Wikimedia Commons / Diasbuenasio</div>
                     <div>• <strong>ecchymoses_petechiae.png</strong> : Wikimedia Commons / James Heilman, MD</div>
 
-                    <strong style="color:var(--accent); display:block; margin-top:10px;">😶 Visage & Yeux</strong>
+                    <strong style="color:var(--accent); display:block; margin-top:10px;"> Visage & Cou</strong>
                     <div>• <strong>facial_droop.png</strong> : Wikimedia Commons / Another-anon-artist-234</div>
-                    <div>• <strong>myxedema_face.png</strong> : Wikimedia Commons / Scientific Animations</div>
-                    <div>• <strong>moon_face_cushing.png</strong> : Wikimedia Commons / Ozlem Celik</div>
-                    <div>• <strong>acromegaly_face.png</strong> : Wikimedia Commons / P. Chanson</div>
+                    <div>• <strong>myxedema_face.png</strong> : Scientific Animations (Wiki)</div>
+                    <div>• <strong>moon_face_cushing.png</strong> : Wikimedia Commons / Ozlem Celik et al.</div>
+                    <div>• <strong>acromegaly_face.png</strong> : Wikimedia Commons / Philippe Chanson</div>
                     <div>• <strong>nuchal_rigidity_exam.png</strong> : Wikimedia Commons / L.A. Marty, M.D</div>
-                    <div>• <strong>mumps_parotitis.png</strong> : Wikimedia Commons / Fischer, Louis</div>
+                    <div>• <strong>mumps_parotitis.png</strong> : Wikimedia Commons / Fischer, Louis (1914)</div>
+
+                    <strong style="color:var(--accent); display:block; margin-top:10px;"> Yeux (Ophtalmo)</strong>
                     <div>• <strong>conjunctivitis_red_eye.png</strong> : Wikimedia Commons / Tanalai</div>
                     <div>• <strong>scleral_icterus.png</strong> : Wikimedia Commons / Unknown author</div>
                     <div>• <strong>exophthalmos.png</strong> : Wikimedia Commons / CDC / Dr. Sellers</div>
@@ -1220,16 +1303,16 @@
                     <div>• <strong>ptosis_eye.png</strong> : Wikimedia Commons / Mohankumar Kurukumbi</div>
                     <div>• <strong>amsler_grid_distortion.png</strong> : Wikimedia Commons / Isislunsky</div>
 
-                    <strong style="color:var(--accent); display:block; margin-top:10px;">👅 Bouche & Gorge</strong>
+                    <strong style="color:var(--accent); display:block; margin-top:10px;"> Bouche & Gorge (ORL)</strong>
                     <div>• <strong>coated_tongue.png</strong> : Wikimedia Commons / Grook da oger</div>
                     <div>• <strong>strawberry_tongue.png</strong> : Wikimedia Commons / Martin Kronawitter</div>
-                    <div>• <strong>atrophic_glossitis.png</strong> : Wikimedia Commons / Jihoon Kim</div>
-                    <div>• <strong>oral_thrush.png</strong> : Wikimedia Commons / Sol Silverman</div>
+                    <div>• <strong>atrophic_glossitis.png</strong> : Wikimedia Commons / Jihoon Kim et al.</div>
+                    <div>• <strong>oral_thrush.png</strong> : Wikimedia Commons / Sol Silverman, Jr., D.D.S.</div>
                     <div>• <strong>tonsillar_exudate.png</strong> : Wikimedia Commons / Nick Berman</div>
                     <div>• <strong>mono_tonsils.png</strong> : Wikimedia Commons / Fateagued</div>
                     <div>• <strong>koplik_spots.png</strong> : Wikimedia Commons / Dctrzl</div>
 
-                    <strong style="color:var(--accent); display:block; margin-top:10px;">🦴 Os & Articulations</strong>
+                    <strong style="color:var(--accent); display:block; margin-top:10px;"> Os & Articulations (Rhumato/Ortho)</strong>
                     <div>• <strong>colles_fracture_fork.png</strong> : Wikimedia Commons / Sylvain Letuffe</div>
                     <div>• <strong>hip_fracture_rotation.png</strong> : Wikimedia Commons / DocP</div>
                     <div>• <strong>leg_shortening.png</strong> : Wikimedia Commons / Fischer, Louis</div>
@@ -1241,19 +1324,36 @@
                     <div>• <strong>kyphosis_dowagers_hump.png</strong> : Wikimedia Commons / BruceBlaus</div>
                     <div>• <strong>ankle_sprain_swelling.png</strong> : Wikimedia Commons / James Heilman, MD</div>
 
-                    <strong style="color:var(--accent); display:block; margin-top:10px;">🚽 Abdomen & Fluides</strong>
+                    <strong style="color:var(--accent); display:block; margin-top:10px;"> Abdomen & Uro-Gyn</strong>
                     <div>• <strong>abdominal_distension.png</strong> : Wikimedia Commons / James Heilman, MD</div>
                     <div>• <strong>ascites_abdomen.png</strong> : Wikimedia Commons / Thomas Godart</div>
                     <div>• <strong>inguinal_hernia.png</strong> : Wikimedia Commons / IkeTheSloth</div>
                     <div>• <strong>bladder_distension.png</strong> : Wikimedia Commons / Treves & Hutchinson</div>
                     <div>• <strong>testicular_torsion_swelling.png</strong> : Wikimedia Commons / Javier.montero.arredondo</div>
-                    <div>• <strong>anal_fistula.png</strong> : Open-i / Liaqat N. et al</div>
+                    <div>• <strong>anal_fistula.png</strong> : Open-i / Liaqat N. et al (2016)</div>
+
+                    <strong style="color:var(--accent); display:block; margin-top:10px;"> Liquides Biologiques</strong>
                     <div>• <strong>hematuria_urine.png</strong> : Wikimedia Commons / Own Work</div>
                     <div>• <strong>gross_hematuria.png</strong> : Wikimedia Commons / James Heilman, MD</div>
                     <div>• <strong>melena_stool.png</strong> : Wikimedia Commons / Ahmed Shawky Mohammedin</div>
                     <div>• <strong>bloody_stool.png</strong> : Wikimedia Commons / Togabi</div>
                     <div>• <strong>pitting_edema.png</strong> : Wikimedia Commons / James Heilman, MD</div>
                     <div>• <strong>currant_jelly_stool.png</strong> : EMNote / jackcfchong</div>
+
+                    <strong style="color:var(--accent); display:block; margin-top:10px;"> Imagerie & ECG</strong>
+                    <div>• <strong>pneumonia_xray.png</strong> : Wikimedia Commons / Unknown user</div>
+                    <div>• <strong>pneumothorax_xray.png</strong> : Open-i / Omar HR et al. (2011)</div>
+                    <div>• <strong>afib_ecg.png</strong> : CardioNetworks / Drj</div>
+                    <div>• <strong>pericarditis_ecg.png</strong> : Wikimedia Commons / James Heilman, MD</div>
+                    <div>• <strong>bowel_obstruction_xray.png</strong> : Wikimedia Commons / James Heilman, MD</div>
+                    <div>• <strong>subdural_hematoma_ct.png</strong> : Wikimedia Commons / Lucien Monfils</div>
+                    <div>• <strong>epidural_hematoma_ct.png</strong> : Wikimedia Commons / James Heilman, MD</div>
+                    <div>• <strong>hip_fracture_xray.png</strong> : Wikimedia Commons / Drvaram</div>
+                    <div>• <strong>wrist_fracture_xray.png</strong> : Wikimedia Commons / Lucien Monfils</div>
+                    <div>• <strong>vertebral_compression_xray.png</strong> : Wikimedia Commons / Dirk69CS</div>
+                    <div>• <strong>osteoarthritis_xray.png</strong> : Wikimedia Commons / Jmarchn</div>
+                    <div>• <strong>gout_erosion_xray.png</strong> : Open-i / Perez-Ruiz F et al. (2009)</div>
+                    <div>• <strong>herniated_disc_mri.png</strong> : Wikimedia Commons / Miguel Tremblay</div>
                 </div>
             `;
 
@@ -1280,6 +1380,7 @@
         }
 
         function renderPathoStats(patho) {
+            setDocTitle(`Statistiques : ${patho.name}`);
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card center';
@@ -1371,30 +1472,8 @@
             card.appendChild(btnBack); app.appendChild(card);
         }
 
-        function renderContact() {
-            window.scrollTo(0,0);
-            const app = q('#app'); app.innerHTML='';
-            const card = document.createElement('div'); card.className='card center';
-            card.innerHTML = `<h2><i class="ph-duotone ph-envelope"></i> Nous Contacter</h2>`;
-            const inputName = document.createElement('input'); inputName.className='input'; inputName.placeholder='Votre Nom';
-            if(state.pseudo) inputName.value = state.pseudo;
-            const inputEmail = document.createElement('input'); inputEmail.className='input'; inputEmail.placeholder='Votre Email';
-            if(state.currentUser) inputEmail.value = state.currentUser.email;
-            const inputText = document.createElement('textarea'); inputText.className='input'; inputText.placeholder='Votre message...';
-            const btnSend = document.createElement('button'); btnSend.className='btn'; btnSend.textContent='Envoyer';
-            btnSend.onclick = async () => {
-                if(!inputText.value) return;
-                try {
-                    await addDoc(collection(db, "messages"), { name: inputName.value, email: inputEmail.value, message: inputText.value, date: new Date(), uid: state.currentUser ? state.currentUser.uid : 'guest' });
-                    showAlert("Envoyé !", "success"); setTimeout(() => { if(state.pseudo) renderHome(); else renderLogin(); }, 1500);
-                } catch(e) { showAlert("Erreur", "error"); }
-            };
-            const btnCancel = document.createElement('button'); btnCancel.className='link'; btnCancel.textContent='Annuler';
-            btnCancel.onclick = () => { if(state.pseudo) renderHome(); else renderLogin(); };
-            card.append(inputName, inputEmail, inputText, btnSend, btnCancel); app.appendChild(card);
-        }
-
         function renderDemographics() {
+            setDocTitle("Paramètres Patient");
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card';
@@ -1536,6 +1615,21 @@
 
         function canShowDiagnostic() {
             const qNum = state.asked.length;
+            
+            // --- FIX PLAISANTIN DEBUT ---
+            // Si le joueur est en train de tenter l'Easter Egg (moins de 15 questions)
+            // On empêche l'IA de conclure, même si elle est sûre d'elle.
+            if (qNum < 15 && qNum > 0) {
+                // Vérifie si on a que des "Vrai" jusqu'à présent
+                const allYes = state.asked.every(s => state.answers[s] === true);
+                // Vérifie si on a que des "Faux" jusqu'à présent
+                const allNo = state.asked.every(s => state.answers[s] === false);
+                
+                // Si on est dans une série parfaite, on force le jeu à continuer
+                if (allYes || allNo) return false; 
+            }
+            // --- FIX PLAISANTIN FIN ---
+
             if(state.ranked.length===0) return false;
             
             const top1 = state.ranked[0];
@@ -1559,42 +1653,168 @@
         }
 
         function prepareConfirmationQuestions(topPatho) {
-            const pSigns = Object.keys(topPatho.signes); 
+            const pSigns = Object.keys(topPatho.signes);
             const unaskedCorrect = pSigns.filter(s => !state.asked.includes(s));
-            
-            // 1. Identifier l'examen complémentaire (La "Preuve")
-            // On cherche un signe non posé avec un poids >= 40 (Radio, ECG...)
+
+            // 1. Identifier l'examen complémentaire (La "Preuve" / Boss Final)
             let proofSign = unaskedCorrect.find(s => topPatho.signes[s] >= 40);
 
-            // 2. Sélectionner les signes CLINIQUES restants (en excluant la preuve)
+            // 2. Préparer le pool de signes CORRECTS restants (sans la preuve)
             let poolCorrect = unaskedCorrect.filter(s => s !== proofSign);
             poolCorrect.sort(() => 0.5 - Math.random());
-            
-            // On prend 2 signes cliniques si on a une preuve, sinon 3
-            let limitCorrect = proofSign ? 2 : 3;
-            let selectedCorrect = poolCorrect.slice(0, limitCorrect);
 
-            // 3. Sélectionner les PIÈGES (Faux signes)
-            const unaskedTraps = state.allSigns.filter(s => !pSigns.includes(s) && !state.asked.includes(s));
-            unaskedTraps.sort(() => 0.5 - Math.random());
-            let selectedTraps = unaskedTraps.slice(0, 3); 
+            // 3. Préparer le pool de signes PIÈGES (Diagnostic Différentiel)
+            // On va chercher les signes des pathologies classées 2, 3, 4 et 5
+            let differentialSigns = new Set();
+            // On limite la recherche aux 5 premiers résultats max
+            const maxRank = Math.min(state.ranked.length, 5); 
 
-            // 4. Mélanger les questions CLINIQUES et les PIÈGES
-            let queue = [...selectedCorrect, ...selectedTraps];
+            for (let i = 1; i < maxRank; i++) {
+                if (state.ranked[i]) {
+                    const competitorPatho = state.ranked[i].patho;
+                    Object.keys(competitorPatho.signes).forEach(s => {
+                        // On ajoute le signe SI :
+                        // - Il n'appartient PAS à la maladie correcte (sinon ce n'est pas un piège)
+                        // - Il n'a pas déjà été posé
+                        if (!pSigns.includes(s) && !state.asked.includes(s)) {
+                            differentialSigns.add(s);
+                        }
+                    });
+                }
+            }
+
+            let poolTraps = Array.from(differentialSigns);
+            poolTraps.sort(() => 0.5 - Math.random()); // Mélanger les pièges pertinents
+
+            // FALLBACK : Si pas assez de pièges pertinents (cas rare), on complète avec du hasard
+            if (poolTraps.length < 3) {
+                const randomTraps = state.allSigns.filter(s => 
+                    !pSigns.includes(s) && !state.asked.includes(s) && !poolTraps.includes(s)
+                );
+                randomTraps.sort(() => 0.5 - Math.random());
+                poolTraps = [...poolTraps, ...randomTraps];
+            }
+
+            // 4. Construction de la file d'attente avec RATIO ALÉATOIRE
+            // On choisit une longueur de séquence entre 3 et 5 questions (hors preuve)
+            const sequenceLength = Math.floor(Math.random() * 3) + 3; // 3, 4 ou 5
+            let queue = [];
+
+            // Remplissage aléatoire des slots
+            for (let i = 0; i < sequenceLength; i++) {
+                // 50% de chance de vouloir un signe correct, 50% un piège
+                const wantCorrect = Math.random() > 0.5;
+
+                if (wantCorrect && poolCorrect.length > 0) {
+                    queue.push(poolCorrect.shift());
+                } else if (poolTraps.length > 0) {
+                    queue.push(poolTraps.shift());
+                } else if (poolCorrect.length > 0) {
+                    // Si on voulait un piège mais qu'il n'y en a plus, on met un correct
+                    queue.push(poolCorrect.shift());
+                } else {
+                    // Plus de questions dispo
+                    break;
+                }
+            }
+
+            // 5. Sécurité Anti-Pattern
+            // On s'assure qu'il y a au moins 1 vrai et 1 faux dans le lot (si possible)
+            // pour ne pas avoir une série de 5 "NON" ou 5 "OUI" trop évidente
+            const hasCorrect = queue.some(s => pSigns.includes(s));
+            const hasTrap = queue.some(s => !pSigns.includes(s));
+
+            if (!hasCorrect && poolCorrect.length > 0 && queue.length > 0) {
+                queue[0] = poolCorrect.shift(); // On force un vrai
+            }
+            if (!hasTrap && poolTraps.length > 0 && queue.length > 0) {
+                queue[queue.length - 1] = poolTraps.shift(); // On force un faux
+            }
+
+            // 6. Mélanger la file d'attente finale
             queue.sort(() => 0.5 - Math.random());
 
-            // 5. Ajouter l'EXAMEN COMPLÉMENTAIRE à la toute fin (comme le "Boss final")
+            // 7. Ajouter la PREUVE à la toute fin
             if (proofSign) {
                 queue.push(proofSign);
-            } else if (selectedCorrect.length < 3 && poolCorrect.length > limitCorrect) {
-                 // Cas rare : pas d'examen dispo, on complète avec du clinique
-                 queue.push(poolCorrect[limitCorrect]);
+            } else if (poolCorrect.length > 0) {
+                // Si pas de preuve absolue, on met un dernier signe correct pour valider
+                queue.push(poolCorrect.shift());
             }
 
             return queue;
         }
 
+        // --- FONCTIONS "PLAISANTIN" (Easter Eggs) ---
+        function checkPlaisantin() {
+            // On ne vérifie qu'exactement à la 15ème question
+            if (state.asked.length !== 15) return false;
+
+            // Vérifier si toutes les réponses sont NON
+            const allNo = state.asked.every(sign => state.answers[sign] === false);
+            if (allNo) {
+                renderPlaisantinEnd("healthy");
+                return true; // On stoppe le jeu
+            }
+
+            // Vérifier si toutes les réponses sont OUI
+            const allYes = state.asked.every(sign => state.answers[sign] === true);
+            if (allYes) {
+                renderPlaisantinEnd("hypochondriac");
+                return true; // On stoppe le jeu
+            }
+
+            return false; // On continue le jeu normalement
+        }
+
+        function renderPlaisantinEnd(type) {
+            setDocTitle("Diagnostic Surprise");
+            window.scrollTo(0,0);
+            const app = q('#app'); app.innerHTML = '';
+            const card = document.createElement('div'); card.className = 'card center';
+            
+            // On joue un petit son si possible
+            playSound(type === "healthy" ? 'success' : 'error');
+
+            if (type === "healthy") {
+                // Cas : 15 NON d'affilée
+                card.innerHTML = `
+                    <div class="icon-lg color-success"><i class="ph-duotone ph-person-simple-walk"></i></div>
+                    <h2 style="color:var(--success)">Diagnostic : Touriste !</h2>
+                    <p style="margin-top:15px; font-weight:bold;">Ce patient n'a RIEN.</p>
+                    <p class="small" style="margin-top:10px; line-height:1.6;">
+                        Après 15 questions négatives, il semblerait que ce patient se soit juste perdu dans l'hôpital en cherchant la machine à café.<br>
+                        Rentrez chez vous, vous êtes en parfaite santé !
+                    </p>
+                `;
+            } else {
+                // Cas : 15 OUI d'affilée
+                card.innerHTML = `
+                    <div class="icon-lg color-ruby"><i class="ph-duotone ph-mask-happy"></i></div>
+                    <h2 style="color:var(--ruby)">Diagnostic : Malade Imaginaire</h2>
+                    <p style="margin-top:15px; font-weight:bold;">Syndrome de l'Hypocondriaque Massif</p>
+                    <p class="small" style="margin-top:10px; line-height:1.6;">
+                        Le patient a TOUS les symptômes. Statistiquement, il devrait avoir explosé il y a 10 minutes.<br>
+                        Appelez Dr House, ou un psychiatre, c'est au choix.
+                    </p>
+                `;
+            }
+
+            const btn = document.createElement('button');
+            btn.className = 'btn'; 
+            btn.innerHTML = '<i class="ph-duotone ph-arrow-counter-clockwise"></i> Recommencer sérieusement';
+            btn.style.marginTop = "20px";
+            btn.onclick = () => { 
+                state.dailyTarget = null; 
+                renderDemographics(); 
+            };
+            
+            card.appendChild(btn);
+            app.appendChild(card);
+        }
+
         function renderCurrentQuestion() {
+            setDocTitle(`Question ${state.asked.length}`);
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
             const card = document.createElement('div'); card.className='card center';
@@ -1661,6 +1881,10 @@
         }
 
         function askNextQuestion() {
+            // --- VERIFICATION PLAISANTIN ---
+            if (checkPlaisantin()) return; 
+            // -------------------------------
+
             if (state.asked.length >= 20) { showDiagnostic(); return; }
 
             if(state.asked.length > 0) {
@@ -1738,6 +1962,7 @@
         }
 
         function showDiagnostic() {
+            setDocTitle("Analyse...");
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML = '';
             const loadingCard = document.createElement('div'); loadingCard.className = 'card center';
@@ -1749,6 +1974,7 @@
                 const top = state.ranked[0];
                 state.diagnosticShown = true;
                 state.previousDiagnostics.push(top.patho.name);
+                setDocTitle(`Diagnostic : ${top.patho.name}`);
 
                 app.innerHTML = ''; 
                 const card = document.createElement('div'); card.className='card center';
@@ -1848,6 +2074,7 @@
         function showDiagnosticDetails(data, wasManualError = false) {
             window.scrollTo(0,0);
             const top = data.patho;
+            setDocTitle(top.name);
             const app = q('#app'); app.innerHTML = '';
             const card = document.createElement('div'); card.className='card';
             
@@ -1964,6 +2191,7 @@
         }
 
         function renderGlossary() {
+            setDocTitle("Glossaire");
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
             const titleCard = document.createElement('div'); titleCard.className='card center'; titleCard.innerHTML='<h2><i class="ph-duotone ph-book-bookmark"></i> Glossaire</h2>'; 

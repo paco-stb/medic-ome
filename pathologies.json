@@ -162,14 +162,14 @@
         "short": "Implantation ectopique",
         "pdf": "fiches/geu.pdf",
         "signes": {"douleur_abdominale": 5, "douleur_pelvienne_coté": 18, "saignements_noirs_sepia": 18, "retard_regles": 15, "malaise_vertiges": 12, "douleur_epaule": 6, "signes_choc": 8},
-        "facteurs": {"femme": 10, "tabac": 2, "sterilet": 3}
+        "facteurs": {"femme": 10, "homme": -1000, "tabac": 2, "sterilet": 3}
     },
     {
         "name": "Salpingite Aiguë",
         "short": "Infection génitale haute",
         "pdf": "fiches/salpingite.pdf",
         "signes": {"douleur_abdominale": 5, "genes_urinaires": 5, "douleur_pelvienne": 15, "pertes_vaginales_anormales": 18, "fievre": 12, "saignements_genitaux": 8, "douleur_rapports": 10, "brulures_urinaires": 5},
-        "facteurs": {"femme": 10, "partenaires_multiples": 4}
+        "facteurs": {"femme": 10, "homme": -1000, "partenaires_multiples": 4}
     },
     {
         "name": "Torsion du Testicule",
@@ -177,7 +177,7 @@
         "pdf": "fiches/torsion.pdf",
         "signes": {"genes_urinaires": 5, "douleur_testicule_brutale": 20, "testicule_remonte": 18, "nausees_vomissements": 12, "douleur_abdominale": 6, "bourse_rouge_gonflee": 10, "operation_testicule": 50, "urines_indolores": 10},
         "images": {"operation_testicule": "images/testicular_torsion_swelling.png"},
-        "facteurs": {"homme": 10, "jeune": 5}
+        "facteurs": {"homme": 10, "femme": -1000, "jeune": 5}
     },
     {
         "name": "Rétention Aiguë d'Urine",
@@ -478,7 +478,7 @@
         "short": "Adénocarcinome prostatique",
         "pdf": "fiches/kc_prostate.pdf",
         "signes": {"genes_urinaires": 5, "difficulte_uriner": 15, "sang_urines": 10, "levers_nuit_pipi": 12, "jet_urine_faible": 10, "blocage_urines": 8, "douleur_os": 6, "asymptomatique": 8},
-        "facteurs": {"homme": 10, "plus_de_65ans": 8, "atcd_famille": 4}
+        "facteurs": {"homme": 10, "femme": -1000, "plus_de_65ans": 8, "atcd_famille": 4}
     },
     {
         "name": "Tumeur Vessie",
@@ -658,7 +658,7 @@
         "short": "Gynéco inflammatoire",
         "pdf": "fiches/endometriose.pdf",
         "signes": {"genes_urinaires": 5, "douleur_pelvienne": 5, "regles_tres_douloureuses": 20, "douleur_profonde_rapports": 18, "douleur_ventre_chronique": 15, "infertilite": 12, "gene_uriner_regles": 10, "douleur_selle_regles": 10, "fatigue_chronique": 8},
-        "facteurs": {"femme": 10, "jeune": 4}
+        "facteurs": {"femme": 10, "homme": -1000, "jeune": 4}
     },
     {
         "name": "Cancer du Sein",
@@ -666,21 +666,21 @@
         "pdf": "fiches/kc_sein.pdf",
         "signes": {"anomalie_peau": 5, "boule_dure_sein": 20, "ganglion_aisselle": 12, "mamelon_rentre": 18, "ecoulement_mamelon": 15, "peau_aspect_orange": 12, "rougeur_sein": 8, "forme_sein_changee": 10},
         "images": {"peau_aspect_orange": "images/peau_d_orange_breast.png"},
-        "facteurs": {"femme": 10, "plus_de_30ans": 5, "atcd_famille": 4, "hormones": 3}
+        "facteurs": {"femme": 10, "homme": -1000, "plus_de_30ans": 5, "atcd_famille": 4, "hormones": 3}
     },
     {
         "name": "Pré-éclampsie",
         "short": "HTA gravidique",
         "pdf": "fiches/pre_eclampsie.pdf",
         "signes": {"douleur_abdominale": 5, "troubles_visuels": 5, "tension_elevee": 20, "oedemes_jambes": 15, "barre_estomac": 12, "maux_tete": 12, "mouches_devant_yeux": 12, "bourdonnement_oreilles": 10, "prise_poids_rapide": 10},
-        "facteurs": {"femme": 10, "grossesse": 10, "primipare": 3}
+        "facteurs": {"femme": 10, "homme": -1000, "grossesse": 10, "primipare": 3}
     },
     {
         "name": "Fibrome Utérin",
         "short": "Tumeur bénigne utérus",
         "pdf": "fiches/fibrome.pdf",
         "signes": {"douleur_pelvienne": 5, "genes_urinaires": 5, "regles_tres_abondantes": 20, "douleur_bas_ventre": 15, "pesanteur_bas_ventre": 12, "envie_frequente_uriner": 10, "constipation": 8, "ventre_grossit": 10, "anemie": 10},
-        "facteurs": {"femme": 10, "plus_de_30ans": 5, "noire": 3}
+        "facteurs": {"femme": 10, "homme": -1000, "plus_de_30ans": 5, "noire": 3}
     },
     {
         "name": "Rougeole",
@@ -952,21 +952,21 @@
         "short": "Tuméfaction ovarienne",
         "pdf": "fiches/kyste_ovaire.pdf",
         "signes": {"douleur_pelvienne": 5, "douleur_pelvienne_unilaterale": 18, "pesanteur_bas_ventre": 15, "troubles_regles": 10, "absence_de_fievre_specifique": 10},
-        "facteurs": {"femme": 10, "jeune": 5}
+        "facteurs": {"femme": 10, "homme": -1000, "jeune": 5}
     },
     {
         "name": "Mycose Vaginale",
         "short": "Candidose",
         "pdf": "fiches/mycose.pdf",
         "signes": {"demangeaisons_intimes": 20, "pertes_blanches_lait_caille": 18, "brulures_urinaires": 10, "douleur_rapports": 10},
-        "facteurs": {"femme": 10, "antibiotiques_recents": 5}
+        "facteurs": {"femme": 10, "homme": -1000, "antibiotiques_recents": 5}
     },
     {
         "name": "Cancer du Testicule",
         "short": "Tumeur germinale",
         "pdf": "fiches/kc_testicule.pdf",
         "signes": {"masse_dure_bourse": 20, "indolore": 15, "sensation_lourdeur_bourse": 12, "asymptomatique": 10},
-        "facteurs": {"homme": 10, "jeune": 8}
+        "facteurs": {"homme": 10, "femme": -1000, "jeune": 8}
     },
     {
         "name": "Insuffisance Rénale Chronique",
@@ -1024,7 +1024,7 @@
         "pdf": "fiches/sopk.pdf",
         "signes": {"regles_irregulieres": 18, "acne_severe": 15, "pilosite_excessive": 15, "prise_poids": 12, "infertilite": 10},
         "images": {"acne_severe": "images/pcos_acne.png", "pilosite_excessive": "images/hirsutism_face.png"},
-        "facteurs": {"femme": 10, "jeune": 5, "surpoids": 5}
+        "facteurs": {"femme": 10, "homme": -1000, "jeune": 5, "surpoids": 5}
     },
     {
         "name": "Diabète Insipide",

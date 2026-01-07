@@ -674,7 +674,13 @@
 
                 const brandLogo = document.getElementById('brandLogo');
                 if(brandLogo) {
-                    brandLogo.onclick = () => { if (state.currentUser || state.isGuest) { renderHome(); } };
+                    brandLogo.onclick = () => { 
+                        // MODIFICATION : Interdit le retour accueil en mode essai
+                        if (state.isTrial) {
+                            return; 
+                        }
+                        if (state.currentUser || state.isGuest) { renderHome(); } 
+                    };
                 }
 
                 // GESTION DE LA VISIBILITÉ DE L'ONGLET (TITRE)
@@ -967,7 +973,7 @@
                 <p style="color:var(--text-muted); margin-bottom: 30px;">Simulateur de diagnostic clinique</p>
             `;
 
-            // 1. BOUTON TEST GRATUIT
+            // 1. BOUTON TEST GRATUIT (MODIFIÉ)
             const btnTrial = document.createElement('button');
             btnTrial.className = 'btn';
             btnTrial.style.background = 'linear-gradient(135deg, #00b09b 0%, #96c93d 100%)'; 
@@ -981,8 +987,9 @@
                 state.pseudo = "Visiteur";
                 state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {} };
                 
-                showAlert("Mode Découverte activé !", "success");
-                renderHome(); 
+                // MODIFICATION : On va direct au patient, pas à l'accueil
+                showAlert("Mode Découverte activé : 1 cas gratuit", "success");
+                renderDemographics(); 
             };
             
             // 2. BOUTON CONNEXION / INSCRIPTION
@@ -1764,283 +1771,212 @@
         }
 
         function renderDemographics() {
-    setDocTitle("Paramètres Patient");
-    window.scrollTo(0, 0);
-    const app = q('#app');
-    app.innerHTML = '';
-    const card = document.createElement('div');
-    card.className = 'card center';
+            setDocTitle("Paramètres Patient");
+            window.scrollTo(0, 0);
+            const app = q('#app');
+            app.innerHTML = '';
+            const card = document.createElement('div');
+            card.className = 'card center';
 
-    // --- EN-TÊTE ---
-    if (state.dailyTarget) {
-        card.innerHTML = `<h3><i class="ph-duotone ph-sun color-gold"></i> Défi du Jour</h3><p class="small" style="margin-bottom:20px; color:var(--gold);">Cible : ${state.dailyTarget.name}</p>`;
-    } else {
-        card.innerHTML = `<h3 style="text-align:center; margin-bottom:15px;"><i class="ph-duotone ph-user-list"></i> Profil Patient</h3><p class="small" style="margin-bottom:20px">Définissez le terrain et le contexte clinique.</p>`;
-    }
+            // --- EN-TÊTE ---
+            if (state.dailyTarget) {
+                card.innerHTML = `<h3><i class="ph-duotone ph-sun color-gold"></i> Défi du Jour</h3><p class="small" style="margin-bottom:20px; color:var(--gold);">Cible : ${state.dailyTarget.name}</p>`;
+            } else {
+                card.innerHTML = `<h3 style="text-align:center; margin-bottom:15px;"><i class="ph-duotone ph-user-list"></i> Profil Patient</h3><p class="small" style="margin-bottom:20px">Définissez le terrain et le contexte clinique.</p>`;
+            }
 
-    // --- 1. IDENTITÉ (Sexe & Âge) ---
-    const genderContainer = document.createElement('div');
-    genderContainer.className = 'gender-selector';
-    genderContainer.innerHTML = `
-        <button class="gender-btn" id="btn-femme" onclick="selectGender('femme')" title="Femme"><i class="ph-duotone ph-gender-female"></i></button>
-        <button class="gender-btn" id="btn-homme" onclick="selectGender('homme')" title="Homme"><i class="ph-duotone ph-gender-male"></i></button>
-    `;
-    card.appendChild(document.createElement('label')).textContent = "Identité";
-    card.appendChild(genderContainer);
+            // --- 1. IDENTITÉ (Sexe & Âge) ---
+            const genderContainer = document.createElement('div');
+            genderContainer.className = 'gender-selector';
+            genderContainer.innerHTML = `
+                <button class="gender-btn" id="btn-femme" onclick="selectGender('femme')" title="Femme"><i class="ph-duotone ph-gender-female"></i></button>
+                <button class="gender-btn" id="btn-homme" onclick="selectGender('homme')" title="Homme"><i class="ph-duotone ph-gender-male"></i></button>
+            `;
+            card.appendChild(document.createElement('label')).textContent = "Identité";
+            card.appendChild(genderContainer);
 
-    let selectedGender = null;
-    window.selectGender = (g) => {
-        selectedGender = g;
-        document.getElementById('btn-femme').className = `gender-btn ${g === 'femme' ? 'active' : ''}`;
-        document.getElementById('btn-homme').className = `gender-btn ${g === 'homme' ? 'active' : ''}`;
-        toggleGenderSpecificTags(g);
-    };
+            let selectedGender = null;
+            window.selectGender = (g) => {
+                selectedGender = g;
+                document.getElementById('btn-femme').className = `gender-btn ${g === 'femme' ? 'active' : ''}`;
+                document.getElementById('btn-homme').className = `gender-btn ${g === 'homme' ? 'active' : ''}`;
+                toggleGenderSpecificTags(g);
+            };
 
-    const sAge = document.createElement('select'); sAge.id = 'demo-age'; sAge.className = 'input';
-    const ages = [
-        { val: "nourrisson", txt: "Nourrisson (< 2 ans)" },
-        { val: "enfant", txt: "Enfant (2 - 12 ans)" },
-        { val: "adolescent", txt: "Adolescent (13 - 18 ans)" },
-        { val: "jeune", txt: "Jeune Adulte (19 - 35 ans)" },
-        { val: "adulte", txt: "Adulte (36 - 65 ans)" },
-        { val: "senior", txt: "Senior (> 65 ans)" }
-    ];
-    ages.forEach(a => {
-        const op = document.createElement('option'); op.value = a.val; op.textContent = a.txt;
-        if (a.val === 'adulte') op.selected = true; 
-        sAge.appendChild(op);
-    });
-    card.appendChild(sAge);
+            const sAge = document.createElement('select'); sAge.id = 'demo-age'; sAge.className = 'input';
+            const ages = [
+                { val: "nourrisson", txt: "Nourrisson (< 2 ans)" },
+                { val: "enfant", txt: "Enfant (2 - 12 ans)" },
+                { val: "adolescent", txt: "Adolescent (13 - 18 ans)" },
+                { val: "jeune", txt: "Jeune Adulte (19 - 35 ans)" },
+                { val: "adulte", txt: "Adulte (36 - 65 ans)" },
+                { val: "senior", txt: "Senior (> 65 ans)" }
+            ];
+            ages.forEach(a => {
+                const op = document.createElement('option'); op.value = a.val; op.textContent = a.txt;
+                if (a.val === 'adulte') op.selected = true; 
+                sAge.appendChild(op);
+            });
+            card.appendChild(sAge);
 
-    // --- 3. TERRAIN & ANTÉCÉDENTS (Chips organisés) ---
-    // On regroupe par logique clinique : Toxiques, Métabolique, Contexte aigu...
-    
-    const chipsDiv = document.createElement('div');
-    chipsDiv.className = 'chips-container';
+            // --- 3. TERRAIN & ANTÉCÉDENTS ---
+            const chipsDiv = document.createElement('div');
+            chipsDiv.className = 'chips-container';
 
-    // Définition des groupes pour l'affichage (Purement visuel)
-    const groups = [
-        {
-            title: "Habitudes & Métabolisme",
-            items: [
-                { id: 'tabac', label: 'Tabac', icon: 'ph-cigarette' },
-                { id: 'alcool', label: 'Alcool', icon: 'ph-beer-bottle' },
-                { id: 'surpoids', label: 'Surpoids / Obésité', icon: 'ph-hamburger' },
-                { id: 'metabolique', label: 'Diabète / HTA', icon: 'ph-heart-break' } // Regroupement intelligent
-            ]
-        },
-        {
-            title: "Contexte Aigu / Déclencheur",
-            items: [
-                { id: 'trauma', label: 'Chute / Trauma / Effort', icon: 'ph-bone' }, // Couvre Fracture, IDM, Entorse...
-                { id: 'chirurgie', label: 'Chirurgie / Alité', icon: 'ph-bed' }, // Couvre Embolie
-                { id: 'voyage', label: 'Voyage / Plein Air', icon: 'ph-airplane' }, // Couvre Palu, Lyme, Tétanos
-                { id: 'medicaments', label: 'Médicaments / Allergie', icon: 'ph-pill' } // Couvre Choc, AINS, Anticoag...
-            ]
-        },
-        {
-            title: "Terrain Fragile",
-            items: [
-                { id: 'immuno', label: 'Cancer / Immuno.', icon: 'ph-ribbon' }, // Couvre ID, Cancer, Corticoïdes
-                { id: 'psy', label: 'Contexte Psy / Stress', icon: 'ph-brain' }, // Couvre Panique, TCA
-                { id: 'hiver', label: 'Hiver / Épidémie', icon: 'ph-snowflake' } // Couvre Grippe, Bronchio
-            ]
-        },
-        {
-            title: "Gynécologie",
-            genderSpecific: 'femme', // Sera caché si Homme
-            items: [
-                { id: 'grossesse', label: 'Grossesse', icon: 'ph-baby' },
-                { id: 'sterilet', label: 'Stérilet', icon: 'ph-anchor' },
-                { id: 'menopause', label: 'Ménopause', icon: 'ph-hourglass' }
-            ]
-        }
-    ];
+            const groups = [
+                {
+                    title: "Habitudes & Métabolisme",
+                    items: [
+                        { id: 'tabac', label: 'Tabac', icon: 'ph-cigarette' },
+                        { id: 'alcool', label: 'Alcool', icon: 'ph-beer-bottle' },
+                        { id: 'surpoids', label: 'Surpoids / Obésité', icon: 'ph-hamburger' },
+                        { id: 'metabolique', label: 'Diabète / HTA', icon: 'ph-heart-break' }
+                    ]
+                },
+                {
+                    title: "Contexte Aigu / Déclencheur",
+                    items: [
+                        { id: 'trauma', label: 'Chute / Trauma / Effort', icon: 'ph-bone' },
+                        { id: 'chirurgie', label: 'Chirurgie / Alité', icon: 'ph-bed' },
+                        { id: 'voyage', label: 'Voyage / Plein Air', icon: 'ph-airplane' },
+                        { id: 'medicaments', label: 'Médicaments / Allergie', icon: 'ph-pill' }
+                    ]
+                },
+                {
+                    title: "Terrain Fragile",
+                    items: [
+                        { id: 'immuno', label: 'Cancer / Immuno.', icon: 'ph-ribbon' },
+                        { id: 'psy', label: 'Contexte Psy / Stress', icon: 'ph-brain' },
+                        { id: 'hiver', label: 'Hiver / Épidémie', icon: 'ph-snowflake' }
+                    ]
+                },
+                {
+                    title: "Gynécologie",
+                    genderSpecific: 'femme',
+                    items: [
+                        { id: 'grossesse', label: 'Grossesse', icon: 'ph-baby' },
+                        { id: 'sterilet', label: 'Stérilet', icon: 'ph-anchor' },
+                        { id: 'menopause', label: 'Ménopause', icon: 'ph-hourglass' }
+                    ]
+                }
+            ];
 
-    const selectedFactors = new Set();
+            const selectedFactors = new Set();
 
-    groups.forEach(group => {
-        // Création du titre de section (ex: HABITUDES)
-        const label = document.createElement('div');
-        label.className = 'section-label';
-        label.textContent = group.title;
-        if(group.genderSpecific) label.id = `label-${group.genderSpecific}`; // Pour le cacher
-        chipsDiv.appendChild(label);
+            groups.forEach(group => {
+                const label = document.createElement('div');
+                label.className = 'section-label';
+                label.textContent = group.title;
+                if(group.genderSpecific) label.id = `label-${group.genderSpecific}`;
+                chipsDiv.appendChild(label);
 
-        // Création des chips
-        group.items.forEach(f => {
-            const chip = document.createElement('div');
-            chip.className = 'chip';
-            chip.id = `chip-${f.id}`;
-            chip.innerHTML = `<i class="ph-duotone ${f.icon}"></i> ${f.label}`;
-            if (group.genderSpecific) chip.dataset.gender = group.genderSpecific;
+                group.items.forEach(f => {
+                    const chip = document.createElement('div');
+                    chip.className = 'chip';
+                    chip.id = `chip-${f.id}`;
+                    chip.innerHTML = `<i class="ph-duotone ${f.icon}"></i> ${f.label}`;
+                    if (group.genderSpecific) chip.dataset.gender = group.genderSpecific;
 
-            chip.onclick = () => {
-                if (selectedFactors.has(f.id)) {
-                    selectedFactors.delete(f.id);
-                    chip.classList.remove('selected');
+                    chip.onclick = () => {
+                        if (selectedFactors.has(f.id)) {
+                            selectedFactors.delete(f.id);
+                            chip.classList.remove('selected');
+                        } else {
+                            selectedFactors.add(f.id);
+                            chip.classList.add('selected');
+                        }
+                    };
+                    chipsDiv.appendChild(chip);
+                });
+            });
+            card.appendChild(chipsDiv);
+
+            window.toggleGenderSpecificTags = (g) => {
+                const labelFemme = document.getElementById('label-femme');
+                if(labelFemme) labelFemme.style.display = (g === 'femme') ? 'block' : 'none';
+                const chips = document.querySelectorAll('[data-gender="femme"]');
+                chips.forEach(c => {
+                    if (g === 'femme') c.style.display = 'flex';
+                    else {
+                        c.style.display = 'none';
+                        c.classList.remove('selected');
+                        selectedFactors.delete(c.id.replace('chip-', ''));
+                    }
+                });
+            };
+            toggleGenderSpecificTags(null); 
+
+            // --- 4. CHRONO ---
+            if (!state.dailyTarget) {
+                const chronoDiv = document.createElement('div');
+                chronoDiv.style.margin = '10px 0 20px 0'; chronoDiv.style.textAlign = 'center';
+                chronoDiv.innerHTML = `<label style="cursor:pointer; color:var(--text-muted); font-size:13px;"><input type="checkbox" id="chronoToggle" style="margin-right:6px; vertical-align:middle;"> <i class="ph-duotone ph-lightning"></i> Mode Chrono</label>`;
+                card.appendChild(chronoDiv);
+            }
+
+            // --- BOUTONS ---
+            const btnGroup = document.createElement('div'); btnGroup.className = 'button-group';
+            const btnStart = document.createElement('button'); btnStart.className = 'btn'; btnStart.innerHTML = '<i class="ph-duotone ph-play"></i> Lancer le cas';
+            
+            btnStart.onclick = () => {
+                if (!selectedGender && !state.dailyTarget) { 
+                     if(Math.random() > 0.5) selectedGender = 'femme'; else selectedGender = 'homme';
+                }
+
+                const ageVal = q('#demo-age').value;
+                const demoData = {
+                    homme: selectedGender === 'homme',
+                    femme: selectedGender === 'femme',
+                    nourrisson: ageVal === 'nourrisson',
+                    enfant: ageVal === 'enfant',
+                    adolescent: ageVal === 'adolescent',
+                    jeune: ageVal === 'jeune' || ageVal === 'adolescent',
+                    plus_de_30ans: ageVal === 'adulte' || ageVal === 'senior',
+                    plus_de_65ans: ageVal === 'senior',
+                    adulte: ageVal === 'adulte'
+                };
+
+                // Mapping
+                if(selectedFactors.has('metabolique')) { demoData['diabete'] = true; demoData['hta'] = true; demoData['dyslipidemie'] = true; demoData['fibrillation_atriale'] = true; demoData['insuffisance_cardiaque'] = true; }
+                if(selectedFactors.has('trauma')) { demoData['chute'] = true; demoData['chute_main'] = true; demoData['traumatisme_cranien'] = true; demoData['effort'] = true; demoData['sport'] = true; demoData['frottement_yeux'] = true; }
+                if(selectedFactors.has('chirurgie')) { demoData['chirurgie_recente'] = true; demoData['chirurgie_abdominale'] = true; demoData['alitement'] = true; demoData['chirurgie_cataracte'] = true; }
+                if(selectedFactors.has('voyage')) { demoData['voyage_recent'] = true; demoData['foret'] = true; demoData['jardinage'] = true; }
+                if(selectedFactors.has('medicaments')) { demoData['medicaments'] = true; demoData['allergie_connue'] = true; demoData['allergies'] = true; demoData['ains'] = true; demoData['anticoagulants'] = true; demoData['antibiotiques_recents'] = true; }
+                if(selectedFactors.has('immuno')) { demoData['cancer'] = true; demoData['immunodepression'] = true; demoData['auto_immun'] = true; demoData['corticoides'] = true; }
+                if(selectedFactors.has('psy')) { demoData['stress'] = true; demoData['depression'] = true; demoData['perfectionnisme'] = true; }
+                if(selectedFactors.has('hiver')) { demoData['hiver'] = true; demoData['epidemie'] = true; demoData['contage'] = true; demoData['collectivite'] = true; demoData['entourage_malade'] = true; }
+                ['tabac', 'alcool', 'surpoids', 'atcd_famille', 'grossesse', 'sterilet', 'menopause'].forEach(id => { if(selectedFactors.has(id)) demoData[id] = true; });
+                if(demoData['jeune'] || demoData['adolescent']) { demoData['rapport_risque'] = true; demoData['partenaires_multiples'] = true; }
+
+                state.demo = demoData;
+                state.answers = {}; state.asked = []; state.diagnosticShown = false; state.previousDiagnostics = []; state.history = [];
+                state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
+                state.priorityQueue = [];
+
+                if (state.dailyTarget) state.isChrono = false;
+                else state.isChrono = q('#chronoToggle')?.checked || false;
+
+                if (state.isChrono) state.startTime = Date.now();
+                else state.startTime = null;
+
+                askNextQuestion();
+            };
+
+            const btnCancel = document.createElement('button'); btnCancel.className = 'link'; btnCancel.textContent = 'Annuler'; 
+            
+            // MODIFICATION ICI : Gestion de l'annulation selon le mode
+            btnCancel.onclick = () => {
+                if(state.isTrial) {
+                    state.isGuest = false;
+                    state.isTrial = false;
+                    renderLogin();
                 } else {
-                    selectedFactors.add(f.id);
-                    chip.classList.add('selected');
+                    renderHome();
                 }
             };
-            chipsDiv.appendChild(chip);
-        });
-    });
-    card.appendChild(chipsDiv);
-
-    // Fonction de gestion d'affichage Homme/Femme
-    window.toggleGenderSpecificTags = (g) => {
-        // Gérer les titres de sections
-        const labelFemme = document.getElementById('label-femme');
-        if(labelFemme) labelFemme.style.display = (g === 'femme') ? 'block' : 'none';
-
-        // Gérer les chips
-        const chips = document.querySelectorAll('[data-gender="femme"]');
-        chips.forEach(c => {
-            if (g === 'femme') c.style.display = 'flex';
-            else {
-                c.style.display = 'none';
-                c.classList.remove('selected');
-                selectedFactors.delete(c.id.replace('chip-', ''));
-            }
-        });
-    };
-    
-    // Initialisation
-    toggleGenderSpecificTags(null); 
-
-    // --- 4. CHRONO ---
-    if (!state.dailyTarget) {
-        const chronoDiv = document.createElement('div');
-        chronoDiv.style.margin = '10px 0 20px 0'; chronoDiv.style.textAlign = 'center';
-        chronoDiv.innerHTML = `<label style="cursor:pointer; color:var(--text-muted); font-size:13px;"><input type="checkbox" id="chronoToggle" style="margin-right:6px; vertical-align:middle;"> <i class="ph-duotone ph-lightning"></i> Mode Chrono</label>`;
-        card.appendChild(chronoDiv);
-    }
-
-    // --- BOUTONS ---
-    const btnGroup = document.createElement('div'); btnGroup.className = 'button-group';
-    const btnStart = document.createElement('button'); btnStart.className = 'btn'; btnStart.innerHTML = '<i class="ph-duotone ph-play"></i> Lancer le cas';
-    
-    btnStart.onclick = () => {
-        if (!selectedGender && !state.dailyTarget) { 
-             if(Math.random() > 0.5) selectedGender = 'femme'; else selectedGender = 'homme';
+            
+            btnGroup.appendChild(btnStart); btnGroup.appendChild(btnCancel); card.appendChild(btnGroup); app.appendChild(card);
         }
-
-        const ageVal = q('#demo-age').value;
-        const demoData = {
-            homme: selectedGender === 'homme',
-            femme: selectedGender === 'femme',
-            nourrisson: ageVal === 'nourrisson',
-            enfant: ageVal === 'enfant',
-            adolescent: ageVal === 'adolescent',
-            jeune: ageVal === 'jeune' || ageVal === 'adolescent',
-            plus_de_30ans: ageVal === 'adulte' || ageVal === 'senior',
-            plus_de_65ans: ageVal === 'senior',
-            adulte: ageVal === 'adulte'
-        };
-
-        // --- MAPPING INTELLIGENT --- 
-        // C'est ici que la magie opère pour traduire les boutons "Cliniques" en facteurs JSON précis
-        
-        // 1. Bouton "Diabète / HTA"
-        if(selectedFactors.has('metabolique')) {
-            demoData['diabete'] = true;
-            demoData['hta'] = true;
-            demoData['dyslipidemie'] = true; // Souvent associé
-            // Bonus : HTA est un facteur de risque cardiovasculaire majeur
-            demoData['fibrillation_atriale'] = true; 
-            demoData['insuffisance_cardiaque'] = true;
-        }
-
-        // 2. Bouton "Chute / Trauma / Effort"
-        if(selectedFactors.has('trauma')) {
-            demoData['chute'] = true; 
-            demoData['chute_main'] = true; // Pouteau-Colles
-            demoData['traumatisme_cranien'] = true; // Hématomes
-            demoData['effort'] = true; // Infarctus, Hernie discal
-            demoData['sport'] = true; // Entorse
-            demoData['frottement_yeux'] = true; // Orgelet (Trauma mineur)
-        }
-
-        // 3. Bouton "Chirurgie / Alité"
-        if(selectedFactors.has('chirurgie')) {
-            demoData['chirurgie_recente'] = true;
-            demoData['chirurgie_abdominale'] = true; // Occlusion
-            demoData['alitement'] = true; // Phlébite
-            demoData['chirurgie_cataracte'] = true; // Décollement rétine
-        }
-
-        // 4. Bouton "Voyage / Plein Air"
-        if(selectedFactors.has('voyage')) {
-            demoData['voyage_recent'] = true; // Palu
-            demoData['foret'] = true; // Lyme
-            demoData['jardinage'] = true; // Tétanos
-        }
-
-        // 5. Bouton "Médicaments / Allergies"
-        if(selectedFactors.has('medicaments')) {
-            demoData['medicaments'] = true;
-            demoData['allergie_connue'] = true; // Choc
-            demoData['allergies'] = true; // Asthme
-            demoData['ains'] = true; // Ulcère
-            demoData['anticoagulants'] = true; // Saignements
-            demoData['antibiotiques_recents'] = true; // Mycose / Muguet
-        }
-
-        // 6. Bouton "Cancer / Immuno"
-        if(selectedFactors.has('immuno')) {
-            demoData['cancer'] = true;
-            demoData['immunodepression'] = true; // Pneumopathie, Zona
-            demoData['auto_immun'] = true; // Lupus, Biermer
-            demoData['corticoides'] = true; // Cushing, Cataracte
-        }
-
-        // 7. Bouton "Psy / Stress"
-        if(selectedFactors.has('psy')) {
-            demoData['stress'] = true;
-            demoData['depression'] = true;
-            demoData['perfectionnisme'] = true; // Anorexie
-        }
-
-        // 8. Bouton "Hiver / Épidémie"
-        if(selectedFactors.has('hiver')) {
-            demoData['hiver'] = true;
-            demoData['epidemie'] = true; // Grippe
-            demoData['contage'] = true; // Maladies infantiles
-            demoData['collectivite'] = true; // Gastro
-            demoData['entourage_malade'] = true; // Méningite
-        }
-
-        // Mapping direct des boutons simples
-        ['tabac', 'alcool', 'surpoids', 'atcd_famille', 'grossesse', 'sterilet', 'menopause'].forEach(id => {
-            if(selectedFactors.has(id)) demoData[id] = true;
-        });
-
-        // 9. Facteurs implicites (Jeune = Risque IST souvent)
-        if(demoData['jeune'] || demoData['adolescent']) {
-            demoData['rapport_risque'] = true;
-            demoData['partenaires_multiples'] = true;
-        }
-
-        // --- LANCEMENT ---
-        state.demo = demoData;
-        state.answers = {}; state.asked = []; state.diagnosticShown = false; state.previousDiagnostics = []; state.history = [];
-        state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
-        state.priorityQueue = [];
-
-        if (state.dailyTarget) state.isChrono = false;
-        else state.isChrono = q('#chronoToggle')?.checked || false;
-
-        if (state.isChrono) state.startTime = Date.now();
-        else state.startTime = null;
-
-        askNextQuestion();
-    };
-
-    const btnCancel = document.createElement('button'); btnCancel.className = 'link'; btnCancel.textContent = 'Annuler'; btnCancel.onclick = renderHome;
-    btnGroup.appendChild(btnStart); btnGroup.appendChild(btnCancel); card.appendChild(btnGroup); app.appendChild(card);
-}
 
         function prepareSigns() {
             let allSignsSet = new Set();
@@ -2493,9 +2429,6 @@
                 const card = document.createElement('div'); card.className='card center';
                 const title = document.createElement('h2'); title.innerHTML='<i class="ph-duotone ph-lightbulb"></i> Diagnostic Proposé'; card.appendChild(title);
                 
-                // --- MODIFICATION ICI : GESTION PDF TRIAL ---
-                // Le bouton PDF sera créé après, mais on prépare l'affichage
-                
                 const diagDiv = document.createElement('div'); diagDiv.className='diagnostic-result';
                 diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div>
                 <div style="margin: 15px 0; max-width: 100%;">
@@ -2503,11 +2436,11 @@
                 <div class="patho-desc" style="margin-top:8px">${top.patho.short}</div>`;
                 card.appendChild(diagDiv);
                 
-                // --- CRÉATION DU BOUTON PDF AVEC VERIFICATION TRIAL ---
+                // GESTION PDF
                 if(top.pdf && top.pdf !== '#') {
                     const pdfBtn = document.createElement('a');
                     if (state.isTrial) {
-                        // BLOQUÉ
+                        // BLOQUÉ EN MODE ESSAI
                         pdfBtn.className = 'btn';
                         pdfBtn.style.background = 'var(--text-muted)';
                         pdfBtn.style.marginTop = '20px'; 
@@ -2534,94 +2467,42 @@
                     card.appendChild(noPdf);
                 }
 
-                const btnGroup = document.createElement('div'); btnGroup.className='button-group';
+                // GESTION DES BOUTONS DE FIN (MODIFIÉE)
+                if (state.isTrial) {
+                    // --- MODE ESSAI : ON BLOQUE TOUT ICI ---
+                    const btnStop = document.createElement('button');
+                    btnStop.className = 'btn';
+                    // Style attractif
+                    btnStop.style.background = 'linear-gradient(135deg, #00b09b 0%, #96c93d 100%)';
+                    btnStop.style.marginTop = '20px';
+                    btnStop.style.padding = '15px';
+                    btnStop.innerHTML = 'Voir mon résultat détaillé et créer un compte <i class="ph-bold ph-arrow-right"></i>';
+                    
+                    // On envoie directement vers le mur d'inscription
+                    btnStop.onclick = () => {
+                        renderRegisterWall(); 
+                        setTimeout(() => showAlert("Créez un compte pour sauvegarder ce résultat.", "info"), 500);
+                    };
+
+                    card.appendChild(btnStop);
+                } else {
+                    // --- MODE NORMAL ---
+                    const btnGroup = document.createElement('div'); btnGroup.className='button-group';
+                    
+                    const btnReplay = document.createElement('button'); btnReplay.className='btn btn-success'; btnReplay.innerHTML = '<i class="ph-duotone ph-arrow-clockwise"></i> Rejouer tout de suite'; 
+                    btnReplay.onclick = () => {
+                         state.dailyTarget = null; 
+                         renderDemographics();
+                    };
+
+                    const btnHome = document.createElement('button'); btnHome.className='link'; btnHome.innerHTML = '<i class="ph-duotone ph-house"></i> Accueil'; btnHome.onclick = renderHome;
+                    
+                    btnGroup.appendChild(btnReplay); 
+                    btnGroup.appendChild(btnHome); 
+                    card.appendChild(btnGroup); 
+                }
                 
-                const btnTrue = document.createElement('button'); btnTrue.className='btn btn-success'; btnTrue.innerHTML='<i class="ph-bold ph-check"></i> Correct';
-                btnTrue.onclick = async () => { 
-                    triggerConfetti(); playSound('success');
-                    state.progression.correct++; state.progression.streak = (state.progression.streak || 0) + 1;
-                    
-                    if(state.dailyTarget && state.dailyTarget.name === top.patho.name) {
-                        const today = new Date().toDateString();
-                        if(state.progression.lastDaily !== today) {
-                            state.progression.lastDaily = today;
-                            state.progression.dailyStreak = (state.progression.dailyStreak || 0) + 1;
-                            showAlert(`<i class="ph-duotone ph-party-popper"></i> Défi du jour réussi ! Série : ${state.progression.dailyStreak}`, "success");
-                        }
-                    }
-
-                    if(!state.progression.mastery) state.progression.mastery = {};
-                    const pName = top.patho.name;
-                    let m = state.progression.mastery[pName];
-                    if(!m) m = { success: 0, failures: 0, missedSigns: {} };
-                    if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
-                    
-                    m.success++;
-                    
-                    if(state.isChrono && state.startTime) {
-                        const duration = (Date.now() - state.startTime) / 1000;
-                        if(duration < 30) {
-                            state.progression.speedWins = (state.progression.speedWins || 0) + 1;
-                        }
-                        if(!state.progression.bestTimes) state.progression.bestTimes = {};
-                        if(!state.progression.bestTimes[pName] || duration < state.progression.bestTimes[pName]) {
-                            state.progression.bestTimes[pName] = duration;
-                            showAlert(`<i class="ph-duotone ph-lightning"></i> Nouveau Record : ${duration.toFixed(1)}s`, 'info');
-                        }
-                    }
-
-                    Object.keys(top.patho.signes).forEach(s => {
-                        if(state.answers[s] === false || state.answers[s] === null) { 
-                            if(!m.missedSigns[s]) m.missedSigns[s] = 0;
-                            m.missedSigns[s]++;
-                        }
-                    });
-                    
-                    Object.keys(state.answers).forEach(s => {
-                        if (state.answers[s] === true && !top.patho.signes[s]) {
-                            if(!m.missedSigns[s]) m.missedSigns[s] = 0;
-                            m.missedSigns[s]++;
-                        }
-                    });
-
-                    state.progression.mastery[pName] = m;
-                    
-                    updateHeader(); await saveProgression(); 
-                    
-                    // --- MODIF : Si Trial, on ne montre PAS les détails complets (succès etc), on félicite et on bloque ---
-                    if (state.isTrial) {
-                         // On simule une petite pause puis mur d'inscription
-                         showAlert('<i class="ph-duotone ph-check-circle"></i> Bravo ! C\'était bien ça !','success'); 
-                         setTimeout(() => renderRegisterWall(), 1500);
-                    } else {
-                         showAlert('<i class="ph-duotone ph-check-circle"></i> Diagnostic validé !','success'); 
-                         showDiagnosticDetails({patho: top.patho});
-                    }
-                };
-                
-                const btnFalse = document.createElement('button'); btnFalse.className='btn btn-error'; btnFalse.innerHTML='<i class="ph-bold ph-x"></i> Incorrect';
-                btnFalse.onclick = async () => { 
-                    playSound('error');
-                    state.progression.incorrect++; state.progression.streak = 0;
-                    
-                    if(!state.progression.mastery) state.progression.mastery = {};
-                    const pName = top.patho.name;
-                    let m = state.progression.mastery[pName];
-                    if(!m) m = { success: 0, failures: 0, missedSigns: {} };
-                    if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
-                    m.failures++;
-                    state.progression.mastery[pName] = m;
-
-                    if(!state.progression.errorLog) state.progression.errorLog = {};
-                    state.progression.errorLog[pName] = { date: Date.now(), count: (state.progression.errorLog[pName]?.count || 0) + 1 };
-
-                    updateHeader(); await saveProgression(); 
-                    showAlert('<i class="ph-duotone ph-x-circle"></i> Aïe... Continuons','error'); 
-                    state.confirmationMode = false; state.diagnosticShown=false; 
-                    setTimeout(()=>askNextQuestion(), 800);
-                };
-                
-                btnGroup.appendChild(btnTrue); btnGroup.appendChild(btnFalse); card.appendChild(btnGroup); app.appendChild(card);
+                app.appendChild(card);
             }, 1500);
         }
 

@@ -1983,19 +1983,28 @@
             PATHOLOGIES.forEach(p => { Object.keys(p.signes).forEach(s => allSignsSet.add(s)); });
             state.allSigns = Array.from(allSignsSet);
         }
+// =================================================================
+        // ============= DEBUT DU NOUVEAU MOTEUR IA INTELLIGENT =============
+        // =================================================================
 
+        // 1. CALCUL DES SCORES (FACTEURS DE RISQUE + SIGNES)
         function rankPathologies() {
             const scores = PATHOLOGIES.map(p => {
+                // On ignore les maladies déjà trouvées dans cette session
                 if (state.previousDiagnostics.includes(p.name)) {
                     return { patho: p, score: -1 }; 
                 }
 
                 let score = 0;
-                for(const facteur in p.facteurs){ if(state.demo[facteur] === true) score += p.facteurs[facteur]; }
+                // Bonus pour le terrain (Facteurs de risque)
+                for(const facteur in p.facteurs){ 
+                    if(state.demo[facteur] === true) score += p.facteurs[facteur]; 
+                }
+                // Bonus/Malus pour les réponses aux signes
                 for(const signe in p.signes){
                     const ans = state.answers[signe];
                     if(ans === true) score += p.signes[signe];
-                    else if(ans === false) score -= (p.signes[signe] * 0.5);
+                    else if(ans === false) score -= (p.signes[signe] * 0.5); // Pénalité progressive
                 }
                 return {patho:p, score: Math.max(0, score)};
             });
@@ -2003,27 +2012,27 @@
             const validScores = scores.filter(s => s.score >= 0);
             const totalScore = validScores.reduce((sum, s) => sum + s.score, 0);
 
+            // Calcul du pourcentage de probabilité
             state.ranked = scores.map(s => ({
                 ...s,
                 prob: (s.score === -1 || totalScore === 0) ? 0 : ((s.score / totalScore) * 100).toFixed(1)
             })).sort((a,b)=>b.prob - a.prob);
         }
 
+        // 2. INTELLIGENCE DE SÉLECTION (CLINIQUE D'ABORD, EXAMENS À LA FIN)
         function getNextSmartSign(ranked, remainingSigns) {
+            // On se concentre sur le Top 5 des maladies probables
             const topPathos = ranked.slice(0, 5).map(r => r.patho);
             
-            // Liste des signes à "garder pour la fin" (Examens complémentaires)
             const examSigns = new Set();
-            
-            // Mots-clés pour identifier les examens si le poids ne suffit pas
-            const examKeywords = ['radio', 'scanner', 'irm', 'ecg', 'biologie', 'analyse', 'echographie'];
+            // Mots-clés identifiant les examens complémentaires
+            const examKeywords = ['radio', 'scanner', 'irm', 'ecg', 'biologie', 'analyse', 'echographie', 'ponction'];
 
             topPathos.forEach(p => {
                 for (const [s, weight] of Object.entries(p.signes)) {
-                    // CRITÈRE : Poids lourd (>=40) ET (a une image OU contient un mot clé d'examen)
-                    // Cela laisse passer les signes cliniques forts (ex: poids 30)
+                    // Si c'est un mot clé d'examen ou une image avec un poids lourd, on le met de côté
                     const isExamKeyword = examKeywords.some(k => s.includes(k));
-                    const hasImage = p.images && p.images[s];
+                    const hasImage = GLOBAL_IMG_MAP[s]; 
                     
                     if (weight >= 40 && (hasImage || isExamKeyword)) {
                         examSigns.add(s);
@@ -2031,13 +2040,13 @@
                 }
             });
 
-            // On crée un pool "Clinique" (tout sauf les examens complémentaires)
+            // Pool Clinique = Tout ce qui n'est pas un examen
             let clinicalPool = remainingSigns.filter(s => !examSigns.has(s));
 
-            // Si on a encore des questions cliniques, on les priorise.
-            // Sinon (si on a tout épuisé), on sort les radios/scanners.
+            // L'IA force l'utilisation du pool clinique s'il reste des questions dedans
             let pool = clinicalPool.length > 0 ? clinicalPool : remainingSigns;
 
+            // On cherche le signe le plus discriminant parmi les maladies restantes
             const signCounts = {};
             topPathos.forEach(p => {
                 pool.forEach(s => {
@@ -2057,35 +2066,32 @@
                 }
             }
             
+            // Sécurité si l'algo ne trouve rien
             if (!bestSign && pool.length > 0) return pool[Math.floor(Math.random() * pool.length)];
             
             return bestSign;
         }
 
+        // 3. DÉCISION DE FIN (EST-CE QU'ON A TROUVÉ ?)
         function canShowDiagnostic() {
             const qNum = state.asked.length;
             
-            // --- FIX PLAISANTIN DEBUT ---
-            // Si le joueur est en train de tenter l'Easter Egg (moins de 15 questions)
-            // On empêche l'IA de conclure, même si elle est sûre d'elle.
+            // Anti-Plaisantin : Si le joueur répond toujours la même chose au début, on continue
             if (qNum < 15 && qNum > 0) {
-                // Vérifie si on a que des "Vrai" jusqu'à présent
                 const allYes = state.asked.every(s => state.answers[s] === true);
-                // Vérifie si on a que des "Faux" jusqu'à présent
                 const allNo = state.asked.every(s => state.answers[s] === false);
-                
-                // Si on est dans une série parfaite, on force le jeu à continuer
                 if (allYes || allNo) return false; 
             }
-            // --- FIX PLAISANTIN FIN ---
 
-            if(state.ranked.length===0) return false;
+            if(state.ranked.length === 0) return false;
             
             const top1 = state.ranked[0];
             const top2 = state.ranked[1];
             
+            // Si on a déjà trouvé cette maladie, on continue
             if(state.previousDiagnostics.includes(top1.patho.name)) return false;
 
+            // Limite absolue
             if (qNum >= 20) return true;
 
             const score1 = parseFloat(top1.prob);
@@ -2094,37 +2100,35 @@
             const score2 = parseFloat(top2.prob);
             const gap = score1 - score2;
 
+            // Critères de victoire
             if (qNum >= 5 && score1 >= 50 && gap >= 20) return true;
             if (qNum >= 10 && gap >= 10) return true;
-            if (qNum >= 15) return true;
+            if (qNum >= 15 && score1 > score2) return true;
 
             return false;
         }
 
+        // 4. PRÉPARATION DU BOSS FINAL (MODE CONFIRMATION & PIÈGES)
         function prepareConfirmationQuestions(topPatho) {
             const pSigns = Object.keys(topPatho.signes);
             const unaskedCorrect = pSigns.filter(s => !state.asked.includes(s));
 
-            // 1. Identifier l'examen complémentaire (La "Preuve" / Boss Final)
+            // A. Identifier la "Preuve" (Signe > 40 points)
             let proofSign = unaskedCorrect.find(s => topPatho.signes[s] >= 40);
 
-            // 2. Préparer le pool de signes CORRECTS restants (sans la preuve)
+            // B. Signes corrects restants
             let poolCorrect = unaskedCorrect.filter(s => s !== proofSign);
             poolCorrect.sort(() => 0.5 - Math.random());
 
-            // 3. Préparer le pool de signes PIÈGES (Diagnostic Différentiel)
-            // On va chercher les signes des pathologies classées 2, 3, 4 et 5
+            // C. Génération des Pièges (Diagnostic Différentiel)
             let differentialSigns = new Set();
-            // On limite la recherche aux 5 premiers résultats max
             const maxRank = Math.min(state.ranked.length, 5); 
 
             for (let i = 1; i < maxRank; i++) {
                 if (state.ranked[i]) {
                     const competitorPatho = state.ranked[i].patho;
                     Object.keys(competitorPatho.signes).forEach(s => {
-                        // On ajoute le signe SI :
-                        // - Il n'appartient PAS à la maladie correcte (sinon ce n'est pas un piège)
-                        // - Il n'a pas déjà été posé
+                        // On ajoute le signe s'il n'appartient PAS à la maladie cible
                         if (!pSigns.includes(s) && !state.asked.includes(s)) {
                             differentialSigns.add(s);
                         }
@@ -2133,9 +2137,9 @@
             }
 
             let poolTraps = Array.from(differentialSigns);
-            poolTraps.sort(() => 0.5 - Math.random()); // Mélanger les pièges pertinents
+            poolTraps.sort(() => 0.5 - Math.random());
 
-            // FALLBACK : Si pas assez de pièges pertinents (cas rare), on complète avec du hasard
+            // Fallback (Si pas assez de pièges, on prend au hasard)
             if (poolTraps.length < 3) {
                 const randomTraps = state.allSigns.filter(s => 
                     !pSigns.includes(s) && !state.asked.includes(s) && !poolTraps.includes(s)
@@ -2144,76 +2148,44 @@
                 poolTraps = [...poolTraps, ...randomTraps];
             }
 
-            // 4. Construction de la file d'attente avec RATIO ALÉATOIRE
-            // On choisit une longueur de séquence entre 3 et 5 questions (hors preuve)
-            const sequenceLength = Math.floor(Math.random() * 3) + 3; // 3, 4 ou 5
+            // D. Remplissage de la file d'attente
+            const sequenceLength = Math.floor(Math.random() * 3) + 3; // 3 à 5 questions
             let queue = [];
 
-            // Remplissage aléatoire des slots
             for (let i = 0; i < sequenceLength; i++) {
-                // 50% de chance de vouloir un signe correct, 50% un piège
                 const wantCorrect = Math.random() > 0.5;
-
-                if (wantCorrect && poolCorrect.length > 0) {
-                    queue.push(poolCorrect.shift());
-                } else if (poolTraps.length > 0) {
-                    queue.push(poolTraps.shift());
-                } else if (poolCorrect.length > 0) {
-                    // Si on voulait un piège mais qu'il n'y en a plus, on met un correct
-                    queue.push(poolCorrect.shift());
-                } else {
-                    // Plus de questions dispo
-                    break;
-                }
+                if (wantCorrect && poolCorrect.length > 0) queue.push(poolCorrect.shift());
+                else if (poolTraps.length > 0) queue.push(poolTraps.shift());
+                else if (poolCorrect.length > 0) queue.push(poolCorrect.shift());
+                else break;
             }
 
-            // 5. Sécurité Anti-Pattern
-            // On s'assure qu'il y a au moins 1 vrai et 1 faux dans le lot (si possible)
-            // pour ne pas avoir une série de 5 "NON" ou 5 "OUI" trop évidente
+            // E. Sécurité : Assurer au moins 1 Vrai et 1 Faux si possible
             const hasCorrect = queue.some(s => pSigns.includes(s));
             const hasTrap = queue.some(s => !pSigns.includes(s));
+            if (!hasCorrect && poolCorrect.length > 0 && queue.length > 0) queue[0] = poolCorrect.shift();
+            if (!hasTrap && poolTraps.length > 0 && queue.length > 0) queue[queue.length - 1] = poolTraps.shift();
 
-            if (!hasCorrect && poolCorrect.length > 0 && queue.length > 0) {
-                queue[0] = poolCorrect.shift(); // On force un vrai
-            }
-            if (!hasTrap && poolTraps.length > 0 && queue.length > 0) {
-                queue[queue.length - 1] = poolTraps.shift(); // On force un faux
-            }
-
-            // 6. Mélanger la file d'attente finale
             queue.sort(() => 0.5 - Math.random());
 
-            // 7. Ajouter la PREUVE à la toute fin
-            if (proofSign) {
-                queue.push(proofSign);
-            } else if (poolCorrect.length > 0) {
-                // Si pas de preuve absolue, on met un dernier signe correct pour valider
-                queue.push(poolCorrect.shift());
-            }
+            // F. La Preuve à la fin
+            if (proofSign) queue.push(proofSign);
+            else if (poolCorrect.length > 0) queue.push(poolCorrect.shift());
 
             return queue;
         }
 
-        // --- FONCTIONS "PLAISANTIN" (Easter Eggs) ---
+        // 5. EASTER EGGS (LE PLAISANTIN)
         function checkPlaisantin() {
-            // On ne vérifie qu'exactement à la 15ème question
             if (state.asked.length !== 15) return false;
-
-            // Vérifier si toutes les réponses sont NON
+            
             const allNo = state.asked.every(sign => state.answers[sign] === false);
-            if (allNo) {
-                renderPlaisantinEnd("healthy");
-                return true; // On stoppe le jeu
-            }
+            if (allNo) { renderPlaisantinEnd("healthy"); return true; }
 
-            // Vérifier si toutes les réponses sont OUI
             const allYes = state.asked.every(sign => state.answers[sign] === true);
-            if (allYes) {
-                renderPlaisantinEnd("hypochondriac");
-                return true; // On stoppe le jeu
-            }
+            if (allYes) { renderPlaisantinEnd("hypochondriac"); return true; }
 
-            return false; // On continue le jeu normalement
+            return false;
         }
 
         function renderPlaisantinEnd(type) {
@@ -2221,46 +2193,123 @@
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML = '';
             const card = document.createElement('div'); card.className = 'card center';
-            
-            // On joue un petit son si possible
             playSound(type === "healthy" ? 'success' : 'error');
 
             if (type === "healthy") {
-                // Cas : 15 NON d'affilée
-                card.innerHTML = `
-                    <div class="icon-lg color-success"><i class="ph-duotone ph-person-simple-walk"></i></div>
+                card.innerHTML = `<div class="icon-lg color-success"><i class="ph-duotone ph-person-simple-walk"></i></div>
                     <h2 style="color:var(--success)">Diagnostic : Touriste !</h2>
-                    <p style="margin-top:15px; font-weight:bold;">Ce patient n'a RIEN.</p>
-                    <p class="small" style="margin-top:10px; line-height:1.6;">
-                        Après 15 questions négatives, il semblerait que ce patient se soit juste perdu dans l'hôpital en cherchant la machine à café.<br>
-                        Rentrez chez vous, vous êtes en parfaite santé !
-                    </p>
-                `;
+                    <p style="margin-top:10px">Ce patient n'a RIEN. Après 15 "Non", il est clair qu'il s'est perdu.</p>`;
             } else {
-                // Cas : 15 OUI d'affilée
-                card.innerHTML = `
-                    <div class="icon-lg color-ruby"><i class="ph-duotone ph-mask-happy"></i></div>
+                card.innerHTML = `<div class="icon-lg color-ruby"><i class="ph-duotone ph-mask-happy"></i></div>
                     <h2 style="color:var(--ruby)">Diagnostic : Malade Imaginaire</h2>
-                    <p style="margin-top:15px; font-weight:bold;">Syndrome de l'Hypocondriaque Massif</p>
-                    <p class="small" style="margin-top:10px; line-height:1.6;">
-                        Le patient a TOUS les symptômes. Statistiquement, il devrait avoir explosé il y a 10 minutes.<br>
-                        Appelez Dr House, ou un psychiatre, c'est au choix.
-                    </p>
-                `;
+                    <p style="margin-top:10px">Ce patient a TOUT. Statistiquement impossible !</p>`;
+            }
+            const btn = document.createElement('button'); btn.className = 'btn'; btn.innerHTML = 'Recommencer';
+            btn.style.marginTop = '20px';
+            btn.onclick = () => { state.dailyTarget = null; renderDemographics(); };
+            card.appendChild(btn); app.appendChild(card);
+        }
+
+        // 6. ORCHESTRATEUR PRINCIPAL (BOUCLE DE JEU)
+        function askNextQuestion() {
+            // A. Vérif Plaisantin
+            if (checkPlaisantin()) return;
+
+            // B. Limite max
+            if (state.asked.length >= 20) { showDiagnostic(); return; }
+
+            // C. Logique "Refinements" (Entonnoir de précision)
+            if(state.asked.length > 0) {
+                const lastSign = state.asked[state.asked.length - 1];
+                const lastAnswer = state.answers[lastSign];
+                
+                if(lastAnswer === true) {
+                      for (const [parent, children] of Object.entries(REFINEMENTS)) {
+                        if (children.includes(lastSign)) {
+                            // Si on trouve un signe précis, on nettoie la file des autres précisions sœurs inutiles
+                            const siblings = children.filter(c => c !== lastSign);
+                            state.priorityQueue = state.priorityQueue.filter(q => !siblings.includes(q));
+                        }
+                    }
+                }
             }
 
-            const btn = document.createElement('button');
-            btn.className = 'btn'; 
-            btn.innerHTML = '<i class="ph-duotone ph-arrow-counter-clockwise"></i> Recommencer sérieusement';
-            btn.style.marginTop = "20px";
-            btn.onclick = () => { 
-                state.dailyTarget = null; 
-                renderDemographics(); 
-            };
+            // D. Traiter la file prioritaire
+            if(state.priorityQueue.length > 0) {
+                const nextPriority = state.priorityQueue.shift();
+                if(!state.asked.includes(nextPriority)) {
+                    state.currentSign = nextPriority; state.asked.push(nextPriority); renderCurrentQuestion(); return;
+                } else { askNextQuestion(); return; }
+            }
+
+            // E. GESTION MODE CONFIRMATION
+            if (state.confirmationMode) {
+                const lastSign = state.asked[state.asked.length - 1];
+                const isSignPartOfPatho = Object.keys(state.confirmedPatho.signes).includes(lastSign);
+                const userSaidYes = state.answers[lastSign] === true;
+
+                // L'utilisateur valide un piège -> On sort du mode confirmation
+                if (!isSignPartOfPatho && userSaidYes) {
+                    state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
+                    showAlert("Aïe ! Ce symptôme ne collait pas...", "error");
+                    askNextQuestion(); return;
+                }
+                // L'utilisateur nie un signe clé -> On sort du mode confirmation
+                if (isSignPartOfPatho && !userSaidYes) {
+                    state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
+                    showAlert("Ah, fausse piste. Je continue à chercher...", "info");
+                    askNextQuestion(); return;
+                }
+
+                if (state.confirmationQueue.length > 0) {
+                    const nextC = state.confirmationQueue.shift();
+                    state.currentSign = nextC; state.asked.push(nextC); renderCurrentQuestion(); return;
+                } else { 
+                    showDiagnostic(); return; 
+                }
+            }
+
+            // F. BOUCLE STANDARD
+            prepareSigns();
+            const remaining = state.allSigns.filter(s => !state.asked.includes(s));
+            if(remaining.length === 0) { showDiagnostic(); return; }
+
+            // Au tout début, si pas de symptôme, on peut poser des questions générales (Refinements parents) ou random
+            const hasSymptom = Object.keys(state.answers).some(key => state.answers[key] === true);
+            if (!hasSymptom) {
+                const generalSigns = remaining.filter(s => REFINEMENTS.hasOwnProperty(s));
+                const pool = generalSigns.length > 0 ? generalSigns : remaining;
+                const randomSign = pool[Math.floor(Math.random() * pool.length)];
+                state.currentSign = randomSign; state.asked.push(randomSign); renderCurrentQuestion(); return;
+            }
+
+            rankPathologies(); 
             
-            card.appendChild(btn);
-            app.appendChild(card);
+            // G. Tentative de passage en mode Confirmation
+            if(canShowDiagnostic()){ 
+                const topPatho = state.ranked[0].patho;
+                const confirmQuestions = prepareConfirmationQuestions(topPatho);
+                
+                if (confirmQuestions.length > 0) {
+                    state.confirmationMode = true; 
+                    state.confirmedPatho = topPatho; 
+                    state.confirmationQueue = confirmQuestions;
+                    
+                    const first = state.confirmationQueue.shift();
+                    state.currentSign = first; state.asked.push(first); renderCurrentQuestion(); return;
+                } else { 
+                    showDiagnostic(); return; 
+                }
+            }
+            
+            // H. Sélection Intelligente
+            const signe = getNextSmartSign(state.ranked, remaining);
+            state.currentSign = signe; state.asked.push(signe); renderCurrentQuestion();
         }
+        
+        // =================================================================
+        // ============== FIN DU NOUVEAU MOTEUR IA INTELLIGENT ==============
+        // =================================================================
 
         function renderCurrentQuestion() {
             setDocTitle(`Question ${state.asked.length}`);
@@ -2329,86 +2378,6 @@
             app.appendChild(card);
         }
 
-        function askNextQuestion() {
-            // --- VERIFICATION PLAISANTIN ---
-            if (checkPlaisantin()) return; 
-            // -------------------------------
-
-            if (state.asked.length >= 20) { showDiagnostic(); return; }
-
-            if(state.asked.length > 0) {
-                const lastSign = state.asked[state.asked.length - 1];
-                const lastAnswer = state.answers[lastSign];
-                
-                if(lastAnswer === true) {
-                      for (const [parent, children] of Object.entries(REFINEMENTS)) {
-                        if (children.includes(lastSign)) {
-                            const siblings = children.filter(c => c !== lastSign);
-                            state.priorityQueue = state.priorityQueue.filter(q => !siblings.includes(q));
-                        }
-                    }
-                }
-            }
-
-            if(state.priorityQueue.length > 0) {
-                const nextPriority = state.priorityQueue.shift();
-                if(!state.asked.includes(nextPriority)) {
-                    state.currentSign = nextPriority; state.asked.push(nextPriority); renderCurrentQuestion(); return;
-                } else { askNextQuestion(); return; }
-            }
-
-            if (state.confirmationMode) {
-                const lastSign = state.asked[state.asked.length - 1];
-                
-                const isSignPartOfPatho = Object.keys(state.confirmedPatho.signes).includes(lastSign);
-                const userSaidYes = state.answers[lastSign] === true;
-
-                if (!isSignPartOfPatho && userSaidYes) {
-                    state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
-                    showAlert("Aïe ! Ce symptôme ne collait pas...", "error");
-                    askNextQuestion(); return;
-                }
-
-                if (isSignPartOfPatho && !userSaidYes) {
-                    state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
-                    showAlert("Ah, fausse piste. Je continue à chercher...", "info");
-                    askNextQuestion(); return;
-                }
-
-                if (state.confirmationQueue.length > 0) {
-                    const nextC = state.confirmationQueue.shift();
-                    state.currentSign = nextC; state.asked.push(nextC); renderCurrentQuestion(); return;
-                } else { 
-                    showDiagnostic(); return; 
-                }
-            }
-
-            prepareSigns();
-            const remaining = state.allSigns.filter(s => !state.asked.includes(s));
-            if(remaining.length === 0) { showDiagnostic(); return; }
-
-            const hasSymptom = Object.keys(state.answers).some(key => state.answers[key] === true);
-            if (!hasSymptom) {
-                const generalSigns = remaining.filter(s => REFINEMENTS.hasOwnProperty(s));
-                const pool = generalSigns.length > 0 ? generalSigns : remaining;
-                const randomSign = pool[Math.floor(Math.random() * pool.length)];
-                state.currentSign = randomSign; state.asked.push(randomSign); renderCurrentQuestion(); return;
-            }
-
-            rankPathologies(); 
-            if(canShowDiagnostic()){ 
-                const topPatho = state.ranked[0].patho;
-                const confirmQuestions = prepareConfirmationQuestions(topPatho);
-                if (confirmQuestions.length > 0) {
-                    state.confirmationMode = true; state.confirmedPatho = topPatho; state.confirmationQueue = confirmQuestions;
-                    const first = state.confirmationQueue.shift();
-                    state.currentSign = first; state.asked.push(first); renderCurrentQuestion(); return;
-                } else { showDiagnostic(); return; }
-            }
-            
-            const signe = getNextSmartSign(state.ranked, remaining);
-            state.currentSign = signe; state.asked.push(signe); renderCurrentQuestion();
-        }
 
         function showDiagnostic() {
             setDocTitle("Analyse...");

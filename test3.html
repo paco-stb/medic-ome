@@ -580,71 +580,28 @@ function checkGuestAvailability() {
 function startGuestMode() {
     const guestData = checkGuestAvailability();
     if (!guestData.canPlay) {
-        alert("Le mode invité est temporairement indisponible. Veuillez créer un compte pour continuer.");
+        showAlert("Le mode invité est temporairement indisponible. Veuillez créer un compte.", "error");
         return false;
     }
 
-    state.guestMode = true;
+    // CORRECTION ICI : On utilise state.isGuest
+    state.isGuest = true;
+    state.pseudo = "Invité";
+    
+    // On initialise la progression vide si elle n'existe pas
+    if (!state.progression) {
+        state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0 };
+    }
+
     guestData.canPlay = false;
     guestData.timestamp = Date.now();
     sessionStorage.setItem('guestMode', JSON.stringify(guestData));
 
-    renderDemographics(); // Lance le moteur comme si connecté
+    updateHeader(); // Important pour afficher le pseudo "Invité"
+    renderHome();   // On envoie vers l'accueil au lieu de lancer direct le diag
     return true;
 }
 
-// === RESTRICTIONS GUEST ===
-function restrictGuestAccess() {
-    if (!state.guestMode) return;
-
-    // Bloque glossaire
-    const glossBtn = q('#glossaryBtn');
-    if (glossBtn) glossBtn.onclick = () => {
-        showAlert("Le glossaire est réservé aux utilisateurs enregistrés.", "error");
-    };
-
-    // Bloque PDF
-    window.trackPdf = function() {
-        if (state.guestMode) {
-            showAlert("Les fiches PDF sont réservées aux utilisateurs enregistrés.", "error");
-            return false;
-        }
-        // Sinon, fonction originale continue
-    };
-
-    // Bloque profil
-    const profileBtn = q('#profileBtn');
-    if (profileBtn) profileBtn.onclick = () => {
-        if (state.guestMode) {
-            showAlert("L'accès au profil est réservé aux utilisateurs enregistrés.", "error");
-            return false;
-        }
-        renderProfile(); // fonction existante
-    };
-}
-
-// === GUEST ABANDON PROTECTION ===
-function protectGuestAbandon() {
-    if (!state.guestMode) return;
-
-    const originalAbandon = renderAbandonMenu;
-    window.renderAbandonMenu = function() {
-        if (state.guestMode) {
-            showAlert("Vous devez terminer le test invité avant de quitter.", "error");
-            return;
-        }
-        originalAbandon();
-    };
-}
-
-// === INITIALISATION ===
-function initGuestMode() {
-    restrictGuestAccess();
-    protectGuestAbandon();
-}
-
-// Appeler après chargement du script
-initGuestMode();
 
         // --- THEME LOGIC ---
         function toggleTheme() {
@@ -1071,6 +1028,20 @@ initGuestMode();
                 } catch (error) { showAlert("Erreur création: " + error.message, "error"); }
             };
             card.appendChild(inRegEmail); card.appendChild(inRegPass); card.appendChild(inPseudo); card.appendChild(btnReg);
+            // --- AJOUT BOUTON INVITÉ ---
+const sepGuest = document.createElement('div'); 
+sepGuest.style.margin = '15px 0'; sepGuest.style.borderTop = '1px solid var(--glass-border)';
+card.appendChild(sepGuest);
+
+const btnGuestMode = document.createElement('button');
+btnGuestMode.className = 'btn';
+btnGuestMode.style.background = 'transparent'; 
+btnGuestMode.style.border = '1px solid var(--accent)';
+btnGuestMode.innerHTML = '<i class="ph-duotone ph-user-circle"></i> Tester sans créer de compte';
+btnGuestMode.onclick = startGuestMode;
+card.appendChild(btnGuestMode);
+// ---------------------------
+
             const sepCode = document.createElement('div'); sepCode.textContent='— ou Accès Rapide (Local) —'; sepCode.className='small'; sepCode.style.margin='16px 0'; card.appendChild(sepCode);
             const inputCode = document.createElement('input'); inputCode.placeholder='Clé d\'accès'; inputCode.className='input';
             const btnCode = document.createElement('button'); btnCode.className='btn btn-code'; btnCode.textContent='Utiliser une clé';

@@ -1389,6 +1389,15 @@
              card.appendChild(howToCard);
          
              const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.innerHTML='<i class="ph-duotone ph-stethoscope"></i> Entraînement Libre'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; 
+            if (state.isGuest) {
+    const limit = checkGuestLimit();
+    // Si le joueur est bloqué, on change l'aspect du bouton tout de suite
+    if (!limit.allowed) {
+        btnDiag.style.background = "linear-gradient(135deg, #555 0%, #333 100%)"; // Grisé
+        btnDiag.style.opacity = "0.7";
+        btnDiag.innerHTML = `<i class="ph-duotone ph-lock-key"></i> Bloqué (${limit.remaining})`;
+    }
+}
          btnDiag.onclick= () => {
          // --- VERIFICATION LIMITE ---
          const limit = checkGuestLimit();

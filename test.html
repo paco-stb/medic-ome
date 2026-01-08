@@ -1262,7 +1262,7 @@
         btnForgot.className = 'small link'; btnForgot.style.border = 'none'; btnForgot.textContent = 'Mot de passe oublié ?';
         btnForgot.onclick = async () => {
             if (!inputUser.value) return showAlert("Veuillez entrer votre email d'abord", "error");
-            try { await sendPasswordResetEmail(auth, inputUser.value); showAlert("Email envoyé !", "success"); } catch (e) { showAlert(e.message, "error"); }
+            try { await sendPasswordResetEmail(auth, inputUser.value); showAlert("Email envoyé ! Vérifiez vos spams.", "success"); } catch (e) { showAlert(e.message, "error"); }
         };
 
         formContainer.append(inputUser, inputPass, btnLogin, btnForgot);

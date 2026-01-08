@@ -2949,19 +2949,11 @@ function showDayDetails(dateStr, data) {
     let prob = 0;
     if(state.ranked.length > 0) prob = parseFloat(state.ranked[0].prob);
 
-    // ✅ CORRECTION : Affichage des images uniquement dans les questions
     const imgUrl = GLOBAL_IMG_MAP[signe];
     const imgHTML = imgUrl ? `
         <div style="width:100%; max-width:500px; margin:0 auto 20px auto;">
-            <img src="${imgUrl}" 
-                 alt="Image clinique - ${formatSigneName(signe)}" 
-                 style="width:100%; height:auto; max-height:350px; object-fit:contain; border-radius:12px; border:2px solid var(--glass-border); box-shadow: 0 8px 20px rgba(0,0,0,0.4);"
-                 onerror="this.parentElement.style.display='none'; console.warn('❌ Image introuvable:', '${imgUrl}')">
-            <div style="text-align:center; font-size:11px; color:var(--text-muted); margin-top:8px; opacity:0.7;">
-                <i class="ph-duotone ph-image"></i> Imagerie médicale
-            </div>
-        </div>
-    ` : '';
+            <img src="${imgUrl}" alt="Image" style="width:100%; border-radius:12px; border:2px solid var(--glass-border);">
+        </div>` : '';
 
     card.innerHTML = `
         ${state.isChrono ? '<div style="font-size:12px; color:var(--accent); margin-bottom:5px;"><i class="ph-duotone ph-lightning"></i> Chrono Actif</div>' : ''}
@@ -2969,16 +2961,16 @@ function showDayDetails(dateStr, data) {
             <div class="ai-progress-bar" style="width:${prob}%"></div>
         </div>
         <div class="ai-progress-label">Confiance IA : ${prob}%</div>
-        
         <div class="small" style="margin-bottom:12px; color:var(--accent)">${questionTitle}</div>
-        
         ${imgHTML}
-
         <div class="question-text">Le patient présente-t-il :<br><strong style="font-size:1.2em; color:var(--text-main);">${formatSigneName(signe)}</strong> ?</div>`;
     
+    // --- LA LIGNE QUI MANQUAIT EST ICI ---
+    const btnGroup = document.createElement('div'); 
     btnGroup.className = 'button-group';
+    // -------------------------------------
     
-    // 1. BOUTON OUI (AVEC MÉLANGE ALÉATOIRE)
+    // Bouton OUI avec raffinements aléatoires
     const btnOui = document.createElement('button');
     btnOui.className = 'btn btn-success';
     btnOui.innerHTML = '<i class="ph-bold ph-check"></i> OUI';
@@ -2990,8 +2982,6 @@ function showDayDetails(dateStr, data) {
             isChrono: state.isChrono, startTime: state.startTime, dailyTarget: state.dailyTarget
         }));
         state.answers[signe] = true;
-
-        // --- MÉLANGE ALÉATOIRE DES QUESTIONS PRÉCISES ---
         if (REFINEMENTS[signe]) {
             let shuffled = [...REFINEMENTS[signe]].sort(() => Math.random() - 0.5);
             state.priorityQueue.push(...shuffled);
@@ -3000,7 +2990,6 @@ function showDayDetails(dateStr, data) {
     };
     btnGroup.appendChild(btnOui);
 
-    // 2. FONCTION POUR NON ET NSP
     const addOtherBtn = (txt, cls, val) => {
         const b = document.createElement('button');
         b.className = cls; b.innerHTML = txt;
@@ -3019,9 +3008,9 @@ function showDayDetails(dateStr, data) {
 
     addOtherBtn('<i class="ph-bold ph-x"></i> NON', 'btn btn-error', false);
     addOtherBtn('Je ne sais pas', 'link', null);
+    
     card.appendChild(btnGroup);
 
-    // 3. NAVIGATION (RETOUR / ABANDONNER)
     const navGroup = document.createElement('div'); 
     navGroup.style.display = 'flex'; navGroup.style.gap = '15px'; navGroup.style.marginTop = '20px';
     
@@ -3039,13 +3028,13 @@ function showDayDetails(dateStr, data) {
     const btnAb = document.createElement('button'); 
     btnAb.className='link'; btnAb.innerHTML='Abandonner'; 
     btnAb.onclick = () => {
-        if(state.isGuest) { showAlert("Action non disponible en mode invité.", "error"); return; }
+        if(state.isGuest) { showAlert("Action limitée en mode invité.", "error"); return; }
         renderAbandonMenu();
     };
     navGroup.appendChild(btnAb); 
     card.appendChild(navGroup);
     app.appendChild(card);
-} // <--- vérifie bien que cette accolade ferme la fonction !
+}
 
 function startConfirmationPhase(targetPatho) {
     state.confirmationMode = true;

@@ -170,10 +170,7 @@
         "signes": {"douleur_abdominale": 10, "arret_matieres_gaz": 25, "vomissements_fecaloide": 15, "meteorisme_abdominal": 15, "niveaux_hydro_aeriques_radio": 50, "ampoule_rectale_vide": 15},
         "veto": ["arret_matieres_gaz"],
         "boost": ["niveaux_hydro_aeriques_radio"],
-        "images": { 
-            "meteorisme_abdominal": "images/abdominal_distension.png",
-            "niveaux_hydro_aeriques_radio": "images/bowel_obstruction_xray.png"
-        },
+        "images": {"meteorisme_abdominal": "images/abdominal_distension.png", "niveaux_hydro_aeriques_radio": "images/bowel_obstruction_xray.png"},
         "facteurs": {"bride_chirurgicale": 8, "hernie_etranglee": 5, "cancer_digestif": 5}
     },
     {

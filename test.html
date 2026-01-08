@@ -2659,96 +2659,93 @@ function showDayDetails(dateStr, data) {
          
          function rankPathologies() {
     const scores = PATHOLOGIES.map(p => {
-        // Exclure si déjà proposé dans cette partie
-        if (state.previousDiagnostics.includes(p.name)) return { patho: p, score: -1000 };
+        // --- POINT 2 : VETO STRICT ---
+        // Si l'utilisateur a répondu NON à un signe obligatoire (veto), on élimine la maladie
+        if (p.veto && p.veto.some(v => state.answers[v] === false)) {
+            return { patho: p, score: -1, prob: 0 };
+        }
 
-        let score = 100;
+        let matchPoints = 0;
+        let maxPossiblePoints = 0;
 
-        // A. ANALYSE DES FACTEURS DE RISQUE (Terrain)
-        // Multiplicateur x3 pour que le terrain (ex: voyage en zone endémique) pèse lourd
-        for (const facteur in p.facteurs) {
-            if (state.demo[facteur] === true) {
-                score += p.facteurs[facteur] * 3; 
+        // On parcourt tous les signes définis dans le JSON pour cette pathologie
+        for (const [signe, poids] of Object.entries(p.signes)) {
+            maxPossiblePoints += poids; // On cumule le score maximum théorique
+
+            if (state.answers[signe] === true) {
+                matchPoints += poids; // L'utilisateur a le signe : + points
+                if (p.boost && p.boost.includes(signe)) matchPoints += 50; // Bonus Boost
+            } else if (state.answers[signe] === false) {
+                matchPoints -= (poids * 0.5); // L'utilisateur n'a pas le signe : pénalité légère
             }
         }
 
-        // B. ANALYSE DES SIGNES (Le coeur du moteur)
-        for (const signe in p.signes) {
-            const importance = p.signes[signe]; 
-            const answer = state.answers[signe];
+        // --- POINT 4 : NORMALISATION ---
+        // On calcule un pourcentage de correspondance (0 à 100)
+        let finalProb = (matchPoints / maxPossiblePoints) * 100;
+        if (finalProb < 0) finalProb = 0;
+        if (finalProb > 100) finalProb = 100;
 
-            if (answer === true) {
-                // L'utilisateur a le symptôme : MULTIPLICATEUR FORT
-                score += importance * 5; 
-                
-                // Si c'est un signe "Boost" (clé du diagnostic), on propulse le score
-                if (p.boost && p.boost.includes(signe)) score += 500;
-
-            } else if (answer === false) {
-                // L'utilisateur N'A PAS le symptôme
-                
-                // Si c'était un signe "Veto" (ex: pas de fièvre dans le botulisme)
-                if (p.veto && p.veto.includes(signe)) {
-                    score -= 1000; 
-                } else {
-                    // Sanction plus forte pour les signes importants non présents
-                    score -= importance * 2;
-                }
-            }
-        }
-
-        return { patho: p, score: score };
+        return { patho: p, score: matchPoints, prob: finalProb.toFixed(1) };
     });
 
-    // 2. Filtrage des résultats impossibles
-    const viable = scores.filter(s => s.score > -500);
-    
-    // 3. Tri par score décroissant
-    state.ranked = viable.sort((a, b) => b.score - a.score);
-
-    // 4. Calcul de la probabilité (Barre de progression)
-    // On utilise Math.max(0, s.score) pour éviter les divisions par des nombres négatifs
-    const totalScore = viable.reduce((sum, s) => sum + Math.max(0, s.score), 0);
-    
-    state.ranked.forEach(item => {
-        item.prob = (totalScore > 0 && item.score > 0) 
-            ? ((item.score / totalScore) * 100).toFixed(1) 
-            : 0;
-    });
+    // On trie pour avoir les plus probables en premier
+    state.ranked = scores
+        .filter(s => s.score >= 0) // On cache les maladies éliminées par Veto
+        .sort((a, b) => b.prob - a.prob);
 }
          
          function getNextSmartSign(ranked, remainingSigns) {
     if (!ranked || ranked.length === 0 || remainingSigns.length === 0) return null;
 
-    // A. PRIORITÉ 1 : Entonnoir (Général) - On force les 8 premières questions sur le terrain
+    // 1. DÉTERMINER LE NIVEAU DE CONFIANCE DE L'IA
+    // On regarde la probabilité de la pathologie n°1 dans la liste
+    const topProb = ranked.length > 0 ? parseFloat(ranked[0].prob) : 0;
+    
+    // 2. FILTRAGE : CLINIQUE VS PARACLINIQUE
+    // Tant que l'IA n'est pas convaincue à 40%, on évite les questions techniques
+    let pool = remainingSigns;
+
+    if (topProb < 40) {
+        pool = remainingSigns.filter(s => {
+            // Un signe est considéré comme "technique" s'il est listé dans le tableau 'paraclinique' 
+            // d'au moins une pathologie de notre base de données.
+            const isParaclinique = PATHOLOGIES.some(p => p.paraclinique && p.paraclinique.includes(s));
+            return !isParaclinique;
+        });
+    }
+
+    // Sécurité : si après filtrage il ne reste plus rien (ex: que des questions techniques), 
+    // on reprend tout le pool restant.
+    if (pool.length === 0) pool = remainingSigns;
+
+    // 3. LOGIQUE D'ENTONNOIR (Général vers Précis)
+    // On force les questions générales (GENERAL_SYMPTOMS) au début si elles n'ont pas été posées
     const hasMajorSymptom = state.asked.some(s => state.answers[s] === true && GENERAL_SYMPTOMS.includes(s));
     if (!hasMajorSymptom && state.asked.length < 8) {
-        const nextGeneral = GENERAL_SYMPTOMS.find(s => !state.asked.includes(s) && remainingSigns.includes(s));
+        const nextGeneral = GENERAL_SYMPTOMS.find(s => !state.asked.includes(s) && pool.includes(s));
         if (nextGeneral) return nextGeneral;
     }
 
-    // B. PRIORITÉ 2 : Filtrage Clinique vs Technique (Radio/Bio/ECG)
-    const techKeywords = ['radio', 'scanner', 'irm', 'ecg', 'biologie', 'analyse', 'echo', 'ponction', 'b_hcg', 'test', 'liquide', 'gazometrie'];
-    
-    // On crée un pool "Examen Physique" (sans les examens techniques)
-    let clinicalPool = remainingSigns.filter(s => !techKeywords.some(k => s.includes(k)));
-    
-    // On force la clinique pure jusqu'à la question 15
-    let pool = (clinicalPool.length > 0 && state.asked.length < 15) ? clinicalPool : remainingSigns;
-
-    // C. ALGORITHME DE SPLIT (Trouver le signe qui divise le TOP 10)
+    // 4. ALGORITHME DE SPLIT (Optimisation de l'interrogatoire)
+    // On cherche le signe qui divise le mieux le TOP 10 des candidats actuels
     const topCandidates = ranked.slice(0, 10).map(r => r.patho);
     let bestSign = null;
     let bestScore = -1;
 
     for (const sign of pool) {
-        if (GENERAL_SYMPTOMS.includes(sign)) continue;
         let presenceCount = 0;
         let weightSum = 0;
+
         topCandidates.forEach(p => {
-            if (p.signes[sign]) { presenceCount++; weightSum += p.signes[sign]; }
+            if (p.signes[sign]) {
+                presenceCount++;
+                weightSum += p.signes[sign];
+            }
         });
 
+        // Score d'optimalité : on veut un signe présent chez environ 50% des candidats (split)
+        // et qui a un poids sémiologique important (weightSum).
         const distanceToMid = Math.abs(presenceCount - (topCandidates.length / 2));
         const optimalityScore = (topCandidates.length - distanceToMid) * weightSum;
 
@@ -2757,6 +2754,8 @@ function showDayDetails(dateStr, data) {
             bestSign = sign;
         }
     }
+
+    // Si aucun "meilleur" signe n'est trouvé, on prend le premier disponible dans le pool
     return bestSign || pool[0];
 }
          

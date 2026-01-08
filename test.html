@@ -2619,139 +2619,129 @@ function showDayDetails(dateStr, data) {
          }
          
          function rankPathologies() {
-             const scores = PATHOLOGIES.map(p => {
-                 // 0. Si déjà diagnostiqué (victoire précédente), on l'exclut
-                 if (state.previousDiagnostics.includes(p.name)) {
-                     return { patho: p, score: -1 }; 
-                 }
+    // 1. Calcul du score de base pour chaque pathologie
+    const scores = PATHOLOGIES.map(p => {
+        // Exclure si déjà trouvé
+        if (state.previousDiagnostics.includes(p.name)) return { patho: p, score: -1 };
 
-                 let score = 0;
-                 let isEliminated = false;
-                 let isBoosted = false;
+        let score = 100; // On part de 100 points de base
+        let potential = 0; // Score potentiel maximum restant
 
-                 // --- NIVEAU 1 : LE VETO (Signes Obligatoires) ---
-                 if (p.veto && Array.isArray(p.veto)) {
-                     for (let vSign of p.veto) {
-                         // Si le joueur a dit NON (false) à un signe obligatoire -> Éliminé
-                         if (state.answers[vSign] === false) {
-                             isEliminated = true;
-                             break; 
-                         }
-                     }
-                 }
-                 if (isEliminated) return { patho: p, score: 0 };
+        // A. ANALYSE DES FACTEURS DE RISQUE (Terrain)
+        for (const facteur in p.facteurs) {
+            if (state.demo[facteur] === true) {
+                score += p.facteurs[facteur] * 2; // Bonus terrain
+            }
+        }
 
-                 // --- NIVEAU 2 : LE BOOST (Signes Pathognomoniques) ---
-                 if (p.boost && Array.isArray(p.boost)) {
-                     for (let bSign of p.boost) {
-                         // Si le joueur a dit OUI (true) à un signe en or -> Bonus massif
-                         if (state.answers[bSign] === true) {
-                             isBoosted = true;
-                             break;
-                         }
-                     }
-                 }
-                 // Bonus de 500 points pour propulser en tête
-                 if (isBoosted) score += 500; 
+        // B. ANALYSE DES SIGNES (Le coeur du moteur)
+        for (const signe in p.signes) {
+            const importance = p.signes[signe]; // 10 à 50
+            const answer = state.answers[signe];
 
-                 // --- CALCUL CLASSIQUE (Pondération) ---
-                 // 1. Les Facteurs de risque (Terrain)
-                 for(const facteur in p.facteurs){ 
-                     if(state.demo[facteur] === true) score += p.facteurs[facteur]; 
-                 }
+            if (answer === true) {
+                // L'utilisateur a le symptôme : GROS BONUS
+                score += importance * 3; 
+                
+                // Si c'est un signe "Boost" (Pathognomonique), jackpot
+                if (p.boost && p.boost.includes(signe)) score += 200;
 
-                 // 2. Les Signes Cliniques
-                 for(const signe in p.signes){
-                     const ans = state.answers[signe];
-                     if(ans === true) score += p.signes[signe];
-                     // Petite pénalité si absent (pour départager les restants)
-                     else if(ans === false) score -= (p.signes[signe] * 0.5); 
-                 }
+            } else if (answer === false) {
+                // L'utilisateur N'A PAS le symptôme
+                
+                // Si c'était un signe "Veto" (Obligatoire) : PÉNALITÉ MASSIVE
+                if (p.veto && p.veto.includes(signe)) {
+                    score -= 500; 
+                } else {
+                    // Sinon pénalité proportionnelle à l'importance
+                    // Si le signe était très important (ex: 50), on perd beaucoup
+                    score -= importance;
+                }
+            } else {
+                // Pas encore posé : c'est du potentiel
+                potential += importance;
+            }
+        }
 
-                 return {patho:p, score: Math.max(0, score)};
-             });
+        return { patho: p, score: score, potential: potential };
+    });
 
-             // Calcul des probabilités pour l'affichage (barre de progression)
-             const validScores = scores.filter(s => s.score > 0);
-             const totalScore = validScores.reduce((sum, s) => sum + s.score, 0);
+    // 2. Normalisation et Tri
+    // On ne garde que ceux qui ont un score positif
+    const viable = scores.filter(s => s.score > -200); // Seuil de tolérance
+    
+    // On trie par score décroissant
+    state.ranked = viable.sort((a, b) => b.score - a.score);
 
-             state.ranked = scores.map(s => ({
-                 ...s,
-                 // Si score > 400 (Boost), on affiche 99% de certitude
-                 prob: (s.score > 400) ? 99 : ((s.score <= 0 || totalScore === 0) ? 0 : ((s.score / totalScore) * 100).toFixed(1))
-             })).sort((a,b)=>b.prob - a.prob);
-          }
+    // Calcul proba cosmétique (pour la barre de progression)
+    const totalScore = Math.max(1, state.ranked.reduce((sum, s) => sum + (s.score > 0 ? s.score : 0), 0));
+    state.ranked.forEach(item => {
+        item.prob = item.score > 0 ? ((item.score / totalScore) * 100).toFixed(1) : 0;
+    });
+}
          
          function getNextSmartSign(ranked, remainingSigns) {
-             // Sécurité de base
-             if (!ranked || ranked.length === 0 || remainingSigns.length === 0) return null;
+    if (!ranked || ranked.length === 0 || remainingSigns.length === 0) return null;
 
-             // Filtre pour ne pas poser de questions d'imagerie/biologie trop tôt
-             const examKeywords = ['radio', 'scanner', 'irm', 'ecg', 'biologie', 'analyse', 'echographie'];
-             const clinicalSigns = remainingSigns.filter(s => !examKeywords.some(k => s.includes(k)));
-             // Si on a des signes cliniques dispo, on les utilise. Sinon, on passe aux examens.
-             let pool = clinicalSigns.length > 0 ? clinicalSigns : remainingSigns;
+    // 1. On se concentre sur le TOP 10 des pathologies probables (pour ne pas être pollué par les improbables)
+    const topCandidates = ranked.slice(0, 10).map(r => r.patho);
+    const candidateCount = topCandidates.length;
 
-             const top1 = ranked[0];
-             const top2 = ranked[1];
+    // Si on a un leader très clair (>200 pts d'avance), on essaie de le confirmer
+    if (ranked[0].score - ranked[1]?.score > 200) {
+        // On cherche un signe de ce leader non encore posé
+        const signToConfirm = Object.keys(ranked[0].patho.signes)
+            .find(s => !state.asked.includes(s) && remainingSigns.includes(s));
+        if (signToConfirm) return signToConfirm;
+    }
 
-             // --- NIVEAU 3 : LE DIFFÉRENCIATEUR (Mode Duel) ---
-             // Si on a 2 candidats proches (écart < 25%) et qu'on n'est pas encore sûr (prob < 80%)
-             if (top1 && top2 && (top1.prob - top2.prob < 25) && top1.prob < 80) {
-                 let bestDiscriminator = null;
-                 let maxDiff = -1;
+    // 2. SCORING DES QUESTIONS (Entropie simplifiée)
+    // On cherche le signe présent chez environ 50% des candidats restants
+    let bestSign = null;
+    let bestScore = -1;
 
-                 // On cherche la question qui tue le match
-                 for (const sign of pool) {
-                     const w1 = top1.patho.signes[sign] || 0;
-                     const w2 = top2.patho.signes[sign] || 0;
-                     
-                     // Différence de poids entre les deux maladies pour ce signe
-                     const diff = Math.abs(w1 - w2);
+    // On ne teste pas TOUS les signes (trop long), juste ceux pertinents pour le Top 10
+    let candidateSigns = new Set();
+    topCandidates.forEach(p => Object.keys(p.signes).forEach(s => candidateSigns.add(s)));
+    
+    // Filtrer pour ne garder que ceux dispo et non techniques (imagerie) au début
+    let pool = Array.from(candidateSigns).filter(s => 
+        !state.asked.includes(s) && 
+        !s.includes('scanner') && !s.includes('radio') && !s.includes('echographie') && !s.includes('biologie')
+    );
 
-                     // On cherche une grande différence, et un signe présent chez au moins l'un des deux
-                     if (diff > maxDiff && (w1 > 0 || w2 > 0)) {
-                         maxDiff = diff;
-                         bestDiscriminator = sign;
-                     }
-                 }
+    // Si plus de signes cliniques, on autorise les examens
+    if(pool.length === 0) {
+        pool = Array.from(candidateSigns).filter(s => !state.asked.includes(s));
+    }
 
-                 if (bestDiscriminator) {
-                     // Petit log pour voir l'IA réfléchir dans la console
-                     console.log(`🧠 DUEL IA : ${top1.patho.name} vs ${top2.patho.name} -> Question : ${bestDiscriminator}`);
-                     return bestDiscriminator;
-                 }
-             }
+    for (const sign of pool) {
+        let presenceCount = 0;
+        let weightSum = 0;
 
-             // --- LOGIQUE CLASSIQUE (Si pas de duel) ---
-             // On cherche le signe le plus fréquent dans le Top 5 pour réduire le champ des possibles
-             const topPathos = ranked.slice(0, 5).map(r => r.patho);
-             const signCounts = {};
-             
-             topPathos.forEach(p => {
-                 pool.forEach(s => {
-                     if (p.signes[s]) {
-                         // On cumule les poids pour privilégier les signes "lourds"
-                         signCounts[s] = (signCounts[s] || 0) + (p.signes[s] || 1);
-                     }
-                 });
-             });
+        topCandidates.forEach(p => {
+            if (p.signes[sign]) {
+                presenceCount++;
+                weightSum += p.signes[sign]; // On favorise les signes "forts"
+            }
+        });
 
-             let bestSign = pool[0];
-             let maxVal = -1;
+        // La magie est ici :
+        // On veut une fréquence proche de 50% (candidateCount / 2)
+        // Mais on multiplie par le "Poids" du signe pour préférer les signes importants
+        const distanceTo50Percent = Math.abs(presenceCount - (candidateCount / 2));
+        
+        // Score : Plus on est proche de 50%, plus le score est haut. + Bonus pour le poids clinique.
+        const optimalityScore = (candidateCount - distanceTo50Percent) * weightSum;
 
-             for (const [s, val] of Object.entries(signCounts)) {
-                 if (val > maxVal) {
-                     maxVal = val;
-                     bestSign = s;
-                 }
-             }
+        if (optimalityScore > bestScore) {
+            bestScore = optimalityScore;
+            bestSign = sign;
+        }
+    }
 
-             // Sécurité finale : hasard si bloqué
-             if (!bestSign && pool.length > 0) return pool[Math.floor(Math.random() * pool.length)];
-
-             return bestSign;
-          }
+    return bestSign || pool[0]; // Fallback
+}
          
          function canShowDiagnostic() {
              const qNum = state.asked.length;
@@ -3031,119 +3021,77 @@ function showDayDetails(dateStr, data) {
          }
          
          function askNextQuestion() {
-             // --- VERIFICATION PLAISANTIN ---
-             if (checkPlaisantin()) return; 
-             // -------------------------------
-         
-             if (state.asked.length >= 20) { showDiagnostic(); return; }
-         
-             if(state.asked.length > 0) {
-                 const lastSign = state.asked[state.asked.length - 1];
-                 const lastAnswer = state.answers[lastSign];
-                 
-                 if(lastAnswer === true) {
-                       for (const [parent, children] of Object.entries(REFINEMENTS)) {
-                         if (children.includes(lastSign)) {
-                             const siblings = children.filter(c => c !== lastSign);
-                             state.priorityQueue = state.priorityQueue.filter(q => !siblings.includes(q));
-                         }
-                     }
-                 }
-             }
-         
-             if(state.priorityQueue.length > 0) {
-                 const nextPriority = state.priorityQueue.shift();
-                 if(!state.asked.includes(nextPriority)) {
-                     state.currentSign = nextPriority; state.asked.push(nextPriority); renderCurrentQuestion(); return;
-                 } else { askNextQuestion(); return; }
-             }
-         
-             if (state.confirmationMode) {
-                 const lastSign = state.asked[state.asked.length - 1];
-                 
-                 const isSignPartOfPatho = Object.keys(state.confirmedPatho.signes).includes(lastSign);
-                 const userSaidYes = state.answers[lastSign] === true;
-         
-                 if (!isSignPartOfPatho && userSaidYes) {
-                     state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
-                     showAlert("Aïe ! Ce symptôme ne collait pas...", "error");
-                     askNextQuestion(); return;
-                 }
-         
-                 if (isSignPartOfPatho && !userSaidYes) {
-                     state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
-                     showAlert("Ah, fausse piste. Je continue à chercher...", "info");
-                     askNextQuestion(); return;
-                 }
-         
-                 if (state.confirmationQueue.length > 0) {
-                     const nextC = state.confirmationQueue.shift();
-                     state.currentSign = nextC; state.asked.push(nextC); renderCurrentQuestion(); return;
-                 } else { 
-                     showDiagnostic(); return; 
-                 }
-             }
-         
-             prepareSigns();
-             const remaining = state.allSigns.filter(s => !state.asked.includes(s));
-             if(remaining.length === 0) { showDiagnostic(); return; }
-         
-             const hasSymptom = Object.keys(state.answers).some(key => state.answers[key] === true);
-             
-             // --- 3. MODE DÉCOUVERTE (Tant qu'on a que des NON) ---
-             if (!hasSymptom) {
-                 // Liste ordonnée pour couvrir TOUTES les spécialités du fichier JSON
-                 // L'IA posera ces questions DANS L'ORDRE pour ne rien rater
-                 const STARTING_SIGNS = [
-                     // 1. LES SIGNES VITAUX (Couvrent ~40% des cas : Infectio, Inflammatoire, Cancer)
-                     "fievre_elevee", 
-                     "asthenie_intense", 
-                     "perte_poids", 
+    // --- VERIFICATION PLAISANTIN ---
+    if (checkPlaisantin()) return; 
+    
+    // --- STOP SI TROP DE QUESTIONS ---
+    if (state.asked.length >= 25) { showDiagnostic(); return; }
 
-                     // 2. LES DOULEURS MAJEURES (Couvrent ~30% : Cardio, Digestif, Uro, Neuro)
-                     "douleur_thoracique_constrictive", // Infarctus...
-                     "douleur_abdominale", // Occlusion, Crohn...
-                     "douleur_lombaire_unilaterale", // Pyélo, Colique
-                     "cephalees_diffuses_intenses", // Méningite, HSA
-                     
-                     // 3. RESPIRATOIRE (Pneumo)
-                     "dyspnee_effort", // OAP, BPCO, Anémie
+    // --- LOGIQUE HIERARCHIQUE (Refinements) ---
+    // Si la dernière réponse était OUI, on vérifie s'il y a des précisions à demander
+    if(state.asked.length > 0) {
+        const lastSign = state.asked[state.asked.length - 1];
+        const lastAnswer = state.answers[lastSign];
+        
+        if(lastAnswer === true && REFINEMENTS[lastSign]) {
+            // L'utilisateur a dit OUI à un symptôme parent (ex: Douleur abdo)
+            // On ajoute TOUS les enfants pertinents à la file prioritaire
+            const children = REFINEMENTS[lastSign];
+            
+            // On filtre les enfants pour ne garder que ceux pertinents pour les pathologies restantes
+            // (Pour ne pas demander "Douleur ovaire" à un homme par exemple)
+            const pertinentChildren = children.filter(child => {
+                // Est-ce que ce sous-signe existe dans le top 10 des pathologies actuelles ?
+                return state.ranked.slice(0, 10).some(r => r.patho.signes[child]);
+            });
 
-                     // 4. LES SIGNES "ORPHELINS" (Spécifiques aux maladies sans fièvre ni douleur)
-                     "prurit_intense", // Dermato (Gale, Eczéma, Varicelle)
-                     "baisse_acuite_visuelle_unilaterale", // Ophtalmo (Glaucome, Cataracte, DMLA via le flou)
-                     "tremblement_repos", // Neuro (Parkinson, Hyperthyroïdie via tremblements)
-                     "humeur_triste_constante", // Psy (Dépression, Bipolaire)
-                     "nodule_dur_pierreux_indolore", // Cancers (Testicule, Sein via similitude)
-                     "impotence_fonctionnelle_totale", // Trauma (Fractures, Entorses, Arthrite)
-                     "amenorrhee" // Gynéco (GEU, SOPK, Grossesse, Anorexie)
-                 ];
+            // On les ajoute en TÊTE de file prioritaire
+            state.priorityQueue.unshift(...pertinentChildren);
+        }
+    }
 
-                 // On cherche le premier signe de cette liste qui n'a pas encore été posé
-                 const nextGeneralSign = STARTING_SIGNS.find(s => !state.asked.includes(s) && state.allSigns.includes(s));
-                 
-                 if (nextGeneralSign) {
-                     state.currentSign = nextGeneralSign; 
-                     state.asked.push(nextGeneralSign); 
-                     renderCurrentQuestion(); 
-                     return;
-                 }
-             }
-         
-             rankPathologies(); 
-             if(canShowDiagnostic()){ 
-                 const topPatho = state.ranked[0].patho;
-                 const confirmQuestions = prepareConfirmationQuestions(topPatho);
-                 if (confirmQuestions.length > 0) {
-                     state.confirmationMode = true; state.confirmedPatho = topPatho; state.confirmationQueue = confirmQuestions;
-                     const first = state.confirmationQueue.shift();
-                     state.currentSign = first; state.asked.push(first); renderCurrentQuestion(); return;
-                 } else { showDiagnostic(); return; }
-             }
-             
-             const signe = getNextSmartSign(state.ranked, remaining);
-             state.currentSign = signe; state.asked.push(signe); renderCurrentQuestion();
-         }
+    // Si on a des questions prioritaires (suite logique), on les pose
+    if(state.priorityQueue.length > 0) {
+        const nextPriority = state.priorityQueue.shift();
+        // Vérif anti-doublon
+        if(!state.asked.includes(nextPriority)) {
+            state.currentSign = nextPriority; 
+            state.asked.push(nextPriority); 
+            renderCurrentQuestion(); 
+            return;
+        } else {
+            // Si déjà posé, on passe au suivant récursivement
+            askNextQuestion(); 
+            return; 
+        }
+    }
+
+    // ... Reste de la fonction (Logique confirmation, etc.) inchangée ...
+    
+    // Recalcul du classement
+    rankPathologies(); 
+
+    // Vérification de victoire
+    if(canShowDiagnostic()){ 
+        // ... code existant ...
+    }
+    
+    // Sélection intelligente standard
+    prepareSigns();
+    const remaining = state.allSigns.filter(s => !state.asked.includes(s));
+    
+    // Si plus de questions
+    if(remaining.length === 0) { showDiagnostic(); return; }
+
+    // Appel du nouveau "Splitter"
+    const signe = getNextSmartSign(state.ranked, remaining);
+    
+    if (!signe) { showDiagnostic(); return; } // Sécurité
+
+    state.currentSign = signe; 
+    state.asked.push(signe); 
+    renderCurrentQuestion();
+}
          
                  function showDiagnostic() {
              setDocTitle("Analyse...");

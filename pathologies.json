@@ -624,10 +624,7 @@
         "pdf": "fiches/osteoporose.pdf",
         "signes": {"fracture_faible_traumatisme": 25, "perte_taille": 15, "cyphose_dorsale": 12, "fracture_pouteau_colles": 10, "fracture_col_femur": 10, "tassement_vertebral": 40, "densitometrie_tscore_<-2.5": 50},
         "boost": ["tassement_vertebral", "densitometrie_tscore_<-2.5"],
-        "images": { 
-            "cyphose": "images/kyphosis_dowagers_hump.png",
-            "tassement_vertebral": "images/vertebral_compression_xray.png"
-        },
+        "images": { "cyphose": "images/kyphosis_dowagers_hump.png", "tassement_vertebral": "images/vertebral_compression_xray.png" },
         "facteurs": {"femme_menopausee": 8, "corticotherapie_long_cours": 5, "imc_bas": 3}
     },
     {

@@ -3089,11 +3089,52 @@ function showDayDetails(dateStr, data) {
              if(remaining.length === 0) { showDiagnostic(); return; }
          
              const hasSymptom = Object.keys(state.answers).some(key => state.answers[key] === true);
+             
+             // --- 3. MODE DÉCOUVERTE (Tant qu'on a que des NON) ---
              if (!hasSymptom) {
-                 const generalSigns = remaining.filter(s => REFINEMENTS.hasOwnProperty(s));
-                 const pool = generalSigns.length > 0 ? generalSigns : remaining;
-                 const randomSign = pool[Math.floor(Math.random() * pool.length)];
-                 state.currentSign = randomSign; state.asked.push(randomSign); renderCurrentQuestion(); return;
+                 // Liste ordonnée pour couvrir TOUTES les spécialités du fichier JSON
+                 // L'IA posera ces questions DANS L'ORDRE pour ne rien rater
+                 const STARTING_SIGNS = [
+                     // 1. Signes Généraux
+                     "fievre_elevee", 
+                     "asthenie_intense", 
+                     "perte_poids", 
+                     
+                     // 2. Douleurs Majeures (Les "Big Four")
+                     "douleur_thoracique_constrictive", 
+                     "douleur_abdominale", 
+                     "cephalees_diffuses_intenses", 
+                     "douleur_lombaire_unilaterale",
+                     
+                     // 3. Respiratoire & ORL
+                     "dyspnee_effort", 
+                     "toux_seche",
+                     "odynophagie_intense", // Mal de gorge
+
+                     // 4. Neuro & Locomoteur
+                     "deficit_neurologique_brutal", 
+                     "douleur_articulaire_intense", 
+                     "tremblement_repos", // Parkinson
+
+                     // 5. Spécialités "Oubliées" (Dermato / Psy / Ophtalmo / Gynéco)
+                     "eruption_vesiculo_bulleuse_generalisee", // Varicelle/Zona
+                     "prurit_intense", // Gale/Eczéma
+                     "humeur_triste_constante", // Psychiatrie
+                     "peur_intense_brutale", // Attaque panique
+                     "baisse_acuite_visuelle_unilaterale", // Ophtalmo
+                     "douleur_pelvienne_unilaterale", // Gynéco
+                     "prise_poids" // Endocrino
+                 ];
+
+                 // On cherche le premier signe de cette liste qui n'a pas encore été posé
+                 const nextGeneralSign = STARTING_SIGNS.find(s => !state.asked.includes(s) && state.allSigns.includes(s));
+                 
+                 if (nextGeneralSign) {
+                     state.currentSign = nextGeneralSign; 
+                     state.asked.push(nextGeneralSign); 
+                     renderCurrentQuestion(); 
+                     return;
+                 }
              }
          
              rankPathologies(); 

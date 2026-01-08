@@ -3296,147 +3296,133 @@ state.progression.dailyHistory[todayKey].fail.push({ name: top.patho.name, time:
          
          
          function showDiagnosticDetails(data, wasManualError = false) {
-             window.scrollTo(0,0);
-             const top = data.patho;
-             setDocTitle(top.name);
-             const app = q('#app'); app.innerHTML = '';
-             const card = document.createElement('div'); card.className='card';
-             
-             if(wasManualError) {
-                 card.innerHTML = `<h2 style="color:var(--error)"><i class="ph-duotone ph-smiley-sad"></i> C'était : ${top.name}</h2>`;
-                 
-                 if(!state.progression.mastery) state.progression.mastery = {};
-                 let m = state.progression.mastery[top.name];
-                 if(!m) m = { success: 0, failures: 0, missedSigns: {} };
-                 if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
-                 
-                 m.failures++;
-                 
-                 Object.keys(top.signes).forEach(s => {
-                     if(state.answers[s] === false || state.answers[s] === null) { 
-                         if(!m.missedSigns[s]) m.missedSigns[s] = 0;
-                         m.missedSigns[s]++;
-                     }
-                 });
-                 
-                 Object.keys(state.answers).forEach(s => {
-                     if (state.answers[s] === true && !top.signes[s]) {
-                         if(!m.missedSigns[s]) m.missedSigns[s] = 0;
-                         m.missedSigns[s]++;
-                     }
-                 });
-         
-                 state.progression.mastery[top.name] = m;
-                 
-                 if(!state.progression.errorLog) state.progression.errorLog = {};
-                 state.progression.errorLog[top.name] = { date: Date.now(), count: (state.progression.errorLog[top.name]?.count || 0) + 1 };
-                 
-                 saveProgression();
-         
-             } else {
-                 card.innerHTML = `<h2><i class="ph-duotone ph-check-circle color-success"></i> ${top.name}</h2>`;
+    window.scrollTo(0, 0);
+    const top = data.patho;
+    setDocTitle(top.name);
+    const app = q('#app');
+    app.innerHTML = '';
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    // En-tête (Gagné ou Perdu)
+    if (wasManualError) {
+        card.innerHTML = `<h2 style="color:var(--error)"><i class="ph-duotone ph-smiley-sad"></i> C'était : ${top.name}</h2>`;
+        // Sauvegarde des stats (Echec)
+        if(!state.progression.mastery) state.progression.mastery = {};
+        let m = state.progression.mastery[top.name];
+        if(!m) m = { success: 0, failures: 0, missedSigns: {} };
+        if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
+        m.failures++;
+        
+        // Logique des signes manqués pour les stats
+        Object.keys(top.signes).forEach(s => {
+             if(state.answers[s] === false || state.answers[s] === null) { 
+                 if(!m.missedSigns[s]) m.missedSigns[s] = 0;
+                 m.missedSigns[s]++;
              }
-         
-             const desc = document.createElement('div'); desc.className='patho-desc'; desc.textContent = top.short; desc.style.marginBottom='20px'; desc.style.textAlign='center'; card.appendChild(desc);
-             
-             if(top.signes) { 
-                 const pathoSigns = Object.keys(top.signes);
-                 const correctSigns = [], missingSigns = [], notAskedSigns = [], erroneousSigns = [];
-                 pathoSigns.forEach(s => {
-                     const val = state.answers[s];
-                     if(val === true) correctSigns.push(s); 
-                     else if(val === false || val === null) missingSigns.push(s);
-                     else notAskedSigns.push(s);
-                 });
-                 state.allSigns.forEach(s => { if(state.answers[s] === true && !pathoSigns.includes(s)) erroneousSigns.push(s); });
-                 
-                 correctSigns.sort((a, b) => (top.signes[b] || 0) - (top.signes[a] || 0));
-                 missingSigns.sort((a, b) => (top.signes[b] || 0) - (top.signes[a] || 0));
-                 
-                 const resultsDiv = document.createElement('div'); resultsDiv.className='result-list';
-                 
-                 const createList = (title, items, type, typeLabel) => {
-                     if(items.length > 0) {
-                         let icon = '<i class="ph-duotone ph-info"></i>';
-                         let badgeClass = 'badge-neutral';
-                         
-                         if (type === 'correct') { icon = '<i class="ph-duotone ph-check-circle"></i>'; badgeClass = 'badge-correct'; }
-                         if (type === 'missing') { icon = '<i class="ph-duotone ph-warning"></i>'; badgeClass = 'badge-missing'; }
-                         
-                         const h = document.createElement('div'); 
-                         h.className = 'result-section-title';
-                         h.innerHTML = `${icon} ${title} <span style="opacity:0.6; font-size:0.9em; margin-left:auto;">${items.length}</span>`;
-                         resultsDiv.appendChild(h);
-         
-                         items.forEach(s => {
-                             const r = document.createElement('div'); 
-                             r.className = 'result-item'; 
-                             r.innerHTML = `
-                                 <div class="result-label">${formatSigneName(s)}</div>
-                                 <div class="status-badge ${badgeClass}">${typeLabel}</div>
-                             `;
-                             resultsDiv.appendChild(r);
-                         });
-                     }
-                 };
-                 
-                 if(wasManualError) {
-                     createList("Signes manqués (Faux Négatifs)", missingSigns, "missing", "Non");
-                     createList("Autres signes", notAskedSigns, "neutral", "Inconnu");
-                 } else {
-                     createList("Signes bien identifiés", correctSigns, "correct", "Validé");
-                     if(missingSigns.length > 0) {
-                         createList("Attention : Signes manqués", missingSigns, "missing", "Erreur");
-                     }
-                     createList("Autres signes du tableau", notAskedSigns, "neutral", "Non demandé");
-                 }
-                 card.appendChild(resultsDiv);
-             }
-         
-             if(top.pdf && top.pdf !== '#') {
-         // On crée un <button> pour l'invité (pas de href) et un <a> pour le membre
-         const pdfBtn = document.createElement(state.isGuest ? 'button' : 'a');
-         
-         pdfBtn.className = 'btn';
-         pdfBtn.style.marginTop = '20px'; 
-         pdfBtn.style.display = 'block'; 
-         pdfBtn.style.textAlign = 'center';
-         
+        });
+        state.progression.mastery[top.name] = m;
+        
+        if(!state.progression.errorLog) state.progression.errorLog = {};
+        state.progression.errorLog[top.name] = { date: Date.now(), count: (state.progression.errorLog[top.name]?.count || 0) + 1 };
+        
+        saveProgression();
+    } else {
+        card.innerHTML = `<h2><i class="ph-duotone ph-check-circle color-success"></i> Bravo ! C'est bien : ${top.name}</h2>`;
+    }
+
+    // Description courte
+    const desc = document.createElement('div');
+    desc.className = 'patho-desc';
+    desc.textContent = top.short;
+    desc.style.marginBottom = '20px';
+    desc.style.textAlign = 'center';
+    card.appendChild(desc);
+
+    // --- LE CŒUR PÉDAGOGIQUE : COMPARATIF ---
+    if (top.signes) {
+        const resultsDiv = document.createElement('div');
+        resultsDiv.className = 'result-list';
+
+        // 1. Ce que l'étudiant a validé (VRAIS POSITIFS)
+        const goodSigns = Object.keys(state.answers).filter(s => 
+            state.answers[s] === true && top.signes[s]
+        );
+
+        // 2. Ce que l'étudiant a raté (FAUX NÉGATIFS - Oublis)
+        const missedSigns = Object.keys(top.signes).filter(s => 
+            top.signes[s] >= 10 && 
+            state.answers[s] !== true
+        );
+
+        // 3. Ce que l'étudiant a inventé (FAUX POSITIFS - Erreurs)
+        const wrongSigns = Object.keys(state.answers).filter(s => 
+            state.answers[s] === true && !top.signes[s]
+        );
+
+        // --- AFFICHAGE ---
+
+        // SECTION VERTE : Ce que tu savais
+        if (goodSigns.length > 0) {
+            resultsDiv.innerHTML += `<div class="result-section-title" style="color:var(--success)"><i class="ph-bold ph-check"></i> Bien vu (${goodSigns.length})</div>`;
+            goodSigns.forEach(s => {
+                resultsDiv.innerHTML += `<div class="result-item"><div class="result-label">${formatSigneName(s)}</div><div class="status-badge badge-correct">+${top.signes[s]} pts</div></div>`;
+            });
+        }
+
+        // SECTION ROUGE : Ce que tu as oublié (C'est là qu'on apprend !)
+        if (missedSigns.length > 0) {
+            resultsDiv.innerHTML += `<div class="result-section-title" style="color:var(--error); margin-top:15px;"><i class="ph-bold ph-warning"></i> Signes manquants / Non demandés</div>`;
+            resultsDiv.innerHTML += `<div class="small" style="text-align:left; margin-bottom:5px; opacity:0.8;">L'IA n'a pas pu confirmer ces signes (ou tu as dit Non) :</div>`;
+            missedSigns.sort((a,b) => top.signes[b] - top.signes[a]).forEach(s => {
+                const userMsg = state.answers[s] === false ? "Tu as dit NON" : "Pas demandé";
+                resultsDiv.innerHTML += `<div class="result-item" style="opacity:0.8"><div class="result-label">${formatSigneName(s)}</div><div class="status-badge badge-missing">${userMsg}</div></div>`;
+            });
+        }
+
+        // SECTION ORANGE : Ce que tu as inventé (Confusion)
+        if (wrongSigns.length > 0) {
+            resultsDiv.innerHTML += `<div class="result-section-title" style="color:orange; margin-top:15px;"><i class="ph-bold ph-prohibit"></i> Erreurs (Signes absents)</div>`;
+            wrongSigns.forEach(s => {
+                resultsDiv.innerHTML += `<div class="result-item"><div class="result-label">${formatSigneName(s)}</div><div class="status-badge badge-neutral">Inexistant</div></div>`;
+            });
+        }
+
+        card.appendChild(resultsDiv);
+    }
+
+    // Bouton PDF
+    let pdfButton = '';
+    if (top.pdf && top.pdf !== '#') {
          if (state.isGuest) {
-         // --- PROTECTION INVITÉ ---
-         pdfBtn.innerHTML = '<i class="ph-duotone ph-lock-key"></i> Voir la fiche PDF (Compte requis)';
-         pdfBtn.style.background = 'rgba(125,125,125,0.1)';
-         pdfBtn.style.border = '1px dashed var(--text-muted)';
-         pdfBtn.style.color = 'var(--text-muted)';
-         // Pas de href, juste une alerte au clic
-         pdfBtn.onclick = () => showAlert("Créez un compte gratuit pour télécharger les fiches de révision PDF !", "error");
+             pdfButton = `<button class="btn" style="background:rgba(125,125,125,0.1); border:1px dashed var(--text-muted); color:var(--text-muted); margin-top:10px; font-size:13px;" onclick="showAlert('Compte requis pour le PDF', 'error')"><i class="ph-duotone ph-lock-key"></i> Fiche PDF (Verrouillée)</button>`;
          } else {
-         // --- MEMBRE CONNECTÉ ---
-         pdfBtn.innerHTML = '<i class="ph-duotone ph-file-pdf"></i> Voir la fiche PDF complète';
-         pdfBtn.href = top.pdf; 
-         pdfBtn.target = "_blank";
-         pdfBtn.onclick = trackPdf;
+             pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.pdf}" target="_blank" onclick="trackPdf()"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF de révision</a>`;
          }
-         
-         card.appendChild(pdfBtn);
-         }
-             
-             const btnGroup = document.createElement('div'); btnGroup.className='button-group';
-             
-             const btnReplay = document.createElement('button'); btnReplay.className='btn btn-success'; btnReplay.innerHTML = '<i class="ph-duotone ph-arrow-clockwise"></i> Rejouer tout de suite'; 
-             btnReplay.onclick = () => {
-                 const limit = checkGuestLimit();
-         if (!limit.allowed) {
-         showAlert(`Mode invité limité !<br>Prochaine partie dans : <strong>${limit.remaining}</strong>.<br>Créez un compte pour jouer en illimité !`, "error");
-         return;
-         }
-                  state.dailyTarget = null; 
-                  renderDemographics();
-             };
-         
-             const btnHome = document.createElement('button'); btnHome.className='link'; btnHome.innerHTML = '<i class="ph-duotone ph-house"></i> Accueil'; btnHome.onclick = renderHome;
-             btnGroup.appendChild(btnReplay); btnGroup.appendChild(btnHome); card.appendChild(btnGroup); app.appendChild(card);
-         }
+         card.appendChild(document.createRange().createContextualFragment(pdfButton));
+    } else {
+         card.innerHTML += `<div class="small" style="margin-top:10px; opacity:0.5">Pas de fiche PDF disponible</div>`;
+    }
+
+    // Boutons de navigation
+    const btnGroup = document.createElement('div'); btnGroup.className = 'button-group';
+    const btnReplay = document.createElement('button'); btnReplay.className = 'btn btn-success'; btnReplay.innerHTML = '<i class="ph-duotone ph-arrow-clockwise"></i> Rejouer';
+    btnReplay.onclick = () => { 
+        const limit = checkGuestLimit();
+        if (!limit.allowed) {
+            showAlert(`Mode invité limité !`, "error"); return;
+        }
+        state.dailyTarget = null; 
+        renderDemographics(); 
+    };
+    
+    const btnHome = document.createElement('button'); btnHome.className = 'link'; btnHome.innerHTML = '<i class="ph-duotone ph-house"></i> Accueil';
+    btnHome.onclick = renderHome;
+
+    btnGroup.append(btnReplay, btnHome);
+    card.appendChild(btnGroup);
+    app.appendChild(card);
+}
          
          function renderGlossary() {
              if(state.isGuest) {

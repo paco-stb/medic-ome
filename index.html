@@ -1313,11 +1313,17 @@ const GENERAL_SYMPTOMS = [
             </div>
         </div>
 
-        <button id="heroGuestBtn" class="btn-guest-hero">
-            <i class="ph-duotone ph-user-circle"></i>
-            Tester sans connexion
-        </button>
-        <div class="small" style="margin-top:10px; opacity:0.7;">Mode invité limité </div>
+       `
+<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
+    <button id="heroGuestBtn" class="btn-guest-hero">
+        <i class="ph-duotone ph-user-circle"></i>
+        Tester sans connexion
+    </button>
+    <div class="small" style="opacity:0.7; width: 100%; text-align: center; max-width: 280px;">
+        Mode invité limité
+    </div>
+</div>
+`
     `;
     grid.appendChild(leftCol);
 
@@ -3351,7 +3357,11 @@ state.progression.dailyHistory[todayKey].fail.push({ name: top.patho.name, time:
          } else {
              pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.pdf}" target="_blank" onclick="trackPdf()"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF de révision</a>`;
          }
-         card.appendChild(document.createRange().createContextualFragment(pdfButton));
+         const pdfContainer = document.createElement('div');
+pdfContainer.style.textAlign = 'center';
+pdfContainer.style.width = '100%';
+pdfContainer.innerHTML = pdfButton;
+card.appendChild(pdfContainer);
     } else {
          card.innerHTML += `<div class="small" style="margin-top:10px; opacity:0.5">Pas de fiche PDF disponible</div>`;
     }

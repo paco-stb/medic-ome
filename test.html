@@ -2523,81 +2523,138 @@ function showDayDetails(dateStr, data) {
          
          function rankPathologies() {
              const scores = PATHOLOGIES.map(p => {
+                 // 0. Si déjà diagnostiqué (victoire précédente), on l'exclut
                  if (state.previousDiagnostics.includes(p.name)) {
                      return { patho: p, score: -1 }; 
                  }
-         
+
                  let score = 0;
-                 for(const facteur in p.facteurs){ if(state.demo[facteur] === true) score += p.facteurs[facteur]; }
+                 let isEliminated = false;
+                 let isBoosted = false;
+
+                 // --- NIVEAU 1 : LE VETO (Signes Obligatoires) ---
+                 if (p.veto && Array.isArray(p.veto)) {
+                     for (let vSign of p.veto) {
+                         // Si le joueur a dit NON (false) à un signe obligatoire -> Éliminé
+                         if (state.answers[vSign] === false) {
+                             isEliminated = true;
+                             break; 
+                         }
+                     }
+                 }
+                 if (isEliminated) return { patho: p, score: 0 };
+
+                 // --- NIVEAU 2 : LE BOOST (Signes Pathognomoniques) ---
+                 if (p.boost && Array.isArray(p.boost)) {
+                     for (let bSign of p.boost) {
+                         // Si le joueur a dit OUI (true) à un signe en or -> Bonus massif
+                         if (state.answers[bSign] === true) {
+                             isBoosted = true;
+                             break;
+                         }
+                     }
+                 }
+                 // Bonus de 500 points pour propulser en tête
+                 if (isBoosted) score += 500; 
+
+                 // --- CALCUL CLASSIQUE (Pondération) ---
+                 // 1. Les Facteurs de risque (Terrain)
+                 for(const facteur in p.facteurs){ 
+                     if(state.demo[facteur] === true) score += p.facteurs[facteur]; 
+                 }
+
+                 // 2. Les Signes Cliniques
                  for(const signe in p.signes){
                      const ans = state.answers[signe];
                      if(ans === true) score += p.signes[signe];
-                     else if(ans === false) score -= (p.signes[signe] * 0.5);
+                     // Petite pénalité si absent (pour départager les restants)
+                     else if(ans === false) score -= (p.signes[signe] * 0.5); 
                  }
+
                  return {patho:p, score: Math.max(0, score)};
              });
-         
-             const validScores = scores.filter(s => s.score >= 0);
+
+             // Calcul des probabilités pour l'affichage (barre de progression)
+             const validScores = scores.filter(s => s.score > 0);
              const totalScore = validScores.reduce((sum, s) => sum + s.score, 0);
-         
+
              state.ranked = scores.map(s => ({
                  ...s,
-                 prob: (s.score === -1 || totalScore === 0) ? 0 : ((s.score / totalScore) * 100).toFixed(1)
+                 // Si score > 400 (Boost), on affiche 99% de certitude
+                 prob: (s.score > 400) ? 99 : ((s.score <= 0 || totalScore === 0) ? 0 : ((s.score / totalScore) * 100).toFixed(1))
              })).sort((a,b)=>b.prob - a.prob);
-         }
+          }
          
          function getNextSmartSign(ranked, remainingSigns) {
-             const topPathos = ranked.slice(0, 5).map(r => r.patho);
-             
-             // Liste des signes à "garder pour la fin" (Examens complémentaires)
-             const examSigns = new Set();
-             
-             // Mots-clés pour identifier les examens si le poids ne suffit pas
+             // Sécurité de base
+             if (!ranked || ranked.length === 0 || remainingSigns.length === 0) return null;
+
+             // Filtre pour ne pas poser de questions d'imagerie/biologie trop tôt
              const examKeywords = ['radio', 'scanner', 'irm', 'ecg', 'biologie', 'analyse', 'echographie'];
-         
-             topPathos.forEach(p => {
-                 for (const [s, weight] of Object.entries(p.signes)) {
-                     // CRITÈRE : Poids lourd (>=40) ET (a une image OU contient un mot clé d'examen)
-                     // Cela laisse passer les signes cliniques forts (ex: poids 30)
-                     const isExamKeyword = examKeywords.some(k => s.includes(k));
-                     const hasImage = p.images && p.images[s];
+             const clinicalSigns = remainingSigns.filter(s => !examKeywords.some(k => s.includes(k)));
+             // Si on a des signes cliniques dispo, on les utilise. Sinon, on passe aux examens.
+             let pool = clinicalSigns.length > 0 ? clinicalSigns : remainingSigns;
+
+             const top1 = ranked[0];
+             const top2 = ranked[1];
+
+             // --- NIVEAU 3 : LE DIFFÉRENCIATEUR (Mode Duel) ---
+             // Si on a 2 candidats proches (écart < 25%) et qu'on n'est pas encore sûr (prob < 80%)
+             if (top1 && top2 && (top1.prob - top2.prob < 25) && top1.prob < 80) {
+                 let bestDiscriminator = null;
+                 let maxDiff = -1;
+
+                 // On cherche la question qui tue le match
+                 for (const sign of pool) {
+                     const w1 = top1.patho.signes[sign] || 0;
+                     const w2 = top2.patho.signes[sign] || 0;
                      
-                     if (weight >= 40 && (hasImage || isExamKeyword)) {
-                         examSigns.add(s);
+                     // Différence de poids entre les deux maladies pour ce signe
+                     const diff = Math.abs(w1 - w2);
+
+                     // On cherche une grande différence, et un signe présent chez au moins l'un des deux
+                     if (diff > maxDiff && (w1 > 0 || w2 > 0)) {
+                         maxDiff = diff;
+                         bestDiscriminator = sign;
                      }
                  }
-             });
-         
-             // On crée un pool "Clinique" (tout sauf les examens complémentaires)
-             let clinicalPool = remainingSigns.filter(s => !examSigns.has(s));
-         
-             // Si on a encore des questions cliniques, on les priorise.
-             // Sinon (si on a tout épuisé), on sort les radios/scanners.
-             let pool = clinicalPool.length > 0 ? clinicalPool : remainingSigns;
-         
+
+                 if (bestDiscriminator) {
+                     // Petit log pour voir l'IA réfléchir dans la console
+                     console.log(`🧠 DUEL IA : ${top1.patho.name} vs ${top2.patho.name} -> Question : ${bestDiscriminator}`);
+                     return bestDiscriminator;
+                 }
+             }
+
+             // --- LOGIQUE CLASSIQUE (Si pas de duel) ---
+             // On cherche le signe le plus fréquent dans le Top 5 pour réduire le champ des possibles
+             const topPathos = ranked.slice(0, 5).map(r => r.patho);
              const signCounts = {};
+             
              topPathos.forEach(p => {
                  pool.forEach(s => {
                      if (p.signes[s]) {
+                         // On cumule les poids pour privilégier les signes "lourds"
                          signCounts[s] = (signCounts[s] || 0) + (p.signes[s] || 1);
                      }
                  });
              });
-         
+
              let bestSign = pool[0];
              let maxVal = -1;
-         
+
              for (const [s, val] of Object.entries(signCounts)) {
                  if (val > maxVal) {
                      maxVal = val;
                      bestSign = s;
                  }
              }
-             
+
+             // Sécurité finale : hasard si bloqué
              if (!bestSign && pool.length > 0) return pool[Math.floor(Math.random() * pool.length)];
-             
+
              return bestSign;
-         }
+          }
          
          function canShowDiagnostic() {
              const qNum = state.asked.length;

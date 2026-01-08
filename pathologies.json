@@ -170,7 +170,7 @@
         "signes": {"douleur_abdominale": 10, "arret_matieres_gaz": 25, "vomissements_fecaloide": 15, "meteorisme_abdominal": 15, "niveaux_hydro_aeriques_radio": 50, "ampoule_rectale_vide": 15},
         "veto": ["arret_matieres_gaz"],
         "boost": ["niveaux_hydro_aeriques_radio"],
-        "images": {"meteorisme_abdominal": "images/abdominal_distension.png", "niveaux_hydro_aeriques_radio": "images/bowel_obstruction_xray.png"},
+        "images": { "meteorisme_abdominal": "images/abdominal_distension.png", "niveaux_hydro_aeriques_radio": "images/bowel_obstruction_xray.png" },
         "facteurs": {"bride_chirurgicale": 8, "hernie_etranglee": 5, "cancer_digestif": 5}
     },
     {
@@ -237,10 +237,7 @@
         "signes": {"impotence_fonctionnelle_totale": 20, "raccourcissement_membre": 20, "rotation_externe_pied": 20, "adduction_membre": 15, "douleur_aine": 15, "clinostatism_impossible": 15},
         "veto": ["impotence_fonctionnelle_totale"],
         "boost": ["rotation_externe_pied", "raccourcissement_membre"],
-        "images": { 
-            "rotation_externe_pied": "images/hip_fracture_rotation.png",
-            "trait_fracture_radio": "images/hip_fracture_xray.png" 
-        },
+        "images": { "rotation_externe_pied": "images/hip_fracture_rotation.png", "trait_fracture_radio": "images/hip_fracture_xray.png" },
         "facteurs": {"sujet_age": 8, "osteoporose": 5, "chute_hauteur": 5}
     },
     {
@@ -269,10 +266,7 @@
         "signes": {"monoarthrite_gros_orteil": 25, "acces_inflammatoire_brutal": 18, "douleur_nocturne_insomniante": 15, "intolerance_contact_drap": 20, "fievre_moderee": 5, "cristaux_urate_sodium_ponction": 50},
         "veto": ["monoarthrite_gros_orteil"],
         "boost": ["cristaux_urate_sodium_ponction", "intolerance_contact_drap"],
-        "images": { 
-            "podagre": "images/gout_toe_podagra.png",
-            "encoche_epiphysaire_radio": "images/gout_erosion_xray.png"
-        },
+        "images": { "podagre": "images/gout_toe_podagra.png", "encoche_epiphysaire_radio": "images/gout_erosion_xray.png" },
         "facteurs": {"homme_mur": 4, "exces_alimentaire_alcool": 5, "syndrome_metabolique": 3}
     },
     {
@@ -477,10 +471,7 @@
         "signes": {"deformtion_dos_fourchette": 30, "douleur_poignet": 18, "impotence_fonctionnelle": 15, "oedeme_poignet": 12, "ecchymose": 10, "trait_fracture_radio": 50},
         "veto": ["douleur_poignet"],
         "boost": ["deformtion_dos_fourchette", "trait_fracture_radio"],
-        "images": { 
-            "dos_fourchette": "images/colles_fracture_fork.png",
-            "radio_poignet": "images/wrist_fracture_xray.png" 
-        },
+        "images": { "dos_fourchette": "images/colles_fracture_fork.png", "radio_poignet": "images/wrist_fracture_xray.png" },
         "facteurs": {"femme_post_menopause": 5, "chute_mains_avant": 8}
     },
     {

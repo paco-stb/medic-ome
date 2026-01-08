@@ -1569,26 +1569,27 @@ function showDayDetails(dateStr, data) {
 
    card.innerHTML = contentHTML;
 
-   // --- CORRECTION DU BUG ICI ---
-   
-   // 1. D'abord on crée le bouton Calendrier
-   const btnCal = document.createElement('button');
-   btnCal.className = 'btn';
-   btnCal.style.background = 'var(--accent)';
-   btnCal.style.marginBottom = '10px';
-   btnCal.innerHTML = '<i class="ph-duotone ph-calendar-check"></i> Calendrier Intelligent';
-   btnCal.onclick = () => renderCalendar();
-   card.appendChild(btnCal);
+   // 1. D'ABORD : On crée le bouton "Succès" (mais on ne l'ajoute pas encore)
+      const btnAch = document.createElement('button'); 
+      btnAch.className='btn'; 
+      btnAch.style.background = 'var(--gold)'; 
+      btnAch.style.color = 'black'; 
+      btnAch.style.marginBottom = '20px';
+      btnAch.innerHTML = '<i class="ph-duotone ph-trophy"></i> Voir mes Succès';
+      btnAch.onclick = renderAchievementsPage;
 
-   // 2. Ensuite on crée le bouton Succès
-   const btnAch = document.createElement('button');
-   btnAch.className = 'btn';
-   btnAch.style.background = 'var(--gold)';
-   btnAch.style.color = 'black';
-   btnAch.style.marginBottom = '20px';
-   btnAch.innerHTML = '<i class="ph-duotone ph-trophy"></i> Voir mes Succès';
-   btnAch.onclick = renderAchievementsPage;
-   card.appendChild(btnAch);
+      // 2. ENSUITE : On crée le bouton "Calendrier"
+      const btnCal = document.createElement('button'); 
+      btnCal.className='btn'; 
+      btnCal.style.background = 'var(--accent)'; 
+      btnCal.style.marginBottom = '10px';
+      btnCal.innerHTML = '<i class="ph-duotone ph-calendar-check"></i> Calendrier Intelligent';
+      btnCal.onclick = () => renderCalendar();
+
+      // 3. ENFIN : On les ajoute à la carte dans l'ordre voulu
+      // On veut le calendrier AU-DESSUS des succès
+      card.appendChild(btnCal);
+      card.appendChild(btnAch);
 
    // -----------------------------
 
@@ -3075,6 +3076,14 @@ state.progression.dailyHistory[todayKey].fail.push({ name: top.patho.name, time:
              });
              wrapper.appendChild(content); app.appendChild(wrapper);
          }
+         window.closeLightbox = function() {
+    const lb = document.getElementById('lightbox');
+    if(lb) {
+        lb.style.display = 'none';
+        lb.innerHTML = '';
+    }
+}
       </script>
+      <div id="lightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center;" onclick="closeLightbox()"></div>
    </body>
 </html>

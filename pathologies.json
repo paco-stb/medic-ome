@@ -63,7 +63,7 @@
         "name": "Appendicite Aiguë",
         "short": "Urgence chirurgicale digestive",
         "pdf": "fiches/appendicite.pdf",
-        "signes": {"douleur_migratrice_epigastre_fid": 15, "douleur_point_mcburney": 30, "defense_fid": 20, "signe_blumberg": 15, "fievre_moderee_38": 8, "nausees": 10, "psoitis": 10, "crp_elevee": 10},
+        "signes": {"douleur_abdominale": 5, "douleur_migratrice_epigastre_fid": 15, "douleur_point_mcburney": 30, "defense_fid": 20, "signe_blumberg": 15, "fievre_moderee_38": 8, "nausees": 10, "psoitis": 10, "crp_elevee": 10},
         "veto": ["douleur_point_mcburney"],
         "boost": ["defense_fid", "signe_blumberg"],
         "images": {"langue_saburrale": "images/coated_tongue.png"},
@@ -83,7 +83,7 @@
         "name": "Gastro-entérite",
         "short": "Infection digestive virale",
         "pdf": "fiches/gastro.pdf",
-        "signes": {"diarrhee_aqueuse": 20, "vomissements": 18, "crampes_abdominales": 12, "fievre_moderee": 6, "myalgies": 6, "absence_defense_abdominale": 20},
+        "signes": {"douleur_abdominale": 5, "diarrhee_aqueuse": 20, "vomissements": 18, "crampes_abdominales": 12, "fievre_moderee": 6, "myalgies": 6, "absence_defense_abdominale": 20},
         "veto": ["diarrhee_aqueuse"],
         "boost": ["absence_defense_abdominale"],
         "facteurs": {"epidemie_hivernale": 5, "collectivite": 5}

@@ -1218,7 +1218,7 @@
             <i class="ph-duotone ph-user-circle"></i>
             Tester sans connexion
         </button>
-        <div class="small" style="margin-top:10px; opacity:0.7;">Mode invité limité (pas de sauvegarde cloud)</div>
+        <div class="small" style="margin-top:10px; opacity:0.7;">Mode invité limité </div>
     `;
     grid.appendChild(leftCol);
 
@@ -1345,7 +1345,7 @@
              const app = q('#app'); app.innerHTML='';
              const prog = state.progression;
              const card = document.createElement('div'); card.className='card center';
-             let cloudBadge = state.isGuest ? '<span style="color:orange; font-size:0.8em; margin-bottom:10px"><i class="ph-duotone ph-floppy-disk"></i> Mode Local</span>' : '<span style="color:var(--success); font-size:0.8em; margin-bottom:10px"><i class="ph-duotone ph-cloud-check"></i> Sauvegarde Active</span>';
+             let cloudBadge = state.isGuest ? '<span style="color:orange; font-size:0.8em; margin-bottom:10px"><i class="ph-duotone ph-floppy-disk"></i> Mode Local</span>' : '<span style="color:var(--success); font-size:0.8em; margin-bottom:10px"><i class="ph-duotone ph-cloud-check"></i> Sauvegarde activée</span>';
              const displayName = state.pseudo || '...';
              const btnGuest = document.createElement('button');
          btnGuest.className = 'btn';

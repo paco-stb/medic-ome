@@ -1154,6 +1154,11 @@ btnDiag.onclick= () => {
             const btnDaily = q('#btnDaily');
             if(btnDaily) {
                 btnDaily.onclick = () => {
+                    const limit = checkGuestLimit();
+        if (!limit.allowed) {
+            showAlert(`Mode invité limité !<br>Prochaine partie dans : <strong>${limit.remaining}</strong>.<br>Créez un compte pour jouer en illimité !`, "error");
+            return;
+        }
                     if(audioCtx.state === 'suspended') audioCtx.resume();
                     state.dailyTarget = dailyPatho;
                     state.isChrono = false; 
@@ -2685,6 +2690,11 @@ app.appendChild(card);
             
             const btnReplay = document.createElement('button'); btnReplay.className='btn btn-success'; btnReplay.innerHTML = '<i class="ph-duotone ph-arrow-clockwise"></i> Rejouer tout de suite'; 
             btnReplay.onclick = () => {
+                const limit = checkGuestLimit();
+    if (!limit.allowed) {
+        showAlert(`Mode invité limité !<br>Prochaine partie dans : <strong>${limit.remaining}</strong>.<br>Créez un compte pour jouer en illimité !`, "error");
+        return;
+    }
                  state.dailyTarget = null; 
                  renderDemographics();
             };

@@ -1516,161 +1516,181 @@ function showDayDetails(dateStr, data) {
 }
           
          function renderProfile() {
-             if(state.isGuest) {
-         showAlert("L'accès au profil est réservé aux utilisateurs connectés.", "error");
-         return;
+   if (state.isGuest) {
+      showAlert("L'accès au profil est réservé aux utilisateurs connectés.", "error");
+      return;
+   }
+   setDocTitle("Profil");
+   window.scrollTo(0, 0);
+   const app = q('#app');
+   app.innerHTML = '';
+   const prog = state.progression;
+   const card = document.createElement('div');
+   card.className = 'card center';
+   card.style.maxWidth = '800px';
+
+   let contentHTML = `<h2>Profil de ${state.pseudo}</h2>`;
+
+   const groupScores = {};
+   let maxScore = 0;
+   let bestGroup = null;
+   Object.keys(prog.mastery || {}).forEach(pName => {
+      const data = prog.mastery[pName];
+      const count = (typeof data === 'number') ? data : (data.success || 0);
+      if (count > 0) {
+         const group = PATHO_GROUPS[pName] || "Autre";
+         if (!groupScores[group]) groupScores[group] = 0;
+         groupScores[group] += count;
+         if (groupScores[group] > maxScore) {
+            maxScore = groupScores[group];
+            bestGroup = group;
          }
-             setDocTitle("Profil");
-             window.scrollTo(0,0);
-             const app = q('#app'); app.innerHTML='';
-             const prog = state.progression;
-             const card = document.createElement('div'); card.className='card center'; card.style.maxWidth = '800px';
-             
-             let contentHTML = `<h2>Profil de ${state.pseudo}</h2>`;
-             
-             const groupScores = {};
-             let maxScore = 0; let bestGroup = null;
-             Object.keys(prog.mastery || {}).forEach(pName => {
-                 const data = prog.mastery[pName];
-                 const count = (typeof data === 'number') ? data : (data.success || 0);
-                 if(count > 0) {
-                     const group = PATHO_GROUPS[pName] || "Autre";
-                     if(!groupScores[group]) groupScores[group] = 0;
-                     groupScores[group] += count;
-                     if(groupScores[group] > maxScore) { maxScore = groupScores[group]; bestGroup = group; }
-                 }
-             });
-         
-             if(bestGroup && maxScore >= 3) {
-                 contentHTML += `<div class="specialty-badge"><i class="ph-duotone ph-medal"></i> Spécialiste ${bestGroup}</div>`;
-             }
-         
-             const totalPathos = PATHOLOGIES.length;
-             const unlockedPathos = Object.keys(prog.mastery || {}).filter(k => {
-                 const d = prog.mastery[k];
-                 const s = (typeof d === 'number') ? d : d.success;
-                 return s > 0;
-             }).length;
-             const percentage = totalPathos > 0 ? Math.round((unlockedPathos / totalPathos) * 100) : 0;
-             
-             contentHTML += `
-                 <div style="width:100%; background:rgba(125,125,125,0.1); border-radius:10px; height:10px; margin-bottom:5px; overflow:hidden;">
-                     <div style="width:${percentage}%; background:var(--accent); height:100%;"></div>
-                 </div>
-                 <div class="small" style="margin-bottom:30px;">Progression globale : ${percentage}% (${unlockedPathos}/${totalPathos})</div>
-             `;
-             
-             card.innerHTML = contentHTML;
+      }
+   });
 
-             // Dans renderProfile()
+   if (bestGroup && maxScore >= 3) {
+      contentHTML += `<div class="specialty-badge"><i class="ph-duotone ph-medal"></i> Spécialiste ${bestGroup}</div>`;
+   }
 
-const btnCal = document.createElement('button'); 
-btnCal.className='btn'; 
-btnCal.style.background = 'var(--accent)'; 
-btnCal.style.marginBottom = '10px';
-btnCal.innerHTML = '<i class="ph-duotone ph-calendar-check"></i> Calendrier Intelligent';
-btnCal.onclick = () => renderCalendar();
+   const totalPathos = PATHOLOGIES.length;
+   const unlockedPathos = Object.keys(prog.mastery || {}).filter(k => {
+      const d = prog.mastery[k];
+      const s = (typeof d === 'number') ? d : d.success;
+      return s > 0;
+   }).length;
+   const percentage = totalPathos > 0 ? Math.round((unlockedPathos / totalPathos) * 100) : 0;
 
-// Ajoute-le à la card (par exemple avant le bouton Succès)
-card.insertBefore(btnCal, btnAch);
-         
-             const btnAch = document.createElement('button'); 
-             btnAch.className='btn'; 
-             btnAch.style.background = 'var(--gold)'; 
-             btnAch.style.color = 'black'; 
-             btnAch.style.marginBottom = '20px';
-             btnAch.innerHTML = '<i class="ph-duotone ph-trophy"></i> Voir mes Succès';
-             btnAch.onclick = renderAchievementsPage;
-             
-             if(card.children.length > 0) {
-                 card.insertBefore(btnAch, card.children[1]);
-             } else {
-                 card.appendChild(btnAch);
-             }
-         
-             const errorTracker = document.createElement('div');
-             errorTracker.className = 'error-tracker';
-             errorTracker.innerHTML = `<h3 style="color:var(--error); font-size:16px;"><i class="ph-duotone ph-warning"></i> Boîte à Erreurs (Suivi)</h3>`;
-             const now = Date.now();
-             let hasErrors = false;
-             Object.entries(prog.errorLog || {}).forEach(([pName, data]) => {
-                 if(now - data.date > 7 * 24 * 60 * 60 * 1000) {
-                     hasErrors = true;
-                     const item = document.createElement('div');
-                     item.className = 'error-item';
-                     item.innerHTML = `<span>${pName}</span> <span style="opacity:0.7">À revoir !</span>`;
-                     errorTracker.appendChild(item);
-                 }
-             });
-             if(!hasErrors) errorTracker.innerHTML += `<div class="small">Aucune pathologie oubliée depuis 1 semaine. Bien joué !</div>`;
-             card.appendChild(errorTracker);
-         
-             const globalMissedSigns = {};
-             Object.values(prog.mastery || {}).forEach(m => {
-                 if(m.missedSigns) {
-                     Object.entries(m.missedSigns).forEach(([sign, count]) => {
-                         if(!globalMissedSigns[sign]) globalMissedSigns[sign] = 0;
-                         globalMissedSigns[sign] += count;
-                     });
-                 }
-             });
-         
-             const frequentMisses = Object.entries(globalMissedSigns)
-                 .filter(([s, c]) => c >= 3)
-                 .sort((a, b) => b[1] - a[1])
-                 .slice(0, 5);
-         
-             if(frequentMisses.length > 0) {
-                 const weakDiv = document.createElement('div');
-                 weakDiv.style.marginTop = "20px";
-                 weakDiv.style.padding = "15px";
-                 weakDiv.style.background = "rgba(255, 77, 77, 0.05)";
-                 weakDiv.style.borderRadius = "12px";
-                 weakDiv.style.border = "1px solid rgba(255, 77, 77, 0.2)";
-                 
-                 let weakHTML = `<h3 style="color:var(--error); font-size:16px; margin-bottom:10px;"><i class="ph-duotone ph-trend-down"></i> Vos points faibles (Global)</h3>`;
-                 weakHTML += `<div class="small" style="margin-bottom:10px;">Signes cliniques souvent oubliés ou erronés :</div>`;
-                 weakHTML += `<ul style="text-align:left; padding-left:20px; color:var(--text-main);">`;
-                 
-                 frequentMisses.forEach(([sign, count]) => {
-                     weakHTML += `<li style="margin-bottom:4px;"><strong>${formatSigneName(sign)}</strong> (${count} erreurs)</li>`;
-                 });
-                 
-                 weakHTML += `</ul>`;
-                 weakDiv.innerHTML = weakHTML;
-                 card.appendChild(weakDiv);
-             }
-         
-             const masteryTitle = document.createElement('h3'); masteryTitle.innerHTML = 'Maitrise Clinique'; 
-             masteryTitle.style.marginTop = "30px";
-             card.appendChild(masteryTitle);
-         
-             const masteryGrid = document.createElement('div'); masteryGrid.className = 'mastery-grid';
-             const sortedPathos = [...PATHOLOGIES].sort((a, b) => a.name.localeCompare(b.name));
-             const masteryData = prog.mastery || {};
-         
-             sortedPathos.forEach(p => {
-                 const m = masteryData[p.name];
-                 const successCount = (typeof m === 'number') ? m : (m?.success || 0);
-                 const mItem = document.createElement('div');
-                 
-                 let sClass = 'm-locked', icon = '<i class="ph-duotone ph-lock-key"></i>';
-                 if (successCount >= 10) { sClass = 'm-master'; icon = '<i class="ph-duotone ph-diamond color-ruby"></i>'; }
-                 else if (successCount >= 5) { sClass = 'm-gold'; icon = '<i class="ph-duotone ph-trophy color-gold"></i>'; }
-                 else if (successCount >= 3) { sClass = 'm-silver'; icon = '<i class="ph-duotone ph-medal color-silver"></i>'; }
-                 else if (successCount >= 1) { sClass = 'm-bronze'; icon = '<i class="ph-duotone ph-medal color-bronze"></i>'; }
-         
-                 mItem.className = `mastery-item ${sClass}`;
-                 mItem.innerHTML = `<div class="mastery-icon">${icon}</div><div class="mastery-name">${p.name}</div><div class="mastery-count">${successCount} réussite(s)</div>`;
-                 mItem.onclick = () => renderPathoStats(p); 
-                 masteryGrid.appendChild(mItem);
-             });
-             card.appendChild(masteryGrid);
-         
-             const btnBack = document.createElement('button'); btnBack.className='btn'; btnBack.textContent='Retour';
-             btnBack.style.marginTop='20px'; btnBack.onclick=renderHome;
-             card.appendChild(btnBack); app.appendChild(card);
-         }
+   contentHTML += `
+         <div style="width:100%; background:rgba(125,125,125,0.1); border-radius:10px; height:10px; margin-bottom:5px; overflow:hidden;">
+             <div style="width:${percentage}%; background:var(--accent); height:100%;"></div>
+         </div>
+         <div class="small" style="margin-bottom:30px;">Progression globale : ${percentage}% (${unlockedPathos}/${totalPathos})</div>
+     `;
+
+   card.innerHTML = contentHTML;
+
+   // --- CORRECTION DU BUG ICI ---
+   
+   // 1. D'abord on crée le bouton Calendrier
+   const btnCal = document.createElement('button');
+   btnCal.className = 'btn';
+   btnCal.style.background = 'var(--accent)';
+   btnCal.style.marginBottom = '10px';
+   btnCal.innerHTML = '<i class="ph-duotone ph-calendar-check"></i> Calendrier Intelligent';
+   btnCal.onclick = () => renderCalendar();
+   card.appendChild(btnCal);
+
+   // 2. Ensuite on crée le bouton Succès
+   const btnAch = document.createElement('button');
+   btnAch.className = 'btn';
+   btnAch.style.background = 'var(--gold)';
+   btnAch.style.color = 'black';
+   btnAch.style.marginBottom = '20px';
+   btnAch.innerHTML = '<i class="ph-duotone ph-trophy"></i> Voir mes Succès';
+   btnAch.onclick = renderAchievementsPage;
+   card.appendChild(btnAch);
+
+   // -----------------------------
+
+   const errorTracker = document.createElement('div');
+   errorTracker.className = 'error-tracker';
+   errorTracker.innerHTML = `<h3 style="color:var(--error); font-size:16px;"><i class="ph-duotone ph-warning"></i> Boîte à Erreurs (Suivi)</h3>`;
+   const now = Date.now();
+   let hasErrors = false;
+   Object.entries(prog.errorLog || {}).forEach(([pName, data]) => {
+      if (now - data.date > 7 * 24 * 60 * 60 * 1000) {
+         hasErrors = true;
+         const item = document.createElement('div');
+         item.className = 'error-item';
+         item.innerHTML = `<span>${pName}</span> <span style="opacity:0.7">À revoir !</span>`;
+         errorTracker.appendChild(item);
+      }
+   });
+   if (!hasErrors) errorTracker.innerHTML += `<div class="small">Aucune pathologie oubliée depuis 1 semaine. Bien joué !</div>`;
+   card.appendChild(errorTracker);
+
+   const globalMissedSigns = {};
+   Object.values(prog.mastery || {}).forEach(m => {
+      if (m.missedSigns) {
+         Object.entries(m.missedSigns).forEach(([sign, count]) => {
+            if (!globalMissedSigns[sign]) globalMissedSigns[sign] = 0;
+            globalMissedSigns[sign] += count;
+         });
+      }
+   });
+
+   const frequentMisses = Object.entries(globalMissedSigns)
+      .filter(([s, c]) => c >= 3)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5);
+
+   if (frequentMisses.length > 0) {
+      const weakDiv = document.createElement('div');
+      weakDiv.style.marginTop = "20px";
+      weakDiv.style.padding = "15px";
+      weakDiv.style.background = "rgba(255, 77, 77, 0.05)";
+      weakDiv.style.borderRadius = "12px";
+      weakDiv.style.border = "1px solid rgba(255, 77, 77, 0.2)";
+
+      let weakHTML = `<h3 style="color:var(--error); font-size:16px; margin-bottom:10px;"><i class="ph-duotone ph-trend-down"></i> Vos points faibles (Global)</h3>`;
+      weakHTML += `<div class="small" style="margin-bottom:10px;">Signes cliniques souvent oubliés ou erronés :</div>`;
+      weakHTML += `<ul style="text-align:left; padding-left:20px; color:var(--text-main);">`;
+
+      frequentMisses.forEach(([sign, count]) => {
+         weakHTML += `<li style="margin-bottom:4px;"><strong>${formatSigneName(sign)}</strong> (${count} erreurs)</li>`;
+      });
+
+      weakHTML += `</ul>`;
+      weakDiv.innerHTML = weakHTML;
+      card.appendChild(weakDiv);
+   }
+
+   const masteryTitle = document.createElement('h3');
+   masteryTitle.innerHTML = 'Maitrise Clinique';
+   masteryTitle.style.marginTop = "30px";
+   card.appendChild(masteryTitle);
+
+   const masteryGrid = document.createElement('div');
+   masteryGrid.className = 'mastery-grid';
+   const sortedPathos = [...PATHOLOGIES].sort((a, b) => a.name.localeCompare(b.name));
+   const masteryData = prog.mastery || {};
+
+   sortedPathos.forEach(p => {
+      const m = masteryData[p.name];
+      const successCount = (typeof m === 'number') ? m : (m?.success || 0);
+      const mItem = document.createElement('div');
+
+      let sClass = 'm-locked',
+         icon = '<i class="ph-duotone ph-lock-key"></i>';
+      if (successCount >= 10) {
+         sClass = 'm-master';
+         icon = '<i class="ph-duotone ph-diamond color-ruby"></i>';
+      } else if (successCount >= 5) {
+         sClass = 'm-gold';
+         icon = '<i class="ph-duotone ph-trophy color-gold"></i>';
+      } else if (successCount >= 3) {
+         sClass = 'm-silver';
+         icon = '<i class="ph-duotone ph-medal color-silver"></i>';
+      } else if (successCount >= 1) {
+         sClass = 'm-bronze';
+         icon = '<i class="ph-duotone ph-medal color-bronze"></i>';
+      }
+
+      mItem.className = `mastery-item ${sClass}`;
+      mItem.innerHTML = `<div class="mastery-icon">${icon}</div><div class="mastery-name">${p.name}</div><div class="mastery-count">${successCount} réussite(s)</div>`;
+      mItem.onclick = () => renderPathoStats(p);
+      masteryGrid.appendChild(mItem);
+   });
+   card.appendChild(masteryGrid);
+
+   const btnBack = document.createElement('button');
+   btnBack.className = 'btn';
+   btnBack.textContent = 'Retour';
+   btnBack.style.marginTop = '20px';
+   btnBack.onclick = renderHome;
+   card.appendChild(btnBack);
+   app.appendChild(card);
+}
          
          function renderAchievementsPage() {
              setDocTitle("Succès");

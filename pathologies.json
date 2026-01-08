@@ -196,7 +196,7 @@
         "name": "Grossesse Extra-Utérine",
         "short": "GEU",
         "pdf": "fiches/geu.pdf",
-        "signes": {"douleur_pelvienne_lateralisee": 20, "metrorragies_sepia": 20, "retard_regles_amenorrhee": 15, "signes_sympathiques_grossesse": 10, "malaise_lipothymie": 15, "b_hcg_plasmatique_positif": 40, "uterus_vacuite_echo": 30},
+        "signes": {"douleur_pelvienne_lateralisee": 20, "metrorragies_sepia": 20, "douleur_abdominale": 15, "douleur_pelvienne_lateralisee": 30, "b_hcg_plasmatique_positif": 50 "retard_regles_amenorrhee": 15, "signes_sympathiques_grossesse": 10, "malaise_lipothymie": 15, "b_hcg_plasmatique_positif": 40, "uterus_vacuite_echo": 30},
         "veto": ["b_hcg_plasmatique_positif"],
         "boost": ["metrorragies_sepia", "uterus_vacuite_echo"],
         "facteurs": {"femme_age_procreer": 100, "tabac": 2, "antecedent_geu": 5, "dispositif_intra_uterin": 3}
@@ -957,7 +957,7 @@
         "name": "Botulisme",
         "short": "Toxine Clostridium botulinum",
         "pdf": "fiches/botulisme.pdf",
-        "signes": {"paralysie_descendante_symetrique": 30, "diplopie_mydriase": 25, "secheresse_buccale": 20, "dysphagie_dysphonie": 15, "constipation": 10, "absence_fievre": 10},
+        "signes": {"troubles_neuro": 30, "troubles_visuels": 30, "fievre": 0, "diplopie": 50, "paralysie_descendante": 50, "bouche sèche": 20},
         "boost": ["paralysie_descendante_symetrique"],
         "facteurs": {"consommation_conserves_artisanales": 20, "charcuterie_maison": 10}
     },

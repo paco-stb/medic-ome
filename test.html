@@ -2887,8 +2887,8 @@ function showDayDetails(dateStr, data) {
          
          // --- FONCTIONS "PLAISANTIN" (Easter Eggs) ---
          function checkPlaisantin() {
-             // On ne vérifie qu'exactement à la 15ème question
-             if (state.asked.length !== 15) return false;
+             // On ne vérifie qu'exactement à la 20ème question
+             if (state.asked.length !== 20) return false;
          
              // Vérifier si toutes les réponses sont NON
              const allNo = state.asked.every(sign => state.answers[sign] === false);

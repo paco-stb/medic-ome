@@ -550,7 +550,6 @@
 
         let state = {
             currentUser: null, pseudo: null, 
-            isTrial: false, // <--- NOUVEAU : Indique si on est en mode test
             progression: { 
                 correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0, lastDaily: null, achievements: [], bestTimes: {}, errorLog: {},
                 pdfDownloads: 0, speedWins: 0, socialDone: false, reviewDone: false
@@ -561,6 +560,48 @@
             priorityQueue: [],
             isChrono: false, startTime: null, dailyTarget: null
         };
+
+// === GUEST MODE ===
+// Vérifie si un invité peut jouer (1 fois par session, reset toutes les 2h)
+function checkGuestAvailability() {
+    const guestData = JSON.parse(sessionStorage.getItem('guestMode')) || { canPlay: true, timestamp: 0 };
+    const now = Date.now();
+
+    // Reset après 2 heures
+    if (now - guestData.timestamp > 2 * 60 * 60 * 1000) {
+        guestData.canPlay = true;
+        guestData.timestamp = now;
+    }
+
+    return guestData;
+}
+
+// Lancer le mode invité si disponible
+function startGuestMode() {
+    const guestData = checkGuestAvailability();
+    if (!guestData.canPlay) {
+        showAlert("Le mode invité est temporairement indisponible. Veuillez créer un compte.", "error");
+        return false;
+    }
+
+    // CORRECTION ICI : On utilise state.isGuest
+    state.isGuest = true;
+    state.pseudo = "Invité";
+    
+    // On initialise la progression vide si elle n'existe pas
+    if (!state.progression) {
+        state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0 };
+    }
+
+    guestData.canPlay = false;
+    guestData.timestamp = Date.now();
+    sessionStorage.setItem('guestMode', JSON.stringify(guestData));
+
+    updateHeader(); // Important pour afficher le pseudo "Invité"
+    renderHome();   // On envoie vers l'accueil au lieu de lancer direct le diag
+    return true;
+}
+
 
         // --- THEME LOGIC ---
         function toggleTheme() {
@@ -674,13 +715,7 @@
 
                 const brandLogo = document.getElementById('brandLogo');
                 if(brandLogo) {
-                    brandLogo.onclick = () => { 
-                        // MODIFICATION : Interdit le retour accueil en mode essai
-                        if (state.isTrial) {
-                            return; 
-                        }
-                        if (state.currentUser || state.isGuest) { renderHome(); } 
-                    };
+                    brandLogo.onclick = () => { if (state.currentUser || state.isGuest) { renderHome(); } };
                 }
 
                 // GESTION DE LA VISIBILITÉ DE L'ONGLET (TITRE)
@@ -922,6 +957,10 @@
         }
         
         function trackPdf() {
+            if(state.isGuest) {
+        showAlert("Les fiches PDF ne sont pas disponibles en mode invité.", "error");
+        return;
+    }
             state.progression.pdfDownloads = (state.progression.pdfDownloads || 0) + 1;
             saveProgression();
         }
@@ -948,79 +987,17 @@
             homeBtn.onclick=renderHome;
             logoutBtn.onclick = () => {
                 localStorage.removeItem('medicome_guest_progression'); localStorage.removeItem('medicome_guest_pseudo');
-                state.isGuest = false; state.isTrial = false; // <-- AJOUT DE isTrial ici
-                state.pseudo = null; state.currentUser = null; 
+                state.isGuest = false; state.pseudo = null; state.currentUser = null; 
                 state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0, lastDaily: null, achievements: [], bestTimes: {}, errorLog: {}, pdfDownloads: 0, speedWins: 0, socialDone: false, reviewDone: false }; 
                 signOut(auth).then(() => { renderLogin(); updateHeader(); showAlert("Déconnecté", "success"); }).catch(() => { renderLogin(); updateHeader(); });
             };
         }
 
-        // --- NOUVELLE GESTION DE L'ACCUEIL ---
-
         function renderLogin() {
-            setDocTitle("Bienvenue");
+            setDocTitle("Connexion");
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
-            
-            const card = document.createElement('div'); 
-            card.className='card center';
-            card.style.padding = "40px 20px";
-
-            // Logo et Titre
-            card.innerHTML = `
-                <div class="icon-lg color-accent"><i class="ph-duotone ph-heartbeat"></i></div>
-                <h1 style="margin-bottom: 10px;">Medicome</h1>
-                <p style="color:var(--text-muted); margin-bottom: 30px;">Simulateur de diagnostic clinique</p>
-            `;
-
-            // 1. BOUTON TEST GRATUIT (MODIFIÉ)
-            const btnTrial = document.createElement('button');
-            btnTrial.className = 'btn';
-            btnTrial.style.background = 'linear-gradient(135deg, #00b09b 0%, #96c93d 100%)'; 
-            btnTrial.style.fontSize = '1.1em';
-            btnTrial.style.padding = '16px';
-            btnTrial.innerHTML = '<i class="ph-bold ph-play"></i> Essayer 1 Cas (Gratuit)';
-            btnTrial.onclick = () => {
-                // Lancement du mode essai
-                state.isGuest = true;
-                state.isTrial = true;
-                state.pseudo = "Visiteur";
-                state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {} };
-                
-                // MODIFICATION : On va direct au patient, pas à l'accueil
-                showAlert("Mode Découverte activé : 1 cas gratuit", "success");
-                renderDemographics(); 
-            };
-            
-            // 2. BOUTON CONNEXION / INSCRIPTION
-            const btnLogin = document.createElement('button');
-            btnLogin.className = 'btn';
-            btnLogin.style.marginTop = '15px';
-            btnLogin.innerHTML = '<i class="ph-duotone ph-sign-in"></i> Connexion / Inscription';
-            btnLogin.onclick = renderAuthForm; 
-
-            // 3. OPTION CODE
-            const btnCode = document.createElement('button');
-            btnCode.className = 'link';
-            btnCode.style.marginTop = '20px';
-            btnCode.style.fontSize = '12px';
-            btnCode.style.opacity = '0.7';
-            btnCode.style.border = 'none';
-            btnCode.style.background = 'transparent';
-            btnCode.innerHTML = '<i class="ph-duotone ph-key"></i> J\'ai un code d\'accès';
-            btnCode.onclick = renderCodeInput;
-
-            card.appendChild(btnTrial);
-            card.appendChild(btnLogin);
-            card.appendChild(btnCode);
-            app.appendChild(card);
-        }
-
-        function renderAuthForm() {
-            const app = q('#app'); app.innerHTML='';
-            const card = document.createElement('div'); card.className='card center'; 
-            card.innerHTML='<h2><i class="ph-duotone ph-cloud"></i> Connexion</h2>';
-            
+            const card = document.createElement('div'); card.className='card center'; card.innerHTML='<h2><i class="ph-duotone ph-cloud"></i>Connexion</h2>';
             const inputUser = document.createElement('input'); inputUser.placeholder='Email'; inputUser.className='input';
             const inputPass = document.createElement('input'); inputPass.placeholder='Mot de passe'; inputPass.className='input'; inputPass.type='password';
             
@@ -1034,110 +1011,48 @@
                 try { await sendPasswordResetEmail(auth, inputUser.value); showAlert("Email de réinitialisation envoyé !", "success"); } catch(e) { showAlert("Erreur: " + e.message, "error"); }
             };
 
-            const sep = document.createElement('div'); sep.innerHTML='<br>— Pas de compte ? —<br>'; sep.className='small';
-            const btnReg = document.createElement('button'); btnReg.className='btn'; btnReg.style.background='rgba(125,125,125,0.1)'; btnReg.textContent='Créer un compte';
-            btnReg.onclick = renderRegisterForm;
-
-            const btnBack = document.createElement('button'); btnBack.className='link'; btnBack.textContent='Retour';
-            btnBack.style.marginTop='10px';
-            btnBack.onclick = renderLogin;
-
-            card.append(inputUser, inputPass, btnLogin, btnForgot, sep, btnReg, btnBack);
-            app.appendChild(card);
-        }
-
-        function renderRegisterForm() {
-            const app = q('#app'); app.innerHTML='';
-            const card = document.createElement('div'); card.className='card center';
-            card.innerHTML='<h2>Créer un compte</h2>';
+            card.appendChild(inputUser); card.appendChild(inputPass); card.appendChild(btnLogin); card.appendChild(btnForgot);
             
-            const inRegEmail = document.createElement('input'); inRegEmail.placeholder='Email'; inRegEmail.className='input';
-            const inRegPass = document.createElement('input'); inRegPass.placeholder='Mot de passe'; inRegPass.className='input'; inRegPass.type='password';
-            const inPseudo = document.createElement('input'); inPseudo.placeholder='Pseudo'; inPseudo.className='input';
-            
-            const btnReg = document.createElement('button'); btnReg.className='btn'; btnReg.textContent='Valider l\'inscription';
+            const sep = document.createElement('div'); sep.textContent='— Pas encore de compte ? —'; sep.className='small'; sep.style.margin='16px 0'; card.appendChild(sep);
+            const inRegEmail = document.createElement('input'); inRegEmail.placeholder='Nouvel Email'; inRegEmail.className='input';
+            const inRegPass = document.createElement('input'); inRegPass.placeholder='Nouveau Mot de passe'; inRegPass.className='input'; inRegPass.type='password';
+            const inPseudo = document.createElement('input'); inPseudo.placeholder='Votre Pseudo'; inPseudo.className='input';
+            const btnReg = document.createElement('button'); btnReg.className='link'; btnReg.textContent='Créer un compte Cloud';
             btnReg.onclick = async () => {
-                 if(!inRegEmail.value || !inRegPass.value || !inPseudo.value) return showAlert('Remplissez tout','error');
-                 try {
-                     const userCredential = await createUserWithEmailAndPassword(auth, inRegEmail.value, inRegPass.value);
-                     const user = userCredential.user; await updateProfile(user, { displayName: inPseudo.value });
-                     await setDoc(doc(db, "users", user.uid), { pseudo: inPseudo.value, email: inRegEmail.value, progression: { correct: 0, incorrect: 0, streak: 0, mastery: {} }, createdAt: new Date() }, { merge: true });
-                     state.pseudo = inPseudo.value; state.isTrial = false; 
-                     showAlert("Compte créé !", "success"); updateHeader(); renderHome();
-                 } catch (error) { showAlert("Erreur: " + error.message, "error"); }
+                if(!inRegEmail.value || !inRegPass.value || !inPseudo.value) return showAlert('Remplissez tout','error');
+                try {
+                    const userCredential = await createUserWithEmailAndPassword(auth, inRegEmail.value, inRegPass.value);
+                    const user = userCredential.user; await updateProfile(user, { displayName: inPseudo.value });
+                    await setDoc(doc(db, "users", user.uid), { pseudo: inPseudo.value, email: inRegEmail.value, progression: { correct: 0, incorrect: 0, streak: 0, mastery: {} }, createdAt: new Date() }, { merge: true });
+                    state.pseudo = inPseudo.value; showAlert("Compte créé !", "success"); updateHeader(); renderHome();
+                } catch (error) { showAlert("Erreur création: " + error.message, "error"); }
             };
+            card.appendChild(inRegEmail); card.appendChild(inRegPass); card.appendChild(inPseudo); card.appendChild(btnReg);
+            // --- AJOUT BOUTON INVITÉ ---
+const sepGuest = document.createElement('div'); 
+sepGuest.style.margin = '15px 0'; sepGuest.style.borderTop = '1px solid var(--glass-border)';
+card.appendChild(sepGuest);
 
-            const btnBack = document.createElement('button'); btnBack.className='link'; btnBack.textContent='Annuler';
-            btnBack.onclick = renderLogin;
+const btnGuestMode = document.createElement('button');
+btnGuestMode.className = 'btn';
+btnGuestMode.style.background = 'transparent'; 
+btnGuestMode.style.border = '1px solid var(--accent)';
+btnGuestMode.innerHTML = '<i class="ph-duotone ph-user-circle"></i> Tester sans créer de compte';
+btnGuestMode.onclick = startGuestMode;
+card.appendChild(btnGuestMode);
+// ---------------------------
 
-            card.append(inPseudo, inRegEmail, inRegPass, btnReg, btnBack);
-            app.appendChild(card);
-        }
-
-        function renderCodeInput() {
-            const app = q('#app'); app.innerHTML='';
-            const card = document.createElement('div'); card.className='card center';
-            card.innerHTML='<h2>Code d\'accès</h2>';
-            const inputCode = document.createElement('input'); inputCode.placeholder='Entrez votre code'; inputCode.className='input';
-            const btnVal = document.createElement('button'); btnVal.className='btn'; btnVal.textContent='Valider';
-            
-            btnVal.onclick = () => {
+            const sepCode = document.createElement('div'); sepCode.textContent='— ou Accès Rapide (Local) —'; sepCode.className='small'; sepCode.style.margin='16px 0'; card.appendChild(sepCode);
+            const inputCode = document.createElement('input'); inputCode.placeholder='Clé d\'accès'; inputCode.className='input';
+            const btnCode = document.createElement('button'); btnCode.className='btn btn-code'; btnCode.textContent='Utiliser une clé';
+            btnCode.onclick = () => {
                 const codeFound = ACCESS_CODES.find(ac => ac.code === inputCode.value);
                 if(codeFound) {
-                    state.isGuest = true; state.isTrial = false;
-                    state.pseudo = codeFound.pseudo; state.progression = {correct:0, incorrect:0, streak:0, mastery:{}};
+                    state.isGuest = true; state.pseudo = codeFound.pseudo; state.progression = {correct:0, incorrect:0, streak:0, mastery:{}};
                     saveProgression(); updateHeader(); renderHome(); showAlert(`Mode Invité: ${codeFound.pseudo}`, 'success');
-                } else { showAlert('Code invalide', 'error'); }
+                } else { showAlert('Clé invalide', 'error'); }
             };
-            
-            const btnBack = document.createElement('button'); btnBack.className='link'; btnBack.textContent='Retour';
-            btnBack.onclick = renderLogin;
-            
-            card.append(inputCode, btnVal, btnBack);
-            app.appendChild(card);
-        }
-
-        function renderRegisterWall() {
-            setDocTitle("Créer un compte");
-            window.scrollTo(0,0);
-            const app = q('#app'); app.innerHTML='';
-            
-            const card = document.createElement('div'); card.className='card center';
-            card.innerHTML = `
-                <div class="icon-lg color-gold"><i class="ph-duotone ph-lock-key-open"></i></div>
-                <h2>Test terminé !</h2>
-                <p style="margin-bottom: 20px; color:var(--text-muted);">
-                    J'espère que ce cas clinique vous a plu.<br>
-                    Pour accéder aux <strong>fiches PDF</strong>, suivre votre <strong>progression</strong> et jouer en <strong>illimité</strong>, créez votre compte gratuit.
-                </p>
-            `;
-            
-            const btnCreate = document.createElement('button');
-            btnCreate.className = 'btn';
-            btnCreate.innerHTML = 'Créer mon compte maintenant';
-            btnCreate.onclick = renderRegisterForm; 
-            
-            const btnLogin = document.createElement('button');
-            btnLogin.className = 'link';
-            btnLogin.innerHTML = 'J\'ai déjà un compte';
-            btnLogin.onclick = renderAuthForm; 
-
-            const btnQuit = document.createElement('button');
-            btnQuit.className = 'link';
-            btnQuit.style.fontSize = '11px';
-            btnQuit.innerHTML = 'Revenir à l\'accueil (Quitter)';
-            btnQuit.onclick = () => {
-                state.isTrial = false;
-                state.isGuest = false;
-                state.currentUser = null;
-                state.pseudo = null;
-                renderLogin();
-            };
-
-            card.appendChild(btnCreate);
-            card.appendChild(btnLogin);
-            card.appendChild(btnQuit);
-            app.appendChild(card);
+            card.appendChild(inputCode); card.appendChild(btnCode); app.appendChild(card);
         }
 
         function renderHome() {
@@ -1148,7 +1063,13 @@
             const card = document.createElement('div'); card.className='card center';
             let cloudBadge = state.isGuest ? '<span style="color:orange; font-size:0.8em; margin-bottom:10px"><i class="ph-duotone ph-floppy-disk"></i> Mode Local</span>' : '<span style="color:var(--success); font-size:0.8em; margin-bottom:10px"><i class="ph-duotone ph-cloud-check"></i> Sauvegarde Active</span>';
             const displayName = state.pseudo || '...';
-            
+            const btnGuest = document.createElement('button');
+btnGuest.className = 'btn';
+btnGuest.innerHTML = '<i class="ph-duotone ph-user-circle"></i> Tester sans connexion';
+btnGuest.style.marginTop = '10px';
+btnGuest.onclick = startGuestMode; // fonction du patch
+
+card.appendChild(btnGuest);
             const dailyPatho = getDailyPatho();
             const todayStr = new Date().toDateString();
             const isDailyDone = prog.lastDaily === todayStr;
@@ -1350,6 +1271,10 @@
         }
 
         function renderProfile() {
+            if(state.isGuest) {
+        showAlert("L'accès au profil est réservé aux utilisateurs connectés.", "error");
+        return;
+    }
             setDocTitle("Profil");
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
@@ -1771,240 +1696,302 @@
         }
 
         function renderDemographics() {
-            setDocTitle("Paramètres Patient");
-            window.scrollTo(0, 0);
-            const app = q('#app');
-            app.innerHTML = '';
-            const card = document.createElement('div');
-            card.className = 'card center';
+    setDocTitle("Paramètres Patient");
+    window.scrollTo(0, 0);
+    const app = q('#app');
+    app.innerHTML = '';
+    const card = document.createElement('div');
+    card.className = 'card center';
 
-            // --- EN-TÊTE ---
-            if (state.dailyTarget) {
-                card.innerHTML = `<h3><i class="ph-duotone ph-sun color-gold"></i> Défi du Jour</h3><p class="small" style="margin-bottom:20px; color:var(--gold);">Cible : ${state.dailyTarget.name}</p>`;
-            } else {
-                card.innerHTML = `<h3 style="text-align:center; margin-bottom:15px;"><i class="ph-duotone ph-user-list"></i> Profil Patient</h3><p class="small" style="margin-bottom:20px">Définissez le terrain et le contexte clinique.</p>`;
-            }
+    // --- EN-TÊTE ---
+    if (state.dailyTarget) {
+        card.innerHTML = `<h3><i class="ph-duotone ph-sun color-gold"></i> Défi du Jour</h3><p class="small" style="margin-bottom:20px; color:var(--gold);">Cible : ${state.dailyTarget.name}</p>`;
+    } else {
+        card.innerHTML = `<h3 style="text-align:center; margin-bottom:15px;"><i class="ph-duotone ph-user-list"></i> Profil Patient</h3><p class="small" style="margin-bottom:20px">Définissez le terrain et le contexte clinique.</p>`;
+    }
 
-            // --- 1. IDENTITÉ (Sexe & Âge) ---
-            const genderContainer = document.createElement('div');
-            genderContainer.className = 'gender-selector';
-            genderContainer.innerHTML = `
-                <button class="gender-btn" id="btn-femme" onclick="selectGender('femme')" title="Femme"><i class="ph-duotone ph-gender-female"></i></button>
-                <button class="gender-btn" id="btn-homme" onclick="selectGender('homme')" title="Homme"><i class="ph-duotone ph-gender-male"></i></button>
-            `;
-            card.appendChild(document.createElement('label')).textContent = "Identité";
-            card.appendChild(genderContainer);
+    // --- 1. IDENTITÉ (Sexe & Âge) ---
+    const genderContainer = document.createElement('div');
+    genderContainer.className = 'gender-selector';
+    genderContainer.innerHTML = `
+        <button class="gender-btn" id="btn-femme" onclick="selectGender('femme')" title="Femme"><i class="ph-duotone ph-gender-female"></i></button>
+        <button class="gender-btn" id="btn-homme" onclick="selectGender('homme')" title="Homme"><i class="ph-duotone ph-gender-male"></i></button>
+    `;
+    card.appendChild(document.createElement('label')).textContent = "Identité";
+    card.appendChild(genderContainer);
 
-            let selectedGender = null;
-            window.selectGender = (g) => {
-                selectedGender = g;
-                document.getElementById('btn-femme').className = `gender-btn ${g === 'femme' ? 'active' : ''}`;
-                document.getElementById('btn-homme').className = `gender-btn ${g === 'homme' ? 'active' : ''}`;
-                toggleGenderSpecificTags(g);
-            };
+    let selectedGender = null;
+    window.selectGender = (g) => {
+        selectedGender = g;
+        document.getElementById('btn-femme').className = `gender-btn ${g === 'femme' ? 'active' : ''}`;
+        document.getElementById('btn-homme').className = `gender-btn ${g === 'homme' ? 'active' : ''}`;
+        toggleGenderSpecificTags(g);
+    };
 
-            const sAge = document.createElement('select'); sAge.id = 'demo-age'; sAge.className = 'input';
-            const ages = [
-                { val: "nourrisson", txt: "Nourrisson (< 2 ans)" },
-                { val: "enfant", txt: "Enfant (2 - 12 ans)" },
-                { val: "adolescent", txt: "Adolescent (13 - 18 ans)" },
-                { val: "jeune", txt: "Jeune Adulte (19 - 35 ans)" },
-                { val: "adulte", txt: "Adulte (36 - 65 ans)" },
-                { val: "senior", txt: "Senior (> 65 ans)" }
-            ];
-            ages.forEach(a => {
-                const op = document.createElement('option'); op.value = a.val; op.textContent = a.txt;
-                if (a.val === 'adulte') op.selected = true; 
-                sAge.appendChild(op);
-            });
-            card.appendChild(sAge);
+    const sAge = document.createElement('select'); sAge.id = 'demo-age'; sAge.className = 'input';
+    const ages = [
+        { val: "nourrisson", txt: "Nourrisson (< 2 ans)" },
+        { val: "enfant", txt: "Enfant (2 - 12 ans)" },
+        { val: "adolescent", txt: "Adolescent (13 - 18 ans)" },
+        { val: "jeune", txt: "Jeune Adulte (19 - 35 ans)" },
+        { val: "adulte", txt: "Adulte (36 - 65 ans)" },
+        { val: "senior", txt: "Senior (> 65 ans)" }
+    ];
+    ages.forEach(a => {
+        const op = document.createElement('option'); op.value = a.val; op.textContent = a.txt;
+        if (a.val === 'adulte') op.selected = true; 
+        sAge.appendChild(op);
+    });
+    card.appendChild(sAge);
 
-            // --- 3. TERRAIN & ANTÉCÉDENTS ---
-            const chipsDiv = document.createElement('div');
-            chipsDiv.className = 'chips-container';
+    // --- 3. TERRAIN & ANTÉCÉDENTS (Chips organisés) ---
+    // On regroupe par logique clinique : Toxiques, Métabolique, Contexte aigu...
+    
+    const chipsDiv = document.createElement('div');
+    chipsDiv.className = 'chips-container';
 
-            const groups = [
-                {
-                    title: "Habitudes & Métabolisme",
-                    items: [
-                        { id: 'tabac', label: 'Tabac', icon: 'ph-cigarette' },
-                        { id: 'alcool', label: 'Alcool', icon: 'ph-beer-bottle' },
-                        { id: 'surpoids', label: 'Surpoids / Obésité', icon: 'ph-hamburger' },
-                        { id: 'metabolique', label: 'Diabète / HTA', icon: 'ph-heart-break' }
-                    ]
-                },
-                {
-                    title: "Contexte Aigu / Déclencheur",
-                    items: [
-                        { id: 'trauma', label: 'Chute / Trauma / Effort', icon: 'ph-bone' },
-                        { id: 'chirurgie', label: 'Chirurgie / Alité', icon: 'ph-bed' },
-                        { id: 'voyage', label: 'Voyage / Plein Air', icon: 'ph-airplane' },
-                        { id: 'medicaments', label: 'Médicaments / Allergie', icon: 'ph-pill' }
-                    ]
-                },
-                {
-                    title: "Terrain Fragile",
-                    items: [
-                        { id: 'immuno', label: 'Cancer / Immuno.', icon: 'ph-ribbon' },
-                        { id: 'psy', label: 'Contexte Psy / Stress', icon: 'ph-brain' },
-                        { id: 'hiver', label: 'Hiver / Épidémie', icon: 'ph-snowflake' }
-                    ]
-                },
-                {
-                    title: "Gynécologie",
-                    genderSpecific: 'femme',
-                    items: [
-                        { id: 'grossesse', label: 'Grossesse', icon: 'ph-baby' },
-                        { id: 'sterilet', label: 'Stérilet', icon: 'ph-anchor' },
-                        { id: 'menopause', label: 'Ménopause', icon: 'ph-hourglass' }
-                    ]
-                }
-            ];
-
-            const selectedFactors = new Set();
-
-            groups.forEach(group => {
-                const label = document.createElement('div');
-                label.className = 'section-label';
-                label.textContent = group.title;
-                if(group.genderSpecific) label.id = `label-${group.genderSpecific}`;
-                chipsDiv.appendChild(label);
-
-                group.items.forEach(f => {
-                    const chip = document.createElement('div');
-                    chip.className = 'chip';
-                    chip.id = `chip-${f.id}`;
-                    chip.innerHTML = `<i class="ph-duotone ${f.icon}"></i> ${f.label}`;
-                    if (group.genderSpecific) chip.dataset.gender = group.genderSpecific;
-
-                    chip.onclick = () => {
-                        if (selectedFactors.has(f.id)) {
-                            selectedFactors.delete(f.id);
-                            chip.classList.remove('selected');
-                        } else {
-                            selectedFactors.add(f.id);
-                            chip.classList.add('selected');
-                        }
-                    };
-                    chipsDiv.appendChild(chip);
-                });
-            });
-            card.appendChild(chipsDiv);
-
-            window.toggleGenderSpecificTags = (g) => {
-                const labelFemme = document.getElementById('label-femme');
-                if(labelFemme) labelFemme.style.display = (g === 'femme') ? 'block' : 'none';
-                const chips = document.querySelectorAll('[data-gender="femme"]');
-                chips.forEach(c => {
-                    if (g === 'femme') c.style.display = 'flex';
-                    else {
-                        c.style.display = 'none';
-                        c.classList.remove('selected');
-                        selectedFactors.delete(c.id.replace('chip-', ''));
-                    }
-                });
-            };
-            toggleGenderSpecificTags(null); 
-
-            // --- 4. CHRONO ---
-            if (!state.dailyTarget) {
-                const chronoDiv = document.createElement('div');
-                chronoDiv.style.margin = '10px 0 20px 0'; chronoDiv.style.textAlign = 'center';
-                chronoDiv.innerHTML = `<label style="cursor:pointer; color:var(--text-muted); font-size:13px;"><input type="checkbox" id="chronoToggle" style="margin-right:6px; vertical-align:middle;"> <i class="ph-duotone ph-lightning"></i> Mode Chrono</label>`;
-                card.appendChild(chronoDiv);
-            }
-
-            // --- BOUTONS ---
-            const btnGroup = document.createElement('div'); btnGroup.className = 'button-group';
-            const btnStart = document.createElement('button'); btnStart.className = 'btn'; btnStart.innerHTML = '<i class="ph-duotone ph-play"></i> Lancer le cas';
-            
-            btnStart.onclick = () => {
-                if (!selectedGender && !state.dailyTarget) { 
-                     if(Math.random() > 0.5) selectedGender = 'femme'; else selectedGender = 'homme';
-                }
-
-                const ageVal = q('#demo-age').value;
-                const demoData = {
-                    homme: selectedGender === 'homme',
-                    femme: selectedGender === 'femme',
-                    nourrisson: ageVal === 'nourrisson',
-                    enfant: ageVal === 'enfant',
-                    adolescent: ageVal === 'adolescent',
-                    jeune: ageVal === 'jeune' || ageVal === 'adolescent',
-                    plus_de_30ans: ageVal === 'adulte' || ageVal === 'senior',
-                    plus_de_65ans: ageVal === 'senior',
-                    adulte: ageVal === 'adulte'
-                };
-
-                // Mapping
-                if(selectedFactors.has('metabolique')) { demoData['diabete'] = true; demoData['hta'] = true; demoData['dyslipidemie'] = true; demoData['fibrillation_atriale'] = true; demoData['insuffisance_cardiaque'] = true; }
-                if(selectedFactors.has('trauma')) { demoData['chute'] = true; demoData['chute_main'] = true; demoData['traumatisme_cranien'] = true; demoData['effort'] = true; demoData['sport'] = true; demoData['frottement_yeux'] = true; }
-                if(selectedFactors.has('chirurgie')) { demoData['chirurgie_recente'] = true; demoData['chirurgie_abdominale'] = true; demoData['alitement'] = true; demoData['chirurgie_cataracte'] = true; }
-                if(selectedFactors.has('voyage')) { demoData['voyage_recent'] = true; demoData['foret'] = true; demoData['jardinage'] = true; }
-                if(selectedFactors.has('medicaments')) { demoData['medicaments'] = true; demoData['allergie_connue'] = true; demoData['allergies'] = true; demoData['ains'] = true; demoData['anticoagulants'] = true; demoData['antibiotiques_recents'] = true; }
-                if(selectedFactors.has('immuno')) { demoData['cancer'] = true; demoData['immunodepression'] = true; demoData['auto_immun'] = true; demoData['corticoides'] = true; }
-                if(selectedFactors.has('psy')) { demoData['stress'] = true; demoData['depression'] = true; demoData['perfectionnisme'] = true; }
-                if(selectedFactors.has('hiver')) { demoData['hiver'] = true; demoData['epidemie'] = true; demoData['contage'] = true; demoData['collectivite'] = true; demoData['entourage_malade'] = true; }
-                ['tabac', 'alcool', 'surpoids', 'atcd_famille', 'grossesse', 'sterilet', 'menopause'].forEach(id => { if(selectedFactors.has(id)) demoData[id] = true; });
-                if(demoData['jeune'] || demoData['adolescent']) { demoData['rapport_risque'] = true; demoData['partenaires_multiples'] = true; }
-
-                state.demo = demoData;
-                state.answers = {}; state.asked = []; state.diagnosticShown = false; state.previousDiagnostics = []; state.history = [];
-                state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
-                state.priorityQueue = [];
-
-                if (state.dailyTarget) state.isChrono = false;
-                else state.isChrono = q('#chronoToggle')?.checked || false;
-
-                if (state.isChrono) state.startTime = Date.now();
-                else state.startTime = null;
-
-                askNextQuestion();
-            };
-
-            const btnCancel = document.createElement('button'); btnCancel.className = 'link'; btnCancel.textContent = 'Annuler'; 
-            
-            // MODIFICATION ICI : Gestion de l'annulation selon le mode
-            btnCancel.onclick = () => {
-                if(state.isTrial) {
-                    state.isGuest = false;
-                    state.isTrial = false;
-                    renderLogin();
-                } else {
-                    renderHome();
-                }
-            };
-            
-            btnGroup.appendChild(btnStart); btnGroup.appendChild(btnCancel); card.appendChild(btnGroup); app.appendChild(card);
+    // Définition des groupes pour l'affichage (Purement visuel)
+    const groups = [
+        {
+            title: "Habitudes & Métabolisme",
+            items: [
+                { id: 'tabac', label: 'Tabac', icon: 'ph-cigarette' },
+                { id: 'alcool', label: 'Alcool', icon: 'ph-beer-bottle' },
+                { id: 'surpoids', label: 'Surpoids / Obésité', icon: 'ph-hamburger' },
+                { id: 'metabolique', label: 'Diabète / HTA', icon: 'ph-heart-break' } // Regroupement intelligent
+            ]
+        },
+        {
+            title: "Contexte Aigu / Déclencheur",
+            items: [
+                { id: 'trauma', label: 'Chute / Trauma / Effort', icon: 'ph-bone' }, // Couvre Fracture, IDM, Entorse...
+                { id: 'chirurgie', label: 'Chirurgie / Alité', icon: 'ph-bed' }, // Couvre Embolie
+                { id: 'voyage', label: 'Voyage / Plein Air', icon: 'ph-airplane' }, // Couvre Palu, Lyme, Tétanos
+                { id: 'medicaments', label: 'Médicaments / Allergie', icon: 'ph-pill' } // Couvre Choc, AINS, Anticoag...
+            ]
+        },
+        {
+            title: "Terrain Fragile",
+            items: [
+                { id: 'immuno', label: 'Cancer / Immuno.', icon: 'ph-ribbon' }, // Couvre ID, Cancer, Corticoïdes
+                { id: 'psy', label: 'Contexte Psy / Stress', icon: 'ph-brain' }, // Couvre Panique, TCA
+                { id: 'hiver', label: 'Hiver / Épidémie', icon: 'ph-snowflake' } // Couvre Grippe, Bronchio
+            ]
+        },
+        {
+            title: "Gynécologie",
+            genderSpecific: 'femme', // Sera caché si Homme
+            items: [
+                { id: 'grossesse', label: 'Grossesse', icon: 'ph-baby' },
+                { id: 'sterilet', label: 'Stérilet', icon: 'ph-anchor' },
+                { id: 'menopause', label: 'Ménopause', icon: 'ph-hourglass' }
+            ]
         }
+    ];
+
+    const selectedFactors = new Set();
+
+    groups.forEach(group => {
+        // Création du titre de section (ex: HABITUDES)
+        const label = document.createElement('div');
+        label.className = 'section-label';
+        label.textContent = group.title;
+        if(group.genderSpecific) label.id = `label-${group.genderSpecific}`; // Pour le cacher
+        chipsDiv.appendChild(label);
+
+        // Création des chips
+        group.items.forEach(f => {
+            const chip = document.createElement('div');
+            chip.className = 'chip';
+            chip.id = `chip-${f.id}`;
+            chip.innerHTML = `<i class="ph-duotone ${f.icon}"></i> ${f.label}`;
+            if (group.genderSpecific) chip.dataset.gender = group.genderSpecific;
+
+            chip.onclick = () => {
+                if (selectedFactors.has(f.id)) {
+                    selectedFactors.delete(f.id);
+                    chip.classList.remove('selected');
+                } else {
+                    selectedFactors.add(f.id);
+                    chip.classList.add('selected');
+                }
+            };
+            chipsDiv.appendChild(chip);
+        });
+    });
+    card.appendChild(chipsDiv);
+
+    // Fonction de gestion d'affichage Homme/Femme
+    window.toggleGenderSpecificTags = (g) => {
+        // Gérer les titres de sections
+        const labelFemme = document.getElementById('label-femme');
+        if(labelFemme) labelFemme.style.display = (g === 'femme') ? 'block' : 'none';
+
+        // Gérer les chips
+        const chips = document.querySelectorAll('[data-gender="femme"]');
+        chips.forEach(c => {
+            if (g === 'femme') c.style.display = 'flex';
+            else {
+                c.style.display = 'none';
+                c.classList.remove('selected');
+                selectedFactors.delete(c.id.replace('chip-', ''));
+            }
+        });
+    };
+    
+    // Initialisation
+    toggleGenderSpecificTags(null); 
+
+    // --- 4. CHRONO ---
+    if (!state.dailyTarget) {
+        const chronoDiv = document.createElement('div');
+        chronoDiv.style.margin = '10px 0 20px 0'; chronoDiv.style.textAlign = 'center';
+        chronoDiv.innerHTML = `<label style="cursor:pointer; color:var(--text-muted); font-size:13px;"><input type="checkbox" id="chronoToggle" style="margin-right:6px; vertical-align:middle;"> <i class="ph-duotone ph-lightning"></i> Mode Chrono</label>`;
+        card.appendChild(chronoDiv);
+    }
+
+    // --- BOUTONS ---
+    const btnGroup = document.createElement('div'); btnGroup.className = 'button-group';
+    const btnStart = document.createElement('button'); btnStart.className = 'btn'; btnStart.innerHTML = '<i class="ph-duotone ph-play"></i> Lancer le cas';
+    
+    btnStart.onclick = () => {
+        if (!selectedGender && !state.dailyTarget) { 
+             if(Math.random() > 0.5) selectedGender = 'femme'; else selectedGender = 'homme';
+        }
+
+        const ageVal = q('#demo-age').value;
+        const demoData = {
+            homme: selectedGender === 'homme',
+            femme: selectedGender === 'femme',
+            nourrisson: ageVal === 'nourrisson',
+            enfant: ageVal === 'enfant',
+            adolescent: ageVal === 'adolescent',
+            jeune: ageVal === 'jeune' || ageVal === 'adolescent',
+            plus_de_30ans: ageVal === 'adulte' || ageVal === 'senior',
+            plus_de_65ans: ageVal === 'senior',
+            adulte: ageVal === 'adulte'
+        };
+
+        // --- MAPPING INTELLIGENT --- 
+        // C'est ici que la magie opère pour traduire les boutons "Cliniques" en facteurs JSON précis
+        
+        // 1. Bouton "Diabète / HTA"
+        if(selectedFactors.has('metabolique')) {
+            demoData['diabete'] = true;
+            demoData['hta'] = true;
+            demoData['dyslipidemie'] = true; // Souvent associé
+            // Bonus : HTA est un facteur de risque cardiovasculaire majeur
+            demoData['fibrillation_atriale'] = true; 
+            demoData['insuffisance_cardiaque'] = true;
+        }
+
+        // 2. Bouton "Chute / Trauma / Effort"
+        if(selectedFactors.has('trauma')) {
+            demoData['chute'] = true; 
+            demoData['chute_main'] = true; // Pouteau-Colles
+            demoData['traumatisme_cranien'] = true; // Hématomes
+            demoData['effort'] = true; // Infarctus, Hernie discal
+            demoData['sport'] = true; // Entorse
+            demoData['frottement_yeux'] = true; // Orgelet (Trauma mineur)
+        }
+
+        // 3. Bouton "Chirurgie / Alité"
+        if(selectedFactors.has('chirurgie')) {
+            demoData['chirurgie_recente'] = true;
+            demoData['chirurgie_abdominale'] = true; // Occlusion
+            demoData['alitement'] = true; // Phlébite
+            demoData['chirurgie_cataracte'] = true; // Décollement rétine
+        }
+
+        // 4. Bouton "Voyage / Plein Air"
+        if(selectedFactors.has('voyage')) {
+            demoData['voyage_recent'] = true; // Palu
+            demoData['foret'] = true; // Lyme
+            demoData['jardinage'] = true; // Tétanos
+        }
+
+        // 5. Bouton "Médicaments / Allergies"
+        if(selectedFactors.has('medicaments')) {
+            demoData['medicaments'] = true;
+            demoData['allergie_connue'] = true; // Choc
+            demoData['allergies'] = true; // Asthme
+            demoData['ains'] = true; // Ulcère
+            demoData['anticoagulants'] = true; // Saignements
+            demoData['antibiotiques_recents'] = true; // Mycose / Muguet
+        }
+
+        // 6. Bouton "Cancer / Immuno"
+        if(selectedFactors.has('immuno')) {
+            demoData['cancer'] = true;
+            demoData['immunodepression'] = true; // Pneumopathie, Zona
+            demoData['auto_immun'] = true; // Lupus, Biermer
+            demoData['corticoides'] = true; // Cushing, Cataracte
+        }
+
+        // 7. Bouton "Psy / Stress"
+        if(selectedFactors.has('psy')) {
+            demoData['stress'] = true;
+            demoData['depression'] = true;
+            demoData['perfectionnisme'] = true; // Anorexie
+        }
+
+        // 8. Bouton "Hiver / Épidémie"
+        if(selectedFactors.has('hiver')) {
+            demoData['hiver'] = true;
+            demoData['epidemie'] = true; // Grippe
+            demoData['contage'] = true; // Maladies infantiles
+            demoData['collectivite'] = true; // Gastro
+            demoData['entourage_malade'] = true; // Méningite
+        }
+
+        // Mapping direct des boutons simples
+        ['tabac', 'alcool', 'surpoids', 'atcd_famille', 'grossesse', 'sterilet', 'menopause'].forEach(id => {
+            if(selectedFactors.has(id)) demoData[id] = true;
+        });
+
+        // 9. Facteurs implicites (Jeune = Risque IST souvent)
+        if(demoData['jeune'] || demoData['adolescent']) {
+            demoData['rapport_risque'] = true;
+            demoData['partenaires_multiples'] = true;
+        }
+
+        // --- LANCEMENT ---
+        state.demo = demoData;
+        state.answers = {}; state.asked = []; state.diagnosticShown = false; state.previousDiagnostics = []; state.history = [];
+        state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
+        state.priorityQueue = [];
+
+        if (state.dailyTarget) state.isChrono = false;
+        else state.isChrono = q('#chronoToggle')?.checked || false;
+
+        if (state.isChrono) state.startTime = Date.now();
+        else state.startTime = null;
+
+        askNextQuestion();
+    };
+
+    const btnCancel = document.createElement('button'); btnCancel.className = 'link'; btnCancel.textContent = 'Annuler'; btnCancel.onclick = renderHome;
+    btnGroup.appendChild(btnStart); btnGroup.appendChild(btnCancel); card.appendChild(btnGroup); app.appendChild(card);
+}
 
         function prepareSigns() {
             let allSignsSet = new Set();
             PATHOLOGIES.forEach(p => { Object.keys(p.signes).forEach(s => allSignsSet.add(s)); });
             state.allSigns = Array.from(allSignsSet);
         }
-// =================================================================
-        // ============= DEBUT DU NOUVEAU MOTEUR IA INTELLIGENT =============
-        // =================================================================
 
-        // 1. CALCUL DES SCORES (FACTEURS DE RISQUE + SIGNES)
         function rankPathologies() {
             const scores = PATHOLOGIES.map(p => {
-                // On ignore les maladies déjà trouvées dans cette session
                 if (state.previousDiagnostics.includes(p.name)) {
                     return { patho: p, score: -1 }; 
                 }
 
                 let score = 0;
-                // Bonus pour le terrain (Facteurs de risque)
-                for(const facteur in p.facteurs){ 
-                    if(state.demo[facteur] === true) score += p.facteurs[facteur]; 
-                }
-                // Bonus/Malus pour les réponses aux signes
+                for(const facteur in p.facteurs){ if(state.demo[facteur] === true) score += p.facteurs[facteur]; }
                 for(const signe in p.signes){
                     const ans = state.answers[signe];
                     if(ans === true) score += p.signes[signe];
-                    else if(ans === false) score -= (p.signes[signe] * 0.5); // Pénalité progressive
+                    else if(ans === false) score -= (p.signes[signe] * 0.5);
                 }
                 return {patho:p, score: Math.max(0, score)};
             });
@@ -2012,27 +1999,27 @@
             const validScores = scores.filter(s => s.score >= 0);
             const totalScore = validScores.reduce((sum, s) => sum + s.score, 0);
 
-            // Calcul du pourcentage de probabilité
             state.ranked = scores.map(s => ({
                 ...s,
                 prob: (s.score === -1 || totalScore === 0) ? 0 : ((s.score / totalScore) * 100).toFixed(1)
             })).sort((a,b)=>b.prob - a.prob);
         }
 
-        // 2. INTELLIGENCE DE SÉLECTION (CLINIQUE D'ABORD, EXAMENS À LA FIN)
         function getNextSmartSign(ranked, remainingSigns) {
-            // On se concentre sur le Top 5 des maladies probables
             const topPathos = ranked.slice(0, 5).map(r => r.patho);
             
+            // Liste des signes à "garder pour la fin" (Examens complémentaires)
             const examSigns = new Set();
-            // Mots-clés identifiant les examens complémentaires
-            const examKeywords = ['radio', 'scanner', 'irm', 'ecg', 'biologie', 'analyse', 'echographie', 'ponction'];
+            
+            // Mots-clés pour identifier les examens si le poids ne suffit pas
+            const examKeywords = ['radio', 'scanner', 'irm', 'ecg', 'biologie', 'analyse', 'echographie'];
 
             topPathos.forEach(p => {
                 for (const [s, weight] of Object.entries(p.signes)) {
-                    // Si c'est un mot clé d'examen ou une image avec un poids lourd, on le met de côté
+                    // CRITÈRE : Poids lourd (>=40) ET (a une image OU contient un mot clé d'examen)
+                    // Cela laisse passer les signes cliniques forts (ex: poids 30)
                     const isExamKeyword = examKeywords.some(k => s.includes(k));
-                    const hasImage = GLOBAL_IMG_MAP[s]; 
+                    const hasImage = p.images && p.images[s];
                     
                     if (weight >= 40 && (hasImage || isExamKeyword)) {
                         examSigns.add(s);
@@ -2040,13 +2027,13 @@
                 }
             });
 
-            // Pool Clinique = Tout ce qui n'est pas un examen
+            // On crée un pool "Clinique" (tout sauf les examens complémentaires)
             let clinicalPool = remainingSigns.filter(s => !examSigns.has(s));
 
-            // L'IA force l'utilisation du pool clinique s'il reste des questions dedans
+            // Si on a encore des questions cliniques, on les priorise.
+            // Sinon (si on a tout épuisé), on sort les radios/scanners.
             let pool = clinicalPool.length > 0 ? clinicalPool : remainingSigns;
 
-            // On cherche le signe le plus discriminant parmi les maladies restantes
             const signCounts = {};
             topPathos.forEach(p => {
                 pool.forEach(s => {
@@ -2066,32 +2053,35 @@
                 }
             }
             
-            // Sécurité si l'algo ne trouve rien
             if (!bestSign && pool.length > 0) return pool[Math.floor(Math.random() * pool.length)];
             
             return bestSign;
         }
 
-        // 3. DÉCISION DE FIN (EST-CE QU'ON A TROUVÉ ?)
         function canShowDiagnostic() {
             const qNum = state.asked.length;
             
-            // Anti-Plaisantin : Si le joueur répond toujours la même chose au début, on continue
+            // --- FIX PLAISANTIN DEBUT ---
+            // Si le joueur est en train de tenter l'Easter Egg (moins de 15 questions)
+            // On empêche l'IA de conclure, même si elle est sûre d'elle.
             if (qNum < 15 && qNum > 0) {
+                // Vérifie si on a que des "Vrai" jusqu'à présent
                 const allYes = state.asked.every(s => state.answers[s] === true);
+                // Vérifie si on a que des "Faux" jusqu'à présent
                 const allNo = state.asked.every(s => state.answers[s] === false);
+                
+                // Si on est dans une série parfaite, on force le jeu à continuer
                 if (allYes || allNo) return false; 
             }
+            // --- FIX PLAISANTIN FIN ---
 
-            if(state.ranked.length === 0) return false;
+            if(state.ranked.length===0) return false;
             
             const top1 = state.ranked[0];
             const top2 = state.ranked[1];
             
-            // Si on a déjà trouvé cette maladie, on continue
             if(state.previousDiagnostics.includes(top1.patho.name)) return false;
 
-            // Limite absolue
             if (qNum >= 20) return true;
 
             const score1 = parseFloat(top1.prob);
@@ -2100,35 +2090,37 @@
             const score2 = parseFloat(top2.prob);
             const gap = score1 - score2;
 
-            // Critères de victoire
             if (qNum >= 5 && score1 >= 50 && gap >= 20) return true;
             if (qNum >= 10 && gap >= 10) return true;
-            if (qNum >= 15 && score1 > score2) return true;
+            if (qNum >= 15) return true;
 
             return false;
         }
 
-        // 4. PRÉPARATION DU BOSS FINAL (MODE CONFIRMATION & PIÈGES)
         function prepareConfirmationQuestions(topPatho) {
             const pSigns = Object.keys(topPatho.signes);
             const unaskedCorrect = pSigns.filter(s => !state.asked.includes(s));
 
-            // A. Identifier la "Preuve" (Signe > 40 points)
+            // 1. Identifier l'examen complémentaire (La "Preuve" / Boss Final)
             let proofSign = unaskedCorrect.find(s => topPatho.signes[s] >= 40);
 
-            // B. Signes corrects restants
+            // 2. Préparer le pool de signes CORRECTS restants (sans la preuve)
             let poolCorrect = unaskedCorrect.filter(s => s !== proofSign);
             poolCorrect.sort(() => 0.5 - Math.random());
 
-            // C. Génération des Pièges (Diagnostic Différentiel)
+            // 3. Préparer le pool de signes PIÈGES (Diagnostic Différentiel)
+            // On va chercher les signes des pathologies classées 2, 3, 4 et 5
             let differentialSigns = new Set();
+            // On limite la recherche aux 5 premiers résultats max
             const maxRank = Math.min(state.ranked.length, 5); 
 
             for (let i = 1; i < maxRank; i++) {
                 if (state.ranked[i]) {
                     const competitorPatho = state.ranked[i].patho;
                     Object.keys(competitorPatho.signes).forEach(s => {
-                        // On ajoute le signe s'il n'appartient PAS à la maladie cible
+                        // On ajoute le signe SI :
+                        // - Il n'appartient PAS à la maladie correcte (sinon ce n'est pas un piège)
+                        // - Il n'a pas déjà été posé
                         if (!pSigns.includes(s) && !state.asked.includes(s)) {
                             differentialSigns.add(s);
                         }
@@ -2137,9 +2129,9 @@
             }
 
             let poolTraps = Array.from(differentialSigns);
-            poolTraps.sort(() => 0.5 - Math.random());
+            poolTraps.sort(() => 0.5 - Math.random()); // Mélanger les pièges pertinents
 
-            // Fallback (Si pas assez de pièges, on prend au hasard)
+            // FALLBACK : Si pas assez de pièges pertinents (cas rare), on complète avec du hasard
             if (poolTraps.length < 3) {
                 const randomTraps = state.allSigns.filter(s => 
                     !pSigns.includes(s) && !state.asked.includes(s) && !poolTraps.includes(s)
@@ -2148,44 +2140,76 @@
                 poolTraps = [...poolTraps, ...randomTraps];
             }
 
-            // D. Remplissage de la file d'attente
-            const sequenceLength = Math.floor(Math.random() * 3) + 3; // 3 à 5 questions
+            // 4. Construction de la file d'attente avec RATIO ALÉATOIRE
+            // On choisit une longueur de séquence entre 3 et 5 questions (hors preuve)
+            const sequenceLength = Math.floor(Math.random() * 3) + 3; // 3, 4 ou 5
             let queue = [];
 
+            // Remplissage aléatoire des slots
             for (let i = 0; i < sequenceLength; i++) {
+                // 50% de chance de vouloir un signe correct, 50% un piège
                 const wantCorrect = Math.random() > 0.5;
-                if (wantCorrect && poolCorrect.length > 0) queue.push(poolCorrect.shift());
-                else if (poolTraps.length > 0) queue.push(poolTraps.shift());
-                else if (poolCorrect.length > 0) queue.push(poolCorrect.shift());
-                else break;
+
+                if (wantCorrect && poolCorrect.length > 0) {
+                    queue.push(poolCorrect.shift());
+                } else if (poolTraps.length > 0) {
+                    queue.push(poolTraps.shift());
+                } else if (poolCorrect.length > 0) {
+                    // Si on voulait un piège mais qu'il n'y en a plus, on met un correct
+                    queue.push(poolCorrect.shift());
+                } else {
+                    // Plus de questions dispo
+                    break;
+                }
             }
 
-            // E. Sécurité : Assurer au moins 1 Vrai et 1 Faux si possible
+            // 5. Sécurité Anti-Pattern
+            // On s'assure qu'il y a au moins 1 vrai et 1 faux dans le lot (si possible)
+            // pour ne pas avoir une série de 5 "NON" ou 5 "OUI" trop évidente
             const hasCorrect = queue.some(s => pSigns.includes(s));
             const hasTrap = queue.some(s => !pSigns.includes(s));
-            if (!hasCorrect && poolCorrect.length > 0 && queue.length > 0) queue[0] = poolCorrect.shift();
-            if (!hasTrap && poolTraps.length > 0 && queue.length > 0) queue[queue.length - 1] = poolTraps.shift();
 
+            if (!hasCorrect && poolCorrect.length > 0 && queue.length > 0) {
+                queue[0] = poolCorrect.shift(); // On force un vrai
+            }
+            if (!hasTrap && poolTraps.length > 0 && queue.length > 0) {
+                queue[queue.length - 1] = poolTraps.shift(); // On force un faux
+            }
+
+            // 6. Mélanger la file d'attente finale
             queue.sort(() => 0.5 - Math.random());
 
-            // F. La Preuve à la fin
-            if (proofSign) queue.push(proofSign);
-            else if (poolCorrect.length > 0) queue.push(poolCorrect.shift());
+            // 7. Ajouter la PREUVE à la toute fin
+            if (proofSign) {
+                queue.push(proofSign);
+            } else if (poolCorrect.length > 0) {
+                // Si pas de preuve absolue, on met un dernier signe correct pour valider
+                queue.push(poolCorrect.shift());
+            }
 
             return queue;
         }
 
-        // 5. EASTER EGGS (LE PLAISANTIN)
+        // --- FONCTIONS "PLAISANTIN" (Easter Eggs) ---
         function checkPlaisantin() {
+            // On ne vérifie qu'exactement à la 15ème question
             if (state.asked.length !== 15) return false;
-            
+
+            // Vérifier si toutes les réponses sont NON
             const allNo = state.asked.every(sign => state.answers[sign] === false);
-            if (allNo) { renderPlaisantinEnd("healthy"); return true; }
+            if (allNo) {
+                renderPlaisantinEnd("healthy");
+                return true; // On stoppe le jeu
+            }
 
+            // Vérifier si toutes les réponses sont OUI
             const allYes = state.asked.every(sign => state.answers[sign] === true);
-            if (allYes) { renderPlaisantinEnd("hypochondriac"); return true; }
+            if (allYes) {
+                renderPlaisantinEnd("hypochondriac");
+                return true; // On stoppe le jeu
+            }
 
-            return false;
+            return false; // On continue le jeu normalement
         }
 
         function renderPlaisantinEnd(type) {
@@ -2193,123 +2217,46 @@
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML = '';
             const card = document.createElement('div'); card.className = 'card center';
+            
+            // On joue un petit son si possible
             playSound(type === "healthy" ? 'success' : 'error');
 
             if (type === "healthy") {
-                card.innerHTML = `<div class="icon-lg color-success"><i class="ph-duotone ph-person-simple-walk"></i></div>
+                // Cas : 15 NON d'affilée
+                card.innerHTML = `
+                    <div class="icon-lg color-success"><i class="ph-duotone ph-person-simple-walk"></i></div>
                     <h2 style="color:var(--success)">Diagnostic : Touriste !</h2>
-                    <p style="margin-top:10px">Ce patient n'a RIEN. Après 15 "Non", il est clair qu'il s'est perdu.</p>`;
+                    <p style="margin-top:15px; font-weight:bold;">Ce patient n'a RIEN.</p>
+                    <p class="small" style="margin-top:10px; line-height:1.6;">
+                        Après 15 questions négatives, il semblerait que ce patient se soit juste perdu dans l'hôpital en cherchant la machine à café.<br>
+                        Rentrez chez vous, vous êtes en parfaite santé !
+                    </p>
+                `;
             } else {
-                card.innerHTML = `<div class="icon-lg color-ruby"><i class="ph-duotone ph-mask-happy"></i></div>
+                // Cas : 15 OUI d'affilée
+                card.innerHTML = `
+                    <div class="icon-lg color-ruby"><i class="ph-duotone ph-mask-happy"></i></div>
                     <h2 style="color:var(--ruby)">Diagnostic : Malade Imaginaire</h2>
-                    <p style="margin-top:10px">Ce patient a TOUT. Statistiquement impossible !</p>`;
-            }
-            const btn = document.createElement('button'); btn.className = 'btn'; btn.innerHTML = 'Recommencer';
-            btn.style.marginTop = '20px';
-            btn.onclick = () => { state.dailyTarget = null; renderDemographics(); };
-            card.appendChild(btn); app.appendChild(card);
-        }
-
-        // 6. ORCHESTRATEUR PRINCIPAL (BOUCLE DE JEU)
-        function askNextQuestion() {
-            // A. Vérif Plaisantin
-            if (checkPlaisantin()) return;
-
-            // B. Limite max
-            if (state.asked.length >= 20) { showDiagnostic(); return; }
-
-            // C. Logique "Refinements" (Entonnoir de précision)
-            if(state.asked.length > 0) {
-                const lastSign = state.asked[state.asked.length - 1];
-                const lastAnswer = state.answers[lastSign];
-                
-                if(lastAnswer === true) {
-                      for (const [parent, children] of Object.entries(REFINEMENTS)) {
-                        if (children.includes(lastSign)) {
-                            // Si on trouve un signe précis, on nettoie la file des autres précisions sœurs inutiles
-                            const siblings = children.filter(c => c !== lastSign);
-                            state.priorityQueue = state.priorityQueue.filter(q => !siblings.includes(q));
-                        }
-                    }
-                }
+                    <p style="margin-top:15px; font-weight:bold;">Syndrome de l'Hypocondriaque Massif</p>
+                    <p class="small" style="margin-top:10px; line-height:1.6;">
+                        Le patient a TOUS les symptômes. Statistiquement, il devrait avoir explosé il y a 10 minutes.<br>
+                        Appelez Dr House, ou un psychiatre, c'est au choix.
+                    </p>
+                `;
             }
 
-            // D. Traiter la file prioritaire
-            if(state.priorityQueue.length > 0) {
-                const nextPriority = state.priorityQueue.shift();
-                if(!state.asked.includes(nextPriority)) {
-                    state.currentSign = nextPriority; state.asked.push(nextPriority); renderCurrentQuestion(); return;
-                } else { askNextQuestion(); return; }
-            }
-
-            // E. GESTION MODE CONFIRMATION
-            if (state.confirmationMode) {
-                const lastSign = state.asked[state.asked.length - 1];
-                const isSignPartOfPatho = Object.keys(state.confirmedPatho.signes).includes(lastSign);
-                const userSaidYes = state.answers[lastSign] === true;
-
-                // L'utilisateur valide un piège -> On sort du mode confirmation
-                if (!isSignPartOfPatho && userSaidYes) {
-                    state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
-                    showAlert("Aïe ! Ce symptôme ne collait pas...", "error");
-                    askNextQuestion(); return;
-                }
-                // L'utilisateur nie un signe clé -> On sort du mode confirmation
-                if (isSignPartOfPatho && !userSaidYes) {
-                    state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
-                    showAlert("Ah, fausse piste. Je continue à chercher...", "info");
-                    askNextQuestion(); return;
-                }
-
-                if (state.confirmationQueue.length > 0) {
-                    const nextC = state.confirmationQueue.shift();
-                    state.currentSign = nextC; state.asked.push(nextC); renderCurrentQuestion(); return;
-                } else { 
-                    showDiagnostic(); return; 
-                }
-            }
-
-            // F. BOUCLE STANDARD
-            prepareSigns();
-            const remaining = state.allSigns.filter(s => !state.asked.includes(s));
-            if(remaining.length === 0) { showDiagnostic(); return; }
-
-            // Au tout début, si pas de symptôme, on peut poser des questions générales (Refinements parents) ou random
-            const hasSymptom = Object.keys(state.answers).some(key => state.answers[key] === true);
-            if (!hasSymptom) {
-                const generalSigns = remaining.filter(s => REFINEMENTS.hasOwnProperty(s));
-                const pool = generalSigns.length > 0 ? generalSigns : remaining;
-                const randomSign = pool[Math.floor(Math.random() * pool.length)];
-                state.currentSign = randomSign; state.asked.push(randomSign); renderCurrentQuestion(); return;
-            }
-
-            rankPathologies(); 
+            const btn = document.createElement('button');
+            btn.className = 'btn'; 
+            btn.innerHTML = '<i class="ph-duotone ph-arrow-counter-clockwise"></i> Recommencer sérieusement';
+            btn.style.marginTop = "20px";
+            btn.onclick = () => { 
+                state.dailyTarget = null; 
+                renderDemographics(); 
+            };
             
-            // G. Tentative de passage en mode Confirmation
-            if(canShowDiagnostic()){ 
-                const topPatho = state.ranked[0].patho;
-                const confirmQuestions = prepareConfirmationQuestions(topPatho);
-                
-                if (confirmQuestions.length > 0) {
-                    state.confirmationMode = true; 
-                    state.confirmedPatho = topPatho; 
-                    state.confirmationQueue = confirmQuestions;
-                    
-                    const first = state.confirmationQueue.shift();
-                    state.currentSign = first; state.asked.push(first); renderCurrentQuestion(); return;
-                } else { 
-                    showDiagnostic(); return; 
-                }
-            }
-            
-            // H. Sélection Intelligente
-            const signe = getNextSmartSign(state.ranked, remaining);
-            state.currentSign = signe; state.asked.push(signe); renderCurrentQuestion();
+            card.appendChild(btn);
+            app.appendChild(card);
         }
-        
-        // =================================================================
-        // ============== FIN DU NOUVEAU MOTEUR IA INTELLIGENT ==============
-        // =================================================================
 
         function renderCurrentQuestion() {
             setDocTitle(`Question ${state.asked.length}`);
@@ -2373,11 +2320,101 @@
                 };
                 navGroup.appendChild(btnBack);
             }
-            const btnAb = document.createElement('button'); btnAb.className='link'; btnAb.innerHTML='Abandonner'; btnAb.onclick=renderAbandonMenu;
-            navGroup.appendChild(btnAb); card.appendChild(navGroup);
-            app.appendChild(card);
+            const btnAb = document.createElement('button'); 
+btnAb.className='link'; 
+btnAb.innerHTML='Abandonner'; 
+btnAb.onclick = () => {
+    if(state.isGuest) {
+        showAlert("Vous ne pouvez pas abandonner pour accéder aux fonctionnalités réservées.", "error");
+        return;
+    }
+    renderAbandonMenu();
+};
+navGroup.appendChild(btnAb); 
+card.appendChild(navGroup);
+app.appendChild(card);
         }
 
+        function askNextQuestion() {
+            // --- VERIFICATION PLAISANTIN ---
+            if (checkPlaisantin()) return; 
+            // -------------------------------
+
+            if (state.asked.length >= 20) { showDiagnostic(); return; }
+
+            if(state.asked.length > 0) {
+                const lastSign = state.asked[state.asked.length - 1];
+                const lastAnswer = state.answers[lastSign];
+                
+                if(lastAnswer === true) {
+                      for (const [parent, children] of Object.entries(REFINEMENTS)) {
+                        if (children.includes(lastSign)) {
+                            const siblings = children.filter(c => c !== lastSign);
+                            state.priorityQueue = state.priorityQueue.filter(q => !siblings.includes(q));
+                        }
+                    }
+                }
+            }
+
+            if(state.priorityQueue.length > 0) {
+                const nextPriority = state.priorityQueue.shift();
+                if(!state.asked.includes(nextPriority)) {
+                    state.currentSign = nextPriority; state.asked.push(nextPriority); renderCurrentQuestion(); return;
+                } else { askNextQuestion(); return; }
+            }
+
+            if (state.confirmationMode) {
+                const lastSign = state.asked[state.asked.length - 1];
+                
+                const isSignPartOfPatho = Object.keys(state.confirmedPatho.signes).includes(lastSign);
+                const userSaidYes = state.answers[lastSign] === true;
+
+                if (!isSignPartOfPatho && userSaidYes) {
+                    state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
+                    showAlert("Aïe ! Ce symptôme ne collait pas...", "error");
+                    askNextQuestion(); return;
+                }
+
+                if (isSignPartOfPatho && !userSaidYes) {
+                    state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
+                    showAlert("Ah, fausse piste. Je continue à chercher...", "info");
+                    askNextQuestion(); return;
+                }
+
+                if (state.confirmationQueue.length > 0) {
+                    const nextC = state.confirmationQueue.shift();
+                    state.currentSign = nextC; state.asked.push(nextC); renderCurrentQuestion(); return;
+                } else { 
+                    showDiagnostic(); return; 
+                }
+            }
+
+            prepareSigns();
+            const remaining = state.allSigns.filter(s => !state.asked.includes(s));
+            if(remaining.length === 0) { showDiagnostic(); return; }
+
+            const hasSymptom = Object.keys(state.answers).some(key => state.answers[key] === true);
+            if (!hasSymptom) {
+                const generalSigns = remaining.filter(s => REFINEMENTS.hasOwnProperty(s));
+                const pool = generalSigns.length > 0 ? generalSigns : remaining;
+                const randomSign = pool[Math.floor(Math.random() * pool.length)];
+                state.currentSign = randomSign; state.asked.push(randomSign); renderCurrentQuestion(); return;
+            }
+
+            rankPathologies(); 
+            if(canShowDiagnostic()){ 
+                const topPatho = state.ranked[0].patho;
+                const confirmQuestions = prepareConfirmationQuestions(topPatho);
+                if (confirmQuestions.length > 0) {
+                    state.confirmationMode = true; state.confirmedPatho = topPatho; state.confirmationQueue = confirmQuestions;
+                    const first = state.confirmationQueue.shift();
+                    state.currentSign = first; state.asked.push(first); renderCurrentQuestion(); return;
+                } else { showDiagnostic(); return; }
+            }
+            
+            const signe = getNextSmartSign(state.ranked, remaining);
+            state.currentSign = signe; state.asked.push(signe); renderCurrentQuestion();
+        }
 
         function showDiagnostic() {
             setDocTitle("Analyse...");
@@ -2398,80 +2435,94 @@
                 const card = document.createElement('div'); card.className='card center';
                 const title = document.createElement('h2'); title.innerHTML='<i class="ph-duotone ph-lightbulb"></i> Diagnostic Proposé'; card.appendChild(title);
                 
+                let pdfButton = top.patho.pdf && top.patho.pdf !== '#' ? `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.patho.pdf}" target="_blank"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF</a>` : `<span class="small" style="opacity:0.5"><i class="ph-duotone ph-file-x"></i> Pas de fiche PDF</span>`;
+                
                 const diagDiv = document.createElement('div'); diagDiv.className='diagnostic-result';
                 diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div>
                 <div style="margin: 15px 0; max-width: 100%;">
                 </div>
-                <div class="patho-desc" style="margin-top:8px">${top.patho.short}</div>`;
+                <div class="patho-desc" style="margin-top:8px">${top.patho.short}</div><br>${pdfButton}`;
                 card.appendChild(diagDiv);
                 
-                // GESTION PDF
-                if(top.pdf && top.pdf !== '#') {
-                    const pdfBtn = document.createElement('a');
-                    if (state.isTrial) {
-                        // BLOQUÉ EN MODE ESSAI
-                        pdfBtn.className = 'btn';
-                        pdfBtn.style.background = 'var(--text-muted)';
-                        pdfBtn.style.marginTop = '20px'; 
-                        pdfBtn.style.display = 'block'; 
-                        pdfBtn.style.textAlign = 'center';
-                        pdfBtn.style.cursor = 'pointer';
-                        pdfBtn.innerHTML = '<i class="ph-duotone ph-lock-key"></i> PDF (Créer un compte pour voir)';
-                        pdfBtn.onclick = (e) => { e.preventDefault(); renderRegisterWall(); };
-                    } else {
-                        // NORMAL
-                        pdfBtn.href = top.pdf; 
-                        pdfBtn.target = "_blank"; 
-                        pdfBtn.className = 'btn'; 
-                        pdfBtn.innerHTML = '<i class="ph-duotone ph-file-pdf"></i> Voir la fiche PDF complète'; 
-                        pdfBtn.style.marginTop = '20px'; 
-                        pdfBtn.style.display = 'block'; 
-                        pdfBtn.style.textAlign = 'center';
-                        pdfBtn.onclick = trackPdf;
-                    }
-                    card.appendChild(pdfBtn);
-                } else {
-                    const noPdf = document.createElement('div');
-                    noPdf.className = "small"; noPdf.style.marginTop="10px"; noPdf.innerHTML = '<i class="ph-duotone ph-file-x"></i> Pas de fiche PDF';
-                    card.appendChild(noPdf);
-                }
-
-                // GESTION DES BOUTONS DE FIN (MODIFIÉE)
-                if (state.isTrial) {
-                    // --- MODE ESSAI : ON BLOQUE TOUT ICI ---
-                    const btnStop = document.createElement('button');
-                    btnStop.className = 'btn';
-                    // Style attractif
-                    btnStop.style.background = 'linear-gradient(135deg, #00b09b 0%, #96c93d 100%)';
-                    btnStop.style.marginTop = '20px';
-                    btnStop.style.padding = '15px';
-                    btnStop.innerHTML = 'Voir mon résultat détaillé et créer un compte <i class="ph-bold ph-arrow-right"></i>';
-                    
-                    // On envoie directement vers le mur d'inscription
-                    btnStop.onclick = () => {
-                        renderRegisterWall(); 
-                        setTimeout(() => showAlert("Créez un compte pour sauvegarder ce résultat.", "info"), 500);
-                    };
-
-                    card.appendChild(btnStop);
-                } else {
-                    // --- MODE NORMAL ---
-                    const btnGroup = document.createElement('div'); btnGroup.className='button-group';
-                    
-                    const btnReplay = document.createElement('button'); btnReplay.className='btn btn-success'; btnReplay.innerHTML = '<i class="ph-duotone ph-arrow-clockwise"></i> Rejouer tout de suite'; 
-                    btnReplay.onclick = () => {
-                         state.dailyTarget = null; 
-                         renderDemographics();
-                    };
-
-                    const btnHome = document.createElement('button'); btnHome.className='link'; btnHome.innerHTML = '<i class="ph-duotone ph-house"></i> Accueil'; btnHome.onclick = renderHome;
-                    
-                    btnGroup.appendChild(btnReplay); 
-                    btnGroup.appendChild(btnHome); 
-                    card.appendChild(btnGroup); 
-                }
+                const btnGroup = document.createElement('div'); btnGroup.className='button-group';
                 
-                app.appendChild(card);
+                const btnTrue = document.createElement('button'); btnTrue.className='btn btn-success'; btnTrue.innerHTML='<i class="ph-bold ph-check"></i> Correct';
+                btnTrue.onclick = async () => { 
+                    triggerConfetti(); playSound('success');
+                    state.progression.correct++; state.progression.streak = (state.progression.streak || 0) + 1;
+                    
+                    if(state.dailyTarget && state.dailyTarget.name === top.patho.name) {
+                        const today = new Date().toDateString();
+                        if(state.progression.lastDaily !== today) {
+                            state.progression.lastDaily = today;
+                            state.progression.dailyStreak = (state.progression.dailyStreak || 0) + 1;
+                            showAlert(`<i class="ph-duotone ph-party-popper"></i> Défi du jour réussi ! Série : ${state.progression.dailyStreak}`, "success");
+                        }
+                    }
+
+                    if(!state.progression.mastery) state.progression.mastery = {};
+                    const pName = top.patho.name;
+                    let m = state.progression.mastery[pName];
+                    if(!m) m = { success: 0, failures: 0, missedSigns: {} };
+                    if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
+                    
+                    m.success++;
+                    
+                    if(state.isChrono && state.startTime) {
+                        const duration = (Date.now() - state.startTime) / 1000;
+                        if(duration < 30) {
+                            state.progression.speedWins = (state.progression.speedWins || 0) + 1;
+                        }
+                        if(!state.progression.bestTimes) state.progression.bestTimes = {};
+                        if(!state.progression.bestTimes[pName] || duration < state.progression.bestTimes[pName]) {
+                            state.progression.bestTimes[pName] = duration;
+                            showAlert(`<i class="ph-duotone ph-lightning"></i> Nouveau Record : ${duration.toFixed(1)}s`, 'info');
+                        }
+                    }
+
+                    Object.keys(top.patho.signes).forEach(s => {
+                        if(state.answers[s] === false || state.answers[s] === null) { 
+                            if(!m.missedSigns[s]) m.missedSigns[s] = 0;
+                            m.missedSigns[s]++;
+                        }
+                    });
+                    
+                    Object.keys(state.answers).forEach(s => {
+                        if (state.answers[s] === true && !top.patho.signes[s]) {
+                            if(!m.missedSigns[s]) m.missedSigns[s] = 0;
+                            m.missedSigns[s]++;
+                        }
+                    });
+
+                    state.progression.mastery[pName] = m;
+                    
+                    updateHeader(); await saveProgression(); 
+                    showAlert('<i class="ph-duotone ph-check-circle"></i> Diagnostic validé !','success'); showDiagnosticDetails({patho: top.patho});
+                };
+                
+                const btnFalse = document.createElement('button'); btnFalse.className='btn btn-error'; btnFalse.innerHTML='<i class="ph-bold ph-x"></i> Incorrect';
+                btnFalse.onclick = async () => { 
+                    playSound('error');
+                    state.progression.incorrect++; state.progression.streak = 0;
+                    
+                    if(!state.progression.mastery) state.progression.mastery = {};
+                    const pName = top.patho.name;
+                    let m = state.progression.mastery[pName];
+                    if(!m) m = { success: 0, failures: 0, missedSigns: {} };
+                    if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
+                    m.failures++;
+                    state.progression.mastery[pName] = m;
+
+                    if(!state.progression.errorLog) state.progression.errorLog = {};
+                    state.progression.errorLog[pName] = { date: Date.now(), count: (state.progression.errorLog[pName]?.count || 0) + 1 };
+
+                    updateHeader(); await saveProgression(); 
+                    showAlert('<i class="ph-duotone ph-x-circle"></i> Aïe... Continuons','error'); 
+                    state.confirmationMode = false; state.diagnosticShown=false; 
+                    setTimeout(()=>askNextQuestion(), 800);
+                };
+                
+                btnGroup.appendChild(btnTrue); btnGroup.appendChild(btnFalse); card.appendChild(btnGroup); app.appendChild(card);
             }, 1500);
         }
 
@@ -2595,6 +2646,10 @@
         }
 
         function renderGlossary() {
+            if(state.isGuest) {
+        showAlert("Le glossaire n'est pas disponible en mode invité.", "error");
+        return;
+    }
             setDocTitle("Glossaire");
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';

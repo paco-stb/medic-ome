@@ -2658,64 +2658,62 @@ function showDayDetails(dateStr, data) {
          }
          
          function rankPathologies() {
-    // 1. Calcul du score de base pour chaque pathologie
     const scores = PATHOLOGIES.map(p => {
-        // Exclure si déjà trouvé
-        if (state.previousDiagnostics.includes(p.name)) return { patho: p, score: -1 };
+        // Exclure si déjà proposé dans cette partie
+        if (state.previousDiagnostics.includes(p.name)) return { patho: p, score: -1000 };
 
-        let score = 100; // On part de 100 points de base
-        let potential = 0; // Score potentiel maximum restant
+        let score = 100;
 
         // A. ANALYSE DES FACTEURS DE RISQUE (Terrain)
+        // Multiplicateur x3 pour que le terrain (ex: voyage en zone endémique) pèse lourd
         for (const facteur in p.facteurs) {
             if (state.demo[facteur] === true) {
-                score += p.facteurs[facteur] * 2; // Bonus terrain
+                score += p.facteurs[facteur] * 3; 
             }
         }
 
         // B. ANALYSE DES SIGNES (Le coeur du moteur)
         for (const signe in p.signes) {
-            const importance = p.signes[signe]; // 10 à 50
+            const importance = p.signes[signe]; 
             const answer = state.answers[signe];
 
             if (answer === true) {
-                // L'utilisateur a le symptôme : GROS BONUS
-                score += importance * 3; 
+                // L'utilisateur a le symptôme : MULTIPLICATEUR FORT
+                score += importance * 5; 
                 
-                // Si c'est un signe "Boost" (Pathognomonique), jackpot
-                if (p.boost && p.boost.includes(signe)) score += 200;
+                // Si c'est un signe "Boost" (clé du diagnostic), on propulse le score
+                if (p.boost && p.boost.includes(signe)) score += 500;
 
             } else if (answer === false) {
                 // L'utilisateur N'A PAS le symptôme
                 
-                // Si c'était un signe "Veto" (Obligatoire) : PÉNALITÉ MASSIVE
+                // Si c'était un signe "Veto" (ex: pas de fièvre dans le botulisme)
                 if (p.veto && p.veto.includes(signe)) {
-                    score -= 500; 
+                    score -= 1000; 
                 } else {
-                    // Sinon pénalité proportionnelle à l'importance
-                    // Si le signe était très important (ex: 50), on perd beaucoup
-                    score -= importance;
+                    // Sanction plus forte pour les signes importants non présents
+                    score -= importance * 2;
                 }
-            } else {
-                // Pas encore posé : c'est du potentiel
-                potential += importance;
             }
         }
 
-        return { patho: p, score: score, potential: potential };
+        return { patho: p, score: score };
     });
 
-    // 2. Normalisation et Tri
-    // On ne garde que ceux qui ont un score positif
-    const viable = scores.filter(s => s.score > -200); // Seuil de tolérance
+    // 2. Filtrage des résultats impossibles
+    const viable = scores.filter(s => s.score > -500);
     
-    // On trie par score décroissant
+    // 3. Tri par score décroissant
     state.ranked = viable.sort((a, b) => b.score - a.score);
 
-    // Calcul proba cosmétique (pour la barre de progression)
-    const totalScore = Math.max(1, state.ranked.reduce((sum, s) => sum + (s.score > 0 ? s.score : 0), 0));
+    // 4. Calcul de la probabilité (Barre de progression)
+    // On utilise Math.max(0, s.score) pour éviter les divisions par des nombres négatifs
+    const totalScore = viable.reduce((sum, s) => sum + Math.max(0, s.score), 0);
+    
     state.ranked.forEach(item => {
-        item.prob = item.score > 0 ? ((item.score / totalScore) * 100).toFixed(1) : 0;
+        item.prob = (totalScore > 0 && item.score > 0) 
+            ? ((item.score / totalScore) * 100).toFixed(1) 
+            : 0;
     });
 }
          

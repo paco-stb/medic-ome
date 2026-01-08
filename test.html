@@ -2938,85 +2938,114 @@ function showDayDetails(dateStr, data) {
          }
          
          function renderCurrentQuestion() {
-             setDocTitle(`Question ${state.asked.length}`);
-             window.scrollTo(0,0);
-             const app = q('#app'); app.innerHTML='';
-             const card = document.createElement('div'); card.className='card center';
-             const signe = state.currentSign;
-             const questionTitle = state.confirmationMode ? `<span style="color:var(--gold)"><i class="ph-duotone ph-brain"></i> Je pense avoir une piste...</span>` : `QUESTION ${state.asked.length}`;
-             
-             let prob = 0;
-             if(state.ranked.length > 0) prob = parseFloat(state.ranked[0].prob);
-         
-             // --- IMAGE DISPLAY LOGIC ---
-             const imgUrl = GLOBAL_IMG_MAP[signe];
-             const imgHTML = imgUrl ? `<img src="${imgUrl}" style="max-width:100%; height:auto; max-height:300px; border-radius:8px; margin-bottom:15px; border:1px solid var(--glass-border); box-shadow: 0 4px 12px rgba(0,0,0,0.3);">` : '';
-         
-             card.innerHTML = `
-                 ${state.isChrono ? '<div style="font-size:12px; color:var(--accent); margin-bottom:5px;"><i class="ph-duotone ph-lightning"></i> Chrono Actif</div>' : ''}
-                 <div class="ai-progress-container">
-                     <div class="ai-progress-bar" style="width:${prob}%"></div>
-                 </div>
-                 <div class="ai-progress-label">Confiance IA : ${prob}%</div>
-                 
-                 <div class="small" style="margin-bottom:12px; color:var(--accent)">${questionTitle}</div>
-                 
-                 ${imgHTML}
-         
-                 <div class="question-text">Le patient présente-t-il :<br><strong style="font-size:1.2em; color:var(--text-main);">${formatSigneName(signe)}</strong> ?</div>`;
-             
-             const btnGroup = document.createElement('div'); btnGroup.className='button-group';
-             
-             const mkBtn = (txt, cls, val) => {
-                 const b = document.createElement('button'); b.className=cls; b.innerHTML=txt;
-                 b.onclick=()=>{ 
-                     state.history.push(JSON.stringify({
-                         answers: state.answers, asked: state.asked, currentSign: state.currentSign,
-                         confirmationMode: state.confirmationMode, confirmationQueue: state.confirmationQueue,
-                         confirmedPatho: state.confirmedPatho, priorityQueue: state.priorityQueue,
-                         isChrono: state.isChrono, startTime: state.startTime, dailyTarget: state.dailyTarget
-                     }));
-                     
-                     state.answers[signe]=val; 
+    setDocTitle(`Question ${state.asked.length}`);
+    window.scrollTo(0,0);
+    const app = q('#app'); 
+    app.innerHTML='';
+    const card = document.createElement('div'); 
+    card.className='card center';
+    const signe = state.currentSign;
+    const questionTitle = state.confirmationMode ? `<span style="color:var(--gold)"><i class="ph-duotone ph-brain"></i> Je pense avoir une piste...</span>` : `QUESTION ${state.asked.length}`;
+    
+    let prob = 0;
+    if(state.ranked.length > 0) prob = parseFloat(state.ranked[0].prob);
 
-                     // --- AJOUT : ACTIVATION DES PRÉCISIONS ---
-                     if(val === true && REFINEMENTS[signe]) {
-                         state.priorityQueue.push(...REFINEMENTS[signe]);
-                     }
+    // ✅ CORRECTION : Affichage des images uniquement dans les questions
+    const imgUrl = GLOBAL_IMG_MAP[signe];
+    const imgHTML = imgUrl ? `
+        <div style="width:100%; max-width:500px; margin:0 auto 20px auto;">
+            <img src="${imgUrl}" 
+                 alt="Image clinique - ${formatSigneName(signe)}" 
+                 style="width:100%; height:auto; max-height:350px; object-fit:contain; border-radius:12px; border:2px solid var(--glass-border); box-shadow: 0 8px 20px rgba(0,0,0,0.4);"
+                 onerror="this.parentElement.style.display='none'; console.warn('❌ Image introuvable:', '${imgUrl}')">
+            <div style="text-align:center; font-size:11px; color:var(--text-muted); margin-top:8px; opacity:0.7;">
+                <i class="ph-duotone ph-image"></i> Imagerie médicale
+            </div>
+        </div>
+    ` : '';
 
-                     askNextQuestion(); 
-                 };
-                 btnGroup.appendChild(b);
-             };
-             mkBtn('<i class="ph-bold ph-check"></i> OUI', 'btn btn-success', true);
-             mkBtn('<i class="ph-bold ph-x"></i> NON', 'btn btn-error', false);
-             mkBtn('Je ne sais pas', 'link', null);
-             card.appendChild(btnGroup);
-         
-             const navGroup = document.createElement('div'); navGroup.style.display = 'flex'; navGroup.style.gap = '15px'; navGroup.style.marginTop = '20px';
-             if(state.history.length > 0) {
-                 const btnBack = document.createElement('button'); btnBack.className='btn-back'; btnBack.innerHTML='<i class="ph-duotone ph-caret-left"></i> Retour';
-                 btnBack.onclick = () => {
-                     const prevState = JSON.parse(state.history.pop());
-                     Object.assign(state, prevState);
-                     renderCurrentQuestion();
-                 };
-                 navGroup.appendChild(btnBack);
-             }
-             const btnAb = document.createElement('button'); 
-         btnAb.className='link'; 
-         btnAb.innerHTML='Abandonner'; 
-         btnAb.onclick = () => {
-         if(state.isGuest) {
-         showAlert("Vous ne pouvez pas abandonner pour accéder aux fonctionnalités réservées.", "error");
-         return;
-         }
-         renderAbandonMenu();
-         };
-         navGroup.appendChild(btnAb); 
-         card.appendChild(navGroup);
-         app.appendChild(card);
-         }
+    card.innerHTML = `
+        ${state.isChrono ? '<div style="font-size:12px; color:var(--accent); margin-bottom:5px;"><i class="ph-duotone ph-lightning"></i> Chrono Actif</div>' : ''}
+        <div class="ai-progress-container">
+            <div class="ai-progress-bar" style="width:${prob}%"></div>
+        </div>
+        <div class="ai-progress-label">Confiance IA : ${prob}%</div>
+        
+        <div class="small" style="margin-bottom:12px; color:var(--accent)">${questionTitle}</div>
+        
+        ${imgHTML}
+
+        <div class="question-text">Le patient présente-t-il :<br><strong style="font-size:1.2em; color:var(--text-main);">${formatSigneName(signe)}</strong> ?</div>`;
+    
+    const btnGroup = document.createElement('div'); 
+    btnGroup.className='button-group';
+    
+    const mkBtn = (txt, cls, val) => {
+        const b = document.createElement('button'); 
+        b.className=cls; 
+        b.innerHTML=txt;
+        b.onclick=()=>{ 
+            state.history.push(JSON.stringify({
+                answers: state.answers, 
+                asked: state.asked, 
+                currentSign: state.currentSign,
+                confirmationMode: state.confirmationMode, 
+                confirmationQueue: state.confirmationQueue,
+                confirmedPatho: state.confirmedPatho, 
+                priorityQueue: state.priorityQueue,
+                isChrono: state.isChrono, 
+                startTime: state.startTime, 
+                dailyTarget: state.dailyTarget
+            }));
+            
+            state.answers[signe]=val; 
+
+            // --- AJOUT : ACTIVATION DES PRÉCISIONS ---
+            if(val === true && REFINEMENTS[signe]) {
+                state.priorityQueue.push(...REFINEMENTS[signe]);
+            }
+
+            askNextQuestion(); 
+        };
+        btnGroup.appendChild(b);
+    };
+    
+    mkBtn('<i class="ph-bold ph-check"></i> OUI', 'btn btn-success', true);
+    mkBtn('<i class="ph-bold ph-x"></i> NON', 'btn btn-error', false);
+    mkBtn('Je ne sais pas', 'link', null);
+    card.appendChild(btnGroup);
+
+    const navGroup = document.createElement('div'); 
+    navGroup.style.display = 'flex'; 
+    navGroup.style.gap = '15px'; 
+    navGroup.style.marginTop = '20px';
+    
+    if(state.history.length > 0) {
+        const btnBack = document.createElement('button'); 
+        btnBack.className='btn-back'; 
+        btnBack.innerHTML='<i class="ph-duotone ph-caret-left"></i> Retour';
+        btnBack.onclick = () => {
+            const prevState = JSON.parse(state.history.pop());
+            Object.assign(state, prevState);
+            renderCurrentQuestion();
+        };
+        navGroup.appendChild(btnBack);
+    }
+    
+    const btnAb = document.createElement('button'); 
+    btnAb.className='link'; 
+    btnAb.innerHTML='Abandonner'; 
+    btnAb.onclick = () => {
+        if(state.isGuest) {
+            showAlert("Vous ne pouvez pas abandonner pour accéder aux fonctionnalités réservées.", "error");
+            return;
+        }
+        renderAbandonMenu();
+    };
+    navGroup.appendChild(btnAb); 
+    card.appendChild(navGroup);
+    app.appendChild(card);
+}
 
 function startConfirmationPhase(targetPatho) {
     state.confirmationMode = true;

@@ -561,6 +561,48 @@
             isChrono: false, startTime: null, dailyTarget: null
         };
 
+// === GUEST MODE ===
+// Vérifie si un invité peut jouer (1 fois par session, reset toutes les 2h)
+function checkGuestAvailability() {
+    const guestData = JSON.parse(sessionStorage.getItem('guestMode')) || { canPlay: true, timestamp: 0 };
+    const now = Date.now();
+
+    // Reset après 2 heures
+    if (now - guestData.timestamp > 2 * 60 * 60 * 1000) {
+        guestData.canPlay = true;
+        guestData.timestamp = now;
+    }
+
+    return guestData;
+}
+
+// Lancer le mode invité si disponible
+function startGuestMode() {
+    const guestData = checkGuestAvailability();
+    if (!guestData.canPlay) {
+        showAlert("Le mode invité est temporairement indisponible. Veuillez créer un compte.", "error");
+        return false;
+    }
+
+    // CORRECTION ICI : On utilise state.isGuest
+    state.isGuest = true;
+    state.pseudo = "Invité";
+    
+    // On initialise la progression vide si elle n'existe pas
+    if (!state.progression) {
+        state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0 };
+    }
+
+    guestData.canPlay = false;
+    guestData.timestamp = Date.now();
+    sessionStorage.setItem('guestMode', JSON.stringify(guestData));
+
+    updateHeader(); // Important pour afficher le pseudo "Invité"
+    renderHome();   // On envoie vers l'accueil au lieu de lancer direct le diag
+    return true;
+}
+
+
         // --- THEME LOGIC ---
         function toggleTheme() {
             const body = document.body;
@@ -599,6 +641,32 @@
             const index = Math.abs(hash) % PATHOLOGIES.length;
             return PATHOLOGIES[index];
         }
+
+// --- FONCTION LIMITE INVITÉ ---
+function checkGuestLimit() {
+    if (!state.isGuest) return { allowed: true }; // Pas de limite pour les inscrits
+
+    const lastPlayed = localStorage.getItem('medicome_guest_last_play');
+    if (!lastPlayed) return { allowed: true };
+
+    const now = Date.now();
+    const twoHours = 2 * 60 * 60 * 1000; // 2 heures en millisecondes
+    const diff = now - parseInt(lastPlayed);
+
+    if (diff < twoHours) {
+        const remainingMinutes = Math.ceil((twoHours - diff) / (60000));
+        let timeText = remainingMinutes + " min";
+        if (remainingMinutes > 60) {
+            const h = Math.floor(remainingMinutes / 60);
+            const m = remainingMinutes % 60;
+            timeText = `${h}h ${m}min`;
+        }
+        return { allowed: false, remaining: timeText };
+    }
+    
+    return { allowed: true };
+}
+
 
         async function initApp() {
             try {
@@ -915,6 +983,10 @@
         }
         
         function trackPdf() {
+            if(state.isGuest) {
+        showAlert("Les fiches PDF ne sont pas disponibles en mode invité.", "error");
+        return;
+    }
             state.progression.pdfDownloads = (state.progression.pdfDownloads || 0) + 1;
             saveProgression();
         }
@@ -982,6 +1054,20 @@
                 } catch (error) { showAlert("Erreur création: " + error.message, "error"); }
             };
             card.appendChild(inRegEmail); card.appendChild(inRegPass); card.appendChild(inPseudo); card.appendChild(btnReg);
+            // --- AJOUT BOUTON INVITÉ ---
+const sepGuest = document.createElement('div'); 
+sepGuest.style.margin = '15px 0'; sepGuest.style.borderTop = '1px solid var(--glass-border)';
+card.appendChild(sepGuest);
+
+const btnGuestMode = document.createElement('button');
+btnGuestMode.className = 'btn';
+btnGuestMode.style.background = 'transparent'; 
+btnGuestMode.style.border = '1px solid var(--accent)';
+btnGuestMode.innerHTML = '<i class="ph-duotone ph-user-circle"></i> Tester sans créer de compte';
+btnGuestMode.onclick = startGuestMode;
+card.appendChild(btnGuestMode);
+// ---------------------------
+
             const sepCode = document.createElement('div'); sepCode.textContent='— ou Accès Rapide (Local) —'; sepCode.className='small'; sepCode.style.margin='16px 0'; card.appendChild(sepCode);
             const inputCode = document.createElement('input'); inputCode.placeholder='Clé d\'accès'; inputCode.className='input';
             const btnCode = document.createElement('button'); btnCode.className='btn btn-code'; btnCode.textContent='Utiliser une clé';
@@ -1003,7 +1089,13 @@
             const card = document.createElement('div'); card.className='card center';
             let cloudBadge = state.isGuest ? '<span style="color:orange; font-size:0.8em; margin-bottom:10px"><i class="ph-duotone ph-floppy-disk"></i> Mode Local</span>' : '<span style="color:var(--success); font-size:0.8em; margin-bottom:10px"><i class="ph-duotone ph-cloud-check"></i> Sauvegarde Active</span>';
             const displayName = state.pseudo || '...';
-            
+            const btnGuest = document.createElement('button');
+btnGuest.className = 'btn';
+btnGuest.innerHTML = '<i class="ph-duotone ph-user-circle"></i> Tester sans connexion';
+btnGuest.style.marginTop = '10px';
+btnGuest.onclick = startGuestMode; // fonction du patch
+
+card.appendChild(btnGuest);
             const dailyPatho = getDailyPatho();
             const todayStr = new Date().toDateString();
             const isDailyDone = prog.lastDaily === todayStr;
@@ -1039,11 +1131,20 @@
             card.appendChild(howToCard);
 
             const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.innerHTML='<i class="ph-duotone ph-stethoscope"></i> Entraînement Libre'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; 
-            btnDiag.onclick= () => {
-                if(audioCtx.state === 'suspended') audioCtx.resume();
-                state.dailyTarget = null;
-                renderDemographics();
-            };
+btnDiag.onclick= () => {
+    // --- VERIFICATION LIMITE ---
+    const limit = checkGuestLimit();
+    if (!limit.allowed) {
+        showAlert(`Mode invité limité !<br>Prochaine partie dans : <strong>${limit.remaining}</strong>.<br>Créez un compte pour jouer en illimité !`, "error");
+        return;
+    }
+    // ---------------------------
+
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    state.dailyTarget = null;
+    renderDemographics();
+};
+
             const btnGloss = document.createElement('button'); btnGloss.className='link'; btnGloss.innerHTML='<i class="ph-duotone ph-book-bookmark"></i> Glossaire'; btnGloss.style.marginTop='12px'; btnGloss.onclick=renderGlossary;
             const btnProf = document.createElement('button'); btnProf.className='link'; btnProf.innerHTML='<i class="ph-duotone ph-user-circle"></i> Profil & Succès'; btnProf.style.marginTop='6px'; btnProf.onclick=renderProfile;
             
@@ -1205,6 +1306,10 @@
         }
 
         function renderProfile() {
+            if(state.isGuest) {
+        showAlert("L'accès au profil est réservé aux utilisateurs connectés.", "error");
+        return;
+    }
             setDocTitle("Profil");
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';
@@ -2250,9 +2355,19 @@
                 };
                 navGroup.appendChild(btnBack);
             }
-            const btnAb = document.createElement('button'); btnAb.className='link'; btnAb.innerHTML='Abandonner'; btnAb.onclick=renderAbandonMenu;
-            navGroup.appendChild(btnAb); card.appendChild(navGroup);
-            app.appendChild(card);
+            const btnAb = document.createElement('button'); 
+btnAb.className='link'; 
+btnAb.innerHTML='Abandonner'; 
+btnAb.onclick = () => {
+    if(state.isGuest) {
+        showAlert("Vous ne pouvez pas abandonner pour accéder aux fonctionnalités réservées.", "error");
+        return;
+    }
+    renderAbandonMenu();
+};
+navGroup.appendChild(btnAb); 
+card.appendChild(navGroup);
+app.appendChild(card);
         }
 
         function askNextQuestion() {
@@ -2336,7 +2451,7 @@
             state.currentSign = signe; state.asked.push(signe); renderCurrentQuestion();
         }
 
-        function showDiagnostic() {
+                function showDiagnostic() {
             setDocTitle("Analyse...");
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML = '';
@@ -2368,6 +2483,12 @@
                 
                 const btnTrue = document.createElement('button'); btnTrue.className='btn btn-success'; btnTrue.innerHTML='<i class="ph-bold ph-check"></i> Correct';
                 btnTrue.onclick = async () => { 
+                    // --- CORRECTION ICI ---
+                    if(state.isGuest) {
+                        localStorage.setItem('medicome_guest_last_play', Date.now().toString());
+                    }
+                    // ----------------------
+
                     triggerConfetti(); playSound('success');
                     state.progression.correct++; state.progression.streak = (state.progression.streak || 0) + 1;
                     
@@ -2422,6 +2543,12 @@
                 
                 const btnFalse = document.createElement('button'); btnFalse.className='btn btn-error'; btnFalse.innerHTML='<i class="ph-bold ph-x"></i> Incorrect';
                 btnFalse.onclick = async () => { 
+                    // --- CORRECTION ICI ---
+                    if(state.isGuest) {
+                        localStorage.setItem('medicome_guest_last_play', Date.now().toString());
+                    }
+                    // ----------------------
+
                     playSound('error');
                     state.progression.incorrect++; state.progression.streak = 0;
                     
@@ -2445,6 +2572,7 @@
                 btnGroup.appendChild(btnTrue); btnGroup.appendChild(btnFalse); card.appendChild(btnGroup); app.appendChild(card);
             }, 1500);
         }
+
 
         function showDiagnosticDetails(data, wasManualError = false) {
             window.scrollTo(0,0);
@@ -2566,6 +2694,10 @@
         }
 
         function renderGlossary() {
+            if(state.isGuest) {
+        showAlert("Le glossaire n'est pas disponible en mode invité.", "error");
+        return;
+    }
             setDocTitle("Glossaire");
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML='';

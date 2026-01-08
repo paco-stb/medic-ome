@@ -61,7 +61,7 @@
          /* UI ELEMENTS */
          .link { background: rgba(125,125,125,0.1); border:1px solid var(--glass-border); color: var(--text-muted); padding:8px 16px; border-radius:8px; cursor:pointer; transition:all 0.3s; font-size:14px; }
          .link:hover { background: rgba(125,125,125,0.2); color: var(--text-main); border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
-         main { flex:1; max-width:1000px; width:100%; margin:0 auto; padding:30px 20px; display:flex; flex-direction:column; align-items:center; }
+         main { flex:1; max-width:1100px; width:100%; margin:0 auto; padding:10px 20px; display:flex; flex-direction:column; align-items:center; justify-content: center; min-height: calc(100vh - 140px); }
          .card { background: var(--glass-bg); backdrop-filter: blur(12px); padding:32px; border-radius:20px; box-shadow: var(--card-shadow), inset 0 0 0 1px var(--glass-border); margin-bottom:16px; width:100%; max-width:600px; animation: fadeIn 0.5s ease-out; position: relative;}
          .input, select, textarea { width:100%; padding:14px; border-radius:10px; border:1px solid var(--glass-border); background: rgba(125,125,125,0.1); color: var(--text-main); margin-top:8px; margin-bottom:12px; font-size:14px; font-family: 'Inter', sans-serif; }
          select option { background-color: #020b16; color: #ffffff; }
@@ -467,6 +467,39 @@
         padding: 25px;
     }
     .feature-list { align-items: center; text-align: left; }
+}
+         /* --- NOUVEAU CSS POUR COMPACTER L'AFFICHAGE --- */
+.landing-grid {
+    gap: 30px; /* Réduit l'espace entre les deux colonnes */
+    padding: 0;
+}
+
+.landing-info h1 {
+    font-size: 2rem; /* Titre un peu plus petit */
+    margin-bottom: 10px;
+}
+
+.landing-info p {
+    margin-bottom: 15px; /* Moins d'espace sous le texte */
+}
+
+.feature-list {
+    gap: 8px; /* Rapproche les éléments de la liste */
+    margin-bottom: 20px;
+}
+
+.landing-auth-card {
+    padding: 25px 35px; /* Carte de connexion plus fine */
+}
+
+.landing-auth-card .input {
+    padding: 10px 14px; /* Champs de saisie moins hauts */
+    margin-top: 5px;
+    margin-bottom: 10px;
+}
+
+.auth-tabs {
+    margin-bottom: 15px; /* Remonte les onglets */
 }
       </style>
    </head>

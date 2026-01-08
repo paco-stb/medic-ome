@@ -2475,8 +2475,20 @@ app.appendChild(card);
                 const card = document.createElement('div'); card.className='card center';
                 const title = document.createElement('h2'); title.innerHTML='<i class="ph-duotone ph-lightbulb"></i> Diagnostic Proposé'; card.appendChild(title);
                 
-                let pdfButton = top.patho.pdf && top.patho.pdf !== '#' ? `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.patho.pdf}" target="_blank"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF</a>` : `<span class="small" style="opacity:0.5"><i class="ph-duotone ph-file-x"></i> Pas de fiche PDF</span>`;
-                
+                // Remplacer la définition de pdfButton par :
+let pdfButton = '';
+
+if (top.patho.pdf && top.patho.pdf !== '#') {
+    if (state.isGuest) {
+        // --- PROTECTION INVITÉ : BOUTON VERROUILLÉ ---
+        pdfButton = `<button class="btn" style="background:rgba(125,125,125,0.1); border:1px dashed var(--text-muted); color:var(--text-muted); margin-top:10px; font-size:13px;" onclick="showAlert('Les fiches PDF sont réservées aux membres inscrits.<br>Créez un compte gratuit pour y accéder !', 'error')"><i class="ph-duotone ph-lock-key"></i> Fiche PDF (Verrouillée)</button>`;
+    } else {
+        // --- MEMBRE CONNECTÉ : LIEN ACTIF ---
+        pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.patho.pdf}" target="_blank" onclick="trackPdf()"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF</a>`;
+    }
+} else {
+    pdfButton = `<span class="small" style="opacity:0.5"><i class="ph-duotone ph-file-x"></i> Pas de fiche PDF</span>`;
+}
                 const diagDiv = document.createElement('div'); diagDiv.className='diagnostic-result';
                 diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div>
                 <div style="margin: 15px 0; max-width: 100%;">
@@ -2678,13 +2690,32 @@ app.appendChild(card);
             }
 
             if(top.pdf && top.pdf !== '#') {
-                const pdfBtn = document.createElement('a');
-                pdfBtn.href = top.pdf; pdfBtn.target = "_blank"; pdfBtn.className = 'btn'; pdfBtn.innerHTML = '<i class="ph-duotone ph-file-pdf"></i> Voir la fiche PDF complète'; pdfBtn.style.marginTop = '20px'; pdfBtn.style.display = 'block'; pdfBtn.style.textAlign = 'center';
-                
-                pdfBtn.onclick = trackPdf;
+    // On crée un <button> pour l'invité (pas de href) et un <a> pour le membre
+    const pdfBtn = document.createElement(state.isGuest ? 'button' : 'a');
+    
+    pdfBtn.className = 'btn';
+    pdfBtn.style.marginTop = '20px'; 
+    pdfBtn.style.display = 'block'; 
+    pdfBtn.style.textAlign = 'center';
 
-                card.appendChild(pdfBtn);
-            }
+    if (state.isGuest) {
+        // --- PROTECTION INVITÉ ---
+        pdfBtn.innerHTML = '<i class="ph-duotone ph-lock-key"></i> Voir la fiche PDF (Compte requis)';
+        pdfBtn.style.background = 'rgba(125,125,125,0.1)';
+        pdfBtn.style.border = '1px dashed var(--text-muted)';
+        pdfBtn.style.color = 'var(--text-muted)';
+        // Pas de href, juste une alerte au clic
+        pdfBtn.onclick = () => showAlert("Créez un compte gratuit pour télécharger les fiches de révision PDF !", "error");
+    } else {
+        // --- MEMBRE CONNECTÉ ---
+        pdfBtn.innerHTML = '<i class="ph-duotone ph-file-pdf"></i> Voir la fiche PDF complète';
+        pdfBtn.href = top.pdf; 
+        pdfBtn.target = "_blank";
+        pdfBtn.onclick = trackPdf;
+    }
+
+    card.appendChild(pdfBtn);
+}
             
             const btnGroup = document.createElement('div'); btnGroup.className='button-group';
             

@@ -3095,35 +3095,28 @@ function showDayDetails(dateStr, data) {
                  // Liste ordonnée pour couvrir TOUTES les spécialités du fichier JSON
                  // L'IA posera ces questions DANS L'ORDRE pour ne rien rater
                  const STARTING_SIGNS = [
-                     // 1. Signes Généraux
+                     // 1. LES SIGNES VITAUX (Couvrent ~40% des cas : Infectio, Inflammatoire, Cancer)
                      "fievre_elevee", 
                      "asthenie_intense", 
                      "perte_poids", 
-                     
-                     // 2. Douleurs Majeures (Les "Big Four")
-                     "douleur_thoracique_constrictive", 
-                     "douleur_abdominale", 
-                     "cephalees_diffuses_intenses", 
-                     "douleur_lombaire_unilaterale",
-                     
-                     // 3. Respiratoire & ORL
-                     "dyspnee_effort", 
-                     "toux_seche",
-                     "odynophagie_intense", // Mal de gorge
 
-                     // 4. Neuro & Locomoteur
-                     "deficit_neurologique_brutal", 
-                     "douleur_articulaire_intense", 
-                     "tremblement_repos", // Parkinson
+                     // 2. LES DOULEURS MAJEURES (Couvrent ~30% : Cardio, Digestif, Uro, Neuro)
+                     "douleur_thoracique_constrictive", // Infarctus...
+                     "douleur_abdominale", // Occlusion, Crohn...
+                     "douleur_lombaire_unilaterale", // Pyélo, Colique
+                     "cephalees_diffuses_intenses", // Méningite, HSA
+                     
+                     // 3. RESPIRATOIRE (Pneumo)
+                     "dyspnee_effort", // OAP, BPCO, Anémie
 
-                     // 5. Spécialités "Oubliées" (Dermato / Psy / Ophtalmo / Gynéco)
-                     "eruption_vesiculo_bulleuse_generalisee", // Varicelle/Zona
-                     "prurit_intense", // Gale/Eczéma
-                     "humeur_triste_constante", // Psychiatrie
-                     "peur_intense_brutale", // Attaque panique
-                     "baisse_acuite_visuelle_unilaterale", // Ophtalmo
-                     "douleur_pelvienne_unilaterale", // Gynéco
-                     "prise_poids" // Endocrino
+                     // 4. LES SIGNES "ORPHELINS" (Spécifiques aux maladies sans fièvre ni douleur)
+                     "prurit_intense", // Dermato (Gale, Eczéma, Varicelle)
+                     "baisse_acuite_visuelle_unilaterale", // Ophtalmo (Glaucome, Cataracte, DMLA via le flou)
+                     "tremblement_repos", // Neuro (Parkinson, Hyperthyroïdie via tremblements)
+                     "humeur_triste_constante", // Psy (Dépression, Bipolaire)
+                     "nodule_dur_pierreux_indolore", // Cancers (Testicule, Sein via similitude)
+                     "impotence_fonctionnelle_totale", // Trauma (Fractures, Entorses, Arthrite)
+                     "amenorrhee" // Gynéco (GEU, SOPK, Grossesse, Anorexie)
                  ];
 
                  // On cherche le premier signe de cette liste qui n'a pas encore été posé

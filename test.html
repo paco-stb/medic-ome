@@ -613,7 +613,19 @@
     "douleur_dos": ["douleur_lombaire_brutale_effort", "douleur_trajet_membre_inf", "rachialgies_inflammatoires", "impulsivite_toux"],
     "trouble_psy": ["humeur_triste_constante", "idees_suicidaires", "syndrome_delirant_paranoide", "episode_maniaque", "peur_intense_brutale", "dysmorphophobie"]
 };
-         
+    // Les "Chefs de file" : Questions génériques qui orientent vers une spécialité
+const GENERAL_SYMPTOMS = [
+    "douleur_thoracique",       // Oriente vers Cardio / Pneumo
+    "douleur_abdominale",       // Oriente vers Digestif / Uro / Gynéco
+    "fievre",                   // Oriente vers Infectio / Inflammatoire
+    "dyspnee",                  // Oriente vers Pneumo / Cardio
+    "cephalees",                // Oriente vers Neuro / ORL
+    "troubles_neuro",           // Oriente vers Neuro (Déficit, malaise...)
+    "anomalie_peau",            // Oriente vers Dermato
+    "douleur_membre_traumatisme", // Oriente vers Ortho/Rhumato
+    "genes_urinaires",          // Oriente vers Uro/Nephro
+    "trouble_psy"               // Oriente vers Psy
+];     
          const PATHO_GROUPS = {
     // CARDIO
     "Infarctus du myocarde": "Cardio", "Embolie pulmonaire": "Cardio", "OAP (Insuffisance Cardiaque)": "Cardio", 
@@ -2683,55 +2695,98 @@ function showDayDetails(dateStr, data) {
          function getNextSmartSign(ranked, remainingSigns) {
     if (!ranked || ranked.length === 0 || remainingSigns.length === 0) return null;
 
-    // 1. On se concentre sur le TOP 10 des pathologies probables (pour ne pas être pollué par les improbables)
+    // --- PHASE 1 : MODE DÉCOUVERTE (Filtre par gros symptômes) ---
+    // On vérifie si l'utilisateur a déjà validé un symptôme "Chef de file"
+    const hasMajorSymptom = state.asked.some(s => 
+        state.answers[s] === true && GENERAL_SYMPTOMS.includes(s)
+    );
+
+    // Tant qu'on n'a pas trouvé de "Gros" symptôme et qu'on est au début du jeu (< 10 questions)
+    // On force l'IA à choisir parmi les GENERAL_SYMPTOMS restants
+    if (!hasMajorSymptom && state.asked.length < 10) {
+        
+        // On regarde dans le TOP 20 des maladies probables
+        const topCandidates = ranked.slice(0, 20).map(r => r.patho);
+        
+        // On compte quel symptôme général revient le plus souvent dans ce TOP 20
+        let bestGeneralSign = null;
+        let maxCount = -1;
+
+        for (const generalSign of GENERAL_SYMPTOMS) {
+            // Si on l'a déjà posé, on passe
+            if (state.asked.includes(generalSign)) continue;
+            // Si ce signe n'existe pas dans la base JSON du tout (sécurité), on passe
+            if (!state.allSigns.includes(generalSign)) continue;
+
+            let count = 0;
+            // On compte combien de maladies du Top 20 possèdent ce signe général
+            // OU possèdent un signe enfant de ce signe général (via REFINEMENTS)
+            topCandidates.forEach(p => {
+                // 1. Est-ce que la maladie a directement "douleur_thoracique" ?
+                if (p.signes[generalSign]) count += p.signes[generalSign];
+                
+                // 2. Est-ce qu'elle a un sous-signe (ex: "douleur_constrictive") ?
+                // Si oui, ça compte comme un point pour "douleur_thoracique"
+                if (REFINEMENTS[generalSign]) {
+                    const children = REFINEMENTS[generalSign];
+                    const hasChild = children.some(child => p.signes[child]);
+                    if (hasChild) count += 20; // Gros bonus si un enfant est présent
+                }
+            });
+
+            if (count > maxCount) {
+                maxCount = count;
+                bestGeneralSign = generalSign;
+            }
+        }
+
+        // Si on a trouvé un bon chef de file pertinent pour le profil actuel, on le pose !
+        if (bestGeneralSign && maxCount > 0) return bestGeneralSign;
+    }
+
+    // --- PHASE 2 : MODE AFFINAGE (L'algorithme de Split que je t'ai donné avant) ---
+    // Si on a passé l'étape générale, ou si on a déjà un OUI, on utilise la logique fine.
+    
     const topCandidates = ranked.slice(0, 10).map(r => r.patho);
     const candidateCount = topCandidates.length;
 
-    // Si on a un leader très clair (>200 pts d'avance), on essaie de le confirmer
+    // Duel final si leader clair
     if (ranked[0].score - ranked[1]?.score > 200) {
-        // On cherche un signe de ce leader non encore posé
         const signToConfirm = Object.keys(ranked[0].patho.signes)
             .find(s => !state.asked.includes(s) && remainingSigns.includes(s));
         if (signToConfirm) return signToConfirm;
     }
 
-    // 2. SCORING DES QUESTIONS (Entropie simplifiée)
-    // On cherche le signe présent chez environ 50% des candidats restants
     let bestSign = null;
     let bestScore = -1;
 
-    // On ne teste pas TOUS les signes (trop long), juste ceux pertinents pour le Top 10
+    // Filtre : Pas d'imagerie/biologie tant qu'on n'a pas validé des signes cliniques
+    // SAUF si on est déjà avancé dans le jeu (>12 questions)
     let candidateSigns = new Set();
     topCandidates.forEach(p => Object.keys(p.signes).forEach(s => candidateSigns.add(s)));
     
-    // Filtrer pour ne garder que ceux dispo et non techniques (imagerie) au début
     let pool = Array.from(candidateSigns).filter(s => 
         !state.asked.includes(s) && 
-        !s.includes('scanner') && !s.includes('radio') && !s.includes('echographie') && !s.includes('biologie')
+        (state.asked.length > 12 || (!s.includes('scanner') && !s.includes('radio') && !s.includes('echographie') && !s.includes('biologie') && !s.includes('ecg')))
     );
 
-    // Si plus de signes cliniques, on autorise les examens
-    if(pool.length === 0) {
-        pool = Array.from(candidateSigns).filter(s => !state.asked.includes(s));
-    }
+    if(pool.length === 0) pool = Array.from(candidateSigns).filter(s => !state.asked.includes(s));
 
     for (const sign of pool) {
+        // On évite de reposer des questions générales ici, c'est trop tard
+        if (GENERAL_SYMPTOMS.includes(sign)) continue;
+
         let presenceCount = 0;
         let weightSum = 0;
 
         topCandidates.forEach(p => {
             if (p.signes[sign]) {
                 presenceCount++;
-                weightSum += p.signes[sign]; // On favorise les signes "forts"
+                weightSum += p.signes[sign];
             }
         });
 
-        // La magie est ici :
-        // On veut une fréquence proche de 50% (candidateCount / 2)
-        // Mais on multiplie par le "Poids" du signe pour préférer les signes importants
         const distanceTo50Percent = Math.abs(presenceCount - (candidateCount / 2));
-        
-        // Score : Plus on est proche de 50%, plus le score est haut. + Bonus pour le poids clinique.
         const optimalityScore = (candidateCount - distanceTo50Percent) * weightSum;
 
         if (optimalityScore > bestScore) {
@@ -2740,7 +2795,7 @@ function showDayDetails(dateStr, data) {
         }
     }
 
-    return bestSign || pool[0]; // Fallback
+    return bestSign || pool[0];
 }
          
          function canShowDiagnostic() {

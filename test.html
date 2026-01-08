@@ -642,6 +642,32 @@ function startGuestMode() {
             return PATHOLOGIES[index];
         }
 
+// --- FONCTION LIMITE INVITÉ ---
+function checkGuestLimit() {
+    if (!state.isGuest) return { allowed: true }; // Pas de limite pour les inscrits
+
+    const lastPlayed = localStorage.getItem('medicome_guest_last_play');
+    if (!lastPlayed) return { allowed: true };
+
+    const now = Date.now();
+    const twoHours = 2 * 60 * 60 * 1000; // 2 heures en millisecondes
+    const diff = now - parseInt(lastPlayed);
+
+    if (diff < twoHours) {
+        const remainingMinutes = Math.ceil((twoHours - diff) / (60000));
+        let timeText = remainingMinutes + " min";
+        if (remainingMinutes > 60) {
+            const h = Math.floor(remainingMinutes / 60);
+            const m = remainingMinutes % 60;
+            timeText = `${h}h ${m}min`;
+        }
+        return { allowed: false, remaining: timeText };
+    }
+    
+    return { allowed: true };
+}
+
+
         async function initApp() {
             try {
                 // Chargement des données
@@ -1105,11 +1131,20 @@ card.appendChild(btnGuest);
             card.appendChild(howToCard);
 
             const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.innerHTML='<i class="ph-duotone ph-stethoscope"></i> Entraînement Libre'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; 
-            btnDiag.onclick= () => {
-                if(audioCtx.state === 'suspended') audioCtx.resume();
-                state.dailyTarget = null;
-                renderDemographics();
-            };
+btnDiag.onclick= () => {
+    // --- VERIFICATION LIMITE ---
+    const limit = checkGuestLimit();
+    if (!limit.allowed) {
+        showAlert(`Mode invité limité !<br>Prochaine partie dans : <strong>${limit.remaining}</strong>.<br>Créez un compte pour jouer en illimité !`, "error");
+        return;
+    }
+    // ---------------------------
+
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    state.dailyTarget = null;
+    renderDemographics();
+};
+
             const btnGloss = document.createElement('button'); btnGloss.className='link'; btnGloss.innerHTML='<i class="ph-duotone ph-book-bookmark"></i> Glossaire'; btnGloss.style.marginTop='12px'; btnGloss.onclick=renderGlossary;
             const btnProf = document.createElement('button'); btnProf.className='link'; btnProf.innerHTML='<i class="ph-duotone ph-user-circle"></i> Profil & Succès'; btnProf.style.marginTop='6px'; btnProf.onclick=renderProfile;
             
@@ -1119,6 +1154,11 @@ card.appendChild(btnGuest);
             const btnDaily = q('#btnDaily');
             if(btnDaily) {
                 btnDaily.onclick = () => {
+                    const limit = checkGuestLimit();
+        if (!limit.allowed) {
+            showAlert(`Mode invité limité !<br>Prochaine partie dans : <strong>${limit.remaining}</strong>.<br>Créez un compte pour jouer en illimité !`, "error");
+            return;
+        }
                     if(audioCtx.state === 'suspended') audioCtx.resume();
                     state.dailyTarget = dailyPatho;
                     state.isChrono = false; 
@@ -2416,7 +2456,7 @@ app.appendChild(card);
             state.currentSign = signe; state.asked.push(signe); renderCurrentQuestion();
         }
 
-        function showDiagnostic() {
+                function showDiagnostic() {
             setDocTitle("Analyse...");
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML = '';
@@ -2448,6 +2488,12 @@ app.appendChild(card);
                 
                 const btnTrue = document.createElement('button'); btnTrue.className='btn btn-success'; btnTrue.innerHTML='<i class="ph-bold ph-check"></i> Correct';
                 btnTrue.onclick = async () => { 
+                    // --- CORRECTION ICI ---
+                    if(state.isGuest) {
+                        localStorage.setItem('medicome_guest_last_play', Date.now().toString());
+                    }
+                    // ----------------------
+
                     triggerConfetti(); playSound('success');
                     state.progression.correct++; state.progression.streak = (state.progression.streak || 0) + 1;
                     
@@ -2502,6 +2548,12 @@ app.appendChild(card);
                 
                 const btnFalse = document.createElement('button'); btnFalse.className='btn btn-error'; btnFalse.innerHTML='<i class="ph-bold ph-x"></i> Incorrect';
                 btnFalse.onclick = async () => { 
+                    // --- CORRECTION ICI ---
+                    if(state.isGuest) {
+                        localStorage.setItem('medicome_guest_last_play', Date.now().toString());
+                    }
+                    // ----------------------
+
                     playSound('error');
                     state.progression.incorrect++; state.progression.streak = 0;
                     
@@ -2525,6 +2577,7 @@ app.appendChild(card);
                 btnGroup.appendChild(btnTrue); btnGroup.appendChild(btnFalse); card.appendChild(btnGroup); app.appendChild(card);
             }, 1500);
         }
+
 
         function showDiagnosticDetails(data, wasManualError = false) {
             window.scrollTo(0,0);
@@ -2637,6 +2690,11 @@ app.appendChild(card);
             
             const btnReplay = document.createElement('button'); btnReplay.className='btn btn-success'; btnReplay.innerHTML = '<i class="ph-duotone ph-arrow-clockwise"></i> Rejouer tout de suite'; 
             btnReplay.onclick = () => {
+                const limit = checkGuestLimit();
+    if (!limit.allowed) {
+        showAlert(`Mode invité limité !<br>Prochaine partie dans : <strong>${limit.remaining}</strong>.<br>Créez un compte pour jouer en illimité !`, "error");
+        return;
+    }
                  state.dailyTarget = null; 
                  renderDemographics();
             };

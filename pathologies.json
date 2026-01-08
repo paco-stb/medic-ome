@@ -4,6 +4,7 @@
         "short": "SCA ST+ (Syndrome Coronarien Aigu)",
         "pdf": "fiches/infarctus.pdf",
         "signes": {"douleur_thoracique": 20, "douleur_thoracique_constrictive": 25, "irradiation_bras_gauche_machoire": 20, "sueurs_froides": 10, "nausees_vomissements": 8, "angoisse_mort_imminente": 10, "dyspnee": 6, "troponine_elevee": 50, "sus_decalage_st_ecg": 50, "miroir_ecg": 20},
+        "paraclinique": ["troponine_elevee", "sus_decalage_st_ecg", "miroir_ecg"],
         "veto": ["douleur_thoracique"],
         "boost": ["sus_decalage_st_ecg", "troponine_elevee"],
         "images": {"sus_decalage_st_ecg": "images/st_elevation_ecg.png"},
@@ -14,6 +15,7 @@
         "short": "Obstruction artère pulmonaire",
         "pdf": "fiches/embolie.pdf",
         "signes": {"douleur_thoracique": 15, "dyspnee": 15, "douleur_thoracique_basithoracique": 15, "dyspnee_brutale": 20, "hemoptysie": 12, "signes_tvp_mollet": 18, "tachycardie": 12, "discordance_pouls_temperature": 15, "malaise_syncope": 10, "signe_s1q3_ecg": 30, "d_dimeres_positifs": 20},
+        "paraclinique": ["signe_s1q3_ecg", "d_dimeres_positifs"],
         "veto": ["dyspnee"],
         "boost": ["signe_s1q3_ecg", "signes_tvp_mollet"],
         "images": {"signes_tvp_mollet": "images/dvt_leg_swelling.png", "hemoptysie": "images/hemoptysis_tissue.png"},
@@ -24,6 +26,7 @@
         "short": "PFLA (Pneumocoque)",
         "pdf": "fiches/pneumopathie.pdf",
         "signes": {"fievre": 20, "douleur_thoracique": 10, "syndrome_infectieux_brutal": 18, "frissons_intenses_inauguraux": 15, "toux_expectorations_rouille": 12, "douleur_thoracique_point_cote": 15, "crepitants_foyer_localise": 20, "syndrome_condensation_clinique": 15, "foyer_alveolaire_radio": 50},
+        "paraclinique": ["foyer_alveolaire_radio"],
         "veto": ["fievre"],
         "boost": ["foyer_alveolaire_radio", "crepitants_foyer_localise"],
         "images": { "foyer_alveolaire_radio": "images/pneumonia_xray.png" },
@@ -34,6 +37,7 @@
         "short": "Oedème Aigu du Poumon",
         "pdf": "fiches/oap.pdf",
         "signes": {"dyspnee": 25, "dyspnee_stade_4_nyha": 20, "orthopnee": 25, "crepitants_maree_montante": 20, "expectorations_mousseuses_saumonees": 15, "tachycardie": 8, "cyanose": 6, "bnp_eleve": 40},
+        "paraclinique": ["bnp_eleve"],
         "veto": ["dyspnee"],
         "boost": ["expectorations_mousseuses_saumonees", "crepitants_maree_montante"],
         "images": {"cyanose": "images/cyanosis_lips.png"},
@@ -44,6 +48,7 @@
         "short": "Infarctus cérébral (AIC)",
         "pdf": "fiches/avc.pdf",
         "signes": {"troubles_neuro": 30, "deficit_neurologique_brutal": 25, "hemiplegie": 20, "aphasie": 18, "paralysie_faciale_centrale": 15, "hemianopsie": 12, "neglect_spatial": 10, "score_nihss_eleve": 10},
+        "paraclinique": ["score_nihss_eleve"],
         "veto": ["troubles_neuro"],
         "boost": ["hemiplegie", "paralysie_faciale_centrale"],
         "images": {"paralysie_faciale_centrale": "images/facial_droop.png"},
@@ -54,6 +59,7 @@
         "short": "Syndrome méningé fébrile",
         "pdf": "fiches/meningite.pdf",
         "signes": {"fievre": 20, "cephalees": 20, "cephalees_diffuses_intenses": 18, "raideur_nuque": 25, "photophobie_phonophobie": 15, "fievre_elevee": 15, "vomissements_en_jet": 15, "signe_kernig_brudzinski": 20, "purpura_fulminans": 50, "liquide_lcr_trouble": 50},
+        "paraclinique": ["liquide_lcr_trouble"],
         "veto": ["fievre", "raideur_nuque"],
         "boost": ["purpura_fulminans", "liquide_lcr_trouble"],
         "images": {"purpura_fulminans": "images/purpura_skin.png", "raideur_nuque": "images/nuchal_rigidity_exam.png"},
@@ -64,6 +70,7 @@
         "short": "Urgence chirurgicale digestive",
         "pdf": "fiches/appendicite.pdf",
         "signes": {"douleur_abdominale": 20, "fievre": 10, "douleur_migratrice_epigastre_fid": 15, "douleur_point_mcburney": 30, "defense_fid": 20, "signe_blumberg": 15, "fievre_moderee_38": 8, "nausees": 10, "psoitis": 10, "crp_elevee": 10},
+        "paraclinique": ["crp_elevee"],
         "veto": ["douleur_abdominale"],
         "boost": ["defense_fid", "signe_blumberg"],
         "images": {"langue_saburrale": "images/coated_tongue.png"},
@@ -74,6 +81,7 @@
         "short": "Infection vésicule biliaire",
         "pdf": "fiches/cholecystite.pdf",
         "signes": {"douleur_abdominale": 20, "fievre": 15, "douleur_hypocondre_droit": 20, "signe_de_murphy_clinique": 30, "fievre_frissons": 12, "defense_hypocondre_droit": 15, "epaissement_paroi_vesiculaire_echo": 40},
+        "paraclinique": ["epaissement_paroi_vesiculaire_echo"],
         "veto": ["douleur_abdominale"],
         "boost": ["epaissement_paroi_vesiculaire_echo"],
         "images": {"ictere_conjonctival": "images/scleral_icterus.png"},
@@ -84,6 +92,7 @@
         "short": "Infection digestive virale",
         "pdf": "fiches/gastro.pdf",
         "signes": {"douleur_abdominale": 15, "fievre": 10, "diarrhee_aqueuse": 20, "vomissements": 18, "crampes_abdominales": 12, "fievre_moderee": 6, "myalgies": 6, "absence_defense_abdominale": 20},
+        "paraclinique": [],
         "veto": ["diarrhee_aqueuse"],
         "boost": ["absence_defense_abdominale"],
         "facteurs": {"epidemie_hivernale": 5, "collectivite": 5}
@@ -93,6 +102,7 @@
         "short": "Lithiase urinaire obstructive",
         "pdf": "fiches/cn.pdf",
         "signes": {"douleur_abdominale": 15, "douleur_fossa_lombaire_brutale": 20, "irradiation_organes_genitaux": 15, "agitation_frenetique": 20, "nausees_vomissements": 12, "hematurie_microscopique": 15, "pollakiurie": 6, "absence_position_antalgique": 15},
+        "paraclinique": ["hematurie_microscopique"],
         "veto": ["douleur_fossa_lombaire_brutale"],
         "boost": ["agitation_frenetique"],
         "images": {"hematurie_macroscopique": "images/hematuria_urine.png"},
@@ -103,6 +113,7 @@
         "short": "Infection parenchyme rénal",
         "pdf": "fiches/pna.pdf",
         "signes": {"fievre": 25, "genes_urinaires": 20, "fievre_elevee_frissons": 18, "douleur_lombaire_unilaterale": 18, "douleur_ebranlement_lombaire": 20, "signes_fonctionnels_urinaires": 12, "bu_positive_leuco_nitrites": 30, "crp_elevee": 10},
+        "paraclinique": ["bu_positive_leuco_nitrites", "crp_elevee"],
         "veto": ["fievre", "bu_positive_leuco_nitrites"],
         "boost": ["douleur_ebranlement_lombaire"],
         "facteurs": {"femme": 4, "grossesse": 5, "malformation_urinaire": 5}
@@ -112,6 +123,7 @@
         "short": "Carence martiale",
         "pdf": "fiches/anemie.pdf",
         "signes": {"dyspnee": 10, "asthenie_chronique": 18, "paleur_cutaneo_muqueuse": 18, "dyspnee_effort": 12, "tachycardie": 8, "phaneres_fragiles": 8, "ferritine_basse": 50, "microcytose": 30},
+        "paraclinique": ["ferritine_basse", "microcytose"],
         "veto": ["ferritine_basse"],
         "boost": ["paleur_cutaneo_muqueuse"],
         "facteurs": {"regles_abondantes": 5, "regime_vegetalien": 3, "saignement_occulte": 4}
@@ -121,6 +133,7 @@
         "short": "Insuffisance thyroïdienne",
         "pdf": "fiches/hypo.pdf",
         "signes": {"troubles_neuro": 10, "prise_poids": 15, "asthenie_psychomotrice": 20, "frilosite": 18, "constipation": 12, "bradycardie": 10, "visage_infiltre_lunaire": 10, "depilation_queue_sourcil": 10, "tsh_elevee": 50},
+        "paraclinique": ["tsh_elevee"],
         "boost": ["tsh_elevee", "frilosite"],
         "images": {"visage_infiltre": "images/myxedema_face.png"},
         "facteurs": {"femme": 4, "post_partum": 3, "traitement_amiodarone": 3}
@@ -130,6 +143,7 @@
         "short": "Urgence chirurgicale vasculaire",
         "pdf": "fiches/dissection.pdf",
         "signes": {"douleur_thoracique": 30, "douleur_thoracique_dechirante": 25, "irradiation_dorsale_interscapulaire": 20, "asymetrie_pouls_tension": 25, "syncope": 10, "abolition_pouls": 15, "elargissement_mediastin_radio": 30},
+        "paraclinique": ["elargissement_mediastin_radio"],
         "veto": ["douleur_thoracique"],
         "boost": ["asymetrie_pouls_tension"],
         "facteurs": {"hta_ancienne": 5, "syndrome_marfan": 8, "homme": 2}
@@ -139,6 +153,7 @@
         "short": "Inflammation du péricarde",
         "pdf": "fiches/pericardite.pdf",
         "signes": {"douleur_thoracique": 20, "fievre": 10, "douleur_thoracique_respiratoire": 15, "soulage_position_penche_avant": 25, "fievre_moderee": 8, "frottement_pericardique_auscultation": 40, "syndrome_grippal_recent": 10, "sus_decalage_st_concave_diffus": 40},
+        "paraclinique": ["sus_decalage_st_concave_diffus"],
         "veto": ["douleur_thoracique"],
         "boost": ["frottement_pericardique_auscultation", "sus_decalage_st_concave_diffus"],
         "images": { "sus_decalage_st_concave_diffus": "images/pericarditis_ecg.png" },
@@ -149,6 +164,7 @@
         "short": "Epanchement pleural aérique",
         "pdf": "fiches/pneumothorax.pdf",
         "signes": {"douleur_thoracique": 20, "dyspnee": 15, "douleur_latero_thoracique_brutale": 20, "toux_seche_irritative": 10, "tympanisme_percussion": 25, "abolition_murmure_vesiculaire": 30, "hyperclarite_radio": 50},
+        "paraclinique": ["hyperclarite_radio"],
         "veto": ["douleur_thoracique"],
         "boost": ["hyperclarite_radio", "tympanisme_percussion"],
         "images": { "hyperclarite_radio": "images/pneumothorax_xray.png" },
@@ -159,6 +175,7 @@
         "short": "Exacerbation asthme",
         "pdf": "fiches/asthme.pdf",
         "signes": {"dyspnee": 25, "dyspnee_expiratoire": 18, "freinage_expiratoire": 15, "sibilants_auscultation": 30, "toux_seche_quinteuse": 12, "oppression_thoracique": 12, "dep_diminue": 20},
+        "paraclinique": ["dep_diminue"],
         "veto": ["dyspnee"],
         "boost": ["sibilants_auscultation"],
         "facteurs": {"atopie": 5, "allergies": 5, "arret_traitement_fond": 5}
@@ -168,6 +185,7 @@
         "short": "Syndrome occlusif",
         "pdf": "fiches/occlusion.pdf",
         "signes": {"douleur_abdominale": 20, "arret_matieres_gaz": 25, "vomissements_fecaloide": 15, "meteorisme_abdominal": 15, "niveaux_hydro_aeriques_radio": 50, "ampoule_rectale_vide": 15},
+        "paraclinique": ["niveaux_hydro_aeriques_radio"],
         "veto": ["douleur_abdominale", "arret_matieres_gaz"],
         "boost": ["niveaux_hydro_aeriques_radio"],
         "images": { "meteorisme_abdominal": "images/abdominal_distension.png", "niveaux_hydro_aeriques_radio": "images/bowel_obstruction_xray.png" },
@@ -178,6 +196,7 @@
         "short": "Inflammation pancréatique",
         "pdf": "fiches/pancreatite.pdf",
         "signes": {"douleur_abdominale": 25, "douleur_epigastrique_transfixiante": 25, "vomissements_incoercibles": 15, "position_antalgique_chien_fusil": 15, "lipasemie_superieure_3N": 50, "ileus_reflexe": 10},
+        "paraclinique": ["lipasemie_superieure_3N"],
         "veto": ["douleur_abdominale"],
         "boost": ["lipasemie_superieure_3N"],
         "images": {"signe_cullen_grey_turner": "images/pancreatitis_ecchymosis.png"},
@@ -188,6 +207,7 @@
         "short": "Hématémèse / Méléna",
         "pdf": "fiches/hemorragie.pdf",
         "signes": {"douleur_abdominale": 10, "hematemese": 25, "melena": 25, "anemie_aigue": 15, "tachycardie": 12, "etat_choc_hemorragique": 15, "douleur_epigastrique": 8},
+        "paraclinique": ["anemie_aigue"],
         "boost": ["hematemese", "melena"],
         "images": {"melena": "images/melena_stool.png"},
         "facteurs": {"ulcere_gastro_duodenal": 6, "cirrhose_varices": 6, "prise_ains": 5}
@@ -197,6 +217,7 @@
         "short": "GEU",
         "pdf": "fiches/geu.pdf",
         "signes": {"douleur_abdominale": 20, "douleur_pelvienne_lateralisee": 30, "metrorragies_sepia": 20, "retard_regles_amenorrhee": 15, "signes_sympathiques_grossesse": 10, "malaise_lipothymie": 15, "b_hcg_plasmatique_positif": 50, "uterus_vacuite_echo": 30},
+        "paraclinique": ["b_hcg_plasmatique_positif", "uterus_vacuite_echo"],
         "veto": ["douleur_abdominale", "b_hcg_plasmatique_positif"],
         "boost": ["metrorragies_sepia", "uterus_vacuite_echo"],
         "facteurs": {"femme_age_procreer": 100, "tabac": 2, "antecedent_geu": 5, "dispositif_intra_uterin": 3}
@@ -206,6 +227,7 @@
         "short": "Infection génitale haute (IGH)",
         "pdf": "fiches/salpingite.pdf",
         "signes": {"douleur_abdominale": 20, "fievre": 15, "douleur_pelvienne_bilaterale": 15, "leucorrhees_sales": 20, "metrorragies": 8, "douleur_mobilisation_uterine_tv": 25, "syndrome_inflammatoire_bio": 10},
+        "paraclinique": ["syndrome_inflammatoire_bio"],
         "veto": ["douleur_abdominale", "fievre"],
         "boost": ["douleur_mobilisation_uterine_tv"],
         "facteurs": {"femme_jeune": 5, "ist_recente": 8, "partenaires_multiples": 4}
@@ -215,6 +237,7 @@
         "short": "Urgence urologique absolue",
         "pdf": "fiches/torsion.pdf",
         "signes": {"douleur_membre_traumatisme": 5, "douleur_testiculaire_brutale": 30, "bourses_inflammatoires": 15, "signe_gouverneur_negatif": 15, "abolition_reflexe_cremasterien": 25, "retraction_testicule_anneau": 18, "absence_fievre": 10, "absence_signes_urinaires": 10},
+        "paraclinique": [],
         "veto": ["douleur_testiculaire_brutale"],
         "boost": ["abolition_reflexe_cremasterien", "signe_gouverneur_negatif"],
         "images": {"bourses_inflammatoires": "images/testicular_torsion_swelling.png"},
@@ -225,6 +248,7 @@
         "short": "Globe vésical",
         "pdf": "fiches/rau.pdf",
         "signes": {"douleur_abdominale": 15, "genes_urinaires": 25, "impossibilite_uriner_totale": 25, "douleur_sus_pubienne_intense": 15, "globe_vesical_palpable": 30, "matite_sus_pubienne": 20, "envie_douloureuse_uriner": 15, "agitation": 8},
+        "paraclinique": [],
         "veto": ["genes_urinaires", "impossibilite_uriner_totale"],
         "boost": ["globe_vesical_palpable"],
         "images": {"globe_vesical": "images/bladder_distension.png"},
@@ -234,7 +258,8 @@
         "name": "Fracture Col Fémur",
         "short": "Traumatisme hanche sujet âgé",
         "pdf": "fiches/col_femur.pdf",
-        "signes": {"douleur_membre_traumatisme": 30, "impotence_fonctionnelle_totale": 20, "raccourcissement_membre": 20, "rotation_externe_pied": 20, "adduction_membre": 15, "douleur_aine": 15, "clinostatism_impossible": 15},
+        "signes": {"douleur_membre_traumatisme": 30, "impotence_fonctionnelle_totale": 20, "raccourcissement_membre": 20, "rotation_externe_pied": 20, "adduction_membre": 15, "douleur_aine": 15, "clinostatism_impossible": 15, "trait_fracture_radio": 50},
+        "paraclinique": ["trait_fracture_radio"],
         "veto": ["douleur_membre_traumatisme"],
         "boost": ["rotation_externe_pied", "raccourcissement_membre"],
         "images": { "rotation_externe_pied": "images/hip_fracture_rotation.png", "trait_fracture_radio": "images/hip_fracture_xray.png" },
@@ -245,6 +270,7 @@
         "short": "Urgence articulaire",
         "pdf": "fiches/arthrite.pdf",
         "signes": {"fievre": 20, "douleur_membre_traumatisme": 20, "monoarthrite_aigue": 20, "douleur_permanente_insomniante": 18, "impotence_fonctionnelle": 16, "fievre_frissons": 15, "signes_inflammatoires_locaux": 15, "porte_entree_retrouvee": 15, "liquide_articulaire_trouble": 40},
+        "paraclinique": ["liquide_articulaire_trouble"],
         "veto": ["fievre", "douleur_membre_traumatisme"],
         "boost": ["liquide_articulaire_trouble"],
         "images": {"genou_inflammatoire": "images/septic_arthritis_knee.png"},
@@ -255,6 +281,7 @@
         "short": "Radiculalgie L5 ou S1",
         "pdf": "fiches/sciatique.pdf",
         "signes": {"douleur_membre_traumatisme": 15, "douleur_dos": 20, "lombalgie": 5, "douleur_trajet_membre_inf": 25, "impulsivite_toux": 15, "signe_lasegue_positif": 25, "paresthesies_distales": 10, "abolition_reflexe_achilleen": 15},
+        "paraclinique": [],
         "veto": ["douleur_trajet_membre_inf"],
         "boost": ["signe_lasegue_positif"],
         "facteurs": {"port_charge_lourde": 3, "effort_declenchant": 3}
@@ -263,7 +290,8 @@
         "name": "Crise de Goutte",
         "short": "Arthrite microcristalline",
         "pdf": "fiches/goutte.pdf",
-        "signes": {"douleur_membre_traumatisme": 20, "monoarthrite_gros_orteil": 25, "acces_inflammatoire_brutal": 18, "douleur_nocturne_insomniante": 15, "intolerance_contact_drap": 20, "fievre_moderee": 5, "cristaux_urate_sodium_ponction": 50},
+        "signes": {"douleur_membre_traumatisme": 20, "monoarthrite_gros_orteil": 25, "acces_inflammatoire_brutal": 18, "douleur_nocturne_insomniante": 15, "intolerance_contact_drap": 20, "fievre_moderee": 5, "cristaux_urate_sodium_ponction": 50, "encoche_epiphysaire_radio": 30},
+        "paraclinique": ["cristaux_urate_sodium_ponction", "encoche_epiphysaire_radio"],
         "veto": ["douleur_membre_traumatisme"],
         "boost": ["cristaux_urate_sodium_ponction", "intolerance_contact_drap"],
         "images": { "podagre": "images/gout_toe_podagra.png", "encoche_epiphysaire_radio": "images/gout_erosion_xray.png" },
@@ -274,6 +302,7 @@
         "short": "HSA (Hémorragie Sous-Arachnoïdienne)",
         "pdf": "fiches/hsa.pdf",
         "signes": {"cephalees": 30, "troubles_neuro": 15, "cephalee_coup_tonnerre": 40, "syndrome_meninge": 15, "vomissements_en_jet": 15, "photophobie": 12, "troubles_conscience": 10, "hyperdensite_spontanee_scanner": 50},
+        "paraclinique": ["hyperdensite_spontanee_scanner"],
         "veto": ["cephalees"],
         "boost": ["hyperdensite_spontanee_scanner"],
         "images": {"raideur_nuque": "images/nuchal_rigidity_exam.png"},
@@ -284,6 +313,7 @@
         "short": "Crise tonicoclonique généralisée",
         "pdf": "fiches/epilepsie.pdf",
         "signes": {"troubles_neuro": 25, "perte_connaissance_brutale": 15, "phase_tonique_clonique": 25, "morsure_laterale_langue": 20, "perte_urines": 12, "respiration_stertoreuse_post_critique": 15, "confusion_post_critique": 12, "amnesie_evenement": 10},
+        "paraclinique": [],
         "veto": ["troubles_neuro"],
         "boost": ["morsure_laterale_langue", "phase_tonique_clonique"],
         "facteurs": {"sevrage_alcool": 4, "dette_sommeil": 3, "arret_traitement": 5}
@@ -293,6 +323,7 @@
         "short": "VRS du nourrisson",
         "pdf": "fiches/bronchiolite.pdf",
         "signes": {"dyspnee": 20, "fievre": 5, "dyspnee_sifflante": 20, "toux": 5, "signes_lutte_respiratoire": 15, "freinage_expiratoire": 15, "refus_biberon": 15, "fievre_moderee": 6, "distension_thoracique": 10, "rhinite_inaugurale": 10},
+        "paraclinique": [],
         "veto": ["dyspnee"],
         "boost": ["signes_lutte_respiratoire"],
         "facteurs": {"saison_hivernale": 5, "nourrisson_moins_2ans": 10, "prematurite": 3}
@@ -302,6 +333,7 @@
         "short": "IIA",
         "pdf": "fiches/iia.pdf",
         "signes": {"douleur_abdominale": 25, "douleur_abdominale_paroxystique": 20, "acces_pleurs_intermittents": 18, "vomissements": 14, "refus_alimentation": 10, "rectorragies_gelee_groseille": 20, "boudin_invagination_palpable": 15, "image_cocard_echo": 50},
+        "paraclinique": ["image_cocard_echo"],
         "veto": ["douleur_abdominale"],
         "boost": ["rectorragies_gelee_groseille", "image_cocard_echo"],
         "images": {"rectorragies": "images/currant_jelly_stool.png"},
@@ -312,6 +344,7 @@
         "short": "Dermohypodermite bactérienne",
         "pdf": "fiches/erysipele.pdf",
         "signes": {"anomalie_peau": 25, "fievre": 15, "placard_inflammatoire_cutane": 25, "fievre_brutale_frissons": 20, "bourrelet_peripherique": 20, "douleur_locale": 12, "adenopathie_satellite": 10, "porte_entree_cutanee": 15},
+        "paraclinique": [],
         "veto": ["anomalie_peau", "fievre"],
         "boost": ["bourrelet_peripherique"],
         "images": {"jambe_rouge": "images/erysipelas_leg.png"},
@@ -322,6 +355,7 @@
         "short": "Réactivation VZV",
         "pdf": "fiches/zona.pdf",
         "signes": {"anomalie_peau": 30, "eruption_vesiculeuse_metamerique": 30, "unilateralite_stricte": 25, "douleur_brulure_precessive": 15, "adenopathie_axillaire": 6, "fievre_inconstante": 5},
+        "paraclinique": [],
         "veto": ["anomalie_peau"],
         "boost": ["unilateralite_stricte"],
         "images": {"eruption_metamerique": "images/shingles_zoster.png"},
@@ -332,6 +366,7 @@
         "short": "Accès palustre",
         "pdf": "fiches/paludisme.pdf",
         "signes": {"fievre": 35, "fievre_retour_voyage": 40, "triade_frissons_chaleur_sueurs": 25, "cephalees": 10, "troubles_digestifs": 8, "splenomegalie": 10, "thrombopenie": 15, "frottis_goutte_epaisse_positif": 50},
+        "paraclinique": ["thrombopenie", "frottis_goutte_epaisse_positif"],
         "veto": ["fievre"],
         "images": {"frottis_sanguin": "images/malaria_smear.png"},
         "facteurs": {"voyage_zone_endemique": 100, "absence_prophylaxie": 5}
@@ -341,6 +376,7 @@
         "short": "Maladie de Basedow",
         "pdf": "fiches/hyperthyroidie.pdf",
         "signes": {"troubles_neuro": 10, "perte_poids_appetit_conserve": 20, "tachycardie_repos": 15, "tremblements_extremites": 12, "thernophobie": 12, "diarrhee_motrice": 8, "exophtalmie": 20, "goitre_vasculaire": 15, "tsh_effondree": 50},
+        "paraclinique": ["tsh_effondree"],
         "boost": ["exophtalmie", "tsh_effondree"],
         "images": {"exophtalmie": "images/exophthalmos.png"},
         "facteurs": {"femme_jeune": 5, "auto_immun": 3, "tabac": 2}
@@ -350,6 +386,7 @@
         "short": "Carence insuline absolue",
         "pdf": "fiches/dt1.pdf",
         "signes": {"genes_urinaires": 15, "syndrome_polyuro_polydipsique": 30, "amaigrissement_rapide": 20, "polyphagie": 15, "asthenie": 10, "cetose_haleine_pomme": 15, "glycosurie_massive": 20},
+        "paraclinique": ["glycosurie_massive"],
         "veto": ["syndrome_polyuro_polydipsique"],
         "boost": ["cetose_haleine_pomme"],
         "facteurs": {"sujet_jeune": 8, "atcd_autoimmun": 2}
@@ -359,6 +396,7 @@
         "short": "Crise d'angoisse aiguë",
         "pdf": "fiches/panique.pdf",
         "signes": {"trouble_psy": 25, "peur_intense_brutale": 20, "palpitations": 15, "sensation_etouffement": 15, "derealisation_depersonnalisation": 15, "paresthesies": 10, "tremblements": 10, "douleur_thoracique_atypique": 8, "absence_anomalie_clinique": 20},
+        "paraclinique": [],
         "boost": ["peur_intense_brutale"],
         "facteurs": {"femme": 2, "terrain_anxieux": 5}
     },
@@ -367,6 +405,7 @@
         "short": "Épisode Dépressif Caractérisé",
         "pdf": "fiches/depression.pdf",
         "signes": {"trouble_psy": 30, "humeur_triste_constante": 20, "anhedonie": 20, "ralentissement_psychomoteur": 15, "troubles_sommeil_reveil_precoce": 12, "anorexie_perte_poids": 10, "culpabilite_indignite": 10, "idees_suicidaires": 15, "asthenie_matinale": 12},
+        "paraclinique": [],
         "veto": ["trouble_psy"],
         "boost": ["anhedonie", "idees_suicidaires"],
         "facteurs": {"antecedent_personnel": 5, "isolement_social": 3}
@@ -376,6 +415,7 @@
         "short": "GAFA (Fermeture de l'angle)",
         "pdf": "fiches/glaucome.pdf",
         "signes": {"troubles_visuels": 30, "baisse_acuite_visuelle_unilaterale": 15, "douleur_oculaire_intense": 25, "oeil_rouge_cercle_perikeratique": 20, "pupille_semi_mydriase_areactive": 20, "nausees_vomissements": 12, "oeil_dur_bille_ivoire": 20, "vision_halos_colores": 10},
+        "paraclinique": ["oeil_dur_bille_ivoire"],
         "veto": ["troubles_visuels"],
         "boost": ["pupille_semi_mydriase_areactive", "oeil_dur_bille_ivoire"],
         "images": {"pupille_semi_mydriase": "images/fixed_dilated_pupil.png", "oeil_rouge": "images/conjunctivitis_red_eye.png"},
@@ -386,6 +426,7 @@
         "short": "OMA purulente",
         "pdf": "fiches/otite.pdf",
         "signes": {"cephalees": 10, "fievre": 10, "otalgie_pulsatile": 25, "fievre": 12, "hypoacousie": 10, "otorrhee": 15, "tympan_bombant_erythemateux": 40},
+        "paraclinique": [],
         "veto": ["otalgie_pulsatile"],
         "boost": ["tympan_bombant_erythemateux"],
         "facteurs": {"enfant": 8, "rhinopharyngite": 5}
@@ -395,6 +436,7 @@
         "short": "Hypersensibilité immédiate",
         "pdf": "fiches/choc_ana.pdf",
         "signes": {"anomalie_peau": 20, "dyspnee": 20, "oedeme_quincke": 20, "hypotension_arterielle": 25, "bronchospasme": 20, "tachycardie": 10, "urticaire_generalisee": 15, "douleur_abdominale": 8, "prurit_palmo_plantaire": 10},
+        "paraclinique": [],
         "boost": ["oedeme_quincke", "hypotension_arterielle"],
         "images": {"urticaire": "images/anaphylaxis_rash.png"},
         "facteurs": {"introduction_allergene": 100, "atopie": 3}
@@ -404,6 +446,7 @@
         "short": "Céphalée primaire",
         "pdf": "fiches/migraine.pdf",
         "signes": {"cephalees": 25, "cephalee_unilaterale": 20, "pulsatilite": 18, "photophobie_phonophobie": 18, "nausees_vomissements": 15, "aggravation_effort_physique": 15, "aura_visuelle": 10, "crise_duree_4_72h": 15},
+        "paraclinique": [],
         "veto": ["cephalees"],
         "boost": ["pulsatilite", "aura_visuelle"],
         "facteurs": {"femme_jeune": 3, "catamenial": 4, "stress": 2}
@@ -413,6 +456,7 @@
         "short": "Urgence vasculaire",
         "pdf": "fiches/ischemie.pdf",
         "signes": {"douleur_membre_traumatisme": 25, "douleur_brutale_intense": 25, "paleur_membre": 20, "paralysie": 15, "froid_membre": 20, "abolition_pouls_distaux": 30, "paresthesies": 10, "marbrures": 10},
+        "paraclinique": [],
         "veto": ["douleur_membre_traumatisme"],
         "boost": ["froid_membre", "abolition_pouls_distaux"],
         "images": {"paleur_membre": "images/pale_leg_ischemia.png"},
@@ -423,6 +467,7 @@
         "short": "Syndrome parkinsonien",
         "pdf": "fiches/parkinson.pdf",
         "signes": {"troubles_neuro": 25, "tremblement_repos": 25, "akinesie_bradykinesie": 25, "rigidite_plastique_roue_dentee": 20, "micrographie": 10, "amimie": 10, "marche_petits_pas": 15},
+        "paraclinique": [],
         "boost": ["tremblement_repos", "akinesie_bradykinesie"],
         "facteurs": {"age_avance": 5, "homme": 1}
     },
@@ -431,6 +476,7 @@
         "short": "Diverticulite aiguë",
         "pdf": "fiches/sigmoidite.pdf",
         "signes": {"douleur_abdominale": 25, "fievre": 12, "douleur_fig": 25, "troubles_transit": 12, "defense_fig": 15, "nausees": 8, "syndrome_inflammatoire": 10, "epaississement_paroi_colique_tdm": 30},
+        "paraclinique": ["epaississement_paroi_colique_tdm"],
         "veto": ["douleur_abdominale", "fievre"],
         "boost": ["defense_fig"],
         "facteurs": {"age_>60ans": 4, "constipation_chronique": 3}
@@ -440,6 +486,7 @@
         "short": "Vascularite à IgA",
         "pdf": "fiches/purpura.pdf",
         "signes": {"anomalie_peau": 30, "douleur_abdominale": 15, "purpura_vasculaire_declive": 25, "arthralgies": 15, "douleurs_abdominales": 15, "hematurie_proteinurie": 15, "absence_thrombopenie": 20},
+        "paraclinique": ["absence_thrombopenie", "hematurie_proteinurie"],
         "boost": ["purpura_vasculaire_declive"],
         "images": {"purpura_jambes": "images/henoch_schonlein_purpura.png"},
         "facteurs": {"garcon": 2, "enfant": 8, "infection_orl_recente": 3}
@@ -449,6 +496,7 @@
         "short": "Urgence chirurgicale",
         "pdf": "fiches/hernie.pdf",
         "signes": {"douleur_abdominale": 20, "tumefaction_inguinale_douloureuse": 25, "irreductibilite": 30, "non_impulsive_toux": 15, "arret_matieres_gaz": 15, "nausees_vomissements": 10},
+        "paraclinique": [],
         "veto": ["douleur_abdominale"],
         "boost": ["irreductibilite"],
         "images": {"hernie_inguinale": "images/inguinal_hernia.png"},
@@ -459,6 +507,7 @@
         "short": "Primo-infection VZV",
         "pdf": "fiches/varicelle.pdf",
         "signes": {"anomalie_peau": 30, "fievre": 10, "eruption_vesiculo_bulleuse_generalisee": 25, "prurit_intense": 18, "fievre_moderee": 8, "elements_ages_differents": 20, "atteinte_cuir_chevelu": 10},
+        "paraclinique": [],
         "veto": ["anomalie_peau"],
         "boost": ["elements_ages_differents"],
         "images": {"eruption_varicelle": "images/chickenpox_rash.png"},
@@ -469,6 +518,7 @@
         "short": "Fracture extrémité inférieure radius",
         "pdf": "fiches/pouteau.pdf",
         "signes": {"douleur_membre_traumatisme": 30, "deformtion_dos_fourchette": 30, "douleur_poignet": 18, "impotence_fonctionnelle": 15, "oedeme_poignet": 12, "ecchymose": 10, "trait_fracture_radio": 50},
+        "paraclinique": ["trait_fracture_radio"],
         "veto": ["douleur_membre_traumatisme"],
         "boost": ["deformtion_dos_fourchette", "trait_fracture_radio"],
         "images": { "dos_fourchette": "images/colles_fracture_fork.png", "radio_poignet": "images/wrist_fracture_xray.png" },
@@ -479,6 +529,7 @@
         "short": "Infection valves cardiaques",
         "pdf": "fiches/endocardite.pdf",
         "signes": {"fievre": 25, "anomalie_peau": 10, "fievre_long_cours": 18, "apparition_souffle_cardiaque": 30, "purpura_petechial": 10, "splenomegalie": 8, "aeg": 12, "vegetations_echocardio": 50, "hemocultures_positives": 50},
+        "paraclinique": ["vegetations_echocardio", "hemocultures_positives"],
         "veto": ["fievre"],
         "boost": ["apparition_souffle_cardiaque", "vegetations_echocardio"],
         "images": {"lesions_janeway": "images/janeway_lesions.png"},
@@ -489,6 +540,7 @@
         "short": "Arythmie complète par fibrillation auriculaire",
         "pdf": "fiches/fa.pdf",
         "signes": {"troubles_neuro": 5, "palpitations": 20, "dyspnee_effort": 12, "douleur_thoracique_atypique": 6, "bruits_coeur_irreguliers": 25, "absence_onde_p_ecg": 50, "mailles_irregulieres_ecg": 40},
+        "paraclinique": ["absence_onde_p_ecg", "mailles_irregulieres_ecg"],
         "boost": ["bruits_coeur_irreguliers", "absence_onde_p_ecg"],
         "images": { "ecg_fa": "images/afib_ecg.png" },
         "facteurs": {"age_>75ans": 5, "hta": 3, "alcoolisme": 3, "hyperthyroidie": 3}
@@ -498,6 +550,7 @@
         "short": "EABPCO",
         "pdf": "fiches/bpco.pdf",
         "signes": {"dyspnee": 25, "dyspnee_aggravee": 20, "toux_productive": 18, "expectorations_purulentes": 20, "cyanose": 12, "sibilants_ronchus": 15, "distension_thoracique": 10},
+        "paraclinique": [],
         "veto": ["dyspnee"],
         "images": {"cyanose": "images/cyanosis_lips.png"},
         "facteurs": {"tabagisme_actif": 10, "saison_froide": 3}
@@ -507,6 +560,7 @@
         "short": "Carcinome broncho-pulmonaire",
         "pdf": "fiches/kc_poumon.pdf",
         "signes": {"dyspnee": 15, "douleur_thoracique": 10, "hemoptysie": 25, "toux_chronique_modifiee": 20, "amigrissement": 15, "douleur_thoracique": 10, "dyspnee": 10, "dysphonie": 8, "hippocratisme_digital": 12, "opacite_spiculee_scanner": 50},
+        "paraclinique": ["opacite_spiculee_scanner"],
         "boost": ["hemoptysie", "opacite_spiculee_scanner"],
         "images": {"hemoptysie": "images/hemoptysis_tissue.png"},
         "facteurs": {"tabagisme_paquets_annee": 20, "exposition_amiante": 8}
@@ -516,6 +570,7 @@
         "short": "Infection Mycobacterium tuberculosis",
         "pdf": "fiches/tuberculose.pdf",
         "signes": {"fievre": 15, "toux_chronique": 18, "hemoptysie": 15, "fievre_vesperale": 15, "sueurs_nocturnes": 20, "amaigrissement": 15, "caverne_apicale_radio": 40},
+        "paraclinique": ["caverne_apicale_radio"],
         "veto": ["fievre"],
         "boost": ["caverne_apicale_radio", "sueurs_nocturnes"],
         "facteurs": {"precarite_migrant": 10, "immunodepression": 5}
@@ -525,6 +580,7 @@
         "short": "RGO",
         "pdf": "fiches/rgo.pdf",
         "signes": {"douleur_abdominale": 5, "pyrosis": 25, "regurgitations_acides": 25, "toux_seche_nocturne": 10, "douleur_epigastrique": 6, "signe_lacet_positif": 10},
+        "paraclinique": [],
         "boost": ["pyrosis", "regurgitations_acides"],
         "facteurs": {"surpoids": 4, "hernie_hiatale": 5, "alcool_tabac": 3}
     },
@@ -533,6 +589,7 @@
         "short": "Insuffisance hépocellulaire",
         "pdf": "fiches/cirrhose.pdf",
         "signes": {"douleur_abdominale": 20, "anomalie_peau": 15, "ascite": 25, "ictere": 18, "angiomes_stellaires": 15, "erytheme_palmaire": 10, "encephalopathie_hepatique": 15, "asterixis": 20, "oedemes_membres_inferieurs": 10},
+        "paraclinique": [],
         "boost": ["ascite", "asterixis"],
         "images": {"ictere": "images/scleral_icterus.png", "ascite": "images/ascites_abdomen.png"},
         "facteurs": {"ethylisme_chronique": 10, "hepatite_virale_b_c": 5}
@@ -542,6 +599,7 @@
         "short": "Adénocarcinome colique",
         "pdf": "fiches/kc_colon.pdf",
         "signes": {"douleur_abdominale": 15, "rectorragies": 20, "alternance_diarrhee_constipation": 20, "anemie_ferriprive": 15, "amaigrissement": 12, "masse_abdominale_palpable": 15},
+        "paraclinique": ["anemie_ferriprive"],
         "facteurs": {"age_>50ans": 6, "atcd_familial": 5, "polypose": 5}
     },
     {
@@ -549,6 +607,7 @@
         "short": "MICI iléo-colique",
         "pdf": "fiches/crohn.pdf",
         "signes": {"douleur_abdominale": 25, "fievre": 10, "diarrhee_chronique": 20, "douleurs_abdominales_d_poignard": 15, "amaigrissement": 15, "lesions_anoperineales_fistules": 25, "aphtose_buccale": 10},
+        "paraclinique": [],
         "veto": ["douleur_abdominale"],
         "boost": ["lesions_anoperineales_fistules"],
         "images": {"fistule_anale": "images/anal_fistula.png"},
@@ -559,6 +618,7 @@
         "short": "RCH",
         "pdf": "fiches/rch.pdf",
         "signes": {"douleur_abdominale": 20, "syndrome_dysenterique": 25, "rectorragies": 20, "glaires": 15, "epreintes_tenesme": 15, "fievre": 6, "absence_lesions_anales": 10},
+        "paraclinique": [],
         "veto": ["douleur_abdominale"],
         "boost": ["syndrome_dysenterique"],
         "images": {"selles_sanglantes": "images/bloody_stool.png"},
@@ -569,6 +629,7 @@
         "short": "Adénocarcinome prostatique",
         "pdf": "fiches/kc_prostate.pdf",
         "signes": {"genes_urinaires": 25, "asymptomatique": 20, "dysurie": 10, "pollakiurie": 10, "hematurie": 8, "toucher_rectal_anormal_indure": 40, "psa_eleve": 30},
+        "paraclinique": ["psa_eleve"],
         "veto": ["genes_urinaires"],
         "boost": ["toucher_rectal_anormal_indure", "psa_eleve"],
         "facteurs": {"homme_>50ans": 10, "atcd_familial": 4, "origine_afro_antillaise": 3}
@@ -578,6 +639,7 @@
         "short": "Carcinome urothélial",
         "pdf": "fiches/kc_vessie.pdf",
         "signes": {"genes_urinaires": 30, "hematurie_macroscopique_totale": 30, "signes_irritatifs_vesicaux": 12, "pollakiurie": 12, "cystites_recidivantes": 15, "cytologie_urinaire_positive": 30},
+        "paraclinique": ["cytologie_urinaire_positive"],
         "veto": ["genes_urinaires"],
         "boost": ["hematurie_macroscopique_totale"],
         "images": {"hematurie": "images/gross_hematuria.png"},
@@ -588,6 +650,7 @@
         "short": "IRA",
         "pdf": "fiches/ira.pdf",
         "signes": {"genes_urinaires": 20, "anurie_oligurerie": 25, "creat_augmentee_brutale": 50, "oedemes": 12, "nausees": 10, "dyspnee_kussmaul_acidose": 10, "hyperkaliemie": 15},
+        "paraclinique": ["creat_augmentee_brutale", "hyperkaliemie"],
         "veto": ["genes_urinaires"],
         "boost": ["anurie_oligurerie"],
         "facteurs": {"deshydratation": 5, "nephrotoxiques": 5, "obstacle_voies_urinaires": 5}
@@ -597,6 +660,7 @@
         "short": "Glomérulopathie",
         "pdf": "fiches/sd_nephrotique.pdf",
         "signes": {"anomalie_peau": 10, "oedemes_blancs_mous_godet": 25, "proteinurie_massive_>3g": 40, "hypoalbuminemie_>30g": 30, "prise_poids": 15, "urines_mousseuses": 15, "hyperlipidemie": 10},
+        "paraclinique": ["proteinurie_massive_>3g", "hypoalbuminemie_>30g", "hyperlipidemie"],
         "boost": ["oedemes_blancs_mous_godet", "proteinurie_massive_>3g"],
         "images": {"signe_godet": "images/pitting_edema.png"},
         "facteurs": {"diabete": 3, "lupus": 3, "prise_aains": 3}
@@ -606,6 +670,7 @@
         "short": "PR",
         "pdf": "fiches/pr.pdf",
         "signes": {"douleur_membre_traumatisme": 20, "polyarthrite_distale_symetrique": 25, "derouillage_matinal_>30min": 20, "epargne_ipd": 15, "synovite_poignets_mcp_ipp": 20, "facteur_rhumatoide_positif": 30, "ac_anti_ccp_positif": 40},
+        "paraclinique": ["facteur_rhumatoide_positif", "ac_anti_ccp_positif"],
         "veto": ["douleur_membre_traumatisme"],
         "boost": ["ac_anti_ccp_positif", "derouillage_matinal_>30min"],
         "images": {"deformation_doigts": "images/rheumatoid_hands.png"},
@@ -616,6 +681,7 @@
         "short": "SPA / Spondyloarthrite",
         "pdf": "fiches/spa.pdf",
         "signes": {"douleur_dos": 30, "rachialgies_inflammatoires": 25, "derouillage_matinal": 15, "pygalgie_bascule": 20, "talalgie": 15, "orteil_en_saucisse": 10, "uveite_anterieure": 10, "sacro_iliite_radio": 40, "hla_b27_positif": 20},
+        "paraclinique": ["sacro_iliite_radio", "hla_b27_positif"],
         "veto": ["douleur_dos"],
         "boost": ["pygalgie_bascule", "sacro_iliite_radio"],
         "images": {"dactylite": "images/dactylitis_toe.png", "uveite": "images/conjunctivitis_red_eye.png"},
@@ -626,6 +692,7 @@
         "short": "Fragilité osseuse",
         "pdf": "fiches/osteoporose.pdf",
         "signes": {"douleur_dos": 20, "douleur_membre_traumatisme": 25, "fracture_faible_traumatisme": 25, "perte_taille": 15, "cyphose_dorsale": 12, "fracture_pouteau_colles": 10, "fracture_col_femur": 10, "tassement_vertebral": 40, "densitometrie_tscore_<-2.5": 50},
+        "paraclinique": ["tassement_vertebral", "densitometrie_tscore_<-2.5"],
         "boost": ["tassement_vertebral", "densitometrie_tscore_<-2.5"],
         "images": { "cyphose": "images/kyphosis_dowagers_hump.png", "tassement_vertebral": "images/vertebral_compression_xray.png" },
         "facteurs": {"femme_menopausee": 8, "corticotherapie_long_cours": 5, "imc_bas": 3}
@@ -635,6 +702,7 @@
         "short": "Compression nerf médian",
         "pdf": "fiches/canal_carpien.pdf",
         "signes": {"troubles_neuro": 20, "acroparesthesies_nocturnes": 25, "atteinte_3_premiers_doigts": 20, "deficit_force_pince_pouce": 12, "signe_tinel_positif": 15, "signe_phalen_positif": 15, "amyotrophie_thenar": 10},
+        "paraclinique": [],
         "boost": ["acroparesthesies_nocturnes"],
         "facteurs": {"femme": 3, "travail_repetitif": 4, "grossesse": 3}
     },
@@ -643,6 +711,7 @@
         "short": "SEP",
         "pdf": "fiches/sep.pdf",
         "signes": {"troubles_neuro": 25, "troubles_visuels": 15, "nevrite_optique_retrobulbaire": 25, "troubles_sensitifs_paresthesies": 15, "signe_lhermitte": 20, "phenomene_uhthoff": 15, "syndrome_pyramidal": 12, "dissimination_temps_espace": 40},
+        "paraclinique": ["dissimination_temps_espace"],
         "veto": ["troubles_neuro"],
         "boost": ["signe_lhermitte", "nevrite_optique_retrobulbaire"],
         "facteurs": {"femme_jeune": 5, "latitude_nord": 2}
@@ -652,6 +721,7 @@
         "short": "Trouble neurocognitif majeur",
         "pdf": "fiches/alzheimer.pdf",
         "signes": {"troubles_neuro": 25, "amnesie_anterograde_episodique": 30, "syndrome_aphaso_apraxo_agnosique": 20, "anosognosie": 15, "desorientation_temporo_spatiale": 15, "atrophie_hippocampique_irm": 30},
+        "paraclinique": ["atrophie_hippocampique_irm"],
         "veto": ["troubles_neuro"],
         "boost": ["amnesie_anterograde_episodique"],
         "facteurs": {"age_>65ans": 10, "allele_apoe4": 3}
@@ -661,6 +731,7 @@
         "short": "Bloc neuromusculaire",
         "pdf": "fiches/myasthenie.pdf",
         "signes": {"troubles_neuro": 25, "troubles_visuels": 15, "fatigabilite_musculaire_effort": 30, "ptosis_unilateral_fluctuant": 25, "diplopie": 20, "troubles_phonation_deglutition": 15, "ac_anti_rach_positifs": 50},
+        "paraclinique": ["ac_anti_rach_positifs"],
         "veto": ["troubles_neuro"],
         "boost": ["fatigabilite_musculaire_effort", "ptosis_unilateral_fluctuant"],
         "images": {"ptosis": "images/ptosis_eye.png"},
@@ -671,6 +742,7 @@
         "short": "HSD (Hémorragie veineuse)",
         "pdf": "fiches/hsd.pdf",
         "signes": {"troubles_neuro": 25, "cephalees": 15, "cephalees_progressives": 15, "confusion_fluctuante": 20, "hemiparesie_contralaterale": 15, "bradypsychie": 12, "image_croissant_concave_scanner": 50},
+        "paraclinique": ["image_croissant_concave_scanner"],
         "veto": ["troubles_neuro"],
         "boost": ["image_croissant_concave_scanner"],
         "images": { "scanner_hsd": "images/subdural_hematoma_ct.png" },
@@ -681,6 +753,7 @@
         "short": "Insulino-résistance",
         "pdf": "fiches/dt2.pdf",
         "signes": {"genes_urinaires": 10, "asymptomatique_longtemps": 20, "polyurie_polydipsie_tardive": 12, "surpoids_obesite_abdominale": 15, "infections_recidivantes": 8, "glycemie_jeun_>1.26": 50},
+        "paraclinique": ["glycemie_jeun_>1.26"],
         "boost": ["glycemie_jeun_>1.26"],
         "facteurs": {"age_>40ans": 5, "syndrome_metabolique": 5, "sedentarite": 4}
     },
@@ -689,6 +762,7 @@
         "short": "Maladie d'Addison (ISC)",
         "pdf": "fiches/isa.pdf",
         "signes": {"douleur_abdominale": 10, "anomalie_peau": 20, "melanodermie": 25, "hypotension_orthostatique": 20, "asthenie_globale": 18, "amaigrissement": 12, "appetence_sel": 15, "douleurs_abdominales": 10, "hyponatremie_hyperkaliemie": 20},
+        "paraclinique": ["hyponatremie_hyperkaliemie"],
         "veto": ["asthenie_globale"],
         "boost": ["melanodermie"],
         "images": {"melanodermie": "images/addison_hyperpigmentation.png"},
@@ -699,6 +773,7 @@
         "short": "Hypercortisolisme",
         "pdf": "fiches/cushing.pdf",
         "signes": {"anomalie_peau": 20, "obesite_facio_tronculaire": 25, "visage_lunaire": 20, "amyotrophie_proximale": 15, "vergetures_pourpres": 25, "hta": 10, "hirsutisme": 10, "fragilite_cutanee": 12},
+        "paraclinique": [],
         "boost": ["visage_lunaire", "vergetures_pourpres"],
         "images": {"visage_lunaire": "images/moon_face_cushing.png", "vergetures": "images/cushing_striae.png"},
         "facteurs": {"prise_corticoides": 10, "adenome_hypophysaire": 5}
@@ -708,6 +783,7 @@
         "short": "LAM / LAL",
         "pdf": "fiches/leucemie.pdf",
         "signes": {"fievre": 15, "anomalie_peau": 10, "syndrome_anemique": 18, "syndrome_infectieux_fievre": 15, "syndrome_hemorragique_thrombopenie": 20, "douleurs_osseuses": 12, "hypertrophie_gingivale": 10, "blastes_peripheriques_frottis": 50},
+        "paraclinique": ["blastes_peripheriques_frottis"],
         "boost": ["blastes_peripheriques_frottis", "syndrome_hemorragique_thrombopenie"],
         "images": {"purpura": "images/ecchymoses_petechiae.png"},
         "facteurs": {"exposition_benzene": 3, "chimio_anterieure": 3}
@@ -717,6 +793,7 @@
         "short": "Lymphome",
         "pdf": "fiches/hodgkin.pdf",
         "signes": {"fievre": 10, "anomalie_peau": 10, "adenopathies_cervicales_asymetriques": 25, "fievre_long_cours": 12, "sueurs_nocturnes": 12, "prurit_sine_materia": 15, "perte_poids": 10, "douleur_ganglionnaire_alcool": 15, "cellules_sternberg_biopsie": 50},
+        "paraclinique": ["cellules_sternberg_biopsie"],
         "boost": ["douleur_ganglionnaire_alcool", "cellules_sternberg_biopsie"],
         "images": {"adenopathies": "images/cervical_lymphadenopathy.png"},
         "facteurs": {"adulte_jeune": 5, "ebv": 2}
@@ -726,6 +803,7 @@
         "short": "Maladie de Kahler",
         "pdf": "fiches/myelome.pdf",
         "signes": {"douleur_membre_traumatisme": 20, "douleur_dos": 20, "douleurs_osseuses_inflammatoires": 25, "fractures_pathologiques": 20, "aeg": 15, "anemie": 10, "insuffisance_renale": 15, "hypercalcemie": 20, "pic_monoclonal_ep": 50, "lacunes_emporte_piece_radio": 30},
+        "paraclinique": ["hypercalcemie", "pic_monoclonal_ep", "lacunes_emporte_piece_radio"],
         "boost": ["pic_monoclonal_ep", "lacunes_emporte_piece_radio"],
         "facteurs": {"sujet_age_>60ans": 8, "homme": 2}
     },
@@ -734,6 +812,7 @@
         "short": "Hémoglobinopathie S",
         "pdf": "fiches/drepanocytose.pdf",
         "signes": {"fievre": 10, "douleur_membre_traumatisme": 25, "crise_vaso_occlusive_osseuse": 30, "syndrome_thoracique_aigu": 20, "fievre": 10, "anemie_hemolytique_chronique": 15, "ictere": 10, "priapisme": 10, "splenomegalie_enfant": 8},
+        "paraclinique": ["anemie_hemolytique_chronique"],
         "boost": ["crise_vaso_occlusive_osseuse"],
         "images": {"ictere": "images/scleral_icterus.png"},
         "facteurs": {"origine_afro_antillaise": 100, "atcd_familial": 10}
@@ -743,6 +822,7 @@
         "short": "Psoriasis vulgaire",
         "pdf": "fiches/psoriasis.pdf",
         "signes": {"anomalie_peau": 30, "plaques_erythemato_squameuses": 25, "localisation_coudes_genoux_sacrum": 20, "squames_blanches_episses": 18, "signe_rosée_sanglante": 15, "atteinte_ongle_de_a_coudre": 10, "atteinte_cuir_chevelu": 10},
+        "paraclinique": [],
         "veto": ["anomalie_peau"],
         "boost": ["plaques_erythemato_squameuses", "localisation_coudes_genoux_sacrum"],
         "images": {"plaque_psoriasis": "images/psoriasis_plaque.png"},
@@ -753,6 +833,7 @@
         "short": "Tumeur mélanocytaire maligne",
         "pdf": "fiches/melanome.pdf",
         "signes": {"anomalie_peau": 30, "regle_abcde_positive": 30, "asymetrie": 15, "bords_irreguliers": 15, "polychromie": 20, "diametre_>6mm": 10, "evolution_extension": 20, "signe_vilain_petit_canard": 15},
+        "paraclinique": [],
         "veto": ["anomalie_peau"],
         "boost": ["regle_abcde_positive"],
         "images": {"melanome": "images/melanoma.png"},
@@ -763,6 +844,7 @@
         "short": "CBC",
         "pdf": "fiches/basocellulaire.pdf",
         "signes": {"anomalie_peau": 30, "perle_translucide": 30, "telangiectasies": 15, "ulceration_crouteuse_centrale": 18, "localisation_photo_exposee": 15, "evolution_lente": 10, "absence_adenopathie": 10},
+        "paraclinique": [],
         "veto": ["anomalie_peau"],
         "boost": ["perle_translucide"],
         "images": {"perle_translucide": "images/basal_cell_carcinoma.png"},
@@ -773,6 +855,7 @@
         "short": "Sarcoptose",
         "pdf": "fiches/gale.pdf",
         "signes": {"anomalie_peau": 20, "prurit_nocturne": 25, "prurit_familial": 20, "sillons_scabieux_interdigitaux": 25, "nodules_scabieux_organes_genitaux": 15, "vesicules_perlees": 10},
+        "paraclinique": [],
         "veto": ["anomalie_peau"],
         "boost": ["sillons_scabieux_interdigitaux", "prurit_familial"],
         "images": {"sillons": "images/scabies_burrow.png"},
@@ -783,6 +866,7 @@
         "short": "Tissu endométrial ectopique",
         "pdf": "fiches/endometriose.pdf",
         "signes": {"douleur_abdominale": 20, "dysmenorrhee_intense": 25, "dyspareunie_profonde": 20, "douleur_pelvienne_chronique": 15, "infertilite": 12, "signes_digestifs_catameniaux": 10, "signes_urinaires_catameniaux": 10},
+        "paraclinique": [],
         "veto": ["douleur_abdominale", "dysmenorrhee_intense"],
         "facteurs": {"femme_age_procreer": 10, "nulliparite": 3}
     },
@@ -791,6 +875,7 @@
         "short": "Adénocarcinome mammaire",
         "pdf": "fiches/kc_sein.pdf",
         "signes": {"anomalie_peau": 10, "nodule_mammaire_dur_irregulier": 30, "adenopathie_axillaire": 15, "retraction_mamelonnaire": 20, "ecoulement_mamelonnaire_unipore": 15, "peau_orange": 15, "asymptomatique_mammographie": 20},
+        "paraclinique": ["asymptomatique_mammographie"],
         "boost": ["nodule_mammaire_dur_irregulier"],
         "images": {"peau_orange": "images/peau_d_orange_breast.png"},
         "facteurs": {"femme": 100, "age_>50ans": 5, "atcd_familial": 4, "nulliparite": 2}
@@ -800,6 +885,7 @@
         "short": "HTA gravidique + Protéinurie",
         "pdf": "fiches/pre_eclampsie.pdf",
         "signes": {"douleur_abdominale": 15, "cephalees": 15, "hta_>14_9": 30, "proteinurie_>0.3g": 30, "oedemes_membres_inf": 15, "barre_epigastrique_chaussier": 20, "cephalees": 12, "phosphenes": 12, "acouphenes": 10},
+        "paraclinique": ["proteinurie_>0.3g"],
         "veto": ["hta_>14_9"],
         "boost": ["proteinurie_>0.3g", "barre_epigastrique_chaussier"],
         "facteurs": {"grossesse_>20SA": 100, "primiparite": 5, "atcd_familial": 3}
@@ -809,6 +895,7 @@
         "short": "Myome",
         "pdf": "fiches/fibrome.pdf",
         "signes": {"douleur_abdominale": 15, "genes_urinaires": 10, "menorragies": 25, "pesanteur_pelvienne": 15, "pollakiurie_compression": 10, "uterus_augmente_volume_bosselé": 20, "anemie_ferriprive": 10},
+        "paraclinique": ["anemie_ferriprive"],
         "facteurs": {"femme_35_50ans": 5, "peau_noire": 5, "nulliparite": 2}
     },
     {
@@ -816,6 +903,7 @@
         "short": "Virose éruptive",
         "pdf": "fiches/rougeole.pdf",
         "signes": {"fievre": 20, "anomalie_peau": 20, "catarrhe_oculo_respiratoire": 20, "fievre_elevee": 18, "eruption_maculo_papuleuse_descendante": 20, "signe_de_koplik": 50, "conjonctivite": 15},
+        "paraclinique": [],
         "veto": ["fievre", "anomalie_peau"],
         "boost": ["signe_de_koplik", "catarrhe_oculo_respiratoire"],
         "images": {"signe_koplik": "images/koplik_spots.png"},
@@ -826,6 +914,7 @@
         "short": "Vascularite systémique infantile",
         "pdf": "fiches/kawasaki.pdf",
         "signes": {"fievre": 30, "anomalie_peau": 15, "fievre_>5jours_resistante": 30, "adenopathie_cervicale": 15, "conjonctivite_bilaterale": 18, "exantheme_polymorphe": 15, "cheilite_langue_framboisee": 20, "oedeme_desquamation_extremites": 20},
+        "paraclinique": [],
         "veto": ["fievre"],
         "boost": ["cheilite_langue_framboisee"],
         "images": {"langue_framboisee": "images/strawberry_tongue.png"},
@@ -836,6 +925,7 @@
         "short": "Infection streptocoque A",
         "pdf": "fiches/scarlatine.pdf",
         "signes": {"fievre": 20, "anomalie_peau": 20, "angine_rouge": 20, "fievre_elevee": 15, "exantheme_granite_sans_intervalle": 25, "langue_saburrale_puis_framboisee": 25, "desquamation_doigts_de_gant": 20, "paleur_peribuccale": 10},
+        "paraclinique": [],
         "veto": ["fievre", "anomalie_peau"],
         "boost": ["langue_saburrale_puis_framboisee", "desquamation_doigts_de_gant"],
         "images": {"langue_framboisee": "images/strawberry_tongue.png"},
@@ -846,6 +936,7 @@
         "short": "Bordetella pertussis",
         "pdf": "fiches/coqueluche.pdf",
         "signes": {"dyspnee": 15, "toux_quinteuse_emetisante": 25, "reprise_inspiratoire_chant_coq": 25, "apnees_nourrisson": 20, "cyanose_peritussive": 10, "hyperlymphocytose": 15, "absence_fievre": 10},
+        "paraclinique": ["hyperlymphocytose"],
         "veto": ["toux_quinteuse_emetisante"],
         "boost": ["reprise_inspiratoire_chant_coq"],
         "facteurs": {"absence_vaccination": 8, "nourrisson_non_vaccine": 10, "contage": 5}
@@ -855,6 +946,7 @@
         "short": "Psychose chronique",
         "pdf": "fiches/schizophrenie.pdf",
         "signes": {"trouble_psy": 30, "syndrome_delirant_paranoide": 25, "hallucinations_acousticoverbales": 25, "syndrome_dissociatif": 20, "repli_autistique": 15, "incurie": 12, "evolution_>6mois": 20},
+        "paraclinique": [],
         "veto": ["trouble_psy"],
         "boost": ["syndrome_dissociatif", "hallucinations_acousticoverbales"],
         "facteurs": {"adulte_jeune": 5, "consommation_cannabis": 4}
@@ -864,6 +956,7 @@
         "short": "Psychose maniaco-dépressive",
         "pdf": "fiches/bipolaire.pdf",
         "signes": {"trouble_psy": 30, "alternance_manie_depression": 30, "episode_maniaque": 25, "tachypsychie": 15, "insomnie_sans_fatigue": 15, "achats_pathologiques": 12, "megalomanie": 12, "desinhibition": 12},
+        "paraclinique": [],
         "veto": ["trouble_psy"],
         "boost": ["episode_maniaque"],
         "facteurs": {"atcd_familial_bipolaire": 8, "adulte_jeune": 3}
@@ -873,6 +966,7 @@
         "short": "TCA restrictif",
         "pdf": "fiches/anorexie.pdf",
         "signes": {"trouble_psy": 25, "triade_3A": 25, "amenorrhee": 20, "amaigrissement_refus_grossir": 25, "dysmorphophobie": 20, "hyperactivite_physique": 12, "lanugo": 10},
+        "paraclinique": [],
         "veto": ["trouble_psy", "amaigrissement_refus_grossir"],
         "boost": ["dysmorphophobie"],
         "facteurs": {"adolescente": 8, "perfectionnisme": 3, "milieu_socio_eleve": 2}
@@ -882,6 +976,7 @@
         "short": "Maculopathie liée à l'âge",
         "pdf": "fiches/dmla.pdf",
         "signes": {"troubles_visuels": 30, "baisse_acuite_vision_centrale": 25, "metamorphopsies": 25, "scotome_central": 20, "eblouissement": 10, "lecture_difficile": 12, "drusen_fond_oeil": 30},
+        "paraclinique": ["drusen_fond_oeil"],
         "veto": ["troubles_visuels"],
         "boost": ["metamorphopsies"],
         "images": {"grille_amsler": "images/amsler_grid_distortion.png"},
@@ -892,6 +987,7 @@
         "short": "Opacification cristallinienne",
         "pdf": "fiches/cataracte.pdf",
         "signes": {"troubles_visuels": 25, "baisse_acuite_progressive": 20, "photophobie_eblouissement": 15, "diplopie_monoculaire": 15, "myopie_indice": 10, "alteration_vision_couleurs": 8, "signe_lueur_pupillaire_diminuee": 15},
+        "paraclinique": [],
         "veto": ["troubles_visuels"],
         "facteurs": {"age_>65ans": 10, "corticotherapie": 5, "diabete": 4}
     },
@@ -900,6 +996,7 @@
         "short": "DR (Urgence)",
         "pdf": "fiches/retine.pdf",
         "signes": {"troubles_visuels": 30, "amputation_champ_visuel_peripherique": 25, "phosphenes_eclairs": 20, "myodesopsies_pluie_suie": 18, "baisse_vision_voile_noir": 20, "oeil_blanc_indolore": 15},
+        "paraclinique": [],
         "veto": ["troubles_visuels"],
         "boost": ["amputation_champ_visuel_peripherique", "phosphenes_eclairs"],
         "facteurs": {"myopie_forte": 8, "chirurgie_cataracte": 5, "traumatisme_oculaire": 5}
@@ -909,6 +1006,7 @@
         "short": "Vertige paroxystique positionnel bénin",
         "pdf": "fiches/vppb.pdf",
         "signes": {"troubles_neuro": 20, "vertige_rotatoire_bref": 25, "declenchement_changement_position": 30, "nausees": 15, "nystagmus_rotatoire_geotropique": 20, "absence_signes_auditifs": 15, "manoeuvre_dix_hallpike_positive": 40},
+        "paraclinique": ["manoeuvre_dix_hallpike_positive"],
         "boost": ["declenchement_changement_position", "manoeuvre_dix_hallpike_positive"],
         "facteurs": {"femme": 2, "age_>50ans": 3, "traumatisme_cranien": 3}
     },
@@ -917,6 +1015,7 @@
         "short": "Angine à Streptocoque A",
         "pdf": "fiches/angine.pdf",
         "signes": {"fievre": 15, "cephalees": 5, "fievre_>38_5": 15, "odynophagie_intense": 20, "adenopathies_sous_angulo_maxillaires": 15, "absence_toux": 15, "exsudat_amygdalien_pultace": 20, "test_tdr_positif": 50},
+        "paraclinique": ["test_tdr_positif"],
         "veto": ["fievre"],
         "boost": ["test_tdr_positif", "exsudat_amygdalien_pultace"],
         "images": {"angine_blanche": "images/tonsillar_exudate.png"},
@@ -927,6 +1026,7 @@
         "short": "Polyradiculonévrite aiguë",
         "pdf": "fiches/guillain_barre.pdf",
         "signes": {"troubles_neuro": 35, "paralysie_ascendante_symetrique": 30, "areflexie_osteotendineuse": 25, "paresthesies_extremites": 12, "deficit_moteur_proximal": 15, "dissociation_albumino_cytologique": 40, "risque_detresse_respiratoire": 20},
+        "paraclinique": ["dissociation_albumino_cytologique"],
         "veto": ["troubles_neuro"],
         "boost": ["paralysie_ascendante_symetrique", "dissociation_albumino_cytologique"],
         "facteurs": {"episode_viral_precedent": 5, "campylobacter_jejuni": 5}
@@ -936,6 +1036,7 @@
         "short": "Saignement nasal",
         "pdf": "fiches/epistaxis.pdf",
         "signes": {"anomalie_peau": 5, "ecoulement_sang_narine": 25, "ecoulement_posterieur_gorge": 12, "tache_vasculaire_saignante": 20, "absence_choc_initialement": 10},
+        "paraclinique": [],
         "veto": ["ecoulement_sang_narine"],
         "facteurs": {"tache_vasculaire_fragile": 8, "hta": 5, "prise_anticoagulants": 5, "grattage": 5}
     },
@@ -944,6 +1045,7 @@
         "short": "Primo-infection EBV",
         "pdf": "fiches/mni.pdf",
         "signes": {"fievre": 20, "anomalie_peau": 10, "asthenie_intense_durable": 20, "angine_pseudomembraneuse": 18, "polyadenopathies": 18, "splenomegalie": 15, "mni_test_positif": 40, "rash_post_amoxicilline": 20, "syndrome_mononucleosique_bio": 30},
+        "paraclinique": ["mni_test_positif", "syndrome_mononucleosique_bio"],
         "veto": ["fievre"],
         "boost": ["mni_test_positif", "syndrome_mononucleosique_bio"],
         "images": {"angine_blanche": "images/mono_tonsils.png"},
@@ -954,6 +1056,7 @@
         "short": "Syndrome rétroviral aigu",
         "pdf": "fiches/vih.pdf",
         "signes": {"fievre": 20, "anomalie_peau": 15, "syndrome_pseudo_grippal": 18, "eruption_morbiliforme_tronc": 15, "ulcerations_buccales_genitales": 20, "polyadenopathies": 12, "diarrhee": 8, "charge_virale_detectable": 50},
+        "paraclinique": ["charge_virale_detectable"],
         "veto": ["fievre"],
         "boost": ["ulcerations_buccales_genitales"],
         "facteurs": {"rapport_sexuel_non_protege": 15, "partenaires_multiples": 5}
@@ -963,6 +1066,7 @@
         "short": "Borréliose (Phase primaire)",
         "pdf": "fiches/lyme.pdf",
         "signes": {"anomalie_peau": 40, "fievre": 5, "erytheme_migrant_pathognomonique": 50, "syndrome_grippal": 10, "arthralgies": 8, "notion_piqure_tique": 15},
+        "paraclinique": [],
         "veto": ["anomalie_peau"],
         "boost": ["erytheme_migrant_pathognomonique"],
         "images": {"erytheme_migrant": "images/erythema_migrans.png"},
@@ -973,6 +1077,7 @@
         "short": "Toxine Clostridium tetani",
         "pdf": "fiches/tetanos.pdf",
         "signes": {"troubles_neuro": 25, "trismus_constriction_machoire": 30, "contractures_generalisees": 20, "rire_sardonique": 15, "opisthotonos": 15, "absence_fievre": 10, "conscience_conservee": 10, "porte_entree_souillee": 15},
+        "paraclinique": [],
         "veto": ["troubles_neuro"],
         "boost": ["trismus_constriction_machoire"],
         "facteurs": {"absence_vaccination_dttp": 20, "blessure_jardinage": 5}
@@ -982,6 +1087,7 @@
         "short": "Toxine Clostridium botulinum",
         "pdf": "fiches/botulisme.pdf",
         "signes": {"troubles_neuro": 30, "troubles_visuels": 30, "fievre": 0, "diplopie": 50, "paralysie_descendante": 50, "bouche sèche": 20},
+        "paraclinique": [],
         "veto": ["troubles_neuro"],
         "boost": ["paralysie_descendante_symetrique"],
         "facteurs": {"consommation_conserves_artisanales": 20, "charcuterie_maison": 10}
@@ -991,6 +1097,7 @@
         "short": "Monoxyde de carbone",
         "pdf": "fiches/co.pdf",
         "signes": {"cephalees": 25, "troubles_neuro": 10, "cephalees_etau": 20, "nausees_vomissements": 18, "vertiges": 15, "perte_connaissance_brève": 12, "asthenie_soudaine": 12, "caractere_collectif_symptomes": 25, "teinte_cochenille": 5},
+        "paraclinique": [],
         "veto": ["cephalees"],
         "boost": ["caractere_collectif_symptomes"],
         "facteurs": {"chauffage_combustion_defectueux": 15, "hiver": 5}
@@ -1000,6 +1107,7 @@
         "short": "Rupture AAA (Urgence)",
         "pdf": "fiches/aaa.pdf",
         "signes": {"douleur_abdominale": 30, "douleur_dos": 15, "douleur_abdominale_dorsale_brutale": 30, "masse_battante_expansive": 25, "collapsus_choc_hemorragique": 20, "lipothymie": 15},
+        "paraclinique": [],
         "veto": ["douleur_abdominale"],
         "boost": ["masse_battante_expansive"],
         "facteurs": {"homme_age": 5, "atcd_aaa_connu": 20, "tabac": 5, "hta": 5}
@@ -1009,6 +1117,7 @@
         "short": "Sepsis sévère",
         "pdf": "fiches/choc_septique.pdf",
         "signes": {"fievre": 30, "anomalie_peau": 15, "hypotension_persistante_malgre_remplissage": 30, "marbrures_genoux": 20, "tachycardie": 15, "polypnee": 12, "confusion_desorientation": 12, "lactates_eleves": 25, "oligurie": 15},
+        "paraclinique": ["lactates_eleves", "oligurie"],
         "veto": ["fievre"],
         "boost": ["hypotension_persistante_malgre_remplissage", "marbrures_genoux"],
         "images": {"marbrures": "images/livedo_reticularis.png"},
@@ -1019,6 +1128,7 @@
         "short": "Hypoglycémie sévère",
         "pdf": "fiches/hypoglycemie.pdf",
         "signes": {"troubles_neuro": 30, "troubles_conscience_coma": 25, "sueurs_profuses": 20, "signes_adrenergiques_tremblements": 15, "glycemie_capillaire_basse": 50, "reveil_apres_resucrage": 30},
+        "paraclinique": ["glycemie_capillaire_basse"],
         "veto": ["troubles_neuro", "glycemie_capillaire_basse"],
         "boost": ["reveil_apres_resucrage"],
         "facteurs": {"diabete_insuline_sulfamides": 20, "jeune_imprudent": 5, "effort_physique": 3}
@@ -1028,6 +1138,7 @@
         "short": "HED (Urgence neurochir)",
         "pdf": "fiches/hed.pdf",
         "signes": {"troubles_neuro": 30, "cephalees": 15, "intervalle_libre_lucide": 30, "aggravation_secondaire_coma": 25, "mydriase_unilaterale": 20, "hemiplegie_contralaterale": 15, "image_lentille_biconvexe_scanner": 50},
+        "paraclinique": ["image_lentille_biconvexe_scanner"],
         "veto": ["troubles_neuro"],
         "boost": ["image_lentille_biconvexe_scanner", "intervalle_libre_lucide"],
         "images": { "scanner_hed": "images/epidural_hematoma_ct.png" },
@@ -1038,6 +1149,7 @@
         "short": "Infarctus mésentérique",
         "pdf": "fiches/ischemie_mesenterique.pdf",
         "signes": {"douleur_abdominale": 35, "douleur_abdominale_atroce": 25, "discordance_douleur_examen_pauvre": 30, "diarrhee_sanglante_tardive": 15, "etat_choc": 15, "acidose_metabolique_lactique": 20},
+        "paraclinique": ["acidose_metabolique_lactique"],
         "veto": ["douleur_abdominale"],
         "boost": ["discordance_douleur_examen_pauvre"],
         "facteurs": {"fibrillation_atriale": 10, "sujet_age_atheromateux": 5}
@@ -1047,6 +1159,7 @@
         "short": "Lombalgie aiguë commune",
         "pdf": "fiches/lumbago.pdf",
         "signes": {"douleur_dos": 30, "douleur_lombaire_brutale_effort": 25, "attitude_antalgique_raideur": 20, "impotence_fonctionnelle_rachis": 15, "absence_irradition_radiculaire": 20, "absence_fievre": 10},
+        "paraclinique": [],
         "veto": ["douleur_dos"],
         "facteurs": {"effort_soulevement": 10, "sedentarite": 5}
     },
@@ -1055,6 +1168,7 @@
         "short": "Lésion ligamentaire externe",
         "pdf": "fiches/entorse.pdf",
         "signes": {"douleur_membre_traumatisme": 30, "douleur_laterale_externe": 20, "craquement_audible": 10, "oedeme_oeuf_pigeon": 20, "ecchymose_sous_malleolaire": 15, "impotence_fonctionnelle_relative": 10, "criteres_ottawa_positifs": 10},
+        "paraclinique": [],
         "veto": ["douleur_membre_traumatisme"],
         "boost": ["oedeme_oeuf_pigeon"],
         "images": {"oeuf_pigeon": "images/ankle_sprain_swelling.png"},
@@ -1065,6 +1179,7 @@
         "short": "Gonarthrose / Coxarthrose",
         "pdf": "fiches/arthrose.pdf",
         "signes": {"douleur_membre_traumatisme": 15, "douleur_dos": 10, "douleur_mecanique": 25, "derouillage_matinal_bref": 20, "absence_signes_inflammatoires": 15, "craquements": 10, "osteophytes_pincement_radio": 40},
+        "paraclinique": ["osteophytes_pincement_radio"],
         "boost": ["osteophytes_pincement_radio"],
         "images": { "radio_arthrose": "images/osteoarthritis_xray.png" },
         "facteurs": {"age_avance": 8, "surpoids": 5, "atcd_traumatique": 3}
@@ -1074,6 +1189,7 @@
         "short": "LED",
         "pdf": "fiches/lupus.pdf",
         "signes": {"anomalie_peau": 30, "douleur_membre_traumatisme": 10, "erytheme_vespertilio_loup": 25, "photosensibilite": 20, "polyarthrite_non_deformante": 15, "ulcerations_buccales_indolores": 12, "ac_antinucleaires_positifs": 30, "anti_adn_natif_positifs": 50},
+        "paraclinique": ["ac_antinucleaires_positifs", "anti_adn_natif_positifs"],
         "veto": ["anomalie_peau"],
         "boost": ["erytheme_vespertilio_loup", "anti_adn_natif_positifs"],
         "images": {"masque_loup": "images/lupus_butterfly_rash.png"},
@@ -1084,6 +1200,7 @@
         "short": "Radiculalgie compressive",
         "pdf": "fiches/hernie_discale.pdf",
         "signes": {"douleur_dos": 30, "douleur_membre_traumatisme": 15, "syndrome_rachidien": 10, "syndrome_radiculaire_trajet": 25, "signe_sonnette_positif": 20, "impulsivite_toux": 15, "conflit_discal_irm": 50},
+        "paraclinique": ["conflit_discal_irm"],
         "veto": ["douleur_dos"],
         "boost": ["conflit_discal_irm", "signe_sonnette_positif"],
         "images": { "irm_hernie": "images/herniated_disc_mri.png" },
@@ -1094,6 +1211,7 @@
         "short": "Infection Influenza",
         "pdf": "fiches/grippe.pdf",
         "signes": {"fievre": 30, "cephalees": 15, "syndrome_v_grippal_brutal": 25, "fievre_elevee": 18, "myalgies_intenses": 20, "toux_seche": 15, "cephalees_retro_orbitaires": 12, "asthenie_intense": 15},
+        "paraclinique": [],
         "veto": ["fievre"],
         "facteurs": {"epidemie_hivernale": 10, "non_vaccination": 5}
     },
@@ -1102,6 +1220,7 @@
         "short": "Infection sinusienne (Maxillaire)",
         "pdf": "fiches/sinusite.pdf",
         "signes": {"fievre": 10, "cephalees": 20, "douleur_sous_orbitaire_unilaterale": 25, "rhinorrhee_purulente": 18, "fievre": 10, "augmentation_douleur_tete_penchee": 20, "mouchage_sale": 15},
+        "paraclinique": [],
         "veto": ["cephalees"],
         "boost": ["augmentation_douleur_tete_penchee"],
         "facteurs": {"rhinopharyngite_precedente": 10, "origine_dentaire": 5}
@@ -1111,6 +1230,7 @@
         "short": "Dyspnée laryngée enfant",
         "pdf": "fiches/laryngite.pdf",
         "signes": {"dyspnee": 25, "fievre": 10, "bradypnee_inspiratoire": 25, "toux_aboyante_rauque": 25, "dysphonie_voix_etouffee": 20, "tirage_sus_sternal": 15, "fievre_moderee": 8, "debut_nocturne": 10},
+        "paraclinique": [],
         "veto": ["dyspnee"],
         "boost": ["toux_aboyante_rauque"],
         "facteurs": {"garcon": 2, "hiver": 5, "enfant_1_3ans": 8}
@@ -1120,6 +1240,7 @@
         "short": "SAOS",
         "pdf": "fiches/apnee.pdf",
         "signes": {"troubles_neuro": 15, "ronflements_sonores": 20, "pauses_respiratoires_constatees": 30, "somnolence_diurne_excessive": 20, "cephalees_matinales": 12, "nycturie": 10, "index_apnee_hypopnee_>30": 50},
+        "paraclinique": ["index_apnee_hypopnee_>30"],
         "boost": ["pauses_respiratoires_constatees", "index_apnee_hypopnee_>30"],
         "facteurs": {"obesite": 8, "retrognathie": 5, "homme_>50ans": 5}
     },
@@ -1128,6 +1249,7 @@
         "short": "Epanchement pleural liquidien",
         "pdf": "fiches/pleuresie.pdf",
         "signes": {"douleur_thoracique": 20, "dyspnee": 15, "douleur_basithoracique": 18, "dyspnee_effort": 12, "toux_seche_changement_position": 15, "matite_percussion": 25, "abolition_murmure_vesiculaire_base": 25, "opacite_comblement_cul_de_sac_radio": 30},
+        "paraclinique": ["opacite_comblement_cul_de_sac_radio"],
         "veto": ["matite_percussion"],
         "facteurs": {"insuffisance_cardiaque": 5, "cancer": 5, "pneumopathie": 5}
     },
@@ -1136,6 +1258,7 @@
         "short": "Infection urinaire simple",
         "pdf": "fiches/cystite.pdf",
         "signes": {"genes_urinaires": 30, "douleur_abdominale": 5, "brulures_mictionnelles": 25, "pollakiurie": 20, "imperiosite": 15, "urines_troubles_malodorantes": 10, "douleur_hypogastrique": 10, "absence_fievre": 15, "bu_leuco_nitrites_positifs": 30},
+        "paraclinique": ["bu_leuco_nitrites_positifs"],
         "veto": ["genes_urinaires"],
         "facteurs": {"femme": 10, "rapports_sexuels": 5}
     },
@@ -1144,6 +1267,7 @@
         "short": "Tuméfaction annexielle",
         "pdf": "fiches/kyste_ovaire.pdf",
         "signes": {"douleur_abdominale": 20, "douleur_pelvienne_unilaterale": 18, "pesanteur_pelvienne": 15, "troubles_cycle": 10, "masse_latero_uterine_palpable": 15, "image_anechogene_echo": 40},
+        "paraclinique": ["image_anechogene_echo"],
         "veto": ["douleur_abdominale"],
         "facteurs": {"femme_age_procreer": 10}
     },
@@ -1152,6 +1276,7 @@
         "short": "Candidose vulvo-vaginale",
         "pdf": "fiches/mycose.pdf",
         "signes": {"anomalie_peau": 10, "genes_urinaires": 10, "prurit_vulvaire_feroce": 25, "leucorrhees_lait_caille": 25, "dyspareunie_orificielle": 10, "brulures_mictionnelles_externes": 10, "oedeme_vulvaire": 10},
+        "paraclinique": [],
         "boost": ["leucorrhees_lait_caille"],
         "facteurs": {"prise_antibiotiques": 8, "diabete": 3, "grossesse": 3}
     },
@@ -1160,6 +1285,7 @@
         "short": "Seminome / Non seminome",
         "pdf": "fiches/kc_testicule.pdf",
         "signes": {"douleur_membre_traumatisme": 5, "genes_urinaires": 10, "nodule_dur_pierreux_indolore": 30, "sensation_lourdeur_scrotale": 15, "signe_chevassu_negatif": 15, "gynecomastie": 10, "marqueurs_hcg_afp_eleves": 40},
+        "paraclinique": ["marqueurs_hcg_afp_eleves"],
         "boost": ["nodule_dur_pierreux_indolore"],
         "facteurs": {"homme_jeune_20_35ans": 10, "cryptorchidie": 8}
     },
@@ -1168,6 +1294,7 @@
         "short": "MRC",
         "pdf": "fiches/irc.pdf",
         "signes": {"genes_urinaires": 15, "asymptomatique_stade_precoce": 20, "nycturie": 12, "hta_resistante": 10, "asthenie_anemie": 12, "clairance_creatinine_basse": 50, "reins_atrophiques_echo": 30},
+        "paraclinique": ["clairance_creatinine_basse", "reins_atrophiques_echo"],
         "boost": ["clairance_creatinine_basse"],
         "facteurs": {"nephropathie_diabetique": 8, "nephroangiosclerose": 8}
     },
@@ -1176,6 +1303,7 @@
         "short": "UGD",
         "pdf": "fiches/ulcere.pdf",
         "signes": {"douleur_abdominale": 25, "syndrome_ulcereux_typique": 30, "douleur_epigastrique_crampe": 20, "faim_douloureuse": 15, "rythme_par_repas": 15, "calme_par_alimentation": 15, "periodicite": 10},
+        "paraclinique": [],
         "veto": ["douleur_abdominale"],
         "boost": ["calme_par_alimentation"],
         "facteurs": {"helicobacter_pylori": 10, "ains": 8, "tabac": 3}
@@ -1185,6 +1313,7 @@
         "short": "Cytolyse hépatique",
         "pdf": "fiches/hepatite.pdf",
         "signes": {"fievre": 10, "anomalie_peau": 20, "douleur_abdominale": 10, "ictere_cutaneo_muqueux": 25, "urines_foncees_biere_brune": 15, "selles_decolorees_mastic": 15, "asthenie_intense": 15, "transaminases_>10N": 50, "hepatomegalie_sensible": 10},
+        "paraclinique": ["transaminases_>10N"],
         "boost": ["transaminases_>10N", "ictere_cutaneo_muqueux"],
         "images": {"ictere": "images/scleral_icterus.png"},
         "facteurs": {"voyage_recent_non_vaccine": 5, "comportement_sexuel_risque": 5, "toxiques_alcool": 5}
@@ -1194,6 +1323,7 @@
         "short": "Colique hépatique",
         "pdf": "fiches/lithiase.pdf",
         "signes": {"douleur_abdominale": 30, "douleur_brutale_hcd": 25, "irradiation_scapulaire_droite": 20, "inhibition_respiratoire_profonde": 15, "signe_murphy_positif": 20, "absence_fievre": 15, "absence_ictere": 10},
+        "paraclinique": [],
         "veto": ["douleur_abdominale"],
         "boost": ["signe_murphy_positif"],
         "facteurs": {"femme": 5, "surpoids": 5, "multiparite": 3}
@@ -1203,6 +1333,7 @@
         "short": "Glissement / Roulement",
         "pdf": "fiches/hernie_hiatale.pdf",
         "signes": {"douleur_abdominale": 10, "pyrosis": 20, "regurgitations_posturales": 15, "dysphagie_intermittente": 10, "douleur_epigastrique": 8, "signes_rgo": 15},
+        "paraclinique": [],
         "facteurs": {"obesite_abdominale": 5, "age_>50ans": 5}
     },
     {
@@ -1210,6 +1341,7 @@
         "short": "Urgence abdominale",
         "pdf": "fiches/peritonite.pdf",
         "signes": {"douleur_abdominale": 35, "fievre": 15, "douleur_abdominale_generalisee": 20, "contracture_invincible_ventre_bois": 40, "defense_generalisee": 30, "douleur_cul_de_sac_douglas": 20, "fievre_elevee": 15, "silence_auscultatoire": 15},
+        "paraclinique": [],
         "veto": ["douleur_abdominale", "contracture_invincible_ventre_bois"],
         "boost": ["contracture_invincible_ventre_bois"],
         "facteurs": {"perforation_organes_creux": 10, "appendicite_negligee": 5}
@@ -1219,6 +1351,7 @@
         "short": "Adénome parathyroïdien",
         "pdf": "fiches/hyperparathyroidie.pdf",
         "signes": {"genes_urinaires": 10, "douleur_membre_traumatisme": 5, "hypercalcemie_biologique": 50, "lithiases_renales_recidivantes": 20, "douleurs_osseuses": 12, "asthenie": 10, "troubles_digestifs_constipation": 10, "pth_inadaptee_elevee": 40},
+        "paraclinique": ["hypercalcemie_biologique", "pth_inadaptee_elevee"],
         "boost": ["hypercalcemie_biologique", "lithiases_renales_recidivantes"],
         "facteurs": {"femme_post_menopause": 5, "nem1": 3}
     },
@@ -1227,6 +1360,7 @@
         "short": "Syndrome des Ovaires Polykystiques",
         "pdf": "fiches/sopk.pdf",
         "signes": {"anomalie_peau": 15, "spaniomenorrhee_amenorrhee": 20, "hyperandrogenie_clinique_acne": 20, "hirsutisme_score_ferriman": 25, "infertilite_anovulatoire": 15, "ovaires_volume_augmente_follicules_echo": 40},
+        "paraclinique": ["ovaires_volume_augmente_follicules_echo"],
         "boost": ["hirsutisme_score_ferriman", "ovaires_volume_augmente_follicules_echo"],
         "images": {"acne": "images/pcos_acne.png", "hirsutisme": "images/hirsutism_face.png"},
         "facteurs": {"surpoids_obesite": 8, "resistance_insuline": 5}
@@ -1236,6 +1370,7 @@
         "short": "Polyurie sans sucre",
         "pdf": "fiches/diabete_insipide.pdf",
         "signes": {"genes_urinaires": 30, "polyurie_massive_>3L": 30, "polydipsie_imperieuse_eau_glacee": 30, "urines_claires_diluees": 20, "osmolarite_urinaire_basse": 40, "absence_glycosurie": 20},
+        "paraclinique": ["osmolarite_urinaire_basse"],
         "veto": ["genes_urinaires", "polyurie_massive_>3L"],
         "boost": ["polydipsie_imperieuse_eau_glacee"],
         "facteurs": {"post_neurochirurgie": 10, "tumeur_hypophysaire": 5}
@@ -1245,6 +1380,7 @@
         "short": "Adénome somatotrope",
         "pdf": "fiches/acromegalie.pdf",
         "signes": {"troubles_neuro": 10, "syndrome_dysmorphique_acro_facial": 30, "elargissement_mains_pieds": 25, "prognathisme": 20, "sueurs_nocturnes_malodorantes": 15, "paresthesies_canal_carpien": 15, "igf1_elevee": 50},
+        "paraclinique": ["igf1_elevee"],
         "boost": ["syndrome_dysmorphique_acro_facial"],
         "images": {"visage_acromegale": "images/acromegaly_face.png"},
         "facteurs": {"adulte_moyen": 5}
@@ -1254,6 +1390,7 @@
         "short": "Trouble constitutionnel hémostase",
         "pdf": "fiches/hemophilie.pdf",
         "signes": {"douleur_membre_traumatisme": 20, "hemarthroses_recidivantes": 30, "hematomes_profonds_psoas": 20, "saignement_prolonge_trauma_minime": 20, "allongement_tca_isole": 50},
+        "paraclinique": ["allongement_tca_isole"],
         "veto": ["douleur_membre_traumatisme"],
         "boost": ["hemarthroses_recidivantes", "allongement_tca_isole"],
         "images": {"hemarthrose": "images/hemarthrosis_knee.png"},
@@ -1264,6 +1401,7 @@
         "short": "Gastrite auto-immune (Carence B12)",
         "pdf": "fiches/biermer.pdf",
         "signes": {"troubles_neuro": 15, "anemie_macroscytaire_megaloblastique": 30, "glossite_hunter_depapillee": 20, "syndrome_cordonal_posterieur": 15, "paresthesies": 12, "vitamine_b12_effondree": 50},
+        "paraclinique": ["anemie_macroscytaire_megaloblastique", "vitamine_b12_effondree"],
         "boost": ["glossite_hunter_depapillee", "vitamine_b12_effondree"],
         "images": {"glossite_hunter": "images/atrophic_glossitis.png"},
         "facteurs": {"femme_agee": 5, "auto_immunite_associee": 5}
@@ -1273,6 +1411,7 @@
         "short": "Treponema pallidum",
         "pdf": "fiches/syphilis.pdf",
         "signes": {"anomalie_peau": 25, "chancre_indure_indolore": 30, "adenopathie_inguinale_unique": 15, "roseole_syphilitique": 15, "syphilides_palmo_plantaires": 20, "serologie_tpha_vdrl_positive": 50},
+        "paraclinique": ["serologie_tpha_vdrl_positive"],
         "veto": ["anomalie_peau"],
         "boost": ["chancre_indure_indolore"],
         "images": {"chancre": "images/syphilis_chancre.png"},
@@ -1283,6 +1422,7 @@
         "short": "Parotidite ourlienne",
         "pdf": "fiches/oreillons.pdf",
         "signes": {"fievre": 15, "cephalees": 5, "parotidite_uni_bilaterale": 30, "pre_tragie_douloureuse": 20, "orchite_ourlienne": 15, "amylasemie_elevee": 10},
+        "paraclinique": ["amylasemie_elevee"],
         "veto": ["fievre"],
         "boost": ["parotidite_uni_bilaterale"],
         "images": {"parotidite": "images/mumps_parotitis.png"},
@@ -1293,6 +1433,7 @@
         "short": "Virose éruptive tératogène",
         "pdf": "fiches/rubeole.pdf",
         "signes": {"fievre": 10, "anomalie_peau": 25, "exantheme_morbiliforme_pale": 15, "adenopathies_occipitales": 25, "arthralgies_distales": 12, "serologie_igm_positive": 50},
+        "paraclinique": ["serologie_igm_positive"],
         "veto": ["anomalie_peau"],
         "boost": ["adenopathies_occipitales"],
         "images": {"rash_rubeole": "images/rubella_rash.png"},
@@ -1303,6 +1444,7 @@
         "short": "Hypertrophie pylorique",
         "pdf": "fiches/stenose_pylore.pdf",
         "signes": {"douleur_abdominale": 15, "vomissements_lait_caille_jet": 30, "appetit_conserve_vorace": 20, "cassure_courbe_poids": 15, "olive_pylorique_palpable": 20, "ondes_peristaltiques_visibles": 15},
+        "paraclinique": [],
         "veto": ["douleur_abdominale", "vomissements_lait_caille_jet"],
         "boost": ["olive_pylorique_palpable"],
         "facteurs": {"garcon_premier_ne": 5, "intervalle_libre_3_5semaines": 10}
@@ -1312,6 +1454,7 @@
         "short": "Crise occasionnelle",
         "pdf": "fiches/convulsions_febriles.pdf",
         "signes": {"fievre": 35, "troubles_neuro": 25, "crise_tonicoclonique_generalisee": 25, "fievre_elevee_brutale": 20, "duree_breve_<15min": 15, "recuperation_rapide_conscience": 15, "absence_deficit_post_critique": 20},
+        "paraclinique": [],
         "veto": ["fievre", "troubles_neuro"],
         "facteurs": {"enfant_9mois_5ans": 10, "ascension_thermique_rapide": 5}
     },
@@ -1320,6 +1463,7 @@
         "short": "Candidose oropharyngée",
         "pdf": "fiches/muguet.pdf",
         "signes": {"anomalie_peau": 5, "depots_blanchatres_muqueuse": 25, "saignement_grattage_abaisse_langue": 20, "gene_alimentaire": 12, "erytheme_fessier_associe": 10},
+        "paraclinique": [],
         "boost": ["depots_blanchatres_muqueuse"],
         "images": {"muguet": "images/oral_thrush.png"},
         "facteurs": {"nourrisson": 10, "corticoides_inhalés": 5, "immunodepression": 5}
@@ -1329,6 +1473,7 @@
         "short": "Infection cutanée staph/strepto",
         "pdf": "fiches/impetigo.pdf",
         "signes": {"anomalie_peau": 35, "bulles_sous_cornees": 15, "croutes_melliceriques": 30, "localisation_periorificielle": 20, "absence_fievre": 10, "auto_inoculation_grattage": 15},
+        "paraclinique": [],
         "veto": ["anomalie_peau", "croutes_melliceriques"],
         "images": {"croutes_melliceriques": "images/impetigo_crusts.png"},
         "facteurs": {"enfant_age_scolaire": 10, "manque_hygiene": 3}
@@ -1338,6 +1483,7 @@
         "short": "Inflammation conjonctivale",
         "pdf": "fiches/conjonctivite.pdf",
         "signes": {"troubles_visuels": 15, "oeil_rouge_diffus": 20, "secretions_purulentes_collees": 25, "sensation_corps_etranger": 12, "absence_baisse_acuite_visuelle": 20, "absence_douleur_profonde": 15},
+        "paraclinique": [],
         "veto": ["oeil_rouge_diffus"],
         "boost": ["secretions_purulentes_collees"],
         "images": {"oeil_rouge": "images/conjunctivitis_red_eye.png"},
@@ -1348,6 +1494,7 @@
         "short": "Furoncle du cil",
         "pdf": "fiches/orgelet.pdf",
         "signes": {"troubles_visuels": 10, "tumefaction_rouge_bord_libre": 25, "point_blanc_centré_cil": 30, "douleur_vive_localisee": 20, "oedeme_palpebral": 12},
+        "paraclinique": [],
         "boost": ["point_blanc_centré_cil"],
         "images": {"orgelet": "images/stye_hordeolum.png"},
         "facteurs": {"frottement_yeux": 5, "blepharite": 3}
@@ -1357,6 +1504,7 @@
         "short": "Acné nodulo-kystique",
         "pdf": "fiches/acne.pdf",
         "signes": {"anomalie_peau": 30, "comedons_ouverts_fermes": 20, "papulo_pustules": 20, "nodules_profonds": 20, "cicatrices_atrophiques": 15, "seborrhee": 10},
+        "paraclinique": [],
         "veto": ["anomalie_peau"],
         "images": {"acne_visage": "images/severe_acne_face.png"},
         "facteurs": {"adolescence": 10, "predisposition_genetique": 5}
@@ -1366,6 +1514,7 @@
         "short": "Dermatite atopique",
         "pdf": "fiches/eczema.pdf",
         "signes": {"anomalie_peau": 30, "prurit_insomniant": 25, "xerose_cutanee": 20, "plaques_erythemato_vesiculeuses": 20, "lichenification": 15, "localisation_plis_flexion": 25, "atteinte_visage_nourrisson": 15},
+        "paraclinique": [],
         "veto": ["anomalie_peau"],
         "boost": ["localisation_plis_flexion"],
         "images": {"eczema_pli": "images/eczema_flexural.png"},
@@ -1376,6 +1525,7 @@
         "short": "Oedème dermique superficiel",
         "pdf": "fiches/urticaire.pdf",
         "signes": {"anomalie_peau": 35, "papules_erythemateuses_oedemateuses": 25, "prurit_feroce": 20, "caractere_fugace_migrateur": 30, "signe_dermographisme": 15, "disparition_sans_sequelles": 15},
+        "paraclinique": [],
         "veto": ["anomalie_peau", "caractere_fugace_migrateur"],
         "boost": ["papules_erythemateuses_oedemateuses"],
         "images": {"urticaire": "images/urticaria_hives.png"},

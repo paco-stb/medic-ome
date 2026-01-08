@@ -599,35 +599,95 @@
          let GLOBAL_IMG_MAP = {};
          
          const REFINEMENTS = {
-             "douleur_thoracique": ["douleur_thoracique_oppressive", "douleur_thoracique_dechirante", "douleur_thoracique_coté", "irradiation_bras_machoire", "irradiation_dos", "douleur_effort", "soulage_penche_avant", "oppression_thoracique"],
-             "douleur_abdominale": ["douleur_fosse_iliaque_droite", "douleur_fosse_iliaque_gauche", "douleur_hypocondre_droit", "douleur_epigastrique", "douleur_transfixiante_dos", "douleur_abdominale_brutale", "defense_abdominale", "ventre_dur_bois", "douleur_migration_ombilic"],
-             "toux": ["toux_seche", "toux_grasse", "toux_sanglante", "toux_chronique", "toux_seche_aboyante", "quintes_toux_violentes", "reprise_inspiratoire_bruyante"],
-             "dyspnee": ["dyspnee_effort", "dyspnee_brutale", "orthopnee_dyspnee_couchee", "dyspnee_expiratoire", "dyspnee_inspiratoire", "sifflements_respiratoires"],
-             "fievre": ["fievre_elevee", "frissons_intenses", "sueurs_nocturnes", "convulsions_generalisees"],
-             "cephalees": ["cephalees_intenses", "cephalees_explosives_brutales", "pulsatile_coeur_cogne", "mal_tete_unilateral", "raideur_nuque", "gene_lumiere"],
-             "troubles_visuels": ["vision_double", "vision_floue", "baisse_vision_brutale", "eclairs_lumineux", "pluie_de_suie", "halo_autour_phares", "vision_centrale_floue", "lignes_droites_ondulees"],
-             "troubles_neuro": ["paralysie_unilaterale", "troubles_parole_aphasie", "perte_connaissance", "convulsions", "confusion", "tremblement_repos", "rigidite_musculaire"],
-             "anomalie_peau": ["ictere_jaunisse", "purpura", "taches_rouges_peau", "eruption_vesicules_bulles", "plaques_rouges", "grain_beaute_asymetrique", "croutes_jaunes_miel"],
-             "genes_urinaires": ["brulures_urinaires", "sang_urines", "urines_troubles_odorantes", "envie_frequente_uriner", "difficulte_uriner", "absence_urine"],
-             "douleur_membre_traumatisme": ["impossibilite_marcher", "raccourcissement_jambe", "rotation_externe_pied", "poignet_dos_fourchette", "douleur_jambe_brutale_intense", "absence_pouls"],
-             "douleur_dos": ["douleur_lombaire_brutale", "irradiation_vers_pubis", "douleur_bas_dos_nuit", "raideur_matin", "irradiation_fesse_jambe"],
-             "trouble_psy": ["tristesse_permanente", "idees_noires", "delire_paranoiaque", "excitation_euphorie", "peur_mourir_devenir_fou", "maigreur_extreme"]
-         };
+    "douleur_thoracique": ["douleur_thoracique_constrictive", "douleur_thoracique_dechirante", "douleur_latero_thoracique_brutale", "douleur_thoracique_respiratoire", "douleur_thoracique_basithoracique", "irradiation_bras_gauche_machoire", "irradiation_dorsale_interscapulaire", "soulage_position_penche_avant"],
+    "douleur_abdominale": ["douleur_migratrice_epigastre_fid", "douleur_point_mcburney", "douleur_hypocondre_droit", "douleur_epigastrique_transfixiante", "douleur_abdominale_dorsale_brutale", "douleur_fossa_lombaire_brutale", "douleur_fig", "douleur_pelvienne_lateralisee", "douleur_pelvienne_bilaterale", "defense_fid", "contracture_invincible_ventre_bois"],
+    "toux": ["toux_seche", "toux_grasse", "toux_chronique", "toux_aboyante_rauque", "toux_quinteuse_emetisante", "reprise_inspiratoire_chant_coq", "expectorations_mousseuses_saumonees", "expectorations_purulentes", "hemoptysie"],
+    "dyspnee": ["dyspnee_effort", "dyspnee_brutale", "orthopnee", "dyspnee_expiratoire", "bradypnee_inspiratoire", "dyspnee_sifflante", "freinage_expiratoire"],
+    "fievre": ["fievre_elevee", "fievre_moderee", "frissons_intenses_inauguraux", "sueurs_nocturnes", "triade_frissons_chaleur_sueurs"],
+    "cephalees": ["cephalee_coup_tonnerre", "cephalees_progressives", "cephalee_unilaterale", "pulsatilite", "raideur_nuque", "photophobie_phonophobie"],
+    "troubles_visuels": ["diplopie", "vision_floue", "baisse_acuite_visuelle_unilaterale", "metamorphopsies", "scotome_central", "phosphenes_eclairs", "myodesopsies_pluie_suie", "vision_halos_colores"],
+    "troubles_neuro": ["hemiplegie", "aphasie", "perte_connaissance_brutale", "convulsions", "confusion", "tremblement_repos", "rigidite_plastique_roue_dentee", "paralysie_ascendante_symetrique"],
+    "anomalie_peau": ["ictere", "purpura_fulminans", "eruption_vesiculeuse_metamerique", "plaques_erythemato_squameuses", "erytheme_migrant_pathognomonique", "tache_vasculaire_saignante"],
+    "genes_urinaires": ["brulures_mictionnelles", "hematurie_macroscopique_totale", "urines_troubles_malodorantes", "pollakiurie", "dysurie", "anurie_oligurerie", "globe_vesical_palpable"],
+    "douleur_membre_traumatisme": ["impotence_fonctionnelle_totale", "raccourcissement_membre", "rotation_externe_pied", "deformtion_dos_fourchette", "douleur_brutale_intense", "abolition_pouls_distaux"],
+    "douleur_dos": ["douleur_lombaire_brutale_effort", "douleur_trajet_membre_inf", "rachialgies_inflammatoires", "impulsivite_toux"],
+    "trouble_psy": ["humeur_triste_constante", "idees_suicidaires", "syndrome_delirant_paranoide", "episode_maniaque", "peur_intense_brutale", "dysmorphophobie"]
+};
          
          const PATHO_GROUPS = {
-             "Infarctus du myocarde": "Cardio", "Embolie pulmonaire": "Cardio", "OAP": "Cardio", "Dissection Aortique": "Cardio", "Péricardite Aiguë": "Cardio", "Fibrillation Atriale": "Cardio", "Endocardite Infectieuse": "Cardio", "Ischémie Aiguë Membre": "Cardio", "Rupture Anévrisme Aorte": "Cardio", "Choc Septique": "Cardio",
-             "AVC Ischémique": "Neuro", "Méningite Aiguë": "Neuro", "Hémorragie Méningée": "Neuro", "Crise d'Épilepsie": "Neuro", "Parkinson": "Neuro", "Sclérose en Plaques": "Neuro", "Maladie d'Alzheimer": "Neuro", "Myasthénie": "Neuro", "Hématome Sous-Dural": "Neuro", "Hématome Extra-Dural": "Neuro", "Guillain-Barré": "Neuro",
-             "Pneumopathie Franche": "Pneumo", "Pneumothorax": "Pneumo", "Crise d'Asthme": "Pneumo", "Bronchiolite": "Pneumo", "BPCO Exacerbation": "Pneumo", "Cancer Bronchique": "Pneumo", "Tuberculose Pulmonaire": "Pneumo", "Apnée du Sommeil": "Pneumo", "Pleurésie": "Pneumo",
-             "Appendicite Aiguë": "Digestif", "Cholécystite Aiguë": "Digestif", "Gastro-entérite": "Digestif", "Occlusion Intestinale": "Digestif", "Pancreatite Aiguë": "Digestif", "Hémorragie Digestive Haute": "Digestif", "Sigmoïdite": "Digestif", "Hernie Inguinale Étranglée": "Digestif", "Reflux Gastro-Oesophagien": "Digestif", "Cirrhose Décompensée": "Digestif", "Cancer Colorectal": "Digestif", "Maladie de Crohn": "Digestif", "Rectocolite Hémorragique": "Digestif", "Ulcère Gastroduodénal": "Digestif", "Hépatite Aiguë": "Digestif", "Lithiase Biliaire": "Digestif", "Hernie Hiatale": "Digestif", "Péritonite": "Digestif", "Ischémie Mésentérique": "Digestif", "Sténose du Pylore": "Digestif",
-             "Colique Néphrétique": "Uro/Nephro", "Pyélonéphrite Aiguë": "Uro/Nephro", "Torsion du Testicule": "Uro/Nephro", "Rétention Aiguë d'Urine": "Uro/Nephro", "Cancer Prostate": "Uro/Nephro", "Tumeur Vessie": "Uro/Nephro", "Insuffisance Rénale Aiguë": "Uro/Nephro", "Syndrome Néphrotique": "Uro/Nephro", "Cystite Aiguë": "Uro/Nephro", "Cancer du Testicule": "Uro/Nephro", "Insuffisance Rénale Chronique": "Uro/Nephro", "Diabète Insipide": "Endo",
-             "Grossesse Extra-Utérine": "Gynéco", "Salpingite Aiguë": "Gynéco", "Endométriose": "Gynéco", "Cancer du Sein": "Gynéco", "Pré-éclampsie": "Gynéco", "Fibrome Utérin": "Gynéco", "Kyste Ovarien": "Gynéco", "Mycose Vaginale": "Gynéco", "SOPK": "Gynéco",
-             "Érysipèle": "Dermato", "Zona": "Dermato", "Purpura Rhumatoïde": "Dermato", "Varicelle": "Dermato", "Psoriasis": "Dermato", "Mélanome": "Dermato", "Carcinome Basocellulaire": "Dermato", "Gale": "Dermato", "Rougeole": "Dermato", "Syndrome de Kawasaki": "Dermato", "Scarlatine": "Dermato", "Impétigo": "Dermato", "Acné Sévère": "Dermato", "Eczéma Atopique": "Dermato", "Urticaire Aiguë": "Dermato",
-             "Fracture Col Fémur": "Rhumato/Ortho", "Arthrite Septique": "Rhumato/Ortho", "Sciatique": "Rhumato/Ortho", "Crise de Goutte": "Rhumato/Ortho", "Fracture Pouteau-Colles": "Rhumato/Ortho", "Polyarthrite Rhumatoïde": "Rhumato/Ortho", "Spondylarthrite": "Rhumato/Ortho", "Ostéoporose Fracturaire": "Rhumato/Ortho", "Canal Carpien": "Rhumato/Ortho", "Lumbago": "Rhumato/Ortho", "Entorse de Cheville": "Rhumato/Ortho", "Arthrose": "Rhumato/Ortho", "Lupus Érythémateux": "Rhumato/Ortho", "Hernie Discale": "Rhumato/Ortho",
-             "Anémie Ferriprive": "Hémato/Endo", "Hypothyroïdie": "Hémato/Endo", "Hyperthyroïdie": "Hémato/Endo", "Diabète Type 1": "Hémato/Endo", "Diabète Type 2": "Hémato/Endo", "Insuffisance Surrénalienne": "Hémato/Endo", "Syndrome de Cushing": "Hémato/Endo", "Leucémie Aiguë": "Hémato/Endo", "Lymphome de Hodgkin": "Hémato/Endo", "Myélome Multiple": "Hémato/Endo", "Drépanocytose": "Hémato/Endo", "Hyperparathyroïdie": "Hémato/Endo", "Acromégalie": "Hémato/Endo", "Hémophilie": "Hémato/Endo", "Anémie de Biermer": "Hémato/Endo",
-             "Attaque de Panique": "Psy", "Dépression": "Psy", "Schizophrénie": "Psy", "Trouble Bipolaire": "Psy", "Anorexie Mentale": "Psy",
-             "Glaucome Aigu": "ORL/Ophtalmo", "Otite Moyenne Aiguë": "ORL/Ophtalmo", "DMLA": "ORL/Ophtalmo", "Cataracte": "ORL/Ophtalmo", "Décollement de Rétine": "ORL/Ophtalmo", "VPPB": "ORL/Ophtalmo", "Angine Bactérienne": "ORL/Ophtalmo", "Epistaxis": "ORL/Ophtalmo", "Sinusite Aiguë": "ORL/Ophtalmo", "Laryngite Aiguë": "ORL/Ophtalmo", "Conjonctivite": "ORL/Ophtalmo", "Orgelet": "ORL/Ophtalmo",
-             "Paludisme": "Infectio", "Coqueluche": "Infectio", "Grippe": "Infectio", "Mononucléose Infectieuse": "Infectio", "Primo-Infection VIH": "Infectio", "Maladie de Lyme": "Infectio", "Tétanos": "Infectio", "Botulisme": "Infectio", "Rubéole": "Infectio", "Syphilis": "Infectio", "Oreillons": "Infectio", "Muguet Buccal": "Infectio"
-         };
+    // CARDIO
+    "Infarctus du myocarde": "Cardio", "Embolie pulmonaire": "Cardio", "OAP (Insuffisance Cardiaque)": "Cardio", 
+    "Dissection Aortique": "Cardio", "Péricardite Aiguë": "Cardio", "Fibrillation Atriale": "Cardio", 
+    "Endocardite Infectieuse": "Cardio", "Ischémie Aiguë Membre": "Cardio", "Rupture Anévrisme Aorte": "Cardio", 
+    "Choc Septique": "Cardio",
+
+    // NEURO
+    "AVC Ischémique": "Neuro", "Méningite Aiguë": "Neuro", "Hémorragie Méningée": "Neuro", 
+    "Crise d'Épilepsie": "Neuro", "Parkinson": "Neuro", "Sclérose en Plaques": "Neuro", 
+    "Maladie d'Alzheimer": "Neuro", "Myasthénie": "Neuro", "Hématome Sous-Dural": "Neuro", 
+    "Hématome Extra-Dural": "Neuro", "Guillain-Barré": "Neuro",
+
+    // PNEUMO
+    "Pneumopathie Franche": "Pneumo", "Pneumothorax": "Pneumo", "Crise d'Asthme": "Pneumo", 
+    "Bronchiolite": "Pneumo", "BPCO Exacerbation": "Pneumo", "Cancer Bronchique": "Pneumo", 
+    "Tuberculose Pulmonaire": "Pneumo", "Apnée du Sommeil": "Pneumo", "Pleurésie": "Pneumo",
+
+    // DIGESTIF
+    "Appendicite Aiguë": "Digestif", "Cholécystite Aiguë": "Digestif", "Gastro-entérite": "Digestif", 
+    "Occlusion Intestinale": "Digestif", "Pancreatite Aiguë": "Digestif", "Hémorragie Digestive Haute": "Digestif", 
+    "Sigmoïdite": "Digestif", "Hernie Inguinale Étranglée": "Digestif", "Reflux Gastro-Oesophagien": "Digestif", 
+    "Cirrhose Décompensée": "Digestif", "Cancer Colorectal": "Digestif", "Maladie de Crohn": "Digestif", 
+    "Rectocolite Hémorragique": "Digestif", "Ulcère Gastroduodénal": "Digestif", "Hépatite Aiguë": "Digestif", 
+    "Lithiase Biliaire": "Digestif", "Hernie Hiatale": "Digestif", "Péritonite": "Digestif", 
+    "Ischémie Mésentérique": "Digestif", "Sténose du Pylore": "Digestif", "Invagination Intestinale Aiguë": "Digestif",
+
+    // URO / NEPHRO
+    "Colique Néphrétique": "Uro/Nephro", "Pyélonéphrite Aiguë": "Uro/Nephro", "Torsion du Testicule": "Uro/Nephro", 
+    "Rétention Aiguë d'Urine": "Uro/Nephro", "Cancer Prostate": "Uro/Nephro", "Tumeur Vessie": "Uro/Nephro", 
+    "Insuffisance Rénale Aiguë": "Uro/Nephro", "Syndrome Néphrotique": "Uro/Nephro", "Cystite Aiguë": "Uro/Nephro", 
+    "Cancer du Testicule": "Uro/Nephro", "Insuffisance Rénale Chronique": "Uro/Nephro",
+
+    // GYNECO
+    "Grossesse Extra-Utérine": "Gynéco", "Salpingite Aiguë": "Gynéco", "Endométriose": "Gynéco", 
+    "Cancer du Sein": "Gynéco", "Pré-éclampsie": "Gynéco", "Fibrome Utérin": "Gynéco", 
+    "Kyste Ovarien": "Gynéco", "Mycose Vaginale": "Gynéco", "SOPK": "Gynéco",
+
+    // DERMATO
+    "Érysipèle": "Dermato", "Zona": "Dermato", "Purpura Rhumatoïde": "Dermato", "Varicelle": "Dermato", 
+    "Psoriasis": "Dermato", "Mélanome": "Dermato", "Carcinome Basocellulaire": "Dermato", "Gale": "Dermato", 
+    "Rougeole": "Dermato", "Syndrome de Kawasaki": "Dermato", "Scarlatine": "Dermato", "Impétigo": "Dermato", 
+    "Acné Sévère": "Dermato", "Eczéma Atopique": "Dermato", "Urticaire Aiguë": "Dermato",
+
+    // RHUMATO / ORTHO
+    "Fracture Col Fémur": "Rhumato", "Arthrite Septique": "Rhumato", "Sciatique": "Rhumato", 
+    "Crise de Goutte": "Rhumato", "Fracture Pouteau-Colles": "Rhumato", "Polyarthrite Rhumatoïde": "Rhumato", 
+    "Spondylarthrite": "Rhumato", "Ostéoporose Fracturaire": "Rhumato", "Canal Carpien": "Rhumato", 
+    "Lumbago": "Rhumato", "Entorse de Cheville": "Rhumato", "Arthrose": "Rhumato", "Lupus Érythémateux": "Rhumato", 
+    "Hernie Discale": "Rhumato",
+
+    // HEMATO / ENDO
+    "Anémie Ferriprive": "Endo/Hémato", "Hypothyroïdie": "Endo/Hémato", "Hyperthyroïdie": "Endo/Hémato", 
+    "Diabète Type 1": "Endo/Hémato", "Diabète Type 2": "Endo/Hémato", "Insuffisance Surrénalienne": "Endo/Hémato", 
+    "Syndrome de Cushing": "Endo/Hémato", "Leucémie Aiguë": "Endo/Hémato", "Lymphome de Hodgkin": "Endo/Hémato", 
+    "Myélome Multiple": "Endo/Hémato", "Drépanocytose": "Endo/Hémato", "Hyperparathyroïdie": "Endo/Hémato", 
+    "Acromégalie": "Endo/Hémato", "Hémophilie": "Endo/Hémato", "Anémie de Biermer": "Endo/Hémato", "Diabète Insipide": "Endo/Hémato",
+
+    // PSY
+    "Attaque de Panique": "Psy", "Dépression": "Psy", "Schizophrénie": "Psy", 
+    "Trouble Bipolaire": "Psy", "Anorexie Mentale": "Psy",
+
+    // ORL / OPHTALMO
+    "Glaucome Aigu": "ORL/Ophtalmo", "Otite Moyenne Aiguë": "ORL/Ophtalmo", "DMLA": "ORL/Ophtalmo", 
+    "Cataracte": "ORL/Ophtalmo", "Décollement de Rétine": "ORL/Ophtalmo", "VPPB": "ORL/Ophtalmo", 
+    "Angine Bactérienne": "ORL/Ophtalmo", "Epistaxis": "ORL/Ophtalmo", "Sinusite Aiguë": "ORL/Ophtalmo", 
+    "Laryngite Aiguë": "ORL/Ophtalmo", "Conjonctivite": "ORL/Ophtalmo", "Orgelet": "ORL/Ophtalmo",
+
+    // INFECTIO
+    "Paludisme": "Infectio", "Coqueluche": "Infectio", "Grippe": "Infectio", 
+    "Mononucléose Infectieuse": "Infectio", "Primo-Infection VIH": "Infectio", "Maladie de Lyme": "Infectio", 
+    "Tétanos": "Infectio", "Botulisme": "Infectio", "Rubéole": "Infectio", 
+    "Syphilis": "Infectio", "Oreillons": "Infectio", "Muguet Buccal": "Infectio"
+};
          
          // --- 3D-STYLE ICONS (USING PHOSPHOR DUOTONE) ---
          const ACHIEVEMENTS = [
@@ -2396,120 +2456,157 @@ function showDayDetails(dateStr, data) {
          const btnStart = document.createElement('button'); btnStart.className = 'btn'; btnStart.innerHTML = '<i class="ph-duotone ph-play"></i> Lancer le cas';
          
          btnStart.onclick = () => {
-         if (!selectedGender && !state.dailyTarget) { 
-              if(Math.random() > 0.5) selectedGender = 'femme'; else selectedGender = 'homme';
-         }
-         
-         const ageVal = q('#demo-age').value;
-         const demoData = {
-             homme: selectedGender === 'homme',
-             femme: selectedGender === 'femme',
-             nourrisson: ageVal === 'nourrisson',
-             enfant: ageVal === 'enfant',
-             adolescent: ageVal === 'adolescent',
-             jeune: ageVal === 'jeune' || ageVal === 'adolescent',
-             plus_de_30ans: ageVal === 'adulte' || ageVal === 'senior',
-             plus_de_65ans: ageVal === 'senior',
-             adulte: ageVal === 'adulte'
-         };
-         
-         // --- MAPPING INTELLIGENT --- 
-         // C'est ici que la magie opère pour traduire les boutons "Cliniques" en facteurs JSON précis
-         
-         // 1. Bouton "Diabète / HTA"
-         if(selectedFactors.has('metabolique')) {
-             demoData['diabete'] = true;
-             demoData['hta'] = true;
-             demoData['dyslipidemie'] = true; // Souvent associé
-             // Bonus : HTA est un facteur de risque cardiovasculaire majeur
-             demoData['fibrillation_atriale'] = true; 
-             demoData['insuffisance_cardiaque'] = true;
-         }
-         
-         // 2. Bouton "Chute / Trauma / Effort"
-         if(selectedFactors.has('trauma')) {
-             demoData['chute'] = true; 
-             demoData['chute_main'] = true; // Pouteau-Colles
-             demoData['traumatisme_cranien'] = true; // Hématomes
-             demoData['effort'] = true; // Infarctus, Hernie discal
-             demoData['sport'] = true; // Entorse
-             demoData['frottement_yeux'] = true; // Orgelet (Trauma mineur)
-         }
-         
-         // 3. Bouton "Chirurgie / Alité"
-         if(selectedFactors.has('chirurgie')) {
-             demoData['chirurgie_recente'] = true;
-             demoData['chirurgie_abdominale'] = true; // Occlusion
-             demoData['alitement'] = true; // Phlébite
-             demoData['chirurgie_cataracte'] = true; // Décollement rétine
-         }
-         
-         // 4. Bouton "Voyage / Plein Air"
-         if(selectedFactors.has('voyage')) {
-             demoData['voyage_recent'] = true; // Palu
-             demoData['foret'] = true; // Lyme
-             demoData['jardinage'] = true; // Tétanos
-         }
-         
-         // 5. Bouton "Médicaments / Allergies"
-         if(selectedFactors.has('medicaments')) {
-             demoData['medicaments'] = true;
-             demoData['allergie_connue'] = true; // Choc
-             demoData['allergies'] = true; // Asthme
-             demoData['ains'] = true; // Ulcère
-             demoData['anticoagulants'] = true; // Saignements
-             demoData['antibiotiques_recents'] = true; // Mycose / Muguet
-         }
-         
-         // 6. Bouton "Cancer / Immuno"
-         if(selectedFactors.has('immuno')) {
-             demoData['cancer'] = true;
-             demoData['immunodepression'] = true; // Pneumopathie, Zona
-             demoData['auto_immun'] = true; // Lupus, Biermer
-             demoData['corticoides'] = true; // Cushing, Cataracte
-         }
-         
-         // 7. Bouton "Psy / Stress"
-         if(selectedFactors.has('psy')) {
-             demoData['stress'] = true;
-             demoData['depression'] = true;
-             demoData['perfectionnisme'] = true; // Anorexie
-         }
-         
-         // 8. Bouton "Hiver / Épidémie"
-         if(selectedFactors.has('hiver')) {
-             demoData['hiver'] = true;
-             demoData['epidemie'] = true; // Grippe
-             demoData['contage'] = true; // Maladies infantiles
-             demoData['collectivite'] = true; // Gastro
-             demoData['entourage_malade'] = true; // Méningite
-         }
-         
-         // Mapping direct des boutons simples
-         ['tabac', 'alcool', 'surpoids', 'atcd_famille', 'grossesse', 'sterilet', 'menopause'].forEach(id => {
-             if(selectedFactors.has(id)) demoData[id] = true;
-         });
-         
-         // 9. Facteurs implicites (Jeune = Risque IST souvent)
-         if(demoData['jeune'] || demoData['adolescent']) {
-             demoData['rapport_risque'] = true;
-             demoData['partenaires_multiples'] = true;
-         }
-         
-         // --- LANCEMENT ---
-         state.demo = demoData;
-         state.answers = {}; state.asked = []; state.diagnosticShown = false; state.previousDiagnostics = []; state.history = [];
-         state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
-         state.priorityQueue = [];
-         
-         if (state.dailyTarget) state.isChrono = false;
-         else state.isChrono = q('#chronoToggle')?.checked || false;
-         
-         if (state.isChrono) state.startTime = Date.now();
-         else state.startTime = null;
-         
-         askNextQuestion();
-         };
+             // Si le genre n'est pas sélectionné et que ce n'est pas le défi du jour, on en choisit un au hasard
+             if (!selectedGender && !state.dailyTarget) { 
+                 if(Math.random() > 0.5) selectedGender = 'femme'; else selectedGender = 'homme';
+             }
+             
+             const ageVal = q('#demo-age').value;
+             
+             // --- MAPPING INTELLIGENT FACTEURS EDN --- 
+             // On construit l'objet demoData qui sera comparé au JSON
+             const demoData = {};
+
+             // 1. Sexe & Age de base
+             if(selectedGender === 'homme') { demoData['homme'] = true; demoData['garcon'] = true; }
+             if(selectedGender === 'femme') { demoData['femme'] = true; demoData['fille'] = true; }
+             
+             // Mapping des tranches d'âges vers les clés du JSON
+             if(ageVal === 'nourrisson') { demoData['nourrisson'] = true; demoData['nourrisson_moins_2ans'] = true; demoData['nourrisson_3mois_3ans'] = true; demoData['nourrisson_non_vaccine'] = true; }
+             if(ageVal === 'enfant') { demoData['enfant'] = true; demoData['enfant_3_15ans'] = true; demoData['enfant_scolarise'] = true; demoData['enfant_age_scolaire'] = true; demoData['enfant_9mois_5ans'] = true; }
+             if(ageVal === 'adolescent') { demoData['adolescent'] = true; demoData['adolescente'] = true; demoData['sujet_jeune'] = true; }
+             if(ageVal === 'jeune') { demoData['jeune'] = true; demoData['sujet_jeune'] = true; demoData['adulte_jeune'] = true; demoData['homme_jeune'] = (selectedGender === 'homme'); demoData['homme_jeune_20_35ans'] = (selectedGender === 'homme'); }
+             if(ageVal === 'adulte') { demoData['adulte'] = true; demoData['adulte_moyen'] = true; demoData['quarantaine'] = true; demoData['age_>40ans'] = true; demoData['homme_mur'] = (selectedGender === 'homme'); demoData['femme_quarantaine'] = (selectedGender === 'femme'); }
+             if(ageVal === 'senior') { 
+                 demoData['senior'] = true; demoData['sujet_age'] = true; demoData['age_avance'] = true; 
+                 demoData['plus_de_50ans'] = true; demoData['age_>50ans'] = true; 
+                 demoData['age_>60ans'] = true; demoData['sujet_age_>60ans'] = true;
+                 demoData['plus_de_65ans'] = true; demoData['age_>65ans'] = true; 
+                 demoData['age_>75ans'] = true; 
+                 demoData['femme_menopausee'] = (selectedGender === 'femme'); 
+                 demoData['femme_agee'] = (selectedGender === 'femme');
+             }
+
+             // 2. Facteurs combinés Sexe + Age
+             if(selectedGender === 'homme' && (ageVal === 'jeune' || ageVal === 'adolescent')) { demoData['homme_jeune'] = true; demoData['homme_jeune_longiligne'] = true; }
+             if(selectedGender === 'homme' && (ageVal === 'senior' || ageVal === 'adulte')) demoData['homme_age'] = true;
+             if(selectedGender === 'femme' && (ageVal === 'jeune' || ageVal === 'adulte' || ageVal === 'adolescent')) {
+                 demoData['femme_jeune'] = true;
+                 demoData['femme_age_procreer'] = true;
+             }
+
+             // 3. Mapping des boutons de l'interface (Chips) vers les clés JSON
+             
+             // Bouton "Diabète / HTA / Métabolisme"
+             if(selectedFactors.has('metabolique')) {
+                 demoData['diabete'] = true; demoData['diabete_insuline_sulfamides'] = true;
+                 demoData['hta'] = true; demoData['hta_ancienne'] = true; demoData['hta_mal_controlee'] = true; demoData['hta_resistante'] = true;
+                 demoData['syndrome_metabolique'] = true; demoData['dyslipidemie'] = true; demoData['hyperlipidemie'] = true;
+                 demoData['nephropathie_diabetique'] = true; demoData['nephroangiosclerose'] = true;
+                 demoData['fibrillation_atriale'] = true; // Facteur de risque induit
+                 demoData['insuffisance_cardiaque'] = true;
+                 demoData['arteriopathie'] = true;
+             }
+             
+             // Bouton "Chute / Trauma / Effort"
+             if(selectedFactors.has('trauma')) {
+                 demoData['chute'] = true; demoData['chute_hauteur'] = true; demoData['chute_mains_avant'] = true; 
+                 demoData['traumatisme_cranien'] = true; demoData['traumatisme_cranien_violent'] = true; demoData['traumatisme_cranien_ancien'] = true;
+                 demoData['traumatisme_oculaire'] = true; demoData['traumatisme_inversion'] = true;
+                 demoData['effort'] = true; demoData['effort_physique'] = true; demoData['effort_soulevement'] = true; demoData['effort_declenchant'] = true;
+                 demoData['sport'] = true; demoData['sport_pivot'] = true;
+                 demoData['atcd_traumatique'] = true; demoData['frottement_yeux'] = true;
+                 demoData['geste_intra_articulaire'] = true;
+             }
+             
+             // Bouton "Chirurgie / Alité"
+             if(selectedFactors.has('chirurgie')) {
+                 demoData['chirurgie_recente'] = true; demoData['chirurgie_abdominale'] = true;
+                 demoData['alitement'] = true; demoData['alitement_prolonge'] = true;
+                 demoData['bride_chirurgicale'] = true; demoData['chirurgie_cataracte'] = true;
+                 demoData['post_neurochirurgie'] = true; demoData['splenectomie'] = true;
+             }
+             
+             // Bouton "Voyage / Plein Air"
+             if(selectedFactors.has('voyage')) {
+                 demoData['voyage_recent'] = true; demoData['voyage_zone_endemique'] = true; demoData['voyage_recent_non_vaccine'] = true;
+                 demoData['activite_forestiere'] = true; demoData['foret'] = true;
+                 demoData['jardinage'] = true; demoData['blessure_jardinage'] = true;
+                 demoData['voyage_chaleur'] = true;
+             }
+             
+             // Bouton "Médicaments / Allergies"
+             if(selectedFactors.has('medicaments')) {
+                 demoData['medicaments'] = true; demoData['prise_medicamenteuse'] = true; demoData['arret_traitement'] = true;
+                 demoData['allergies'] = true; demoData['atopie'] = true; demoData['allergie_connue'] = true; demoData['terrain_atopique_familial'] = true;
+                 demoData['introduction_allergene'] = true;
+                 demoData['prise_ains'] = true; demoData['ains'] = true; demoData['prise_aains'] = true;
+                 demoData['anticoagulants'] = true; demoData['prise_anticoagulants'] = true;
+                 demoData['corticoides'] = true; demoData['corticotherapie'] = true; demoData['corticotherapie_long_cours'] = true; demoData['prise_corticoides'] = true; demoData['corticoides_inhalés'] = true;
+                 demoData['nephrotoxiques'] = true; demoData['traitement_amiodarone'] = true; demoData['arret_traitement_lasilix'] = true;
+                 demoData['contraception_oestroprogestative'] = true; demoData['hormones'] = true;
+                 demoData['prise_antibiotiques'] = true; demoData['antibiotiques_recents'] = true;
+             }
+             
+             // Bouton "Cancer / Immuno"
+             if(selectedFactors.has('immuno')) {
+                 demoData['cancer'] = true; demoData['cancer_actif'] = true; demoData['cancer_digestif'] = true; demoData['cancer_prostate'] = true;
+                 demoData['immunodepression'] = true; 
+                 demoData['auto_immun'] = true; demoData['auto_immunite_associee'] = true; demoData['atcd_autoimmun'] = true;
+                 demoData['chimio_anterieure'] = true; demoData['radiotherapie'] = true;
+             }
+             
+             // Bouton "Psy / Stress"
+             if(selectedFactors.has('psy')) {
+                 demoData['stress'] = true; demoData['stress_obscurite'] = true; demoData['terrain_anxieux'] = true;
+                 demoData['depression'] = true; demoData['antecedent_personnel'] = true;
+                 demoData['perfectionnisme'] = true; demoData['dette_sommeil'] = true;
+                 demoData['isolement_social'] = true; demoData['milieu_socio_eleve'] = true;
+             }
+             
+             // Bouton "Hiver / Épidémie"
+             if(selectedFactors.has('hiver')) {
+                 demoData['hiver'] = true; demoData['saison_hivernale'] = true; demoData['saison_froide'] = true; demoData['hiver_printemps'] = true;
+                 demoData['epidemie'] = true; demoData['epidemie_hivernale'] = true;
+                 demoData['contage'] = true; demoData['contage_creche'] = true; demoData['collectivite'] = true; demoData['entourage_malade'] = true;
+                 demoData['rhume_recent'] = true; demoData['rhinopharyngite'] = true; demoData['rhinopharyngite_precedente'] = true; demoData['infection_orl_recente'] = true; demoData['episode_viral_precedent'] = true; demoData['viral'] = true; demoData['infection_virale_recente'] = true;
+             }
+
+             // Facteurs simples (Boutons individuels)
+             if(selectedFactors.has('tabac')) { demoData['tabac'] = true; demoData['tabagisme'] = true; demoData['tabagisme_actif'] = true; demoData['tabagisme_paquets_annee'] = true; demoData['alcool_tabac'] = true; }
+             if(selectedFactors.has('alcool')) { demoData['alcool'] = true; demoData['alcoolisme'] = true; demoData['alcoolisme_chronique'] = true; demoData['ethylisme_chronique'] = true; demoData['toxiques_alcool'] = true; demoData['sevrage_alcool'] = true; demoData['exces_alimentaire_alcool'] = true; demoData['douleur_ganglionnaire_alcool'] = true; }
+             if(selectedFactors.has('surpoids')) { demoData['surpoids'] = true; demoData['surpoids_obesite'] = true; demoData['obesite'] = true; demoData['obesite_abdominale'] = true; demoData['imc_bas'] = false; }
+             if(selectedFactors.has('grossesse')) { demoData['grossesse'] = true; demoData['grossesse_>20SA'] = true; demoData['post_partum'] = true; demoData['femme_enceinte_risque'] = true; }
+             if(selectedFactors.has('sterilet')) { demoData['dispositif_intra_uterin'] = true; demoData['sterilet'] = true; }
+             if(selectedFactors.has('menopause')) { demoData['menopause'] = true; demoData['femme_menopausee'] = true; demoData['femme_post_menopause'] = true; }
+
+             // Facteurs implicites liés au profil jeune/risque
+             if(demoData['jeune'] || demoData['adolescent'] || demoData['adulte_jeune']) {
+                 demoData['rapport_risque'] = true; demoData['rapport_sexuel_non_protege'] = true; demoData['rapports_non_proteges'] = true;
+                 demoData['partenaires_multiples'] = true; demoData['ist_recente'] = true; demoData['comportement_sexuel_risque'] = true;
+                 demoData['jeune_imprudent'] = true;
+                 demoData['consommation_cannabis'] = true; demoData['toxicomanie_iv'] = true;
+             }
+             
+             // Facteurs anatomiques/génétiques divers (activés aléatoirement si pertinent pour varier le jeu, ou liés à d'autres facteurs)
+             if(demoData['senior']) { demoData['valvulopathie_connue'] = true; demoData['atcd_aaa_connu'] = true; demoData['hbp'] = true; }
+             if(demoData['femme']) { demoData['regles_abondantes'] = true; demoData['catamenial'] = true; }
+             if(demoData['homme']) { demoData['garcon_premier_ne'] = true; }
+
+             // --- LANCEMENT ---
+             state.demo = demoData;
+             state.answers = {}; state.asked = []; state.diagnosticShown = false; state.previousDiagnostics = []; state.history = [];
+             state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
+             state.priorityQueue = [];
+             
+             if (state.dailyTarget) state.isChrono = false;
+             else state.isChrono = q('#chronoToggle')?.checked || false;
+             
+             if (state.isChrono) state.startTime = Date.now();
+             else state.startTime = null;
+             
+             askNextQuestion();
+          };
          
          const btnCancel = document.createElement('button'); btnCancel.className = 'link'; btnCancel.textContent = 'Annuler'; btnCancel.onclick = renderHome;
          btnGroup.appendChild(btnStart); btnGroup.appendChild(btnCancel); card.appendChild(btnGroup); app.appendChild(card);

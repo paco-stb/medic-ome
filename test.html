@@ -777,17 +777,44 @@ const GENERAL_SYMPTOMS = [
          const ACCESS_CODES = [ { code: "SuperCode1", pseudo:"Admin" } ];
          
          let state = {
-             currentUser: null, pseudo: null, 
-             progression: { 
-                 correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0, lastDaily: null, achievements: [], bestTimes: {}, errorLog: {},
-                 pdfDownloads: 0, speedWins: 0, socialDone: false, reviewDone: false
-             },
-             isGuest: false, demo:{}, currentSign:null, answers:{}, asked:[], allSigns:[], ranked: [], diagnosticShown:false, previousDiagnostics:[],
-             history: [],
-             confirmationMode: false, confirmationQueue: [], confirmedPatho: null,
-             priorityQueue: [],
-             isChrono: false, startTime: null, dailyTarget: null
-         };
+              currentUser: null, 
+              pseudo: null, 
+              progression: { 
+                  correct: 0, 
+                  incorrect: 0, 
+                  streak: 0, 
+                  mastery: {}, 
+                  dailyStreak: 0, 
+                  lastDaily: null, 
+                  achievements: [], 
+                  bestTimes: {}, 
+                  errorLog: {},
+                  pdfDownloads: 0, 
+                  speedWins: 0, 
+                  socialDone: false, 
+                  reviewDone: false,
+                  dailyHistory: {}
+              },
+              isGuest: false, 
+              demo: {}, 
+              currentSign: null, 
+              answers: {}, 
+              asked: [], 
+              allSigns: [], 
+              ranked: [], 
+              diagnosticShown: false, 
+              previousDiagnostics: [],
+              history: [],
+              // Variables pour la phase de confirmation
+              confirmationMode: false, 
+              confirmationQueue: [], 
+              confirmedPatho: null,
+              // File d'attente pour les symptômes précis (Refinements)
+              priorityQueue: [],
+              isChrono: false, 
+              startTime: null, 
+              dailyTarget: null
+          };
          
          // === GUEST MODE ===
          // Vérifie si un invité peut jouer (1 fois par session, reset toutes les 2h)
@@ -2799,43 +2826,24 @@ function showDayDetails(dateStr, data) {
 }
          
          function canShowDiagnostic() {
-             const qNum = state.asked.length;
-             
-             // --- FIX PLAISANTIN DEBUT ---
-             // Si le joueur est en train de tenter l'Easter Egg (moins de 15 questions)
-             // On empêche l'IA de conclure, même si elle est sûre d'elle.
-             if (qNum < 15 && qNum > 0) {
-                 // Vérifie si on a que des "Vrai" jusqu'à présent
-                 const allYes = state.asked.every(s => state.answers[s] === true);
-                 // Vérifie si on a que des "Faux" jusqu'à présent
-                 const allNo = state.asked.every(s => state.answers[s] === false);
-                 
-                 // Si on est dans une série parfaite, on force le jeu à continuer
-                 if (allYes || allNo) return false; 
-             }
-             // --- FIX PLAISANTIN FIN ---
-         
-             if(state.ranked.length===0) return false;
-             
-             const top1 = state.ranked[0];
-             const top2 = state.ranked[1];
-             
-             if(state.previousDiagnostics.includes(top1.patho.name)) return false;
-         
-             if (qNum >= 20) return true;
-         
-             const score1 = parseFloat(top1.prob);
-             if (!top2) return score1 > 40; 
-         
-             const score2 = parseFloat(top2.prob);
-             const gap = score1 - score2;
-         
-             if (qNum >= 5 && score1 >= 50 && gap >= 20) return true;
-             if (qNum >= 10 && gap >= 10) return true;
-             if (qNum >= 15) return true;
-         
-             return false;
-         }
+    if (state.ranked.length < 2) return false;
+
+    const top1 = state.ranked[0];
+    const top2 = state.ranked[1];
+    const score1 = parseFloat(top1.prob);
+    const score2 = parseFloat(top2.prob);
+    const gap = score1 - score2;
+    const qNum = state.asked.length;
+
+    if (state.confirmationMode) return false;
+
+    // Déclenchement de la confirmation si probabilité > 85% ou gros écart
+    if (score1 > 85 || (qNum >= 7 && gap > 40) || (qNum >= 12 && gap > 20)) {
+        startConfirmationPhase(top1.patho); // Appelle la phase de confirmation
+        return false; 
+    }
+    return false;
+}
          
          function prepareConfirmationQuestions(topPatho) {
              const pSigns = Object.keys(topPatho.signes);
@@ -3029,22 +3037,30 @@ function showDayDetails(dateStr, data) {
              const btnGroup = document.createElement('div'); btnGroup.className='button-group';
              
              const mkBtn = (txt, cls, val) => {
-                 const b = document.createElement('button'); b.className=cls; b.innerHTML=txt;
-                 b.onclick=()=>{ 
-                     state.history.push(JSON.stringify({
-                         answers: state.answers, asked: state.asked, currentSign: state.currentSign,
-                         confirmationMode: state.confirmationMode, confirmationQueue: state.confirmationQueue,
-                         confirmedPatho: state.confirmedPatho, priorityQueue: state.priorityQueue,
-                         isChrono: state.isChrono, startTime: state.startTime, dailyTarget: state.dailyTarget
-                     }));
-                     
-                     if(state.dailyTarget && val === false && state.dailyTarget.signes[signe]) {
-                     }
-                     
-                     state.answers[signe]=val; askNextQuestion(); 
-                 };
-                 btnGroup.appendChild(b);
-             };
+    const b = document.createElement('button'); b.className=cls; b.innerHTML=txt;
+    b.onclick=()=>{ 
+        // Sauvegarde de l'historique pour le bouton "Retour"
+        state.history.push(JSON.stringify({
+            answers: state.answers, asked: state.asked, currentSign: state.currentSign,
+            confirmationMode: state.confirmationMode, confirmationQueue: state.confirmationQueue,
+            confirmedPatho: state.confirmedPatho, priorityQueue: state.priorityQueue,
+            isChrono: state.isChrono, startTime: state.startTime, dailyTarget: state.dailyTarget
+        }));
+        
+        state.answers[signe]=val; 
+
+        // --- AJOUT CRITIQUE ICI ---
+        // Si l'utilisateur dit OUI et que le signe a des enfants (ex: douleur_thoracique)
+        if(val === true && REFINEMENTS[signe]) {
+            // On ajoute les précisions à la file prioritaire
+            state.priorityQueue.push(...REFINEMENTS[signe]);
+        }
+        // --------------------------
+
+        askNextQuestion(); 
+    };
+    btnGroup.appendChild(b);
+};
              mkBtn('<i class="ph-bold ph-check"></i> OUI', 'btn btn-success', true);
              mkBtn('<i class="ph-bold ph-x"></i> NON', 'btn btn-error', false);
              mkBtn('Je ne sais pas', 'link', null);
@@ -3074,75 +3090,80 @@ function showDayDetails(dateStr, data) {
          card.appendChild(navGroup);
          app.appendChild(card);
          }
+
+function startConfirmationPhase(targetPatho) {
+    state.confirmationMode = true;
+    state.confirmationQueue = [];
+
+    // 1. On récupère les signes de la maladie qu'on n'a pas encore posés (VRAIS signes)
+    let realSigns = Object.keys(targetPatho.signes)
+        .filter(s => !state.asked.includes(s))
+        .sort((a, b) => targetPatho.signes[b] - targetPatho.signes[a]) // Les plus importants d'abord
+        .slice(0, 4); // On en prend 4 maximum
+
+    // 2. On récupère des "PIÈGES" (Signes qui n'ont RIEN à voir avec cette maladie)
+    // On pioche dans les signes des maladies les moins probables
+    let allPossibleSigns = state.allSigns;
+    let trapSigns = allPossibleSigns
+        .filter(s => !state.asked.includes(s) && !targetPatho.signes[s])
+        .sort(() => 0.5 - Math.random()) // Aléatoire
+        .slice(0, 3); // On en prend 3
+
+    // 3. On mélange les deux listes pour que l'utilisateur ne devine pas le pattern
+    state.confirmationQueue = [...realSigns, ...trapSigns].sort(() => 0.5 - Math.random());
+
+    // On informe l'utilisateur ou on log
+    console.log("⚠️ PHASE DE CONFIRMATION lancée pour : " + targetPatho.name);
+    console.log("Questions prévues :", state.confirmationQueue);
+
+    // On force le passage à la question suivante
+    askNextQuestion();
+}
          
          function askNextQuestion() {
-    // --- VERIFICATION PLAISANTIN ---
     if (checkPlaisantin()) return; 
-    
-    // --- STOP SI TROP DE QUESTIONS ---
-    if (state.asked.length >= 25) { showDiagnostic(); return; }
+    if (state.asked.length >= 30) { showDiagnostic(); return; }
 
-    // --- LOGIQUE HIERARCHIQUE (Refinements) ---
-    // Si la dernière réponse était OUI, on vérifie s'il y a des précisions à demander
-    if(state.asked.length > 0) {
-        const lastSign = state.asked[state.asked.length - 1];
-        const lastAnswer = state.answers[lastSign];
-        
-        if(lastAnswer === true && REFINEMENTS[lastSign]) {
-            // L'utilisateur a dit OUI à un symptôme parent (ex: Douleur abdo)
-            // On ajoute TOUS les enfants pertinents à la file prioritaire
-            const children = REFINEMENTS[lastSign];
-            
-            // On filtre les enfants pour ne garder que ceux pertinents pour les pathologies restantes
-            // (Pour ne pas demander "Douleur ovaire" à un homme par exemple)
-            const pertinentChildren = children.filter(child => {
-                // Est-ce que ce sous-signe existe dans le top 10 des pathologies actuelles ?
-                return state.ranked.slice(0, 10).some(r => r.patho.signes[child]);
-            });
-
-            // On les ajoute en TÊTE de file prioritaire
-            state.priorityQueue.unshift(...pertinentChildren);
+    // 1. PRIORITÉ : Phase de confirmation (Interrogatoire final)
+    if (state.confirmationMode) {
+        if (state.confirmationQueue.length > 0) {
+            const nextSign = state.confirmationQueue.shift();
+            state.currentSign = nextSign;
+            state.asked.push(nextSign);
+            renderCurrentQuestion();
+            return;
+        } else {
+            showDiagnostic(); // Terminé, on montre le résultat
+            return;
         }
     }
 
-    // Si on a des questions prioritaires (suite logique), on les pose
+    // 2. PRIORITÉ : Enfants/Refinements (Suite logique d'un OUI)
     if(state.priorityQueue.length > 0) {
         const nextPriority = state.priorityQueue.shift();
-        // Vérif anti-doublon
         if(!state.asked.includes(nextPriority)) {
             state.currentSign = nextPriority; 
             state.asked.push(nextPriority); 
             renderCurrentQuestion(); 
             return;
         } else {
-            // Si déjà posé, on passe au suivant récursivement
             askNextQuestion(); 
             return; 
         }
     }
 
-    // ... Reste de la fonction (Logique confirmation, etc.) inchangée ...
-    
-    // Recalcul du classement
+    // Calculer les scores avant de choisir la question suivante
     rankPathologies(); 
 
-    // Vérification de victoire
-    if(canShowDiagnostic()){ 
-        // ... code existant ...
-    }
-    
-    // Sélection intelligente standard
+    // Vérifier si on doit passer en mode confirmation
+    if(canShowDiagnostic()) return; 
+
+    // 3. Sélection intelligente (Entonnoir ou Split)
     prepareSigns();
     const remaining = state.allSigns.filter(s => !state.asked.includes(s));
-    
-    // Si plus de questions
     if(remaining.length === 0) { showDiagnostic(); return; }
 
-    // Appel du nouveau "Splitter"
     const signe = getNextSmartSign(state.ranked, remaining);
-    
-    if (!signe) { showDiagnostic(); return; } // Sécurité
-
     state.currentSign = signe; 
     state.asked.push(signe); 
     renderCurrentQuestion();

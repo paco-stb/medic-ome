@@ -2699,36 +2699,38 @@ function showDayDetails(dateStr, data) {
     if (!ranked || ranked.length === 0 || remainingSigns.length === 0) return null;
 
     // 1. DÉTERMINER LE NIVEAU DE CONFIANCE DE L'IA
-    // On regarde la probabilité de la pathologie n°1 dans la liste
     const topProb = ranked.length > 0 ? parseFloat(ranked[0].prob) : 0;
     
     // 2. FILTRAGE : CLINIQUE VS PARACLINIQUE
-    // Tant que l'IA n'est pas convaincue à 40%, on évite les questions techniques
     let pool = remainingSigns;
 
     if (topProb < 40) {
         pool = remainingSigns.filter(s => {
-            // Un signe est considéré comme "technique" s'il est listé dans le tableau 'paraclinique' 
-            // d'au moins une pathologie de notre base de données.
             const isParaclinique = PATHOLOGIES.some(p => p.paraclinique && p.paraclinique.includes(s));
             return !isParaclinique;
         });
     }
 
-    // Sécurité : si après filtrage il ne reste plus rien (ex: que des questions techniques), 
-    // on reprend tout le pool restant.
     if (pool.length === 0) pool = remainingSigns;
 
-    // 3. LOGIQUE D'ENTONNOIR (Général vers Précis)
-    // On force les questions générales (GENERAL_SYMPTOMS) au début si elles n'ont pas été posées
+    // 3. LOGIQUE D'ENTONNOIR (Général vers Précis) AVEC ALÉATOIRE
+    // On vérifie si un symptôme majeur a déjà été validé (OUI)
     const hasMajorSymptom = state.asked.some(s => state.answers[s] === true && GENERAL_SYMPTOMS.includes(s));
-    if (!hasMajorSymptom && state.asked.length < 8) {
-        const nextGeneral = GENERAL_SYMPTOMS.find(s => !state.asked.includes(s) && pool.includes(s));
-        if (nextGeneral) return nextGeneral;
+    
+    // Si on n'a encore aucun "OUI" sur un signe général et qu'on a posé moins de 10 questions
+    if (!hasMajorSymptom && state.asked.length < 10) {
+        // On récupère TOUS les chefs de file restants et disponibles dans le pool
+        const availableGenerals = GENERAL_SYMPTOMS.filter(s => !state.asked.includes(s) && pool.includes(s));
+        
+        if (availableGenerals.length > 0) {
+            // --- MODIFICATION ICI : TIRAGE ALÉATOIRE ---
+            const randomIndex = Math.floor(Math.random() * availableGenerals.length);
+            return availableGenerals[randomIndex];
+        }
     }
 
     // 4. ALGORITHME DE SPLIT (Optimisation de l'interrogatoire)
-    // On cherche le signe qui divise le mieux le TOP 10 des candidats actuels
+    // Conservé tel quel pour la précision du diagnostic
     const topCandidates = ranked.slice(0, 10).map(r => r.patho);
     let bestSign = null;
     let bestScore = -1;
@@ -2744,8 +2746,6 @@ function showDayDetails(dateStr, data) {
             }
         });
 
-        // Score d'optimalité : on veut un signe présent chez environ 50% des candidats (split)
-        // et qui a un poids sémiologique important (weightSum).
         const distanceToMid = Math.abs(presenceCount - (topCandidates.length / 2));
         const optimalityScore = (topCandidates.length - distanceToMid) * weightSum;
 
@@ -2755,7 +2755,6 @@ function showDayDetails(dateStr, data) {
         }
     }
 
-    // Si aucun "meilleur" signe n'est trouvé, on prend le premier disponible dans le pool
     return bestSign || pool[0];
 }
          
@@ -2871,7 +2870,7 @@ function showDayDetails(dateStr, data) {
          // --- FONCTIONS "PLAISANTIN" (Easter Eggs) ---
          function checkPlaisantin() {
              // On ne vérifie qu'exactement à la 20ème question
-             if (state.asked.length !== 13) return false;
+             if (state.asked.length < 12) return false;
          
              // Vérifier si toutes les réponses sont NON
              const allNo = state.asked.every(sign => state.answers[sign] === false);

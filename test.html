@@ -815,7 +815,6 @@ const GENERAL_SYMPTOMS = [
               startTime: null, 
               dailyTarget: null
           };
-         window.state = state;
          
          // === GUEST MODE ===
          // Vérifie si un invité peut jouer (1 fois par session, reset toutes les 2h)
@@ -3080,46 +3079,30 @@ function startConfirmationPhase(targetPatho) {
     if (checkPlaisantin()) return; 
     if (state.asked.length >= 30) { showDiagnostic(); return; }
 
-    // 1. PRIORITÉ : Phase de confirmation (Interrogatoire final)
-    if (state.confirmationMode) {
-        if (state.confirmationQueue.length > 0) {
-            const nextSign = state.confirmationQueue.shift();
-            state.currentSign = nextSign;
-            state.asked.push(nextSign);
-            renderCurrentQuestion();
-            return;
-        } else {
-            showDiagnostic(); // Terminé, on montre le résultat
-            return;
-        }
-    }
-
-    // 2. PRIORITÉ : Enfants/Refinements (Suite logique d'un OUI)
-    if(state.priorityQueue.length > 0) {
-        const nextPriority = state.priorityQueue.shift();
-        if(!state.asked.includes(nextPriority)) {
-            state.currentSign = nextPriority; 
-            state.asked.push(nextPriority); 
-            renderCurrentQuestion(); 
-            return;
-        } else {
-            askNextQuestion(); 
-            return; 
-        }
-    }
-
-    // Calculer les scores avant de choisir la question suivante
     rankPathologies(); 
 
-    // Vérifier si on doit passer en mode confirmation
     if(canShowDiagnostic()) return; 
 
-    // 3. Sélection intelligente (Entonnoir ou Split)
     prepareSigns();
     const remaining = state.allSigns.filter(s => !state.asked.includes(s));
-    if(remaining.length === 0) { showDiagnostic(); return; }
-
+    
+    // CALCUL DU PROCHAIN SIGNE
     const signe = getNextSmartSign(state.ranked, remaining);
+
+    // --- AJOUT DE LA SÉCURITÉ ICI ---
+    if (!signe) {
+        // Si on ne trouve plus de question et que le top score est très bas
+        const topProb = state.ranked.length > 0 ? parseFloat(state.ranked[0].prob) : 0;
+        
+        if (topProb < 5) {
+            renderPlaisantinEnd("healthy"); // On déclenche la fin "Patient en bonne santé"
+        } else {
+            showDiagnostic(); // Sinon on tente quand même de donner le meilleur résultat restant
+        }
+        return;
+    }
+    // --------------------------------
+
     state.currentSign = signe; 
     state.asked.push(signe); 
     renderCurrentQuestion();

@@ -2451,7 +2451,7 @@ app.appendChild(card);
             state.currentSign = signe; state.asked.push(signe); renderCurrentQuestion();
         }
 
-        function showDiagnostic() {
+                function showDiagnostic() {
             setDocTitle("Analyse...");
             window.scrollTo(0,0);
             const app = q('#app'); app.innerHTML = '';
@@ -2483,9 +2483,12 @@ app.appendChild(card);
                 
                 const btnTrue = document.createElement('button'); btnTrue.className='btn btn-success'; btnTrue.innerHTML='<i class="ph-bold ph-check"></i> Correct';
                 btnTrue.onclick = async () => { 
-                    if(state. isGuest)
-localStorage. setItem 'medicome_gue st_last_play'
-Date. now () •toString());
+                    // --- CORRECTION ICI ---
+                    if(state.isGuest) {
+                        localStorage.setItem('medicome_guest_last_play', Date.now().toString());
+                    }
+                    // ----------------------
+
                     triggerConfetti(); playSound('success');
                     state.progression.correct++; state.progression.streak = (state.progression.streak || 0) + 1;
                     
@@ -2539,10 +2542,13 @@ Date. now () •toString());
                 };
                 
                 const btnFalse = document.createElement('button'); btnFalse.className='btn btn-error'; btnFalse.innerHTML='<i class="ph-bold ph-x"></i> Incorrect';
-                btnFalse.onclick = async () => {
-                     if(state. isGuest)
-10 115t page set Item medicome gue
-Date. now () .toString());
+                btnFalse.onclick = async () => { 
+                    // --- CORRECTION ICI ---
+                    if(state.isGuest) {
+                        localStorage.setItem('medicome_guest_last_play', Date.now().toString());
+                    }
+                    // ----------------------
+
                     playSound('error');
                     state.progression.incorrect++; state.progression.streak = 0;
                     
@@ -2566,6 +2572,7 @@ Date. now () .toString());
                 btnGroup.appendChild(btnTrue); btnGroup.appendChild(btnFalse); card.appendChild(btnGroup); app.appendChild(card);
             }, 1500);
         }
+
 
         function showDiagnosticDetails(data, wasManualError = false) {
             window.scrollTo(0,0);

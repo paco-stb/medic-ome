@@ -2785,14 +2785,12 @@ function showDayDetails(dateStr, data) {
     const topPatho = ranked[0].patho;
 
     // ============================================================
-    // 🚨 PHASE 0 : ENTONNOIR DYNAMIQUE (Cascade)
+    // 🚨 PHASE 0 : ENTONNOIR STRICT (Top 5 Only)
     // ============================================================
-    // Tant qu'on n'a pas une certitude absolue (> 65%), on vérifie les Chefs de File.
-    // MAIS on ne pose QUE ceux qui sont pertinents pour les survivants du Top 15.
     
+    // Tant qu'on n'est pas en phase de confirmation (> 65%)
     if (topProb < 65) {
         
-        // 1. Liste des chefs de file pas encore posés
         const availableGenerals = GENERAL_SYMPTOMS.filter(s => 
             !state.asked.includes(s) && remainingSigns.includes(s)
         );
@@ -2801,30 +2799,25 @@ function showDayDetails(dateStr, data) {
             let bestGen = null;
             let maxRelevance = 0;
 
-            // 2. ON NE REGARDE QUE LES SURVIVANTS (Le Top 15)
-            // C'est ça la clé : Si tu as dit OUI à "Douleur Thoracique", 
-            // la Cystite est tombée à la 50ème place. Elle n'est plus dans ce "scope".
-            // Donc "Gênes Urinaires" ne marquera aucun point ici.
-            const scope = Math.min(ranked.length, 15);
+            // CHANGEMENT ICI : SCOPE RÉDUIT À 5
+            // On ignore totalement le bruit de fond (les maladies #6 à #150).
+            // Si le patient a un profil Cardio, les maladies digestives sont #20.
+            // Donc "Douleur Abdominale" aura un score de 0 ici.
+            const scope = Math.min(ranked.length, 5); 
             const topCandidates = ranked.slice(0, scope);
 
             availableGenerals.forEach(gen => {
                 let relevance = 0;
                 
                 topCandidates.forEach((candidate, index) => {
-                    // On regarde si la maladie survivante possède ce Chef de File
                     const signWeight = candidate.patho.signes[gen];
 
                     if (signWeight) {
-                        // FORMULE DE PERTINENCE :
-                        // (Importance du rang) * (Poids du signe)
-                        // Exemple : Embolie est #2. Elle a "Dyspnée" (poids 15).
-                        // Relevance += (15 - 2) * (15 / 10) = 19.5 points.
-                        
-                        // Exemple : Cystite n'est pas là.
-                        // Relevance pour "Gênes Urinaires" reste à 0.
-                        
-                        relevance += (15 - index) * (signWeight / 10); 
+                        // FORMULE RENFORCÉE :
+                        // On privilégie massivement le N°1 et N°2.
+                        // (6 - index) : Le 1er donne 6 pts, le 5ème donne 1 pt.
+                        // On multiplie par le poids réel du signe.
+                        relevance += (6 - index) * (signWeight / 10); 
                     }
                 });
 
@@ -2834,12 +2827,11 @@ function showDayDetails(dateStr, data) {
                 }
             });
 
-            // 3. SEUIL DE DÉCLENCHEMENT (STRICT)
-            // Si le score est faible (< 5), ça veut dire que le symptôme n'intéresse
-            // presque personne dans le Top 15. ON NE LE POSE PAS.
-            // Cela supprime les questions "Gênes urinaires" si on est parti sur du Cardio.
-            if (bestGen && maxRelevance >= 5) {
-                console.log(`🚨 Cascade Phase 0 : ${bestGen} (Pertinence: ${maxRelevance.toFixed(1)})`);
+            // Si le meilleur chef de file a un score > 0, on le pose.
+            // Sinon (si aucune des 5 maladies de tête n'a de chef de file dispo),
+            // on arrête la Phase 0 et on passe aux détails.
+            if (bestGen && maxRelevance > 0) {
+                console.log(`🚨 Entonnoir Top 5 : ${bestGen} (Score: ${maxRelevance.toFixed(1)})`);
                 return bestGen;
             }
         }
@@ -2848,7 +2840,6 @@ function showDayDetails(dateStr, data) {
     // ============================================================
     // 🛡️ SÉCURITÉ : VETO MANQUÉ
     // ============================================================
-    // Si on a fini les chefs de file pertinents, on vérifie les vetos
     const missedVeto = Object.keys(topPatho.signes).find(s => 
         (topPatho.veto && topPatho.veto.includes(s)) && 
         !state.asked.includes(s) && 
@@ -2857,10 +2848,9 @@ function showDayDetails(dateStr, data) {
     if (missedVeto) return missedVeto;
 
     // ============================================================
-    // 🔍 PHASE 2 : DÉTAILS & PRÉCISION
+    // 🔍 PHASE 2 : DÉTAILS
     // ============================================================
     
-    // Si confiance élevée (>70%), on cherche les Boosts (Signes spécifiques)
     if (topProb >= 70) {
         const boostSigns = Object.keys(topPatho.signes).filter(s =>
             topPatho.boost && topPatho.boost.includes(s) && !state.asked.includes(s) && remainingSigns.includes(s)
@@ -2868,7 +2858,7 @@ function showDayDetails(dateStr, data) {
         if (boostSigns.length > 0) return boostSigns[0];
     }
 
-    // Sinon Split 80/20 standard sur le Top 3 pour affiner
+    // Split sur le Top 3
     const top3 = ranked.slice(0, 3).map(r => r.patho);
     return selectBestSplitSign(remainingSigns, top3);
 }

@@ -2785,41 +2785,50 @@ function showDayDetails(dateStr, data) {
     const topPatho = ranked[0].patho;
 
     // ============================================================
-    // 🚨 PHASE 0 : PRIORITÉ ABSOLUE AUX CHEFS DE FILE DU TOP 5
+    // 🚨 PHASE 0 : PRIORITÉ ABSOLUE AUX CHEFS DE FILE PERTINENTS
     // ============================================================
-    // Tant qu'on n'est pas en confirmation (> 65%), on doit épuiser
-    // les "grandes questions" (Chefs de file) des maladies en tête.
+    // Règle : On pose TOUS les chefs de file qui concernent au moins UNE pathologie
+    // du Top 10, AVANT de poser des questions détaillées.
     
     if (topProb < 65) {
-        // 1. On isole le Top 5
-        const scope = Math.min(ranked.length, 5); 
+        // 1. On isole le Top 10 (ou moins si pas assez de candidats)
+        const scope = Math.min(ranked.length, 10); 
         const topCandidates = ranked.slice(0, scope);
 
-        // 2. On cherche les Chefs de File pertinents
+        // 2. Construction d'un Set de tous les chefs de file présents dans le Top 10
+        const relevantGeneralSymptoms = new Set();
+        
+        topCandidates.forEach(candidate => {
+            GENERAL_SYMPTOMS.forEach(gen => {
+                // Si cette pathologie possède ce chef de file
+                if (candidate.patho.signes[gen]) {
+                    relevantGeneralSymptoms.add(gen);
+                }
+            });
+        });
+
+        // 3. On cherche le MEILLEUR chef de file non posé parmi les pertinents
         let bestGen = null;
         let maxRelevance = 0;
 
-        // On parcourt la liste globale des Chefs de File (Douleur thorax, Fièvre, etc.)
-        GENERAL_SYMPTOMS.forEach(gen => {
-            // Condition A : On ne l'a pas déjà posée
-            // Condition B : Elle est encore dispo dans le jeu (remainingSigns)
+        relevantGeneralSymptoms.forEach(gen => {
+            // Condition : Pas déjà posé ET disponible
             if (!state.asked.includes(gen) && remainingSigns.includes(gen)) {
                 
                 let relevance = 0;
                 
-                // On regarde si ce chef de file existe dans le Top 5
+                // Calcul du score de pertinence
                 topCandidates.forEach((candidate, index) => {
                     const signWeight = candidate.patho.signes[gen];
                     
-                    // Si la maladie a ce chef de file
                     if (signWeight) {
-                        // SCORE : Priorité au rang (Le 1er vaut plus que le 5ème)
-                        // + Poids clinique du signe
-                        relevance += (6 - index) * (signWeight / 10); 
+                        // Plus la pathologie est haute dans le classement, plus elle compte
+                        // Plus le poids clinique est élevé, plus ça compte
+                        relevance += (11 - index) * signWeight;
                     }
                 });
 
-                // On garde le meilleur chef de file
+                // On garde le meilleur
                 if (relevance > maxRelevance) {
                     maxRelevance = relevance;
                     bestGen = gen;
@@ -2827,12 +2836,15 @@ function showDayDetails(dateStr, data) {
             }
         });
 
-        // 3. SI on a trouvé un chef de file pertinent pour le Top 5, ON LE POSE.
-        // On retourne immédiatement, ce qui empêche d'aller chercher des détails.
+        // 4. SI on a trouvé un chef de file pertinent, ON LE POSE
         if (bestGen && maxRelevance > 0) {
-            console.log(`🚨 Priorité Chef de File Top 5 : ${bestGen} (Score: ${maxRelevance.toFixed(1)})`);
+            console.log(`🚨 Chef de File Pertinent : ${bestGen} (Score: ${maxRelevance.toFixed(1)})`);
+            console.log(`   → Concerne ${Array.from(relevantGeneralSymptoms).length} symptômes du Top 10`);
             return bestGen;
         }
+        
+        // 5. Si TOUS les chefs de file pertinents ont été posés, on log
+        console.log(`✅ Tous les chefs de file pertinents épuisés. Passage aux questions précises.`);
     }
 
     // ============================================================
@@ -2848,7 +2860,7 @@ function showDayDetails(dateStr, data) {
     // ============================================================
     // 🔍 PHASE 2 : DÉTAILS INTELLIGENTS (Filtrés sur le Top 5)
     // ============================================================
-    // On n'arrive ici QUE si tous les chefs de file du Top 5 ont déjà été posés (ou non pertinents).
+    // On n'arrive ici QUE si tous les chefs de file du Top 10 ont déjà été posés (ou non pertinents).
     
     // Si confiance élevée (>70%), on cherche les Boosts (Signes spécifiques)
     if (topProb >= 70) {

@@ -3204,32 +3204,62 @@ function startConfirmationPhase(targetPatho) {
 
          
          function askNextQuestion() {
-    if (checkPlaisantin()) return; 
-    if (state.asked.length >= 30) { showDiagnostic(); return; }
+    // 1. Vérification "Plaisantin" (Anti-Troll)
+    if (checkPlaisantin()) return;
 
+    // 2. Vérification Limite brute (30 questions)
+    if (state.asked.length >= 30) { 
+        showDiagnostic(); 
+        return; 
+    }
+
+    // 3. GESTION DE LA CONFIRMATION (C'est ce bloc qui manquait !)
+    // Si on est en mode confirmation, on dépile la file d'attente
+    if (state.confirmationMode) {
+        if (state.confirmationQueue.length > 0) {
+            // On prend la prochaine question prévue dans la file
+            const nextConfSign = state.confirmationQueue.shift();
+            
+            // Sécurité : si on a déjà posé cette question (cas rare), on passe à la suivante
+            if (state.asked.includes(nextConfSign)) {
+                askNextQuestion();
+                return;
+            }
+
+            state.currentSign = nextConfSign;
+            state.asked.push(nextConfSign);
+            renderCurrentQuestion();
+            return;
+        } else {
+            // Si la file est vide, la confirmation est finie -> On affiche le résultat
+            showDiagnostic();
+            return;
+        }
+    }
+
+    // 4. Moteur Standard (Si pas de confirmation en cours)
     rankPathologies(); 
 
+    // Vérifie si on doit déclencher la confirmation maintenant
+    // Si oui, canShowDiagnostic va appeler startConfirmationPhase qui rappellera askNextQuestion
     if(canShowDiagnostic()) return; 
 
     prepareSigns();
     const remaining = state.allSigns.filter(s => !state.asked.includes(s));
     
-    // CALCUL DU PROCHAIN SIGNE
+    // Calcul du prochain signe par l'IA
     const signe = getNextSmartSign(state.ranked, remaining);
 
-    // --- AJOUT DE LA SÉCURITÉ ICI ---
+    // Sécurité si plus de questions
     if (!signe) {
-        // Si on ne trouve plus de question et que le top score est très bas
         const topProb = state.ranked.length > 0 ? parseFloat(state.ranked[0].prob) : 0;
-        
         if (topProb < 5) {
-            renderPlaisantinEnd("healthy"); // On déclenche la fin "Patient en bonne santé"
+            renderPlaisantinEnd("healthy");
         } else {
-            showDiagnostic(); // Sinon on tente quand même de donner le meilleur résultat restant
+            showDiagnostic();
         }
         return;
     }
-    // --------------------------------
 
     state.currentSign = signe; 
     state.asked.push(signe); 

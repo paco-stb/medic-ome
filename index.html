@@ -2728,40 +2728,84 @@ function showDayDetails(dateStr, data) {
          function getNextSmartSign(ranked, remainingSigns) {
     if (!ranked || ranked.length === 0 || remainingSigns.length === 0) return null;
 
-    // 1. DÉTERMINER LE NIVEAU DE CONFIANCE DE L'IA
     const topProb = ranked.length > 0 ? parseFloat(ranked[0].prob) : 0;
-    
-    // 2. FILTRAGE : CLINIQUE VS PARACLINIQUE
-    let pool = remainingSigns;
+    const top3 = ranked.slice(0, 3).map(r => r.patho);
 
-    if (topProb < 40) {
-        pool = remainingSigns.filter(s => {
-            const isParaclinique = PATHOLOGIES.some(p => p.paraclinique && p.paraclinique.includes(s));
-            return !isParaclinique;
-        });
-    }
+    // === PHASE 1 : EXPLORATION (Confiance < 40%) ===
+    if (topProb < 40 && state.asked.length < 8) {
+        // On cherche des SYMPTÔMES GÉNÉRAUX pour orienter
+        const availableGenerals = GENERAL_SYMPTOMS.filter(s => 
+            !state.asked.includes(s) && remainingSigns.includes(s)
+        );
 
-    if (pool.length === 0) pool = remainingSigns;
-
-    // 3. LOGIQUE D'ENTONNOIR (Général vers Précis) AVEC ALÉATOIRE
-    // On vérifie si un symptôme majeur a déjà été validé (OUI)
-    const hasMajorSymptom = state.asked.some(s => state.answers[s] === true && GENERAL_SYMPTOMS.includes(s));
-    
-    // Si on n'a encore aucun "OUI" sur un signe général et qu'on a posé moins de 10 questions
-    if (!hasMajorSymptom && state.asked.length < 10) {
-        // On récupère TOUS les chefs de file restants et disponibles dans le pool
-        const availableGenerals = GENERAL_SYMPTOMS.filter(s => !state.asked.includes(s) && pool.includes(s));
-        
         if (availableGenerals.length > 0) {
-            // --- MODIFICATION ICI : TIRAGE ALÉATOIRE ---
-            const randomIndex = Math.floor(Math.random() * availableGenerals.length);
-            return availableGenerals[randomIndex];
+            // ✅ On prend le symptôme le plus discriminant (présent dans le TOP 3)
+            const bestGeneral = availableGenerals.find(s => 
+                top3.some(p => p.signes[s])
+            );
+            if (bestGeneral) return bestGeneral;
+
+            // Sinon, on prend le premier (avec 20% d'aléa)
+            if (Math.random() > 0.2) return availableGenerals[0];
+            return availableGenerals[Math.floor(Math.random() * availableGenerals.length)];
         }
     }
 
-    // 4. ALGORITHME DE SPLIT (Optimisation de l'interrogatoire)
-    // Conservé tel quel pour la précision du diagnostic
-    const topCandidates = ranked.slice(0, 10).map(r => r.patho);
+    // === PHASE 2 : PRÉCISION (Confiance 40-70%) ===
+    if (topProb >= 40 && topProb < 70) {
+        // On filtre les signes CLINIQUES (pas encore de paraclinique)
+        let pool = remainingSigns.filter(s => {
+            const isParaclinique = PATHOLOGIES.some(p => 
+                p.paraclinique && p.paraclinique.includes(s)
+            );
+            return !isParaclinique;
+        });
+
+        if (pool.length === 0) pool = remainingSigns;
+
+        // Algorithme de Split (80% optimal, 20% aléatoire)
+        return selectBestSplitSign(pool, top3);
+    }
+
+    // === PHASE 3 : CONFIRMATION (Confiance > 70%) ===
+    if (topProb >= 70) {
+        const topPatho = ranked[0].patho;
+
+        // 🔬 PRIORITÉ 1 : Question paraclinique si disponible
+        const paracliniqueSigns = remainingSigns.filter(s => 
+            topPatho.paraclinique && topPatho.paraclinique.includes(s) &&
+            topPatho.signes[s] >= 30 // Signe important
+        );
+
+        if (paracliniqueSigns.length > 0) {
+            // On prend le signe BOOST en priorité
+            const boostSign = paracliniqueSigns.find(s => 
+                topPatho.boost && topPatho.boost.includes(s)
+            );
+            return boostSign || paracliniqueSigns[0];
+        }
+
+        // 🩺 PRIORITÉ 2 : Signe clinique BOOST non posé
+        const boostSigns = Object.keys(topPatho.signes).filter(s =>
+            topPatho.boost && topPatho.boost.includes(s) &&
+            !state.asked.includes(s) &&
+            remainingSigns.includes(s)
+        );
+
+        if (boostSigns.length > 0) return boostSigns[0];
+
+        // 📊 PRIORITÉ 3 : Split optimal
+        return selectBestSplitSign(remainingSigns, top3);
+    }
+
+    // Fallback
+    return selectBestSplitSign(remainingSigns, top3);
+}
+
+// ----------------------------------------
+// 🎲 FONCTION DE SPLIT OPTIMAL (80/20)
+// ----------------------------------------
+function selectBestSplitSign(pool, topCandidates) {
     let bestSign = null;
     let bestScore = -1;
 
@@ -2785,22 +2829,37 @@ function showDayDetails(dateStr, data) {
         }
     }
 
+    // 🎲 20% de chance de prendre un signe aléatoire (anti-pattern)
+    if (Math.random() < 0.2 && pool.length > 3) {
+        const randomSigns = pool.filter(s => s !== bestSign);
+        return randomSigns[Math.floor(Math.random() * randomSigns.length)] || bestSign;
+    }
+
     return bestSign || pool[0];
 }
          
          function canShowDiagnostic() {
     if (state.ranked.length === 0) return false;
-    if (state.confirmationMode) return false; 
+    if (state.confirmationMode) return false;
 
     const top1 = state.ranked[0];
+    const top2 = state.ranked[1];
     const score1 = parseFloat(top1.prob);
+    const score2 = top2 ? parseFloat(top2.prob) : 0;
     const qNum = state.asked.length;
 
-    // DÉCLENCHEMENT : Si IA sûre à 85% OU si on a atteint 15 questions
-    if (score1 > 85 || qNum >= 15) {
+    // ✅ DÉCLENCHEMENT : Confiance > 75% ET écart > 20% avec le 2ème
+    const isConfident = score1 > 75 && (score1 - score2) > 20;
+
+    // OU si on a posé 12+ questions et qu'on a un leader clair
+    const isLongEnough = qNum >= 12 && score1 > 60;
+
+    if (isConfident || isLongEnough) {
+        console.log(`🎯 Déclenchement confirmation : ${top1.patho.name} (${score1}%)`);
         startConfirmationPhase(top1.patho);
-        return true; 
+        return true;
     }
+
     return false;
 }
          
@@ -3069,30 +3128,64 @@ function startConfirmationPhase(targetPatho) {
     state.confirmationMode = true;
     state.confirmationQueue = [];
 
-    // 1. On récupère les signes de la maladie qu'on n'a pas encore posés (VRAIS signes)
-    let realSigns = Object.keys(targetPatho.signes)
-        .filter(s => !state.asked.includes(s))
-        .sort((a, b) => targetPatho.signes[b] - targetPatho.signes[a]) // Les plus importants d'abord
-        .slice(0, 4); // On en prend 4 maximum
+    const pSigns = Object.keys(targetPatho.signes);
+    const unaskedSigns = pSigns.filter(s => !state.asked.includes(s));
 
-    // 2. On récupère des "PIÈGES" (Signes qui n'ont RIEN à voir avec cette maladie)
-    // On pioche dans les signes des maladies les moins probables
-    let allPossibleSigns = state.allSigns;
-    let trapSigns = allPossibleSigns
-        .filter(s => !state.asked.includes(s) && !targetPatho.signes[s])
-        .sort(() => 0.5 - Math.random()) // Aléatoire
-        .slice(0, 3); // On en prend 3
+    // 🔬 ÉTAPE 1 : Trouver LA question paraclinique décisive
+    let proofSign = null;
+    if (targetPatho.paraclinique) {
+        proofSign = unaskedSigns.find(s => 
+            targetPatho.paraclinique.includes(s) &&
+            targetPatho.signes[s] >= 40 // Signe à haut poids
+        );
+    }
 
-    // 3. On mélange les deux listes pour que l'utilisateur ne devine pas le pattern
-    state.confirmationQueue = [...realSigns, ...trapSigns].sort(() => 0.5 - Math.random());
+    // Si pas de preuve, on prend le signe BOOST le plus important
+    if (!proofSign && targetPatho.boost) {
+        proofSign = unaskedSigns.find(s => 
+            targetPatho.boost.includes(s) && targetPatho.signes[s] >= 30
+        );
+    }
 
-    // On informe l'utilisateur ou on log
-    console.log("⚠️ PHASE DE CONFIRMATION lancée pour : " + targetPatho.name);
-    console.log("Questions prévues :", state.confirmationQueue);
+    // 🩺 ÉTAPE 2 : Prendre 1-2 VRAIS signes cliniques manquants
+    const realSigns = unaskedSigns
+        .filter(s => s !== proofSign)
+        .sort((a, b) => targetPatho.signes[b] - targetPatho.signes[a])
+        .slice(0, 2); // Maximum 2 signes
 
-    // On force le passage à la question suivante
+    // 🎭 ÉTAPE 3 : Prendre 1 PIÈGE depuis le TOP 2-3 des diagnostics différentiels
+    const competitors = state.ranked.slice(1, 3); // Rang 2 et 3
+    let trapSigns = [];
+
+    competitors.forEach(comp => {
+        const compSigns = Object.keys(comp.patho.signes).filter(s =>
+            !pSigns.includes(s) && // Pas un signe de la maladie correcte
+            !state.asked.includes(s) &&
+            comp.patho.signes[s] >= 15 // Signe significatif
+        );
+        trapSigns.push(...compSigns);
+    });
+
+    // On prend UN SEUL piège pertinent
+    trapSigns = trapSigns.slice(0, 1);
+
+    // 📋 ÉTAPE 4 : Construction de la queue (MAX 3 QUESTIONS)
+    state.confirmationQueue = [...realSigns, ...trapSigns]
+        .sort(() => 0.5 - Math.random()) // Mélange léger
+        .slice(0, 2); // Maximum 2 questions avant la preuve
+
+    // On ajoute la PREUVE en dernier
+    if (proofSign) {
+        state.confirmationQueue.push(proofSign);
+    }
+
+    console.log("✅ Phase de confirmation :", state.confirmationQueue.map(s => 
+        `${formatSigneName(s)} (${targetPatho.name})`
+    ));
+
     askNextQuestion();
 }
+
          
          function askNextQuestion() {
     if (checkPlaisantin()) return; 

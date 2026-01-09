@@ -2785,12 +2785,9 @@ function showDayDetails(dateStr, data) {
     const topPatho = ranked[0].patho;
 
     // ============================================================
-    // 🚨 PHASE 0 : ENTONNOIR STRICT (Top 5 Only)
+    // 🚨 PHASE 0 : ENTONNOIR DYNAMIQUE (Top 5 Only)
     // ============================================================
-    
-    // Tant qu'on n'est pas en phase de confirmation (> 65%)
     if (topProb < 65) {
-        
         const availableGenerals = GENERAL_SYMPTOMS.filter(s => 
             !state.asked.includes(s) && remainingSigns.includes(s)
         );
@@ -2798,38 +2795,23 @@ function showDayDetails(dateStr, data) {
         if (availableGenerals.length > 0) {
             let bestGen = null;
             let maxRelevance = 0;
-
-            // CHANGEMENT ICI : SCOPE RÉDUIT À 5
-            // On ignore totalement le bruit de fond (les maladies #6 à #150).
-            // Si le patient a un profil Cardio, les maladies digestives sont #20.
-            // Donc "Douleur Abdominale" aura un score de 0 ici.
             const scope = Math.min(ranked.length, 5); 
             const topCandidates = ranked.slice(0, scope);
 
             availableGenerals.forEach(gen => {
                 let relevance = 0;
-                
                 topCandidates.forEach((candidate, index) => {
                     const signWeight = candidate.patho.signes[gen];
-
                     if (signWeight) {
-                        // FORMULE RENFORCÉE :
-                        // On privilégie massivement le N°1 et N°2.
-                        // (6 - index) : Le 1er donne 6 pts, le 5ème donne 1 pt.
-                        // On multiplie par le poids réel du signe.
                         relevance += (6 - index) * (signWeight / 10); 
                     }
                 });
-
                 if (relevance > maxRelevance) {
                     maxRelevance = relevance;
                     bestGen = gen;
                 }
             });
 
-            // Si le meilleur chef de file a un score > 0, on le pose.
-            // Sinon (si aucune des 5 maladies de tête n'a de chef de file dispo),
-            // on arrête la Phase 0 et on passe aux détails.
             if (bestGen && maxRelevance > 0) {
                 console.log(`🚨 Entonnoir Top 5 : ${bestGen} (Score: ${maxRelevance.toFixed(1)})`);
                 return bestGen;
@@ -2848,9 +2830,10 @@ function showDayDetails(dateStr, data) {
     if (missedVeto) return missedVeto;
 
     // ============================================================
-    // 🔍 PHASE 2 : DÉTAILS
+    // 🔍 PHASE 2 : DÉTAILS INTELLIGENTS (FILTRÉS)
     // ============================================================
     
+    // Si confiance élevée (>70%), on cherche les Boosts du N°1
     if (topProb >= 70) {
         const boostSigns = Object.keys(topPatho.signes).filter(s =>
             topPatho.boost && topPatho.boost.includes(s) && !state.asked.includes(s) && remainingSigns.includes(s)
@@ -2858,9 +2841,33 @@ function showDayDetails(dateStr, data) {
         if (boostSigns.length > 0) return boostSigns[0];
     }
 
-    // Split sur le Top 3
+    // --- LE CHANGEMENT MAJEUR EST ICI ---
+    
+    // 1. On identifie les "Survivants" (Le Top 5 actuel)
+    // Si l'Infarctus est tombé à la 40ème place, il n'est pas dedans.
+    const survivors = ranked.slice(0, 5).map(r => r.patho);
+
+    // 2. On construit un Pool de questions "propres"
+    // On ne garde que les signes qui appartiennent aux survivants.
+    const relevantSignsPool = new Set();
+    survivors.forEach(p => {
+        Object.keys(p.signes).forEach(s => {
+            // On ajoute le signe seulement si on ne l'a pas encore posé
+            if (!state.asked.includes(s)) {
+                relevantSignsPool.add(s);
+            }
+        });
+    });
+
+    // Convertir le Set en Array pour l'algorithme
+    // S'il ne reste aucun signe pertinent (cas rare), on utilise remainingSigns par défaut
+    const pool = relevantSignsPool.size > 0 ? Array.from(relevantSignsPool) : remainingSigns;
+
+    // 3. On applique l'algorithme de choix sur ce Pool filtré
+    // On compare pour départager le Top 3
     const top3 = ranked.slice(0, 3).map(r => r.patho);
-    return selectBestSplitSign(remainingSigns, top3);
+    
+    return selectBestSplitSign(pool, top3);
 }
 
          // Fonction qui choisit le meilleur Chef de File en fonction des maladies probables

@@ -2730,77 +2730,93 @@ function showDayDetails(dateStr, data) {
     if (!ranked || ranked.length === 0 || remainingSigns.length === 0) return null;
 
     const topProb = ranked.length > 0 ? parseFloat(ranked[0].prob) : 0;
+    
+    // On prend un spectre plus large au début pour l'exploration (Top 10 au lieu de Top 3)
+    // Cela permet de voir les tendances lourdes (ex: tout le digestif remonte)
+    const topCandidatesBroad = ranked.slice(0, 10).map(r => r.patho); 
     const top3 = ranked.slice(0, 3).map(r => r.patho);
 
-    // === PHASE 1 : EXPLORATION (Confiance < 40%) ===
-    if (topProb < 40 && state.asked.length < 8) {
-        // On cherche des SYMPTÔMES GÉNÉRAUX pour orienter
+    // === PHASE 1 : EXPLORATION INTELLIGENTE (Confiance < 40%) ===
+    if (topProb < 40 && state.asked.length < 10) {
+        
+        // 1. On filtre : quels sont les Chefs de Files pas encore posés ?
         const availableGenerals = GENERAL_SYMPTOMS.filter(s => 
             !state.asked.includes(s) && remainingSigns.includes(s)
         );
 
         if (availableGenerals.length > 0) {
-            // ✅ On prend le symptôme le plus discriminant (présent dans le TOP 3)
-            const bestGeneral = availableGenerals.find(s => 
-                top3.some(p => p.signes[s])
-            );
-            if (bestGeneral) return bestGeneral;
-
-            // Sinon, on prend le premier (avec 20% d'aléa)
-            if (Math.random() > 0.2) return availableGenerals[0];
-            return availableGenerals[Math.floor(Math.random() * availableGenerals.length)];
+            // 2. ALGORITHME MAGIQUE : 
+            // On cherche quel Chef de File est le plus fréquent dans le TOP 10 actuel.
+            // Si j'ai validé "Douleur Abdo", le Top 10 sera plein d'appendicites, pyélos, etc.
+            // Le "Best General" sera donc mathématiquement "Fievre" ou "Genes Urinaires".
+            const bestGen = getBestGeneralSign(availableGenerals, topCandidatesBroad);
+            
+            if (bestGen) return bestGen;
         }
     }
 
     // === PHASE 2 : PRÉCISION (Confiance 40-70%) ===
     if (topProb >= 40 && topProb < 70) {
-        // On filtre les signes CLINIQUES (pas encore de paraclinique)
         let pool = remainingSigns.filter(s => {
             const isParaclinique = PATHOLOGIES.some(p => 
                 p.paraclinique && p.paraclinique.includes(s)
             );
-            return !isParaclinique;
+            return !isParaclinique; 
         });
-
         if (pool.length === 0) pool = remainingSigns;
-
-        // Algorithme de Split (80% optimal, 20% aléatoire)
         return selectBestSplitSign(pool, top3);
     }
 
     // === PHASE 3 : CONFIRMATION (Confiance > 70%) ===
     if (topProb >= 70) {
         const topPatho = ranked[0].patho;
-
-        // 🔬 PRIORITÉ 1 : Question paraclinique si disponible
+        // Priorité paraclinique
         const paracliniqueSigns = remainingSigns.filter(s => 
-            topPatho.paraclinique && topPatho.paraclinique.includes(s) &&
-            topPatho.signes[s] >= 30 // Signe important
+            topPatho.paraclinique && topPatho.paraclinique.includes(s) && topPatho.signes[s] >= 30
         );
+        if (paracliniqueSigns.length > 0) return paracliniqueSigns[0];
 
-        if (paracliniqueSigns.length > 0) {
-            // On prend le signe BOOST en priorité
-            const boostSign = paracliniqueSigns.find(s => 
-                topPatho.boost && topPatho.boost.includes(s)
-            );
-            return boostSign || paracliniqueSigns[0];
-        }
-
-        // 🩺 PRIORITÉ 2 : Signe clinique BOOST non posé
+        // Priorité Boost
         const boostSigns = Object.keys(topPatho.signes).filter(s =>
-            topPatho.boost && topPatho.boost.includes(s) &&
-            !state.asked.includes(s) &&
-            remainingSigns.includes(s)
+            topPatho.boost && topPatho.boost.includes(s) && !state.asked.includes(s) && remainingSigns.includes(s)
         );
-
         if (boostSigns.length > 0) return boostSigns[0];
 
-        // 📊 PRIORITÉ 3 : Split optimal
         return selectBestSplitSign(remainingSigns, top3);
     }
 
-    // Fallback
     return selectBestSplitSign(remainingSigns, top3);
+}
+
+         // Fonction qui choisit le meilleur Chef de File en fonction des maladies probables
+function getBestGeneralSign(pool, candidates) {
+    let bestSign = null;
+    let maxCount = -1;
+
+    // Pour chaque Chef de File disponible...
+    pool.forEach(sign => {
+        let count = 0;
+        // ... on compte combien de maladies du TOP 10 le possèdent
+        candidates.forEach(p => {
+            if (p.signes[sign]) count++;
+        });
+
+        // On cherche celui qui divise le mieux (proche de 50% des candidats idéalement, 
+        // ou le plus fréquent si on veut valider une hypothèse)
+        // Ici, on va privilégier la fréquence pour "grouper" (ex: si 8 maladies sur 10 ont de la fièvre, on demande la fièvre)
+        if (count > maxCount) {
+            maxCount = count;
+            bestSign = sign;
+        }
+    });
+
+    // Si aucun chef de file ne correspond aux maladies actuelles (cas rare ou début de partie),
+    // on en prend un au hasard pour débloquer
+    if (maxCount === 0 || !bestSign) {
+        return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    return bestSign;
 }
 
 // ----------------------------------------

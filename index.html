@@ -586,9 +586,9 @@
          
          // --- FONCTION POUR CHANGER LE TITRE DYNAMIQUEMENT ---
          function setDocTitle(titre) {
-             const baseName = "Medicome";
+             const baseName = "Medicome - Cas Cliniques Interactifs";
              if (titre) {
-                 document.title = `${titre} • ${baseName}`;
+                 document.title = `${titre} • Medicome`;
              } else {
                  document.title = `${baseName} - Cas Cliniques Interactifs`;
              }
@@ -1275,7 +1275,7 @@ const GENERAL_SYMPTOMS = [
          }
          
          function renderLogin() {
-    setDocTitle("Bienvenue");
+    setDocTitle(null);
     window.scrollTo(0, 0);
     const app = q('#app');
     app.innerHTML = ''; // Nettoyer l'écran
@@ -1691,7 +1691,7 @@ const GENERAL_SYMPTOMS = [
              divSearch.innerHTML = `<p style="margin-bottom:10px; color:var(--accent);">Je pensais à une pathologie précise (C'était une erreur de l'IA) :</p>`;
              const select = document.createElement('select'); select.className = 'input';
              select.innerHTML = '<option value="">-- Choisir la pathologie --</option>';
-             PATHOLOGIES.sort((a,b)=>a.name.localeCompare(b.name)).forEach(p => {
+             [...PATHOLOGIES].sort((a,b)=>a.name.localeCompare(b.name)).forEach(p => {
                  select.innerHTML += `<option value="${p.name}">${p.name}</option>`;
              });
              select.onchange = () => {

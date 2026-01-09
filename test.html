@@ -2785,42 +2785,58 @@ function showDayDetails(dateStr, data) {
     const topPatho = ranked[0].patho;
 
     // ============================================================
-    // 🚨 PHASE 0 : ENTONNOIR DYNAMIQUE (Top 5 Only)
+    // 🚨 PHASE 0 : PRIORITÉ ABSOLUE AUX CHEFS DE FILE DU TOP 5
     // ============================================================
+    // Tant qu'on n'est pas en confirmation (> 65%), on doit épuiser
+    // les "grandes questions" (Chefs de file) des maladies en tête.
+    
     if (topProb < 65) {
-        const availableGenerals = GENERAL_SYMPTOMS.filter(s => 
-            !state.asked.includes(s) && remainingSigns.includes(s)
-        );
+        // 1. On isole le Top 5
+        const scope = Math.min(ranked.length, 5); 
+        const topCandidates = ranked.slice(0, scope);
 
-        if (availableGenerals.length > 0) {
-            let bestGen = null;
-            let maxRelevance = 0;
-            const scope = Math.min(ranked.length, 5); 
-            const topCandidates = ranked.slice(0, scope);
+        // 2. On cherche les Chefs de File pertinents
+        let bestGen = null;
+        let maxRelevance = 0;
 
-            availableGenerals.forEach(gen => {
+        // On parcourt la liste globale des Chefs de File (Douleur thorax, Fièvre, etc.)
+        GENERAL_SYMPTOMS.forEach(gen => {
+            // Condition A : On ne l'a pas déjà posée
+            // Condition B : Elle est encore dispo dans le jeu (remainingSigns)
+            if (!state.asked.includes(gen) && remainingSigns.includes(gen)) {
+                
                 let relevance = 0;
+                
+                // On regarde si ce chef de file existe dans le Top 5
                 topCandidates.forEach((candidate, index) => {
                     const signWeight = candidate.patho.signes[gen];
+                    
+                    // Si la maladie a ce chef de file
                     if (signWeight) {
+                        // SCORE : Priorité au rang (Le 1er vaut plus que le 5ème)
+                        // + Poids clinique du signe
                         relevance += (6 - index) * (signWeight / 10); 
                     }
                 });
+
+                // On garde le meilleur chef de file
                 if (relevance > maxRelevance) {
                     maxRelevance = relevance;
                     bestGen = gen;
                 }
-            });
-
-            if (bestGen && maxRelevance > 0) {
-                console.log(`🚨 Entonnoir Top 5 : ${bestGen} (Score: ${maxRelevance.toFixed(1)})`);
-                return bestGen;
             }
+        });
+
+        // 3. SI on a trouvé un chef de file pertinent pour le Top 5, ON LE POSE.
+        // On retourne immédiatement, ce qui empêche d'aller chercher des détails.
+        if (bestGen && maxRelevance > 0) {
+            console.log(`🚨 Priorité Chef de File Top 5 : ${bestGen} (Score: ${maxRelevance.toFixed(1)})`);
+            return bestGen;
         }
     }
 
     // ============================================================
-    // 🛡️ SÉCURITÉ : VETO MANQUÉ
+    // 🛡️ SÉCURITÉ : VETO MANQUÉ (Kill Switch)
     // ============================================================
     const missedVeto = Object.keys(topPatho.signes).find(s => 
         (topPatho.veto && topPatho.veto.includes(s)) && 
@@ -2830,10 +2846,11 @@ function showDayDetails(dateStr, data) {
     if (missedVeto) return missedVeto;
 
     // ============================================================
-    // 🔍 PHASE 2 : DÉTAILS INTELLIGENTS (FILTRÉS)
+    // 🔍 PHASE 2 : DÉTAILS INTELLIGENTS (Filtrés sur le Top 5)
     // ============================================================
+    // On n'arrive ici QUE si tous les chefs de file du Top 5 ont déjà été posés (ou non pertinents).
     
-    // Si confiance élevée (>70%), on cherche les Boosts du N°1
+    // Si confiance élevée (>70%), on cherche les Boosts (Signes spécifiques)
     if (topProb >= 70) {
         const boostSigns = Object.keys(topPatho.signes).filter(s =>
             topPatho.boost && topPatho.boost.includes(s) && !state.asked.includes(s) && remainingSigns.includes(s)
@@ -2841,30 +2858,25 @@ function showDayDetails(dateStr, data) {
         if (boostSigns.length > 0) return boostSigns[0];
     }
 
-    // --- LE CHANGEMENT MAJEUR EST ICI ---
-    
-    // 1. On identifie les "Survivants" (Le Top 5 actuel)
-    // Si l'Infarctus est tombé à la 40ème place, il n'est pas dedans.
+    // 1. On identifie les survivants (Le Top 5 actuel)
     const survivors = ranked.slice(0, 5).map(r => r.patho);
 
     // 2. On construit un Pool de questions "propres"
     // On ne garde que les signes qui appartiennent aux survivants.
+    // Cela empêche de poser une question sur une maladie éliminée.
     const relevantSignsPool = new Set();
     survivors.forEach(p => {
         Object.keys(p.signes).forEach(s => {
-            // On ajoute le signe seulement si on ne l'a pas encore posé
             if (!state.asked.includes(s)) {
                 relevantSignsPool.add(s);
             }
         });
     });
 
-    // Convertir le Set en Array pour l'algorithme
-    // S'il ne reste aucun signe pertinent (cas rare), on utilise remainingSigns par défaut
+    // Fallback si le pool est vide (très rare)
     const pool = relevantSignsPool.size > 0 ? Array.from(relevantSignsPool) : remainingSigns;
 
-    // 3. On applique l'algorithme de choix sur ce Pool filtré
-    // On compare pour départager le Top 3
+    // 3. Algorithme de Split sur le Top 3
     const top3 = ranked.slice(0, 3).map(r => r.patho);
     
     return selectBestSplitSign(pool, top3);

@@ -2738,7 +2738,7 @@ function showDayDetails(dateStr, data) {
 
     // === PHASE 1 : EXPLORATION INTELLIGENTE (Confiance < 40%) ===
     // MODIFICATION ICI : On utilise la logique "Entonnoir"
-    if (topProb < 40 && state.asked.length < 10) {
+    if (topProb < 25 && state.asked.length < 4) {
         
         // On cherche les Chefs de Files pertinents
         const availableGenerals = GENERAL_SYMPTOMS.filter(s => 

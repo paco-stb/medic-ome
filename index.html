@@ -590,7 +590,7 @@
              if (titre) {
                  document.title = `${titre} • Medicome`;
              } else {
-                 document.title = `${baseName} - Cas Cliniques Interactifs`;
+                 document.title = baseName;
              }
          }
          
@@ -831,31 +831,27 @@ const GENERAL_SYMPTOMS = [
          return guestData;
          }
          
-         // Lancer le mode invité si disponible
-         function startGuestMode() {
-         const guestData = checkGuestAvailability();
-         if (!guestData.canPlay) {
-         showAlert("Le mode invité est temporairement indisponible. Veuillez créer un compte.", "error");
-         return false;
-         }
-         
-         // CORRECTION ICI : On utilise state.isGuest
-         state.isGuest = true;
-         state.pseudo = "Invité";
-         
-         // On initialise la progression vide si elle n'existe pas
-         if (!state.progression) {
-         state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0 };
-         }
-         
-         guestData.canPlay = false;
-         guestData.timestamp = Date.now();
-         sessionStorage.setItem('guestMode', JSON.stringify(guestData));
-         
-         updateHeader(); // Important pour afficher le pseudo "Invité"
-         renderHome();   // On envoie vers l'accueil au lieu de lancer direct le diag
-         return true;
-         }
+         // Remplacez toute la fonction startGuestMode par :
+function startGuestMode() {
+    // ON SUPPRIME le blocage ici (checkGuestAvailability)
+    // L'utilisateur peut entrer, c'est le bouton "Lancer le cas" qui sera grisé plus tard
+    
+    state.isGuest = true;
+    state.pseudo = "Invité";
+    
+    // On initialise la progression vide si elle n'existe pas
+    if (!state.progression) {
+       state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0 };
+    }
+    
+    // On enregistre juste le mode, sans bloquer
+    const guestData = { canPlay: true, timestamp: Date.now() }; // On garde ça pour la forme
+    sessionStorage.setItem('guestMode', JSON.stringify(guestData));
+    
+    updateHeader();
+    renderHome(); // On l'envoie sur l'accueil
+    return true;
+}
          
          
          // --- THEME LOGIC ---

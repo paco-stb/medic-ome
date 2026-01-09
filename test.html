@@ -2785,59 +2785,67 @@ function showDayDetails(dateStr, data) {
     const topPatho = ranked[0].patho;
 
     // ============================================================
-    // 🛡️ VERROU DE SÉCURITÉ : VETO MANQUÉ
+    // 🚨 PHASE 0 : CHEFS DE FILE OBLIGATOIRES (Le "Tir de Barrage")
     // ============================================================
-    // Si la maladie n°1 a un signe "Veto" ou "Chef de file" non posé, on le force.
-    const missedGeneral = GENERAL_SYMPTOMS.find(gen => 
-        topPatho.signes[gen] &&        
-        !state.asked.includes(gen) && 
-        remainingSigns.includes(gen)  
+    // Tant qu'il reste un Chef de File (General Symptom) pertinent pour les maladies
+    // probables (Top 15), on DOIT le poser avant tout détail.
+
+    // 1. On filtre les chefs de file qui sont encore disponibles
+    const availableGenerals = GENERAL_SYMPTOMS.filter(s => 
+        !state.asked.includes(s) && remainingSigns.includes(s)
     );
-    if (missedGeneral) return missedGeneral; 
 
-    // ============================================================
-    // 🧠 PHASE 1 : ORIENTATION SYSTÉMIQUE (Contextuelle)
-    // ============================================================
-    // On l'active au début (moins de 4 questions) SI l'IA n'est pas encore sûre (<40%)
-    if (state.asked.length < 4 && topProb < 40) {
-        
-        // 1. On analyse les 5 premières maladies probables
-        // Grâce au bonus de terrain, si le patient fume, le Cardio/Pneumo est déjà en haut.
-        const top5Groups = ranked.slice(0, 5).map(r => PATHO_GROUPS[r.patho.name]);
-        
-        // 2. On compte quel système est majoritaire
-        const counts = {};
-        let maxGroup = null;
-        let maxCount = 0;
-        
-        for (const group of top5Groups) {
-            if(!group) continue;
-            counts[group] = (counts[group] || 0) + 1;
-            if (counts[group] > maxCount) {
-                maxCount = counts[group];
-                maxGroup = group;
-            }
-        }
+    if (availableGenerals.length > 0) {
+        let bestGen = null;
+        let maxRelevance = 0;
 
-        // 3. Si un groupe domine (ex: 3 maladies sur 5 sont Cardio)
-        // ET qu'on n'a pas encore posé la question chef de file
-        if (maxGroup && SYSTEM_LEADERS[maxGroup]) {
-            const signLeader = SYSTEM_LEADERS[maxGroup];
+        // 2. On regarde les 15 premières maladies (Ranked est déjà trié par Proba + Terrain)
+        const topCandidates = ranked.slice(0, 15);
+
+        availableGenerals.forEach(gen => {
+            let relevance = 0;
             
-            if (remainingSigns.includes(signLeader) && !state.asked.includes(signLeader)) {
-                 console.log(`🔎 Orientation Phase 1 : Système ${maxGroup} détecté -> Question : ${signLeader}`);
-                 return signLeader;
+            topCandidates.forEach((candidate, index) => {
+                // Si cette maladie possède ce Chef de File
+                if (candidate.patho.signes[gen]) {
+                    // On donne un poids : plus la maladie est haute dans le classement, 
+                    // plus son chef de file est prioritaire.
+                    // Ex: Le 1er donne 20pts, le 2ème 19pts...
+                    relevance += (20 - index); 
+                }
+            });
+
+            if (relevance > maxRelevance) {
+                maxRelevance = relevance;
+                bestGen = gen;
             }
+        });
+
+        // 3. SI on a trouvé un chef de file pertinent (score significatif), on le force.
+        // Le seuil > 5 permet d'éviter de poser une question générale si elle ne concerne
+        // qu'une seule maladie tout en bas du classement (inutile).
+        if (bestGen && maxRelevance > 5) {
+            console.log(`🚨 Phase Chef de File Prioritaire : ${bestGen} (Score: ${maxRelevance})`);
+            return bestGen;
         }
     }
 
     // ============================================================
-    // ⚖️ PHASE 2 : DICHOTOMIE (Split 80/20) - inchangé
+    // 🛡️ SÉCURITÉ : VETO MANQUÉ (Si on a passé la phase chefs de file)
     // ============================================================
-    // On prend le Top 3 pour calculer le meilleur split
-    const top3 = ranked.slice(0, 3).map(r => r.patho);
-    
-    // Si on est en phase de confirmation (>70%), on cherche d'abord les Boosts
+    const missedVeto = Object.keys(topPatho.signes).find(s => 
+        (topPatho.veto && topPatho.veto.includes(s)) && // C'est un veto
+        !state.asked.includes(s) && 
+        remainingSigns.includes(s)
+    );
+    if (missedVeto) return missedVeto;
+
+    // ============================================================
+    // 🔍 PHASE 2 : RAFFINEMENT (Dichotomie 80/20)
+    // ============================================================
+    // Maintenant que les grandes questions sont passées, on affine.
+
+    // Si on est en phase de confirmation (>70%), on cherche d'abord les Boosts (Examens/Signes clés)
     if (topProb >= 70) {
         const boostSigns = Object.keys(topPatho.signes).filter(s =>
             topPatho.boost && topPatho.boost.includes(s) && !state.asked.includes(s) && remainingSigns.includes(s)
@@ -2845,7 +2853,8 @@ function showDayDetails(dateStr, data) {
         if (boostSigns.length > 0) return boostSigns[0];
     }
 
-    // Sinon algorithme de split standard
+    // Algorithme de split standard sur le Top 3 pour trouver le détail discriminant
+    const top3 = ranked.slice(0, 3).map(r => r.patho);
     return selectBestSplitSign(remainingSigns, top3);
 }
 

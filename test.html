@@ -2731,31 +2731,29 @@ function showDayDetails(dateStr, data) {
 
     const topProb = ranked.length > 0 ? parseFloat(ranked[0].prob) : 0;
     
-    // On prend un spectre plus large au début pour l'exploration (Top 10 au lieu de Top 3)
-    // Cela permet de voir les tendances lourdes (ex: tout le digestif remonte)
+    // Pour la Phase 1 : On regarde large (Top 10)
     const topCandidatesBroad = ranked.slice(0, 10).map(r => r.patho); 
+    // Pour les Phases 2 et 3 : On se concentre sur le podium (Top 3)
     const top3 = ranked.slice(0, 3).map(r => r.patho);
 
     // === PHASE 1 : EXPLORATION INTELLIGENTE (Confiance < 40%) ===
+    // MODIFICATION ICI : On utilise la logique "Entonnoir"
     if (topProb < 40 && state.asked.length < 10) {
         
-        // 1. On filtre : quels sont les Chefs de Files pas encore posés ?
+        // On cherche les Chefs de Files pertinents
         const availableGenerals = GENERAL_SYMPTOMS.filter(s => 
             !state.asked.includes(s) && remainingSigns.includes(s)
         );
 
         if (availableGenerals.length > 0) {
-            // 2. ALGORITHME MAGIQUE : 
-            // On cherche quel Chef de File est le plus fréquent dans le TOP 10 actuel.
-            // Si j'ai validé "Douleur Abdo", le Top 10 sera plein d'appendicites, pyélos, etc.
-            // Le "Best General" sera donc mathématiquement "Fievre" ou "Genes Urinaires".
+            // On utilise la nouvelle fonction pour trouver le "dénominateur commun" du Top 10
             const bestGen = getBestGeneralSign(availableGenerals, topCandidatesBroad);
-            
             if (bestGen) return bestGen;
         }
     }
 
     // === PHASE 2 : PRÉCISION (Confiance 40-70%) ===
+    // (Inchangé : On évite le paraclinique pour rester sur l'interrogatoire)
     if (topProb >= 40 && topProb < 70) {
         let pool = remainingSigns.filter(s => {
             const isParaclinique = PATHOLOGIES.some(p => 
@@ -2763,28 +2761,45 @@ function showDayDetails(dateStr, data) {
             );
             return !isParaclinique; 
         });
+
         if (pool.length === 0) pool = remainingSigns;
+
         return selectBestSplitSign(pool, top3);
     }
 
     // === PHASE 3 : CONFIRMATION (Confiance > 70%) ===
+    // (RESTAURÉ : Votre logique originale précise)
     if (topProb >= 70) {
         const topPatho = ranked[0].patho;
-        // Priorité paraclinique
-        const paracliniqueSigns = remainingSigns.filter(s => 
-            topPatho.paraclinique && topPatho.paraclinique.includes(s) && topPatho.signes[s] >= 30
-        );
-        if (paracliniqueSigns.length > 0) return paracliniqueSigns[0];
 
-        // Priorité Boost
-        const boostSigns = Object.keys(topPatho.signes).filter(s =>
-            topPatho.boost && topPatho.boost.includes(s) && !state.asked.includes(s) && remainingSigns.includes(s)
+        // 🔬 PRIORITÉ 1 : Question paraclinique si disponible
+        const paracliniqueSigns = remainingSigns.filter(s => 
+            topPatho.paraclinique && topPatho.paraclinique.includes(s) &&
+            topPatho.signes[s] >= 30 // Signe important
         );
+
+        if (paracliniqueSigns.length > 0) {
+            // On prend le signe BOOST en priorité parmi les examens
+            const boostSign = paracliniqueSigns.find(s => 
+                topPatho.boost && topPatho.boost.includes(s)
+            );
+            return boostSign || paracliniqueSigns[0];
+        }
+
+        // 🩺 PRIORITÉ 2 : Signe clinique BOOST non posé
+        const boostSigns = Object.keys(topPatho.signes).filter(s =>
+            topPatho.boost && topPatho.boost.includes(s) &&
+            !state.asked.includes(s) &&
+            remainingSigns.includes(s)
+        );
+
         if (boostSigns.length > 0) return boostSigns[0];
 
+        // 📊 PRIORITÉ 3 : Split optimal
         return selectBestSplitSign(remainingSigns, top3);
     }
 
+    // Fallback
     return selectBestSplitSign(remainingSigns, top3);
 }
 

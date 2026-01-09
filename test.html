@@ -2785,67 +2785,82 @@ function showDayDetails(dateStr, data) {
     const topPatho = ranked[0].patho;
 
     // ============================================================
-    // 🚨 PHASE 0 : CHEFS DE FILE OBLIGATOIRES (Le "Tir de Barrage")
+    // 🚨 PHASE 0 : ENTONNOIR DYNAMIQUE (Cascade)
     // ============================================================
-    // Tant qu'il reste un Chef de File (General Symptom) pertinent pour les maladies
-    // probables (Top 15), on DOIT le poser avant tout détail.
+    // Tant qu'on n'a pas une certitude absolue (> 65%), on vérifie les Chefs de File.
+    // MAIS on ne pose QUE ceux qui sont pertinents pour les survivants du Top 15.
+    
+    if (topProb < 65) {
+        
+        // 1. Liste des chefs de file pas encore posés
+        const availableGenerals = GENERAL_SYMPTOMS.filter(s => 
+            !state.asked.includes(s) && remainingSigns.includes(s)
+        );
 
-    // 1. On filtre les chefs de file qui sont encore disponibles
-    const availableGenerals = GENERAL_SYMPTOMS.filter(s => 
-        !state.asked.includes(s) && remainingSigns.includes(s)
-    );
+        if (availableGenerals.length > 0) {
+            let bestGen = null;
+            let maxRelevance = 0;
 
-    if (availableGenerals.length > 0) {
-        let bestGen = null;
-        let maxRelevance = 0;
+            // 2. ON NE REGARDE QUE LES SURVIVANTS (Le Top 15)
+            // C'est ça la clé : Si tu as dit OUI à "Douleur Thoracique", 
+            // la Cystite est tombée à la 50ème place. Elle n'est plus dans ce "scope".
+            // Donc "Gênes Urinaires" ne marquera aucun point ici.
+            const scope = Math.min(ranked.length, 15);
+            const topCandidates = ranked.slice(0, scope);
 
-        // 2. On regarde les 15 premières maladies (Ranked est déjà trié par Proba + Terrain)
-        const topCandidates = ranked.slice(0, 15);
+            availableGenerals.forEach(gen => {
+                let relevance = 0;
+                
+                topCandidates.forEach((candidate, index) => {
+                    // On regarde si la maladie survivante possède ce Chef de File
+                    const signWeight = candidate.patho.signes[gen];
 
-        availableGenerals.forEach(gen => {
-            let relevance = 0;
-            
-            topCandidates.forEach((candidate, index) => {
-                // Si cette maladie possède ce Chef de File
-                if (candidate.patho.signes[gen]) {
-                    // On donne un poids : plus la maladie est haute dans le classement, 
-                    // plus son chef de file est prioritaire.
-                    // Ex: Le 1er donne 20pts, le 2ème 19pts...
-                    relevance += (20 - index); 
+                    if (signWeight) {
+                        // FORMULE DE PERTINENCE :
+                        // (Importance du rang) * (Poids du signe)
+                        // Exemple : Embolie est #2. Elle a "Dyspnée" (poids 15).
+                        // Relevance += (15 - 2) * (15 / 10) = 19.5 points.
+                        
+                        // Exemple : Cystite n'est pas là.
+                        // Relevance pour "Gênes Urinaires" reste à 0.
+                        
+                        relevance += (15 - index) * (signWeight / 10); 
+                    }
+                });
+
+                if (relevance > maxRelevance) {
+                    maxRelevance = relevance;
+                    bestGen = gen;
                 }
             });
 
-            if (relevance > maxRelevance) {
-                maxRelevance = relevance;
-                bestGen = gen;
+            // 3. SEUIL DE DÉCLENCHEMENT (STRICT)
+            // Si le score est faible (< 5), ça veut dire que le symptôme n'intéresse
+            // presque personne dans le Top 15. ON NE LE POSE PAS.
+            // Cela supprime les questions "Gênes urinaires" si on est parti sur du Cardio.
+            if (bestGen && maxRelevance >= 5) {
+                console.log(`🚨 Cascade Phase 0 : ${bestGen} (Pertinence: ${maxRelevance.toFixed(1)})`);
+                return bestGen;
             }
-        });
-
-        // 3. SI on a trouvé un chef de file pertinent (score significatif), on le force.
-        // Le seuil > 5 permet d'éviter de poser une question générale si elle ne concerne
-        // qu'une seule maladie tout en bas du classement (inutile).
-        if (bestGen && maxRelevance > 5) {
-            console.log(`🚨 Phase Chef de File Prioritaire : ${bestGen} (Score: ${maxRelevance})`);
-            return bestGen;
         }
     }
 
     // ============================================================
-    // 🛡️ SÉCURITÉ : VETO MANQUÉ (Si on a passé la phase chefs de file)
+    // 🛡️ SÉCURITÉ : VETO MANQUÉ
     // ============================================================
+    // Si on a fini les chefs de file pertinents, on vérifie les vetos
     const missedVeto = Object.keys(topPatho.signes).find(s => 
-        (topPatho.veto && topPatho.veto.includes(s)) && // C'est un veto
+        (topPatho.veto && topPatho.veto.includes(s)) && 
         !state.asked.includes(s) && 
         remainingSigns.includes(s)
     );
     if (missedVeto) return missedVeto;
 
     // ============================================================
-    // 🔍 PHASE 2 : RAFFINEMENT (Dichotomie 80/20)
+    // 🔍 PHASE 2 : DÉTAILS & PRÉCISION
     // ============================================================
-    // Maintenant que les grandes questions sont passées, on affine.
-
-    // Si on est en phase de confirmation (>70%), on cherche d'abord les Boosts (Examens/Signes clés)
+    
+    // Si confiance élevée (>70%), on cherche les Boosts (Signes spécifiques)
     if (topProb >= 70) {
         const boostSigns = Object.keys(topPatho.signes).filter(s =>
             topPatho.boost && topPatho.boost.includes(s) && !state.asked.includes(s) && remainingSigns.includes(s)
@@ -2853,7 +2868,7 @@ function showDayDetails(dateStr, data) {
         if (boostSigns.length > 0) return boostSigns[0];
     }
 
-    // Algorithme de split standard sur le Top 3 pour trouver le détail discriminant
+    // Sinon Split 80/20 standard sur le Top 3 pour affiner
     const top3 = ranked.slice(0, 3).map(r => r.patho);
     return selectBestSplitSign(remainingSigns, top3);
 }

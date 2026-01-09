@@ -616,7 +616,8 @@
     // Les "Chefs de file" : Questions génériques qui orientent vers une spécialité
 const GENERAL_SYMPTOMS = [
     "douleur_thoracique",       // Oriente vers Cardio / Pneumo
-    "douleur_abdominale",       // Oriente vers Digestif / Uro / Gynéco
+    "douleur_abdominale",// Oriente vers Digestif / Uro / Gynéco
+    "douleur_dos",
     "fievre",                   // Oriente vers Infectio / Inflammatoire
     "dyspnee",                  // Oriente vers Pneumo / Cardio
     "cephalees",                // Oriente vers Neuro / ORL
@@ -700,6 +701,39 @@ const GENERAL_SYMPTOMS = [
     "Tétanos": "Infectio", "Botulisme": "Infectio", "Rubéole": "Infectio", 
     "Syphilis": "Infectio", "Oreillons": "Infectio", "Muguet Buccal": "Infectio"
 };
+         // MAPPING : Groupe de Maladie -> Symptôme Chef de file (Doit exister dans GENERAL_SYMPTOMS)
+const SYSTEM_LEADERS = {
+    "Cardio": "douleur_thoracique",
+    "Pneumo": "dyspnee", // ou toux, mais dyspnee est plus sensible en urgence
+    "Neuro": "troubles_neuro", // Couvre déficit, malaise...
+    "Digestif": "douleur_abdominale",
+    "Uro/Nephro": "genes_urinaires", // ou douleur_abdominale (flanc)
+    "Gynéco": "douleur_abdominale", // Pelvienne
+    "Dermato": "anomalie_peau",
+    "Rhumato": "douleur_membre_traumatisme",
+    "Endo/Hémato": "fievre", // Souvent systémique (ou fatigue, mais fievre est mieux)
+    "Psy": "trouble_psy",
+    "ORL/Ophtalmo": "cephalees", // ou troubles_visuels
+    "Infectio": "fievre"
+};
+
+// MAPPING : Facteur de Risque (state.demo) -> Bonus pour Groupes de maladies
+const CONTEXT_RULES = [
+    // Risque Vasculaire -> Cardio & Neuro
+    { trigger: ['tabac', 'diabete', 'hta', 'cholesterol', 'surpoids', 'homme_age'], targets: ['Cardio', 'Neuro'], bonus: 15 },
+    // Risque Pulmonaire -> Pneumo
+    { trigger: ['tabac', 'fumeur'], targets: ['Pneumo'], bonus: 15 },
+    // Risque Thrombo-embolique -> Cardio (EP)
+    { trigger: ['chirurgie', 'alitement', 'cancer', 'avion', 'voyage'], targets: ['Cardio'], bonus: 20 },
+    // Terrain Infectieux
+    { trigger: ['fievre', 'voyage', 'immuno', 'hiv'], targets: ['Infectio', 'Pneumo'], bonus: 10 },
+    // Terrain Gynéco
+    { trigger: ['femme', 'grossesse', 'contraception'], targets: ['Gynéco'], bonus: 10 },
+    // Terrain Psy/Jeune
+    { trigger: ['stress', 'jeune', 'etudiant'], targets: ['Psy'], bonus: 10 },
+    // Terrain Trauma/Sport
+    { trigger: ['sport', 'trauma', 'chute'], targets: ['Rhumato'], bonus: 20 }
+];
          
          // --- 3D-STYLE ICONS (USING PHOSPHOR DUOTONE) ---
          const ACHIEVEMENTS = [
@@ -2689,8 +2723,7 @@ function showDayDetails(dateStr, data) {
          
          function rankPathologies() {
     const scores = PATHOLOGIES.map(p => {
-        // --- POINT 2 : VETO STRICT ---
-        // Si l'utilisateur a répondu NON à un signe obligatoire (veto), on élimine la maladie
+        // --- 1. VETO STRICT ---
         if (p.veto && p.veto.some(v => state.answers[v] === false)) {
             return { patho: p, score: -1, prob: 0 };
         }
@@ -2698,20 +2731,40 @@ function showDayDetails(dateStr, data) {
         let matchPoints = 0;
         let maxPossiblePoints = 0;
 
-        // On parcourt tous les signes définis dans le JSON pour cette pathologie
+        // --- 2. CALCUL DES POINTS CLINIQUES ---
         for (const [signe, poids] of Object.entries(p.signes)) {
-            maxPossiblePoints += poids; // On cumule le score maximum théorique
+            maxPossiblePoints += poids;
 
             if (state.answers[signe] === true) {
-                matchPoints += poids; // L'utilisateur a le signe : + points
+                matchPoints += poids;
                 if (p.boost && p.boost.includes(signe)) matchPoints += 50; // Bonus Boost
             } else if (state.answers[signe] === false) {
-                matchPoints -= (poids * 0.5); // L'utilisateur n'a pas le signe : pénalité légère
+                matchPoints -= (poids * 0.5); // Pénalité
             }
         }
 
-        // --- POINT 4 : NORMALISATION ---
-        // On calcule un pourcentage de correspondance (0 à 100)
+        // --- 3. BONUS DE CONTEXTE (TERRAIN) ---
+        // On récupère le groupe de la maladie (ex: Cardio)
+        const pGroup = PATHO_GROUPS[p.name];
+        
+        if (pGroup && state.demo) {
+            // On parcourt nos règles de contexte
+            CONTEXT_RULES.forEach(rule => {
+                // Si le patient a UN des facteurs déclencheurs (ex: tabac)
+                const hasFactor = rule.trigger.some(t => state.demo[t]);
+                // Et que la maladie fait partie des cibles (ex: Cardio)
+                if (hasFactor && rule.targets.includes(pGroup)) {
+                    matchPoints += rule.bonus;
+                    // On augmente un peu le max possible pour lisser le % mais garder l'avantage relatif
+                    maxPossiblePoints += (rule.bonus * 0.5); 
+                }
+            });
+        }
+
+        // --- 4. NORMALISATION ---
+        // Sécurité division par zéro
+        if (maxPossiblePoints === 0) maxPossiblePoints = 1;
+
         let finalProb = (matchPoints / maxPossiblePoints) * 100;
         if (finalProb < 0) finalProb = 0;
         if (finalProb > 100) finalProb = 100;
@@ -2719,87 +2772,157 @@ function showDayDetails(dateStr, data) {
         return { patho: p, score: matchPoints, prob: finalProb.toFixed(1) };
     });
 
-    // On trie pour avoir les plus probables en premier
+    // Tri décroissant
     state.ranked = scores
-        .filter(s => s.score >= 0) // On cache les maladies éliminées par Veto
+        .filter(s => s.score >= -100) // On garde tout sauf les vetos violents
         .sort((a, b) => b.prob - a.prob);
 }
          
          function getNextSmartSign(ranked, remainingSigns) {
     if (!ranked || ranked.length === 0 || remainingSigns.length === 0) return null;
 
-    const topProb = ranked.length > 0 ? parseFloat(ranked[0].prob) : 0;
-    const top3 = ranked.slice(0, 3).map(r => r.patho);
+    const topProb = parseFloat(ranked[0].prob);
+    const topPatho = ranked[0].patho;
 
-    // === PHASE 1 : EXPLORATION (Confiance < 40%) ===
-    if (topProb < 40 && state.asked.length < 8) {
-        // On cherche des SYMPTÔMES GÉNÉRAUX pour orienter
-        const availableGenerals = GENERAL_SYMPTOMS.filter(s => 
-            !state.asked.includes(s) && remainingSigns.includes(s)
-        );
+    // ============================================================
+    // 🚨 PHASE 0 : PRIORITÉ ABSOLUE AUX CHEFS DE FILE PERTINENTS
+    // ============================================================
+    // Règle : On pose TOUS les chefs de file qui concernent au moins UNE pathologie
+    // du Top 10, AVANT de poser des questions détaillées.
+    
+    if (topProb < 65) {
+        // 1. On isole le Top 10 (ou moins si pas assez de candidats)
+        const scope = Math.min(ranked.length, 10); 
+        const topCandidates = ranked.slice(0, scope);
 
-        if (availableGenerals.length > 0) {
-            // ✅ On prend le symptôme le plus discriminant (présent dans le TOP 3)
-            const bestGeneral = availableGenerals.find(s => 
-                top3.some(p => p.signes[s])
-            );
-            if (bestGeneral) return bestGeneral;
-
-            // Sinon, on prend le premier (avec 20% d'aléa)
-            if (Math.random() > 0.2) return availableGenerals[0];
-            return availableGenerals[Math.floor(Math.random() * availableGenerals.length)];
-        }
-    }
-
-    // === PHASE 2 : PRÉCISION (Confiance 40-70%) ===
-    if (topProb >= 40 && topProb < 70) {
-        // On filtre les signes CLINIQUES (pas encore de paraclinique)
-        let pool = remainingSigns.filter(s => {
-            const isParaclinique = PATHOLOGIES.some(p => 
-                p.paraclinique && p.paraclinique.includes(s)
-            );
-            return !isParaclinique;
+        // 2. Construction d'un Set de tous les chefs de file présents dans le Top 10
+        const relevantGeneralSymptoms = new Set();
+        
+        topCandidates.forEach(candidate => {
+            GENERAL_SYMPTOMS.forEach(gen => {
+                // Si cette pathologie possède ce chef de file
+                if (candidate.patho.signes[gen]) {
+                    relevantGeneralSymptoms.add(gen);
+                }
+            });
         });
 
-        if (pool.length === 0) pool = remainingSigns;
+        // 3. On cherche le MEILLEUR chef de file non posé parmi les pertinents
+        let bestGen = null;
+        let maxRelevance = 0;
 
-        // Algorithme de Split (80% optimal, 20% aléatoire)
-        return selectBestSplitSign(pool, top3);
-    }
+        relevantGeneralSymptoms.forEach(gen => {
+            // Condition : Pas déjà posé ET disponible
+            if (!state.asked.includes(gen) && remainingSigns.includes(gen)) {
+                
+                let relevance = 0;
+                
+                // Calcul du score de pertinence
+                topCandidates.forEach((candidate, index) => {
+                    const signWeight = candidate.patho.signes[gen];
+                    
+                    if (signWeight) {
+                        // Plus la pathologie est haute dans le classement, plus elle compte
+                        // Plus le poids clinique est élevé, plus ça compte
+                        relevance += (11 - index) * signWeight;
+                    }
+                });
 
-    // === PHASE 3 : CONFIRMATION (Confiance > 70%) ===
-    if (topProb >= 70) {
-        const topPatho = ranked[0].patho;
+                // On garde le meilleur
+                if (relevance > maxRelevance) {
+                    maxRelevance = relevance;
+                    bestGen = gen;
+                }
+            }
+        });
 
-        // 🔬 PRIORITÉ 1 : Question paraclinique si disponible
-        const paracliniqueSigns = remainingSigns.filter(s => 
-            topPatho.paraclinique && topPatho.paraclinique.includes(s) &&
-            topPatho.signes[s] >= 30 // Signe important
-        );
-
-        if (paracliniqueSigns.length > 0) {
-            // On prend le signe BOOST en priorité
-            const boostSign = paracliniqueSigns.find(s => 
-                topPatho.boost && topPatho.boost.includes(s)
-            );
-            return boostSign || paracliniqueSigns[0];
+        // 4. SI on a trouvé un chef de file pertinent, ON LE POSE
+        if (bestGen && maxRelevance > 0) {
+            console.log(`🚨 Chef de File Pertinent : ${bestGen} (Score: ${maxRelevance.toFixed(1)})`);
+            console.log(`   → Concerne ${Array.from(relevantGeneralSymptoms).length} symptômes du Top 10`);
+            return bestGen;
         }
-
-        // 🩺 PRIORITÉ 2 : Signe clinique BOOST non posé
-        const boostSigns = Object.keys(topPatho.signes).filter(s =>
-            topPatho.boost && topPatho.boost.includes(s) &&
-            !state.asked.includes(s) &&
-            remainingSigns.includes(s)
-        );
-
-        if (boostSigns.length > 0) return boostSigns[0];
-
-        // 📊 PRIORITÉ 3 : Split optimal
-        return selectBestSplitSign(remainingSigns, top3);
+        
+        // 5. Si TOUS les chefs de file pertinents ont été posés, on log
+        console.log(`✅ Tous les chefs de file pertinents épuisés. Passage aux questions précises.`);
     }
 
-    // Fallback
-    return selectBestSplitSign(remainingSigns, top3);
+    // ============================================================
+    // 🛡️ SÉCURITÉ : VETO MANQUÉ (Kill Switch)
+    // ============================================================
+    const missedVeto = Object.keys(topPatho.signes).find(s => 
+        (topPatho.veto && topPatho.veto.includes(s)) && 
+        !state.asked.includes(s) && 
+        remainingSigns.includes(s)
+    );
+    if (missedVeto) return missedVeto;
+
+    // ============================================================
+    // 🔍 PHASE 2 : DÉTAILS INTELLIGENTS (Filtrés sur le Top 5)
+    // ============================================================
+    // On n'arrive ici QUE si tous les chefs de file du Top 10 ont déjà été posés (ou non pertinents).
+    
+    // Si confiance élevée (>70%), on cherche les Boosts (Signes spécifiques)
+    if (topProb >= 70) {
+        const boostSigns = Object.keys(topPatho.signes).filter(s =>
+            topPatho.boost && topPatho.boost.includes(s) && !state.asked.includes(s) && remainingSigns.includes(s)
+        );
+        if (boostSigns.length > 0) return boostSigns[0];
+    }
+
+    // 1. On identifie les survivants (Le Top 5 actuel)
+    const survivors = ranked.slice(0, 5).map(r => r.patho);
+
+    // 2. On construit un Pool de questions "propres"
+    // On ne garde que les signes qui appartiennent aux survivants.
+    // Cela empêche de poser une question sur une maladie éliminée.
+    const relevantSignsPool = new Set();
+    survivors.forEach(p => {
+        Object.keys(p.signes).forEach(s => {
+            if (!state.asked.includes(s)) {
+                relevantSignsPool.add(s);
+            }
+        });
+    });
+
+    // Fallback si le pool est vide (très rare)
+    const pool = relevantSignsPool.size > 0 ? Array.from(relevantSignsPool) : remainingSigns;
+
+    // 3. Algorithme de Split sur le Top 3
+    const top3 = ranked.slice(0, 3).map(r => r.patho);
+    
+    return selectBestSplitSign(pool, top3);
+}
+
+         // Fonction qui choisit le meilleur Chef de File en fonction des maladies probables
+function getBestGeneralSign(pool, candidates) {
+    let bestSign = null;
+    let maxCount = -1;
+
+    // Pour chaque Chef de File disponible...
+    pool.forEach(sign => {
+        let count = 0;
+        // ... on compte combien de maladies du TOP 10 le possèdent
+        candidates.forEach(p => {
+            if (p.signes[sign]) count++;
+        });
+
+        // On cherche celui qui divise le mieux (proche de 50% des candidats idéalement, 
+        // ou le plus fréquent si on veut valider une hypothèse)
+        // Ici, on va privilégier la fréquence pour "grouper" (ex: si 8 maladies sur 10 ont de la fièvre, on demande la fièvre)
+        if (count > maxCount) {
+            maxCount = count;
+            bestSign = sign;
+        }
+    });
+
+    // Si aucun chef de file ne correspond aux maladies actuelles (cas rare ou début de partie),
+    // on en prend un au hasard pour débloquer
+    if (maxCount === 0 || !bestSign) {
+        return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    return bestSign;
 }
 
 // ----------------------------------------
@@ -3131,89 +3254,132 @@ function startConfirmationPhase(targetPatho) {
     const pSigns = Object.keys(targetPatho.signes);
     const unaskedSigns = pSigns.filter(s => !state.asked.includes(s));
 
-    // 🔬 ÉTAPE 1 : Trouver LA question paraclinique décisive
-    let proofSign = null;
+    // --- 1. La Preuve Finale (Examens ou signes pathognomoniques) ---
+    let potentialProofs = [];
+    
     if (targetPatho.paraclinique) {
-        proofSign = unaskedSigns.find(s => 
-            targetPatho.paraclinique.includes(s) &&
-            targetPatho.signes[s] >= 40 // Signe à haut poids
+        const exams = unaskedSigns.filter(s => 
+            targetPatho.paraclinique.includes(s) && targetPatho.signes[s] >= 40
         );
+        potentialProofs.push(...exams);
     }
-
-    // Si pas de preuve, on prend le signe BOOST le plus important
-    if (!proofSign && targetPatho.boost) {
-        proofSign = unaskedSigns.find(s => 
+    
+    if (potentialProofs.length === 0 && targetPatho.boost) {
+        const boosts = unaskedSigns.filter(s => 
             targetPatho.boost.includes(s) && targetPatho.signes[s] >= 30
         );
+        potentialProofs.push(...boosts);
     }
 
-    // 🩺 ÉTAPE 2 : Prendre 1-2 VRAIS signes cliniques manquants
-    const realSigns = unaskedSigns
-        .filter(s => s !== proofSign)
-        .sort((a, b) => targetPatho.signes[b] - targetPatho.signes[a])
-        .slice(0, 2); // Maximum 2 signes
+    let proofSign = null;
+    if (potentialProofs.length > 0) {
+        proofSign = potentialProofs.sort(() => 0.5 - Math.random())[0];
+    }
 
-    // 🎭 ÉTAPE 3 : Prendre 1 PIÈGE depuis le TOP 2-3 des diagnostics différentiels
-    const competitors = state.ranked.slice(1, 3); // Rang 2 et 3
+    // --- 2. Les 3 Vrais Signes Cliniques (Les plus révélateurs) ---
+    // On trie par poids décroissant pour prendre les signes les plus importants
+    const realSignsCandidates = unaskedSigns
+        .filter(s => s !== proofSign && targetPatho.signes[s] >= 10)
+        .sort((a, b) => targetPatho.signes[b] - targetPatho.signes[a]); // Tri par poids décroissant
+    
+    const realSigns = realSignsCandidates.slice(0, 3); // On prend les 3 meilleurs
+
+    // --- 3. Les 3 Pièges (Diagnostic Différentiel du Top 2-5) ---
+    const competitors = state.ranked.slice(1, 5); // Top 2, 3, 4, 5
     let trapSigns = [];
 
     competitors.forEach(comp => {
         const compSigns = Object.keys(comp.patho.signes).filter(s =>
-            !pSigns.includes(s) && // Pas un signe de la maladie correcte
+            !pSigns.includes(s) && // Pas un signe de la bonne maladie
             !state.asked.includes(s) &&
-            comp.patho.signes[s] >= 15 // Signe significatif
+            comp.patho.signes[s] >= 15 // Signe significatif chez le concurrent
         );
         trapSigns.push(...compSigns);
     });
 
-    // On prend UN SEUL piège pertinent
-    trapSigns = trapSigns.slice(0, 1);
+    // On mélange les pièges et on en prend 3
+    trapSigns.sort(() => 0.5 - Math.random());
+    const selectedTraps = trapSigns.slice(0, 3);
 
-    // 📋 ÉTAPE 4 : Construction de la queue (MAX 3 QUESTIONS)
-    state.confirmationQueue = [...realSigns, ...trapSigns]
-        .sort(() => 0.5 - Math.random()) // Mélange léger
-        .slice(0, 2); // Maximum 2 questions avant la preuve
+    // --- 4. Construction de la file : 3 Vrais + 3 Faux, mélangés ---
+    let confirmationSigns = [...realSigns, ...selectedTraps];
+    
+    // Mélange aléatoire TOTAL (pas de pattern prévisible)
+    confirmationSigns.sort(() => 0.5 - Math.random());
+    
+    state.confirmationQueue = confirmationSigns;
 
-    // On ajoute la PREUVE en dernier
+    // --- 5. La PREUVE toujours à la toute fin (Boss Final) ---
     if (proofSign) {
         state.confirmationQueue.push(proofSign);
     }
 
-    console.log("✅ Phase de confirmation :", state.confirmationQueue.map(s => 
-        `${formatSigneName(s)} (${targetPatho.name})`
-    ));
+    console.log("✅ Phase confirmation :", state.confirmationQueue);
+    console.log("   - Vrais signes :", realSigns);
+    console.log("   - Pièges :", selectedTraps);
+    console.log("   - Preuve finale :", proofSign);
 
     askNextQuestion();
 }
 
          
          function askNextQuestion() {
-    if (checkPlaisantin()) return; 
-    if (state.asked.length >= 30) { showDiagnostic(); return; }
+    // 1. Vérification "Plaisantin" (Anti-Troll)
+    if (checkPlaisantin()) return;
 
+    // 2. Vérification Limite brute (30 questions)
+    if (state.asked.length >= 30) { 
+        showDiagnostic(); 
+        return; 
+    }
+
+    // 3. GESTION DE LA CONFIRMATION (C'est ce bloc qui manquait !)
+    // Si on est en mode confirmation, on dépile la file d'attente
+    if (state.confirmationMode) {
+        if (state.confirmationQueue.length > 0) {
+            // On prend la prochaine question prévue dans la file
+            const nextConfSign = state.confirmationQueue.shift();
+            
+            // Sécurité : si on a déjà posé cette question (cas rare), on passe à la suivante
+            if (state.asked.includes(nextConfSign)) {
+                askNextQuestion();
+                return;
+            }
+
+            state.currentSign = nextConfSign;
+            state.asked.push(nextConfSign);
+            renderCurrentQuestion();
+            return;
+        } else {
+            // Si la file est vide, la confirmation est finie -> On affiche le résultat
+            showDiagnostic();
+            return;
+        }
+    }
+
+    // 4. Moteur Standard (Si pas de confirmation en cours)
     rankPathologies(); 
 
+    // Vérifie si on doit déclencher la confirmation maintenant
+    // Si oui, canShowDiagnostic va appeler startConfirmationPhase qui rappellera askNextQuestion
     if(canShowDiagnostic()) return; 
 
     prepareSigns();
     const remaining = state.allSigns.filter(s => !state.asked.includes(s));
     
-    // CALCUL DU PROCHAIN SIGNE
+    // Calcul du prochain signe par l'IA
     const signe = getNextSmartSign(state.ranked, remaining);
 
-    // --- AJOUT DE LA SÉCURITÉ ICI ---
+    // Sécurité si plus de questions
     if (!signe) {
-        // Si on ne trouve plus de question et que le top score est très bas
         const topProb = state.ranked.length > 0 ? parseFloat(state.ranked[0].prob) : 0;
-        
         if (topProb < 5) {
-            renderPlaisantinEnd("healthy"); // On déclenche la fin "Patient en bonne santé"
+            renderPlaisantinEnd("healthy");
         } else {
-            showDiagnostic(); // Sinon on tente quand même de donner le meilleur résultat restant
+            showDiagnostic();
         }
         return;
     }
-    // --------------------------------
 
     state.currentSign = signe; 
     state.asked.push(signe); 

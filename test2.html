@@ -586,11 +586,11 @@
          
          // --- FONCTION POUR CHANGER LE TITRE DYNAMIQUEMENT ---
          function setDocTitle(titre) {
-             const baseName = "Medicome";
+             const baseName = "Medicome - Cas Cliniques Interactifs";
              if (titre) {
-                 document.title = `${titre} • ${baseName}`;
+                 document.title = `${titre} • Medicome`;
              } else {
-                 document.title = `${baseName} - Cas Cliniques Interactifs`;
+                 document.title = baseName;
              }
          }
          
@@ -599,35 +599,107 @@
          let GLOBAL_IMG_MAP = {};
          
          const REFINEMENTS = {
-             "douleur_thoracique": ["douleur_thoracique_oppressive", "douleur_thoracique_dechirante", "douleur_thoracique_coté", "irradiation_bras_machoire", "irradiation_dos", "douleur_effort", "soulage_penche_avant", "oppression_thoracique"],
-             "douleur_abdominale": ["douleur_fosse_iliaque_droite", "douleur_fosse_iliaque_gauche", "douleur_hypocondre_droit", "douleur_epigastrique", "douleur_transfixiante_dos", "douleur_abdominale_brutale", "defense_abdominale", "ventre_dur_bois", "douleur_migration_ombilic"],
-             "toux": ["toux_seche", "toux_grasse", "toux_sanglante", "toux_chronique", "toux_seche_aboyante", "quintes_toux_violentes", "reprise_inspiratoire_bruyante"],
-             "dyspnee": ["dyspnee_effort", "dyspnee_brutale", "orthopnee_dyspnee_couchee", "dyspnee_expiratoire", "dyspnee_inspiratoire", "sifflements_respiratoires"],
-             "fievre": ["fievre_elevee", "frissons_intenses", "sueurs_nocturnes", "convulsions_generalisees"],
-             "cephalees": ["cephalees_intenses", "cephalees_explosives_brutales", "pulsatile_coeur_cogne", "mal_tete_unilateral", "raideur_nuque", "gene_lumiere"],
-             "troubles_visuels": ["vision_double", "vision_floue", "baisse_vision_brutale", "eclairs_lumineux", "pluie_de_suie", "halo_autour_phares", "vision_centrale_floue", "lignes_droites_ondulees"],
-             "troubles_neuro": ["paralysie_unilaterale", "troubles_parole_aphasie", "perte_connaissance", "convulsions", "confusion", "tremblement_repos", "rigidite_musculaire"],
-             "anomalie_peau": ["ictere_jaunisse", "purpura", "taches_rouges_peau", "eruption_vesicules_bulles", "plaques_rouges", "grain_beaute_asymetrique", "croutes_jaunes_miel"],
-             "genes_urinaires": ["brulures_urinaires", "sang_urines", "urines_troubles_odorantes", "envie_frequente_uriner", "difficulte_uriner", "absence_urine"],
-             "douleur_membre_traumatisme": ["impossibilite_marcher", "raccourcissement_jambe", "rotation_externe_pied", "poignet_dos_fourchette", "douleur_jambe_brutale_intense", "absence_pouls"],
-             "douleur_dos": ["douleur_lombaire_brutale", "irradiation_vers_pubis", "douleur_bas_dos_nuit", "raideur_matin", "irradiation_fesse_jambe"],
-             "trouble_psy": ["tristesse_permanente", "idees_noires", "delire_paranoiaque", "excitation_euphorie", "peur_mourir_devenir_fou", "maigreur_extreme"]
-         };
-         
+    "douleur_thoracique": ["douleur_thoracique_constrictive", "douleur_thoracique_dechirante", "douleur_latero_thoracique_brutale", "douleur_thoracique_respiratoire", "douleur_thoracique_basithoracique", "irradiation_bras_gauche_machoire", "irradiation_dorsale_interscapulaire", "soulage_position_penche_avant"],
+    "douleur_abdominale": ["douleur_migratrice_epigastre_fid", "douleur_point_mcburney", "douleur_hypocondre_droit", "douleur_epigastrique_transfixiante", "douleur_abdominale_dorsale_brutale", "douleur_fossa_lombaire_brutale", "douleur_fig", "douleur_pelvienne_lateralisee", "douleur_pelvienne_bilaterale", "defense_fid", "contracture_invincible_ventre_bois"],
+    "toux": ["toux_seche", "toux_grasse", "toux_chronique", "toux_aboyante_rauque", "toux_quinteuse_emetisante", "reprise_inspiratoire_chant_coq", "expectorations_mousseuses_saumonees", "expectorations_purulentes", "hemoptysie"],
+    "dyspnee": ["dyspnee_effort", "dyspnee_brutale", "orthopnee", "dyspnee_expiratoire", "bradypnee_inspiratoire", "dyspnee_sifflante", "freinage_expiratoire"],
+    "fievre": ["fievre_elevee", "fievre_moderee", "frissons_intenses_inauguraux", "sueurs_nocturnes", "triade_frissons_chaleur_sueurs"],
+    "cephalees": ["cephalee_coup_tonnerre", "cephalees_progressives", "cephalee_unilaterale", "pulsatilite", "raideur_nuque", "photophobie_phonophobie"],
+    "troubles_visuels": ["diplopie", "vision_floue", "baisse_acuite_visuelle_unilaterale", "metamorphopsies", "scotome_central", "phosphenes_eclairs", "myodesopsies_pluie_suie", "vision_halos_colores"],
+    "troubles_neuro": ["hemiplegie", "aphasie", "perte_connaissance_brutale", "convulsions", "confusion", "tremblement_repos", "rigidite_plastique_roue_dentee", "paralysie_ascendante_symetrique"],
+    "anomalie_peau": ["ictere", "purpura_fulminans", "eruption_vesiculeuse_metamerique", "plaques_erythemato_squameuses", "erytheme_migrant_pathognomonique", "tache_vasculaire_saignante"],
+    "genes_urinaires": ["brulures_mictionnelles", "hematurie_macroscopique_totale", "urines_troubles_malodorantes", "pollakiurie", "dysurie", "anurie_oligurerie", "globe_vesical_palpable"],
+    "douleur_membre_traumatisme": ["impotence_fonctionnelle_totale", "raccourcissement_membre", "rotation_externe_pied", "deformtion_dos_fourchette", "douleur_brutale_intense", "abolition_pouls_distaux"],
+    "douleur_dos": ["douleur_lombaire_brutale_effort", "douleur_trajet_membre_inf", "rachialgies_inflammatoires", "impulsivite_toux"],
+    "trouble_psy": ["humeur_triste_constante", "idees_suicidaires", "syndrome_delirant_paranoide", "episode_maniaque", "peur_intense_brutale", "dysmorphophobie"]
+};
+    // Les "Chefs de file" : Questions génériques qui orientent vers une spécialité
+const GENERAL_SYMPTOMS = [
+    "douleur_thoracique",       // Oriente vers Cardio / Pneumo
+    "douleur_abdominale",       // Oriente vers Digestif / Uro / Gynéco
+    "fievre",                   // Oriente vers Infectio / Inflammatoire
+    "dyspnee",                  // Oriente vers Pneumo / Cardio
+    "cephalees",                // Oriente vers Neuro / ORL
+    "troubles_neuro",           // Oriente vers Neuro (Déficit, malaise...)
+    "anomalie_peau",            // Oriente vers Dermato
+    "douleur_membre_traumatisme", // Oriente vers Ortho/Rhumato
+    "genes_urinaires",          // Oriente vers Uro/Nephro
+    "trouble_psy"               // Oriente vers Psy
+];     
          const PATHO_GROUPS = {
-             "Infarctus du myocarde": "Cardio", "Embolie pulmonaire": "Cardio", "OAP": "Cardio", "Dissection Aortique": "Cardio", "Péricardite Aiguë": "Cardio", "Fibrillation Atriale": "Cardio", "Endocardite Infectieuse": "Cardio", "Ischémie Aiguë Membre": "Cardio", "Rupture Anévrisme Aorte": "Cardio", "Choc Septique": "Cardio",
-             "AVC Ischémique": "Neuro", "Méningite Aiguë": "Neuro", "Hémorragie Méningée": "Neuro", "Crise d'Épilepsie": "Neuro", "Parkinson": "Neuro", "Sclérose en Plaques": "Neuro", "Maladie d'Alzheimer": "Neuro", "Myasthénie": "Neuro", "Hématome Sous-Dural": "Neuro", "Hématome Extra-Dural": "Neuro", "Guillain-Barré": "Neuro",
-             "Pneumopathie Franche": "Pneumo", "Pneumothorax": "Pneumo", "Crise d'Asthme": "Pneumo", "Bronchiolite": "Pneumo", "BPCO Exacerbation": "Pneumo", "Cancer Bronchique": "Pneumo", "Tuberculose Pulmonaire": "Pneumo", "Apnée du Sommeil": "Pneumo", "Pleurésie": "Pneumo",
-             "Appendicite Aiguë": "Digestif", "Cholécystite Aiguë": "Digestif", "Gastro-entérite": "Digestif", "Occlusion Intestinale": "Digestif", "Pancreatite Aiguë": "Digestif", "Hémorragie Digestive Haute": "Digestif", "Sigmoïdite": "Digestif", "Hernie Inguinale Étranglée": "Digestif", "Reflux Gastro-Oesophagien": "Digestif", "Cirrhose Décompensée": "Digestif", "Cancer Colorectal": "Digestif", "Maladie de Crohn": "Digestif", "Rectocolite Hémorragique": "Digestif", "Ulcère Gastroduodénal": "Digestif", "Hépatite Aiguë": "Digestif", "Lithiase Biliaire": "Digestif", "Hernie Hiatale": "Digestif", "Péritonite": "Digestif", "Ischémie Mésentérique": "Digestif", "Sténose du Pylore": "Digestif",
-             "Colique Néphrétique": "Uro/Nephro", "Pyélonéphrite Aiguë": "Uro/Nephro", "Torsion du Testicule": "Uro/Nephro", "Rétention Aiguë d'Urine": "Uro/Nephro", "Cancer Prostate": "Uro/Nephro", "Tumeur Vessie": "Uro/Nephro", "Insuffisance Rénale Aiguë": "Uro/Nephro", "Syndrome Néphrotique": "Uro/Nephro", "Cystite Aiguë": "Uro/Nephro", "Cancer du Testicule": "Uro/Nephro", "Insuffisance Rénale Chronique": "Uro/Nephro", "Diabète Insipide": "Endo",
-             "Grossesse Extra-Utérine": "Gynéco", "Salpingite Aiguë": "Gynéco", "Endométriose": "Gynéco", "Cancer du Sein": "Gynéco", "Pré-éclampsie": "Gynéco", "Fibrome Utérin": "Gynéco", "Kyste Ovarien": "Gynéco", "Mycose Vaginale": "Gynéco", "SOPK": "Gynéco",
-             "Érysipèle": "Dermato", "Zona": "Dermato", "Purpura Rhumatoïde": "Dermato", "Varicelle": "Dermato", "Psoriasis": "Dermato", "Mélanome": "Dermato", "Carcinome Basocellulaire": "Dermato", "Gale": "Dermato", "Rougeole": "Dermato", "Syndrome de Kawasaki": "Dermato", "Scarlatine": "Dermato", "Impétigo": "Dermato", "Acné Sévère": "Dermato", "Eczéma Atopique": "Dermato", "Urticaire Aiguë": "Dermato",
-             "Fracture Col Fémur": "Rhumato/Ortho", "Arthrite Septique": "Rhumato/Ortho", "Sciatique": "Rhumato/Ortho", "Crise de Goutte": "Rhumato/Ortho", "Fracture Pouteau-Colles": "Rhumato/Ortho", "Polyarthrite Rhumatoïde": "Rhumato/Ortho", "Spondylarthrite": "Rhumato/Ortho", "Ostéoporose Fracturaire": "Rhumato/Ortho", "Canal Carpien": "Rhumato/Ortho", "Lumbago": "Rhumato/Ortho", "Entorse de Cheville": "Rhumato/Ortho", "Arthrose": "Rhumato/Ortho", "Lupus Érythémateux": "Rhumato/Ortho", "Hernie Discale": "Rhumato/Ortho",
-             "Anémie Ferriprive": "Hémato/Endo", "Hypothyroïdie": "Hémato/Endo", "Hyperthyroïdie": "Hémato/Endo", "Diabète Type 1": "Hémato/Endo", "Diabète Type 2": "Hémato/Endo", "Insuffisance Surrénalienne": "Hémato/Endo", "Syndrome de Cushing": "Hémato/Endo", "Leucémie Aiguë": "Hémato/Endo", "Lymphome de Hodgkin": "Hémato/Endo", "Myélome Multiple": "Hémato/Endo", "Drépanocytose": "Hémato/Endo", "Hyperparathyroïdie": "Hémato/Endo", "Acromégalie": "Hémato/Endo", "Hémophilie": "Hémato/Endo", "Anémie de Biermer": "Hémato/Endo",
-             "Attaque de Panique": "Psy", "Dépression": "Psy", "Schizophrénie": "Psy", "Trouble Bipolaire": "Psy", "Anorexie Mentale": "Psy",
-             "Glaucome Aigu": "ORL/Ophtalmo", "Otite Moyenne Aiguë": "ORL/Ophtalmo", "DMLA": "ORL/Ophtalmo", "Cataracte": "ORL/Ophtalmo", "Décollement de Rétine": "ORL/Ophtalmo", "VPPB": "ORL/Ophtalmo", "Angine Bactérienne": "ORL/Ophtalmo", "Epistaxis": "ORL/Ophtalmo", "Sinusite Aiguë": "ORL/Ophtalmo", "Laryngite Aiguë": "ORL/Ophtalmo", "Conjonctivite": "ORL/Ophtalmo", "Orgelet": "ORL/Ophtalmo",
-             "Paludisme": "Infectio", "Coqueluche": "Infectio", "Grippe": "Infectio", "Mononucléose Infectieuse": "Infectio", "Primo-Infection VIH": "Infectio", "Maladie de Lyme": "Infectio", "Tétanos": "Infectio", "Botulisme": "Infectio", "Rubéole": "Infectio", "Syphilis": "Infectio", "Oreillons": "Infectio", "Muguet Buccal": "Infectio"
-         };
+    // CARDIO
+    "Infarctus du myocarde": "Cardio", "Embolie pulmonaire": "Cardio", "OAP (Insuffisance Cardiaque)": "Cardio", 
+    "Dissection Aortique": "Cardio", "Péricardite Aiguë": "Cardio", "Fibrillation Atriale": "Cardio", 
+    "Endocardite Infectieuse": "Cardio", "Ischémie Aiguë Membre": "Cardio", "Rupture Anévrisme Aorte": "Cardio", 
+    "Choc Septique": "Cardio",
+
+    // NEURO
+    "AVC Ischémique": "Neuro", "Méningite Aiguë": "Neuro", "Hémorragie Méningée": "Neuro", 
+    "Crise d'Épilepsie": "Neuro", "Parkinson": "Neuro", "Sclérose en Plaques": "Neuro", 
+    "Maladie d'Alzheimer": "Neuro", "Myasthénie": "Neuro", "Hématome Sous-Dural": "Neuro", 
+    "Hématome Extra-Dural": "Neuro", "Guillain-Barré": "Neuro",
+
+    // PNEUMO
+    "Pneumopathie Franche": "Pneumo", "Pneumothorax": "Pneumo", "Crise d'Asthme": "Pneumo", 
+    "Bronchiolite": "Pneumo", "BPCO Exacerbation": "Pneumo", "Cancer Bronchique": "Pneumo", 
+    "Tuberculose Pulmonaire": "Pneumo", "Apnée du Sommeil": "Pneumo", "Pleurésie": "Pneumo",
+
+    // DIGESTIF
+    "Appendicite Aiguë": "Digestif", "Cholécystite Aiguë": "Digestif", "Gastro-entérite": "Digestif", 
+    "Occlusion Intestinale": "Digestif", "Pancreatite Aiguë": "Digestif", "Hémorragie Digestive Haute": "Digestif", 
+    "Sigmoïdite": "Digestif", "Hernie Inguinale Étranglée": "Digestif", "Reflux Gastro-Oesophagien": "Digestif", 
+    "Cirrhose Décompensée": "Digestif", "Cancer Colorectal": "Digestif", "Maladie de Crohn": "Digestif", 
+    "Rectocolite Hémorragique": "Digestif", "Ulcère Gastroduodénal": "Digestif", "Hépatite Aiguë": "Digestif", 
+    "Lithiase Biliaire": "Digestif", "Hernie Hiatale": "Digestif", "Péritonite": "Digestif", 
+    "Ischémie Mésentérique": "Digestif", "Sténose du Pylore": "Digestif", "Invagination Intestinale Aiguë": "Digestif",
+
+    // URO / NEPHRO
+    "Colique Néphrétique": "Uro/Nephro", "Pyélonéphrite Aiguë": "Uro/Nephro", "Torsion du Testicule": "Uro/Nephro", 
+    "Rétention Aiguë d'Urine": "Uro/Nephro", "Cancer Prostate": "Uro/Nephro", "Tumeur Vessie": "Uro/Nephro", 
+    "Insuffisance Rénale Aiguë": "Uro/Nephro", "Syndrome Néphrotique": "Uro/Nephro", "Cystite Aiguë": "Uro/Nephro", 
+    "Cancer du Testicule": "Uro/Nephro", "Insuffisance Rénale Chronique": "Uro/Nephro",
+
+    // GYNECO
+    "Grossesse Extra-Utérine": "Gynéco", "Salpingite Aiguë": "Gynéco", "Endométriose": "Gynéco", 
+    "Cancer du Sein": "Gynéco", "Pré-éclampsie": "Gynéco", "Fibrome Utérin": "Gynéco", 
+    "Kyste Ovarien": "Gynéco", "Mycose Vaginale": "Gynéco", "SOPK": "Gynéco",
+
+    // DERMATO
+    "Érysipèle": "Dermato", "Zona": "Dermato", "Purpura Rhumatoïde": "Dermato", "Varicelle": "Dermato", 
+    "Psoriasis": "Dermato", "Mélanome": "Dermato", "Carcinome Basocellulaire": "Dermato", "Gale": "Dermato", 
+    "Rougeole": "Dermato", "Syndrome de Kawasaki": "Dermato", "Scarlatine": "Dermato", "Impétigo": "Dermato", 
+    "Acné Sévère": "Dermato", "Eczéma Atopique": "Dermato", "Urticaire Aiguë": "Dermato",
+
+    // RHUMATO / ORTHO
+    "Fracture Col Fémur": "Rhumato", "Arthrite Septique": "Rhumato", "Sciatique": "Rhumato", 
+    "Crise de Goutte": "Rhumato", "Fracture Pouteau-Colles": "Rhumato", "Polyarthrite Rhumatoïde": "Rhumato", 
+    "Spondylarthrite": "Rhumato", "Ostéoporose Fracturaire": "Rhumato", "Canal Carpien": "Rhumato", 
+    "Lumbago": "Rhumato", "Entorse de Cheville": "Rhumato", "Arthrose": "Rhumato", "Lupus Érythémateux": "Rhumato", 
+    "Hernie Discale": "Rhumato",
+
+    // HEMATO / ENDO
+    "Anémie Ferriprive": "Endo/Hémato", "Hypothyroïdie": "Endo/Hémato", "Hyperthyroïdie": "Endo/Hémato", 
+    "Diabète Type 1": "Endo/Hémato", "Diabète Type 2": "Endo/Hémato", "Insuffisance Surrénalienne": "Endo/Hémato", 
+    "Syndrome de Cushing": "Endo/Hémato", "Leucémie Aiguë": "Endo/Hémato", "Lymphome de Hodgkin": "Endo/Hémato", 
+    "Myélome Multiple": "Endo/Hémato", "Drépanocytose": "Endo/Hémato", "Hyperparathyroïdie": "Endo/Hémato", 
+    "Acromégalie": "Endo/Hémato", "Hémophilie": "Endo/Hémato", "Anémie de Biermer": "Endo/Hémato", "Diabète Insipide": "Endo/Hémato",
+
+    // PSY
+    "Attaque de Panique": "Psy", "Dépression": "Psy", "Schizophrénie": "Psy", 
+    "Trouble Bipolaire": "Psy", "Anorexie Mentale": "Psy",
+
+    // ORL / OPHTALMO
+    "Glaucome Aigu": "ORL/Ophtalmo", "Otite Moyenne Aiguë": "ORL/Ophtalmo", "DMLA": "ORL/Ophtalmo", 
+    "Cataracte": "ORL/Ophtalmo", "Décollement de Rétine": "ORL/Ophtalmo", "VPPB": "ORL/Ophtalmo", 
+    "Angine Bactérienne": "ORL/Ophtalmo", "Epistaxis": "ORL/Ophtalmo", "Sinusite Aiguë": "ORL/Ophtalmo", 
+    "Laryngite Aiguë": "ORL/Ophtalmo", "Conjonctivite": "ORL/Ophtalmo", "Orgelet": "ORL/Ophtalmo",
+
+    // INFECTIO
+    "Paludisme": "Infectio", "Coqueluche": "Infectio", "Grippe": "Infectio", 
+    "Mononucléose Infectieuse": "Infectio", "Primo-Infection VIH": "Infectio", "Maladie de Lyme": "Infectio", 
+    "Tétanos": "Infectio", "Botulisme": "Infectio", "Rubéole": "Infectio", 
+    "Syphilis": "Infectio", "Oreillons": "Infectio", "Muguet Buccal": "Infectio"
+};
          
          // --- 3D-STYLE ICONS (USING PHOSPHOR DUOTONE) ---
          const ACHIEVEMENTS = [
@@ -702,20 +774,47 @@
          }
          
          let PATHOLOGIES = [];
-         const ACCESS_CODES = [ { code: "SuperCode1", pseudo:"Admin" } ];
          
          let state = {
-             currentUser: null, pseudo: null, 
-             progression: { 
-                 correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0, lastDaily: null, achievements: [], bestTimes: {}, errorLog: {},
-                 pdfDownloads: 0, speedWins: 0, socialDone: false, reviewDone: false
-             },
-             isGuest: false, demo:{}, currentSign:null, answers:{}, asked:[], allSigns:[], ranked: [], diagnosticShown:false, previousDiagnostics:[],
-             history: [],
-             confirmationMode: false, confirmationQueue: [], confirmedPatho: null,
-             priorityQueue: [],
-             isChrono: false, startTime: null, dailyTarget: null
-         };
+              currentUser: null, 
+              pseudo: null, 
+              progression: { 
+                  correct: 0, 
+                  incorrect: 0, 
+                  streak: 0, 
+                  mastery: {}, 
+                  dailyStreak: 0, 
+                  lastDaily: null, 
+                  achievements: [], 
+                  bestTimes: {}, 
+                  errorLog: {},
+                  pdfDownloads: 0, 
+                  speedWins: 0, 
+                  socialDone: false, 
+                  reviewDone: false,
+                  dailyHistory: {}
+              },
+              isGuest: false, 
+              isPremiumCode: false, // AJOUT : Identifie l'accès illimité via code partenaire
+              demo: {}, 
+              currentSign: null, 
+              answers: {}, 
+              asked: [], 
+              allSigns: [], 
+              ranked: [], 
+              diagnosticShown: false, 
+              previousDiagnostics: [],
+              history: [],
+              // Variables pour la phase de confirmation
+              confirmationMode: false, 
+              confirmationQueue: [], 
+              confirmedPatho: null,
+              // File d'attente pour les symptômes précis (Refinements)
+              priorityQueue: [],
+              isChrono: false, 
+              startTime: null, 
+              dailyTarget: null
+          };
          
          // === GUEST MODE ===
          // Vérifie si un invité peut jouer (1 fois par session, reset toutes les 2h)
@@ -732,31 +831,27 @@
          return guestData;
          }
          
-         // Lancer le mode invité si disponible
-         function startGuestMode() {
-         const guestData = checkGuestAvailability();
-         if (!guestData.canPlay) {
-         showAlert("Le mode invité est temporairement indisponible. Veuillez créer un compte.", "error");
-         return false;
-         }
-         
-         // CORRECTION ICI : On utilise state.isGuest
-         state.isGuest = true;
-         state.pseudo = "Invité";
-         
-         // On initialise la progression vide si elle n'existe pas
-         if (!state.progression) {
-         state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0 };
-         }
-         
-         guestData.canPlay = false;
-         guestData.timestamp = Date.now();
-         sessionStorage.setItem('guestMode', JSON.stringify(guestData));
-         
-         updateHeader(); // Important pour afficher le pseudo "Invité"
-         renderHome();   // On envoie vers l'accueil au lieu de lancer direct le diag
-         return true;
-         }
+         // Remplacez toute la fonction startGuestMode par :
+function startGuestMode() {
+    // ON SUPPRIME le blocage ici (checkGuestAvailability)
+    // L'utilisateur peut entrer, c'est le bouton "Lancer le cas" qui sera grisé plus tard
+    
+    state.isGuest = true;
+    state.pseudo = "Invité";
+    
+    // On initialise la progression vide si elle n'existe pas
+    if (!state.progression) {
+       state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0 };
+    }
+    
+    // On enregistre juste le mode, sans bloquer
+    const guestData = { canPlay: true, timestamp: Date.now() }; // On garde ça pour la forme
+    sessionStorage.setItem('guestMode', JSON.stringify(guestData));
+    
+    updateHeader();
+    renderHome(); // On l'envoie sur l'accueil
+    return true;
+}
          
          
          // --- THEME LOGIC ---
@@ -1176,7 +1271,7 @@
          }
          
          function renderLogin() {
-    setDocTitle("Bienvenue");
+    setDocTitle(null);
     window.scrollTo(0, 0);
     const app = q('#app');
     app.innerHTML = ''; // Nettoyer l'écran
@@ -1214,11 +1309,15 @@
             </div>
         </div>
 
-        <button id="heroGuestBtn" class="btn-guest-hero">
-            <i class="ph-duotone ph-user-circle"></i>
-            Tester sans connexion
-        </button>
-        <div class="small" style="margin-top:10px; opacity:0.7;">Mode invité limité </div>
+<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
+    <button id="heroGuestBtn" class="btn-guest-hero">
+        <i class="ph-duotone ph-user-circle"></i>
+        Tester sans connexion
+    </button>
+    <div class="small" style="opacity:0.7; width: 100%; text-align: center; max-width: 280px;">
+        Mode invité limité
+    </div>
+</div>
     `;
     grid.appendChild(leftCol);
 
@@ -1318,12 +1417,42 @@
     const inputCode = document.createElement('input'); inputCode.placeholder = 'Code...'; inputCode.className = 'input'; inputCode.style.margin = "0";
     const btnCode = document.createElement('button'); btnCode.className = 'btn'; btnCode.textContent = 'OK'; btnCode.style.width = "auto"; btnCode.style.margin = "0";
     
-    btnCode.onclick = () => {
-        const codeFound = ACCESS_CODES.find(ac => ac.code === inputCode.value);
-        if (codeFound) {
-            state.isGuest = true; state.pseudo = codeFound.pseudo; state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {} };
-            saveProgression(); updateHeader(); renderHome(); showAlert(`Accès Spécial : ${codeFound.pseudo}`, 'success');
-        } else { showAlert('Code invalide', 'error'); }
+    btnCode.onclick = async () => {
+        const codeSaisi = inputCode.value.trim();
+        if (!codeSaisi) return;
+
+        try {
+            // Recherche du code dans ta collection Firebase
+            const codeRef = doc(db, "access_codes", codeSaisi);
+            const codeSnap = await getDoc(codeRef);
+
+            if (codeSnap.exists() && codeSnap.data().active === true) {
+                const data = codeSnap.data();
+                
+                // Activation du mode "Privilégié"
+                state.isGuest = true;
+                state.isPremiumCode = true; // Débloque les PDF et le Glossaire
+                state.pseudo = data.pseudo;
+                
+                // Initialisation d'une progression propre pour la session
+                state.progression = { 
+                    correct: 0, 
+                    incorrect: 0, 
+                    streak: 0, 
+                    mastery: {}, 
+                    dailyHistory: {} 
+                };
+                
+                updateHeader();
+                renderHome();
+                showAlert(`Accès Partenaire : ${data.pseudo}`, 'success');
+            } else {
+                showAlert('Code invalide ou expiré', 'error');
+            }
+        } catch (e) {
+            console.error(e);
+            showAlert("Erreur de connexion à la base de données", "error");
+        }
     };
 
     codeGroup.append(inputCode, btnCode);
@@ -1558,7 +1687,7 @@
              divSearch.innerHTML = `<p style="margin-bottom:10px; color:var(--accent);">Je pensais à une pathologie précise (C'était une erreur de l'IA) :</p>`;
              const select = document.createElement('select'); select.className = 'input';
              select.innerHTML = '<option value="">-- Choisir la pathologie --</option>';
-             PATHOLOGIES.sort((a,b)=>a.name.localeCompare(b.name)).forEach(p => {
+             [...PATHOLOGIES].sort((a,b)=>a.name.localeCompare(b.name)).forEach(p => {
                  select.innerHTML += `<option value="${p.name}">${p.name}</option>`;
              });
              select.onchange = () => {
@@ -2396,120 +2525,157 @@ function showDayDetails(dateStr, data) {
          const btnStart = document.createElement('button'); btnStart.className = 'btn'; btnStart.innerHTML = '<i class="ph-duotone ph-play"></i> Lancer le cas';
          
          btnStart.onclick = () => {
-         if (!selectedGender && !state.dailyTarget) { 
-              if(Math.random() > 0.5) selectedGender = 'femme'; else selectedGender = 'homme';
-         }
-         
-         const ageVal = q('#demo-age').value;
-         const demoData = {
-             homme: selectedGender === 'homme',
-             femme: selectedGender === 'femme',
-             nourrisson: ageVal === 'nourrisson',
-             enfant: ageVal === 'enfant',
-             adolescent: ageVal === 'adolescent',
-             jeune: ageVal === 'jeune' || ageVal === 'adolescent',
-             plus_de_30ans: ageVal === 'adulte' || ageVal === 'senior',
-             plus_de_65ans: ageVal === 'senior',
-             adulte: ageVal === 'adulte'
-         };
-         
-         // --- MAPPING INTELLIGENT --- 
-         // C'est ici que la magie opère pour traduire les boutons "Cliniques" en facteurs JSON précis
-         
-         // 1. Bouton "Diabète / HTA"
-         if(selectedFactors.has('metabolique')) {
-             demoData['diabete'] = true;
-             demoData['hta'] = true;
-             demoData['dyslipidemie'] = true; // Souvent associé
-             // Bonus : HTA est un facteur de risque cardiovasculaire majeur
-             demoData['fibrillation_atriale'] = true; 
-             demoData['insuffisance_cardiaque'] = true;
-         }
-         
-         // 2. Bouton "Chute / Trauma / Effort"
-         if(selectedFactors.has('trauma')) {
-             demoData['chute'] = true; 
-             demoData['chute_main'] = true; // Pouteau-Colles
-             demoData['traumatisme_cranien'] = true; // Hématomes
-             demoData['effort'] = true; // Infarctus, Hernie discal
-             demoData['sport'] = true; // Entorse
-             demoData['frottement_yeux'] = true; // Orgelet (Trauma mineur)
-         }
-         
-         // 3. Bouton "Chirurgie / Alité"
-         if(selectedFactors.has('chirurgie')) {
-             demoData['chirurgie_recente'] = true;
-             demoData['chirurgie_abdominale'] = true; // Occlusion
-             demoData['alitement'] = true; // Phlébite
-             demoData['chirurgie_cataracte'] = true; // Décollement rétine
-         }
-         
-         // 4. Bouton "Voyage / Plein Air"
-         if(selectedFactors.has('voyage')) {
-             demoData['voyage_recent'] = true; // Palu
-             demoData['foret'] = true; // Lyme
-             demoData['jardinage'] = true; // Tétanos
-         }
-         
-         // 5. Bouton "Médicaments / Allergies"
-         if(selectedFactors.has('medicaments')) {
-             demoData['medicaments'] = true;
-             demoData['allergie_connue'] = true; // Choc
-             demoData['allergies'] = true; // Asthme
-             demoData['ains'] = true; // Ulcère
-             demoData['anticoagulants'] = true; // Saignements
-             demoData['antibiotiques_recents'] = true; // Mycose / Muguet
-         }
-         
-         // 6. Bouton "Cancer / Immuno"
-         if(selectedFactors.has('immuno')) {
-             demoData['cancer'] = true;
-             demoData['immunodepression'] = true; // Pneumopathie, Zona
-             demoData['auto_immun'] = true; // Lupus, Biermer
-             demoData['corticoides'] = true; // Cushing, Cataracte
-         }
-         
-         // 7. Bouton "Psy / Stress"
-         if(selectedFactors.has('psy')) {
-             demoData['stress'] = true;
-             demoData['depression'] = true;
-             demoData['perfectionnisme'] = true; // Anorexie
-         }
-         
-         // 8. Bouton "Hiver / Épidémie"
-         if(selectedFactors.has('hiver')) {
-             demoData['hiver'] = true;
-             demoData['epidemie'] = true; // Grippe
-             demoData['contage'] = true; // Maladies infantiles
-             demoData['collectivite'] = true; // Gastro
-             demoData['entourage_malade'] = true; // Méningite
-         }
-         
-         // Mapping direct des boutons simples
-         ['tabac', 'alcool', 'surpoids', 'atcd_famille', 'grossesse', 'sterilet', 'menopause'].forEach(id => {
-             if(selectedFactors.has(id)) demoData[id] = true;
-         });
-         
-         // 9. Facteurs implicites (Jeune = Risque IST souvent)
-         if(demoData['jeune'] || demoData['adolescent']) {
-             demoData['rapport_risque'] = true;
-             demoData['partenaires_multiples'] = true;
-         }
-         
-         // --- LANCEMENT ---
-         state.demo = demoData;
-         state.answers = {}; state.asked = []; state.diagnosticShown = false; state.previousDiagnostics = []; state.history = [];
-         state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
-         state.priorityQueue = [];
-         
-         if (state.dailyTarget) state.isChrono = false;
-         else state.isChrono = q('#chronoToggle')?.checked || false;
-         
-         if (state.isChrono) state.startTime = Date.now();
-         else state.startTime = null;
-         
-         askNextQuestion();
-         };
+             // Si le genre n'est pas sélectionné et que ce n'est pas le défi du jour, on en choisit un au hasard
+             if (!selectedGender && !state.dailyTarget) { 
+                 if(Math.random() > 0.5) selectedGender = 'femme'; else selectedGender = 'homme';
+             }
+             
+             const ageVal = q('#demo-age').value;
+             
+             // --- MAPPING INTELLIGENT FACTEURS EDN --- 
+             // On construit l'objet demoData qui sera comparé au JSON
+             const demoData = {};
+
+             // 1. Sexe & Age de base
+             if(selectedGender === 'homme') { demoData['homme'] = true; demoData['garcon'] = true; }
+             if(selectedGender === 'femme') { demoData['femme'] = true; demoData['fille'] = true; }
+             
+             // Mapping des tranches d'âges vers les clés du JSON
+             if(ageVal === 'nourrisson') { demoData['nourrisson'] = true; demoData['nourrisson_moins_2ans'] = true; demoData['nourrisson_3mois_3ans'] = true; demoData['nourrisson_non_vaccine'] = true; }
+             if(ageVal === 'enfant') { demoData['enfant'] = true; demoData['enfant_3_15ans'] = true; demoData['enfant_scolarise'] = true; demoData['enfant_age_scolaire'] = true; demoData['enfant_9mois_5ans'] = true; }
+             if(ageVal === 'adolescent') { demoData['adolescent'] = true; demoData['adolescente'] = true; demoData['sujet_jeune'] = true; }
+             if(ageVal === 'jeune') { demoData['jeune'] = true; demoData['sujet_jeune'] = true; demoData['adulte_jeune'] = true; demoData['homme_jeune'] = (selectedGender === 'homme'); demoData['homme_jeune_20_35ans'] = (selectedGender === 'homme'); }
+             if(ageVal === 'adulte') { demoData['adulte'] = true; demoData['adulte_moyen'] = true; demoData['quarantaine'] = true; demoData['age_>40ans'] = true; demoData['homme_mur'] = (selectedGender === 'homme'); demoData['femme_quarantaine'] = (selectedGender === 'femme'); }
+             if(ageVal === 'senior') { 
+                 demoData['senior'] = true; demoData['sujet_age'] = true; demoData['age_avance'] = true; 
+                 demoData['plus_de_50ans'] = true; demoData['age_>50ans'] = true; 
+                 demoData['age_>60ans'] = true; demoData['sujet_age_>60ans'] = true;
+                 demoData['plus_de_65ans'] = true; demoData['age_>65ans'] = true; 
+                 demoData['age_>75ans'] = true; 
+                 demoData['femme_menopausee'] = (selectedGender === 'femme'); 
+                 demoData['femme_agee'] = (selectedGender === 'femme');
+             }
+
+             // 2. Facteurs combinés Sexe + Age
+             if(selectedGender === 'homme' && (ageVal === 'jeune' || ageVal === 'adolescent')) { demoData['homme_jeune'] = true; demoData['homme_jeune_longiligne'] = true; }
+             if(selectedGender === 'homme' && (ageVal === 'senior' || ageVal === 'adulte')) demoData['homme_age'] = true;
+             if(selectedGender === 'femme' && (ageVal === 'jeune' || ageVal === 'adulte' || ageVal === 'adolescent')) {
+                 demoData['femme_jeune'] = true;
+                 demoData['femme_age_procreer'] = true;
+             }
+
+             // 3. Mapping des boutons de l'interface (Chips) vers les clés JSON
+             
+             // Bouton "Diabète / HTA / Métabolisme"
+             if(selectedFactors.has('metabolique')) {
+                 demoData['diabete'] = true; demoData['diabete_insuline_sulfamides'] = true;
+                 demoData['hta'] = true; demoData['hta_ancienne'] = true; demoData['hta_mal_controlee'] = true; demoData['hta_resistante'] = true;
+                 demoData['syndrome_metabolique'] = true; demoData['dyslipidemie'] = true; demoData['hyperlipidemie'] = true;
+                 demoData['nephropathie_diabetique'] = true; demoData['nephroangiosclerose'] = true;
+                 demoData['fibrillation_atriale'] = true; // Facteur de risque induit
+                 demoData['insuffisance_cardiaque'] = true;
+                 demoData['arteriopathie'] = true;
+             }
+             
+             // Bouton "Chute / Trauma / Effort"
+             if(selectedFactors.has('trauma')) {
+                 demoData['chute'] = true; demoData['chute_hauteur'] = true; demoData['chute_mains_avant'] = true; 
+                 demoData['traumatisme_cranien'] = true; demoData['traumatisme_cranien_violent'] = true; demoData['traumatisme_cranien_ancien'] = true;
+                 demoData['traumatisme_oculaire'] = true; demoData['traumatisme_inversion'] = true;
+                 demoData['effort'] = true; demoData['effort_physique'] = true; demoData['effort_soulevement'] = true; demoData['effort_declenchant'] = true;
+                 demoData['sport'] = true; demoData['sport_pivot'] = true;
+                 demoData['atcd_traumatique'] = true; demoData['frottement_yeux'] = true;
+                 demoData['geste_intra_articulaire'] = true;
+             }
+             
+             // Bouton "Chirurgie / Alité"
+             if(selectedFactors.has('chirurgie')) {
+                 demoData['chirurgie_recente'] = true; demoData['chirurgie_abdominale'] = true;
+                 demoData['alitement'] = true; demoData['alitement_prolonge'] = true;
+                 demoData['bride_chirurgicale'] = true; demoData['chirurgie_cataracte'] = true;
+                 demoData['post_neurochirurgie'] = true; demoData['splenectomie'] = true;
+             }
+             
+             // Bouton "Voyage / Plein Air"
+             if(selectedFactors.has('voyage')) {
+                 demoData['voyage_recent'] = true; demoData['voyage_zone_endemique'] = true; demoData['voyage_recent_non_vaccine'] = true;
+                 demoData['activite_forestiere'] = true; demoData['foret'] = true;
+                 demoData['jardinage'] = true; demoData['blessure_jardinage'] = true;
+                 demoData['voyage_chaleur'] = true;
+             }
+             
+             // Bouton "Médicaments / Allergies"
+             if(selectedFactors.has('medicaments')) {
+                 demoData['medicaments'] = true; demoData['prise_medicamenteuse'] = true; demoData['arret_traitement'] = true;
+                 demoData['allergies'] = true; demoData['atopie'] = true; demoData['allergie_connue'] = true; demoData['terrain_atopique_familial'] = true;
+                 demoData['introduction_allergene'] = true;
+                 demoData['prise_ains'] = true; demoData['ains'] = true; demoData['prise_aains'] = true;
+                 demoData['anticoagulants'] = true; demoData['prise_anticoagulants'] = true;
+                 demoData['corticoides'] = true; demoData['corticotherapie'] = true; demoData['corticotherapie_long_cours'] = true; demoData['prise_corticoides'] = true; demoData['corticoides_inhalés'] = true;
+                 demoData['nephrotoxiques'] = true; demoData['traitement_amiodarone'] = true; demoData['arret_traitement_lasilix'] = true;
+                 demoData['contraception_oestroprogestative'] = true; demoData['hormones'] = true;
+                 demoData['prise_antibiotiques'] = true; demoData['antibiotiques_recents'] = true;
+             }
+             
+             // Bouton "Cancer / Immuno"
+             if(selectedFactors.has('immuno')) {
+                 demoData['cancer'] = true; demoData['cancer_actif'] = true; demoData['cancer_digestif'] = true; demoData['cancer_prostate'] = true;
+                 demoData['immunodepression'] = true; 
+                 demoData['auto_immun'] = true; demoData['auto_immunite_associee'] = true; demoData['atcd_autoimmun'] = true;
+                 demoData['chimio_anterieure'] = true; demoData['radiotherapie'] = true;
+             }
+             
+             // Bouton "Psy / Stress"
+             if(selectedFactors.has('psy')) {
+                 demoData['stress'] = true; demoData['stress_obscurite'] = true; demoData['terrain_anxieux'] = true;
+                 demoData['depression'] = true; demoData['antecedent_personnel'] = true;
+                 demoData['perfectionnisme'] = true; demoData['dette_sommeil'] = true;
+                 demoData['isolement_social'] = true; demoData['milieu_socio_eleve'] = true;
+             }
+             
+             // Bouton "Hiver / Épidémie"
+             if(selectedFactors.has('hiver')) {
+                 demoData['hiver'] = true; demoData['saison_hivernale'] = true; demoData['saison_froide'] = true; demoData['hiver_printemps'] = true;
+                 demoData['epidemie'] = true; demoData['epidemie_hivernale'] = true;
+                 demoData['contage'] = true; demoData['contage_creche'] = true; demoData['collectivite'] = true; demoData['entourage_malade'] = true;
+                 demoData['rhume_recent'] = true; demoData['rhinopharyngite'] = true; demoData['rhinopharyngite_precedente'] = true; demoData['infection_orl_recente'] = true; demoData['episode_viral_precedent'] = true; demoData['viral'] = true; demoData['infection_virale_recente'] = true;
+             }
+
+             // Facteurs simples (Boutons individuels)
+             if(selectedFactors.has('tabac')) { demoData['tabac'] = true; demoData['tabagisme'] = true; demoData['tabagisme_actif'] = true; demoData['tabagisme_paquets_annee'] = true; demoData['alcool_tabac'] = true; }
+             if(selectedFactors.has('alcool')) { demoData['alcool'] = true; demoData['alcoolisme'] = true; demoData['alcoolisme_chronique'] = true; demoData['ethylisme_chronique'] = true; demoData['toxiques_alcool'] = true; demoData['sevrage_alcool'] = true; demoData['exces_alimentaire_alcool'] = true; demoData['douleur_ganglionnaire_alcool'] = true; }
+             if(selectedFactors.has('surpoids')) { demoData['surpoids'] = true; demoData['surpoids_obesite'] = true; demoData['obesite'] = true; demoData['obesite_abdominale'] = true; demoData['imc_bas'] = false; }
+             if(selectedFactors.has('grossesse')) { demoData['grossesse'] = true; demoData['grossesse_>20SA'] = true; demoData['post_partum'] = true; demoData['femme_enceinte_risque'] = true; }
+             if(selectedFactors.has('sterilet')) { demoData['dispositif_intra_uterin'] = true; demoData['sterilet'] = true; }
+             if(selectedFactors.has('menopause')) { demoData['menopause'] = true; demoData['femme_menopausee'] = true; demoData['femme_post_menopause'] = true; }
+
+             // Facteurs implicites liés au profil jeune/risque
+             if(demoData['jeune'] || demoData['adolescent'] || demoData['adulte_jeune']) {
+                 demoData['rapport_risque'] = true; demoData['rapport_sexuel_non_protege'] = true; demoData['rapports_non_proteges'] = true;
+                 demoData['partenaires_multiples'] = true; demoData['ist_recente'] = true; demoData['comportement_sexuel_risque'] = true;
+                 demoData['jeune_imprudent'] = true;
+                 demoData['consommation_cannabis'] = true; demoData['toxicomanie_iv'] = true;
+             }
+             
+             // Facteurs anatomiques/génétiques divers (activés aléatoirement si pertinent pour varier le jeu, ou liés à d'autres facteurs)
+             if(demoData['senior']) { demoData['valvulopathie_connue'] = true; demoData['atcd_aaa_connu'] = true; demoData['hbp'] = true; }
+             if(demoData['femme']) { demoData['regles_abondantes'] = true; demoData['catamenial'] = true; }
+             if(demoData['homme']) { demoData['garcon_premier_ne'] = true; }
+
+             // --- LANCEMENT ---
+             state.demo = demoData;
+             state.answers = {}; state.asked = []; state.diagnosticShown = false; state.previousDiagnostics = []; state.history = [];
+             state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
+             state.priorityQueue = [];
+             
+             if (state.dailyTarget) state.isChrono = false;
+             else state.isChrono = q('#chronoToggle')?.checked || false;
+             
+             if (state.isChrono) state.startTime = Date.now();
+             else state.startTime = null;
+             
+             askNextQuestion();
+          };
          
          const btnCancel = document.createElement('button'); btnCancel.className = 'link'; btnCancel.textContent = 'Annuler'; btnCancel.onclick = renderHome;
          btnGroup.appendChild(btnStart); btnGroup.appendChild(btnCancel); card.appendChild(btnGroup); app.appendChild(card);
@@ -2522,121 +2688,180 @@ function showDayDetails(dateStr, data) {
          }
          
          function rankPathologies() {
-             const scores = PATHOLOGIES.map(p => {
-                 if (state.previousDiagnostics.includes(p.name)) {
-                     return { patho: p, score: -1 }; 
-                 }
-         
-                 let score = 0;
-                 for(const facteur in p.facteurs){ if(state.demo[facteur] === true) score += p.facteurs[facteur]; }
-                 for(const signe in p.signes){
-                     const ans = state.answers[signe];
-                     if(ans === true) score += p.signes[signe];
-                     else if(ans === false) score -= (p.signes[signe] * 0.5);
-                 }
-                 return {patho:p, score: Math.max(0, score)};
-             });
-         
-             const validScores = scores.filter(s => s.score >= 0);
-             const totalScore = validScores.reduce((sum, s) => sum + s.score, 0);
-         
-             state.ranked = scores.map(s => ({
-                 ...s,
-                 prob: (s.score === -1 || totalScore === 0) ? 0 : ((s.score / totalScore) * 100).toFixed(1)
-             })).sort((a,b)=>b.prob - a.prob);
-         }
+    const scores = PATHOLOGIES.map(p => {
+        // --- POINT 2 : VETO STRICT ---
+        // Si l'utilisateur a répondu NON à un signe obligatoire (veto), on élimine la maladie
+        if (p.veto && p.veto.some(v => state.answers[v] === false)) {
+            return { patho: p, score: -1, prob: 0 };
+        }
+
+        let matchPoints = 0;
+        let maxPossiblePoints = 0;
+
+        // On parcourt tous les signes définis dans le JSON pour cette pathologie
+        for (const [signe, poids] of Object.entries(p.signes)) {
+            maxPossiblePoints += poids; // On cumule le score maximum théorique
+
+            if (state.answers[signe] === true) {
+                matchPoints += poids; // L'utilisateur a le signe : + points
+                if (p.boost && p.boost.includes(signe)) matchPoints += 50; // Bonus Boost
+            } else if (state.answers[signe] === false) {
+                matchPoints -= (poids * 0.5); // L'utilisateur n'a pas le signe : pénalité légère
+            }
+        }
+
+        // --- POINT 4 : NORMALISATION ---
+        // On calcule un pourcentage de correspondance (0 à 100)
+        let finalProb = (matchPoints / maxPossiblePoints) * 100;
+        if (finalProb < 0) finalProb = 0;
+        if (finalProb > 100) finalProb = 100;
+
+        return { patho: p, score: matchPoints, prob: finalProb.toFixed(1) };
+    });
+
+    // On trie pour avoir les plus probables en premier
+    state.ranked = scores
+        .filter(s => s.score >= 0) // On cache les maladies éliminées par Veto
+        .sort((a, b) => b.prob - a.prob);
+}
          
          function getNextSmartSign(ranked, remainingSigns) {
-             const topPathos = ranked.slice(0, 5).map(r => r.patho);
-             
-             // Liste des signes à "garder pour la fin" (Examens complémentaires)
-             const examSigns = new Set();
-             
-             // Mots-clés pour identifier les examens si le poids ne suffit pas
-             const examKeywords = ['radio', 'scanner', 'irm', 'ecg', 'biologie', 'analyse', 'echographie'];
-         
-             topPathos.forEach(p => {
-                 for (const [s, weight] of Object.entries(p.signes)) {
-                     // CRITÈRE : Poids lourd (>=40) ET (a une image OU contient un mot clé d'examen)
-                     // Cela laisse passer les signes cliniques forts (ex: poids 30)
-                     const isExamKeyword = examKeywords.some(k => s.includes(k));
-                     const hasImage = p.images && p.images[s];
-                     
-                     if (weight >= 40 && (hasImage || isExamKeyword)) {
-                         examSigns.add(s);
-                     }
-                 }
-             });
-         
-             // On crée un pool "Clinique" (tout sauf les examens complémentaires)
-             let clinicalPool = remainingSigns.filter(s => !examSigns.has(s));
-         
-             // Si on a encore des questions cliniques, on les priorise.
-             // Sinon (si on a tout épuisé), on sort les radios/scanners.
-             let pool = clinicalPool.length > 0 ? clinicalPool : remainingSigns;
-         
-             const signCounts = {};
-             topPathos.forEach(p => {
-                 pool.forEach(s => {
-                     if (p.signes[s]) {
-                         signCounts[s] = (signCounts[s] || 0) + (p.signes[s] || 1);
-                     }
-                 });
-             });
-         
-             let bestSign = pool[0];
-             let maxVal = -1;
-         
-             for (const [s, val] of Object.entries(signCounts)) {
-                 if (val > maxVal) {
-                     maxVal = val;
-                     bestSign = s;
-                 }
-             }
-             
-             if (!bestSign && pool.length > 0) return pool[Math.floor(Math.random() * pool.length)];
-             
-             return bestSign;
-         }
+    if (!ranked || ranked.length === 0 || remainingSigns.length === 0) return null;
+
+    const topProb = ranked.length > 0 ? parseFloat(ranked[0].prob) : 0;
+    const top3 = ranked.slice(0, 3).map(r => r.patho);
+
+    // === PHASE 1 : EXPLORATION (Confiance < 40%) ===
+    if (topProb < 40 && state.asked.length < 8) {
+        // On cherche des SYMPTÔMES GÉNÉRAUX pour orienter
+        const availableGenerals = GENERAL_SYMPTOMS.filter(s => 
+            !state.asked.includes(s) && remainingSigns.includes(s)
+        );
+
+        if (availableGenerals.length > 0) {
+            // ✅ On prend le symptôme le plus discriminant (présent dans le TOP 3)
+            const bestGeneral = availableGenerals.find(s => 
+                top3.some(p => p.signes[s])
+            );
+            if (bestGeneral) return bestGeneral;
+
+            // Sinon, on prend le premier (avec 20% d'aléa)
+            if (Math.random() > 0.2) return availableGenerals[0];
+            return availableGenerals[Math.floor(Math.random() * availableGenerals.length)];
+        }
+    }
+
+    // === PHASE 2 : PRÉCISION (Confiance 40-70%) ===
+    if (topProb >= 40 && topProb < 70) {
+        // On filtre les signes CLINIQUES (pas encore de paraclinique)
+        let pool = remainingSigns.filter(s => {
+            const isParaclinique = PATHOLOGIES.some(p => 
+                p.paraclinique && p.paraclinique.includes(s)
+            );
+            return !isParaclinique;
+        });
+
+        if (pool.length === 0) pool = remainingSigns;
+
+        // Algorithme de Split (80% optimal, 20% aléatoire)
+        return selectBestSplitSign(pool, top3);
+    }
+
+    // === PHASE 3 : CONFIRMATION (Confiance > 70%) ===
+    if (topProb >= 70) {
+        const topPatho = ranked[0].patho;
+
+        // 🔬 PRIORITÉ 1 : Question paraclinique si disponible
+        const paracliniqueSigns = remainingSigns.filter(s => 
+            topPatho.paraclinique && topPatho.paraclinique.includes(s) &&
+            topPatho.signes[s] >= 30 // Signe important
+        );
+
+        if (paracliniqueSigns.length > 0) {
+            // On prend le signe BOOST en priorité
+            const boostSign = paracliniqueSigns.find(s => 
+                topPatho.boost && topPatho.boost.includes(s)
+            );
+            return boostSign || paracliniqueSigns[0];
+        }
+
+        // 🩺 PRIORITÉ 2 : Signe clinique BOOST non posé
+        const boostSigns = Object.keys(topPatho.signes).filter(s =>
+            topPatho.boost && topPatho.boost.includes(s) &&
+            !state.asked.includes(s) &&
+            remainingSigns.includes(s)
+        );
+
+        if (boostSigns.length > 0) return boostSigns[0];
+
+        // 📊 PRIORITÉ 3 : Split optimal
+        return selectBestSplitSign(remainingSigns, top3);
+    }
+
+    // Fallback
+    return selectBestSplitSign(remainingSigns, top3);
+}
+
+// ----------------------------------------
+// 🎲 FONCTION DE SPLIT OPTIMAL (80/20)
+// ----------------------------------------
+function selectBestSplitSign(pool, topCandidates) {
+    let bestSign = null;
+    let bestScore = -1;
+
+    for (const sign of pool) {
+        let presenceCount = 0;
+        let weightSum = 0;
+
+        topCandidates.forEach(p => {
+            if (p.signes[sign]) {
+                presenceCount++;
+                weightSum += p.signes[sign];
+            }
+        });
+
+        const distanceToMid = Math.abs(presenceCount - (topCandidates.length / 2));
+        const optimalityScore = (topCandidates.length - distanceToMid) * weightSum;
+
+        if (optimalityScore > bestScore) {
+            bestScore = optimalityScore;
+            bestSign = sign;
+        }
+    }
+
+    // 🎲 20% de chance de prendre un signe aléatoire (anti-pattern)
+    if (Math.random() < 0.2 && pool.length > 3) {
+        const randomSigns = pool.filter(s => s !== bestSign);
+        return randomSigns[Math.floor(Math.random() * randomSigns.length)] || bestSign;
+    }
+
+    return bestSign || pool[0];
+}
          
          function canShowDiagnostic() {
-             const qNum = state.asked.length;
-             
-             // --- FIX PLAISANTIN DEBUT ---
-             // Si le joueur est en train de tenter l'Easter Egg (moins de 15 questions)
-             // On empêche l'IA de conclure, même si elle est sûre d'elle.
-             if (qNum < 15 && qNum > 0) {
-                 // Vérifie si on a que des "Vrai" jusqu'à présent
-                 const allYes = state.asked.every(s => state.answers[s] === true);
-                 // Vérifie si on a que des "Faux" jusqu'à présent
-                 const allNo = state.asked.every(s => state.answers[s] === false);
-                 
-                 // Si on est dans une série parfaite, on force le jeu à continuer
-                 if (allYes || allNo) return false; 
-             }
-             // --- FIX PLAISANTIN FIN ---
-         
-             if(state.ranked.length===0) return false;
-             
-             const top1 = state.ranked[0];
-             const top2 = state.ranked[1];
-             
-             if(state.previousDiagnostics.includes(top1.patho.name)) return false;
-         
-             if (qNum >= 20) return true;
-         
-             const score1 = parseFloat(top1.prob);
-             if (!top2) return score1 > 40; 
-         
-             const score2 = parseFloat(top2.prob);
-             const gap = score1 - score2;
-         
-             if (qNum >= 5 && score1 >= 50 && gap >= 20) return true;
-             if (qNum >= 10 && gap >= 10) return true;
-             if (qNum >= 15) return true;
-         
-             return false;
-         }
+    if (state.ranked.length === 0) return false;
+    if (state.confirmationMode) return false;
+
+    const top1 = state.ranked[0];
+    const top2 = state.ranked[1];
+    const score1 = parseFloat(top1.prob);
+    const score2 = top2 ? parseFloat(top2.prob) : 0;
+    const qNum = state.asked.length;
+
+    // ✅ DÉCLENCHEMENT : Confiance > 75% ET écart > 20% avec le 2ème
+    const isConfident = score1 > 75 && (score1 - score2) > 20;
+
+    // OU si on a posé 12+ questions et qu'on a un leader clair
+    const isLongEnough = qNum >= 12 && score1 > 60;
+
+    if (isConfident || isLongEnough) {
+        console.log(`🎯 Déclenchement confirmation : ${top1.patho.name} (${score1}%)`);
+        startConfirmationPhase(top1.patho);
+        return true;
+    }
+
+    return false;
+}
          
          function prepareConfirmationQuestions(topPatho) {
              const pSigns = Object.keys(topPatho.signes);
@@ -2733,8 +2958,8 @@ function showDayDetails(dateStr, data) {
          
          // --- FONCTIONS "PLAISANTIN" (Easter Eggs) ---
          function checkPlaisantin() {
-             // On ne vérifie qu'exactement à la 15ème question
-             if (state.asked.length !== 15) return false;
+             // On ne vérifie qu'exactement à la 20ème question
+             if (state.asked.length < 12) return false;
          
              // Vérifier si toutes les réponses sont NON
              const allNo = state.asked.every(sign => state.answers[sign] === false);
@@ -2769,7 +2994,7 @@ function showDayDetails(dateStr, data) {
                      <h2 style="color:var(--success)">Diagnostic : Touriste !</h2>
                      <p style="margin-top:15px; font-weight:bold;">Ce patient n'a RIEN.</p>
                      <p class="small" style="margin-top:10px; line-height:1.6;">
-                         Après 15 questions négatives, il semblerait que ce patient se soit juste perdu dans l'hôpital en cherchant la machine à café.<br>
+                         Après 12 questions négatives, il semblerait que ce patient se soit juste perdu dans l'hôpital en cherchant la machine à café.<br>
                          Rentrez chez vous, vous êtes en parfaite santé !
                      </p>
                  `;
@@ -2800,162 +3025,200 @@ function showDayDetails(dateStr, data) {
          }
          
          function renderCurrentQuestion() {
-             setDocTitle(`Question ${state.asked.length}`);
-             window.scrollTo(0,0);
-             const app = q('#app'); app.innerHTML='';
-             const card = document.createElement('div'); card.className='card center';
-             const signe = state.currentSign;
-             const questionTitle = state.confirmationMode ? `<span style="color:var(--gold)"><i class="ph-duotone ph-brain"></i> Je pense avoir une piste...</span>` : `QUESTION ${state.asked.length}`;
-             
-             let prob = 0;
-             if(state.ranked.length > 0) prob = parseFloat(state.ranked[0].prob);
-         
-             // --- IMAGE DISPLAY LOGIC ---
-             const imgUrl = GLOBAL_IMG_MAP[signe];
-             const imgHTML = imgUrl ? `<img src="${imgUrl}" style="max-width:100%; height:auto; max-height:300px; border-radius:8px; margin-bottom:15px; border:1px solid var(--glass-border); box-shadow: 0 4px 12px rgba(0,0,0,0.3);">` : '';
-         
-             card.innerHTML = `
-                 ${state.isChrono ? '<div style="font-size:12px; color:var(--accent); margin-bottom:5px;"><i class="ph-duotone ph-lightning"></i> Chrono Actif</div>' : ''}
-                 <div class="ai-progress-container">
-                     <div class="ai-progress-bar" style="width:${prob}%"></div>
-                 </div>
-                 <div class="ai-progress-label">Confiance IA : ${prob}%</div>
-                 
-                 <div class="small" style="margin-bottom:12px; color:var(--accent)">${questionTitle}</div>
-                 
-                 ${imgHTML}
-         
-                 <div class="question-text">Le patient présente-t-il :<br><strong style="font-size:1.2em; color:var(--text-main);">${formatSigneName(signe)}</strong> ?</div>`;
-             
-             const btnGroup = document.createElement('div'); btnGroup.className='button-group';
-             
-             const mkBtn = (txt, cls, val) => {
-                 const b = document.createElement('button'); b.className=cls; b.innerHTML=txt;
-                 b.onclick=()=>{ 
-                     state.history.push(JSON.stringify({
-                         answers: state.answers, asked: state.asked, currentSign: state.currentSign,
-                         confirmationMode: state.confirmationMode, confirmationQueue: state.confirmationQueue,
-                         confirmedPatho: state.confirmedPatho, priorityQueue: state.priorityQueue,
-                         isChrono: state.isChrono, startTime: state.startTime, dailyTarget: state.dailyTarget
-                     }));
-                     
-                     if(state.dailyTarget && val === false && state.dailyTarget.signes[signe]) {
-                     }
-                     
-                     state.answers[signe]=val; askNextQuestion(); 
-                 };
-                 btnGroup.appendChild(b);
-             };
-             mkBtn('<i class="ph-bold ph-check"></i> OUI', 'btn btn-success', true);
-             mkBtn('<i class="ph-bold ph-x"></i> NON', 'btn btn-error', false);
-             mkBtn('Je ne sais pas', 'link', null);
-             card.appendChild(btnGroup);
-         
-             const navGroup = document.createElement('div'); navGroup.style.display = 'flex'; navGroup.style.gap = '15px'; navGroup.style.marginTop = '20px';
-             if(state.history.length > 0) {
-                 const btnBack = document.createElement('button'); btnBack.className='btn-back'; btnBack.innerHTML='<i class="ph-duotone ph-caret-left"></i> Retour';
-                 btnBack.onclick = () => {
-                     const prevState = JSON.parse(state.history.pop());
-                     Object.assign(state, prevState);
-                     renderCurrentQuestion();
-                 };
-                 navGroup.appendChild(btnBack);
-             }
-             const btnAb = document.createElement('button'); 
-         btnAb.className='link'; 
-         btnAb.innerHTML='Abandonner'; 
-         btnAb.onclick = () => {
-         if(state.isGuest) {
-         showAlert("Vous ne pouvez pas abandonner pour accéder aux fonctionnalités réservées.", "error");
-         return;
-         }
-         renderAbandonMenu();
-         };
-         navGroup.appendChild(btnAb); 
-         card.appendChild(navGroup);
-         app.appendChild(card);
-         }
+    setDocTitle(`Question ${state.asked.length}`);
+    window.scrollTo(0,0);
+    const app = q('#app'); 
+    app.innerHTML='';
+    const card = document.createElement('div'); 
+    card.className='card center';
+    const signe = state.currentSign;
+    const questionTitle = state.confirmationMode ? `<span style="color:var(--gold)"><i class="ph-duotone ph-brain"></i> Je pense avoir une piste...</span>` : `QUESTION ${state.asked.length}`;
+    
+    let prob = 0;
+    if(state.ranked.length > 0) prob = parseFloat(state.ranked[0].prob);
+
+    const imgUrl = GLOBAL_IMG_MAP[signe];
+    const imgHTML = imgUrl ? `
+        <div style="width:100%; max-width:500px; margin:0 auto 20px auto;">
+            <img src="${imgUrl}" alt="Image" style="width:100%; border-radius:12px; border:2px solid var(--glass-border);">
+        </div>` : '';
+
+    card.innerHTML = `
+        ${state.isChrono ? '<div style="font-size:12px; color:var(--accent); margin-bottom:5px;"><i class="ph-duotone ph-lightning"></i> Chrono Actif</div>' : ''}
+        <div class="ai-progress-container">
+            <div class="ai-progress-bar" style="width:${prob}%"></div>
+        </div>
+        <div class="ai-progress-label">Confiance IA : ${prob}%</div>
+        <div class="small" style="margin-bottom:12px; color:var(--accent)">${questionTitle}</div>
+        ${imgHTML}
+        <div class="question-text">Le patient présente-t-il :<br><strong style="font-size:1.2em; color:var(--text-main);">${formatSigneName(signe)}</strong> ?</div>`;
+    
+    // --- LA LIGNE QUI MANQUAIT EST ICI ---
+    const btnGroup = document.createElement('div'); 
+    btnGroup.className = 'button-group';
+    // -------------------------------------
+    
+    // Bouton OUI avec raffinements aléatoires
+    const btnOui = document.createElement('button');
+    btnOui.className = 'btn btn-success';
+    btnOui.innerHTML = '<i class="ph-bold ph-check"></i> OUI';
+    btnOui.onclick = () => {
+        state.history.push(JSON.stringify({
+            answers: state.answers, asked: state.asked, currentSign: state.currentSign,
+            confirmationMode: state.confirmationMode, confirmationQueue: state.confirmationQueue,
+            confirmedPatho: state.confirmedPatho, priorityQueue: state.priorityQueue,
+            isChrono: state.isChrono, startTime: state.startTime, dailyTarget: state.dailyTarget
+        }));
+        state.answers[signe] = true;
+        if (REFINEMENTS[signe]) {
+            let shuffled = [...REFINEMENTS[signe]].sort(() => Math.random() - 0.5);
+            state.priorityQueue.push(...shuffled);
+        }
+        askNextQuestion();
+    };
+    btnGroup.appendChild(btnOui);
+
+    const addOtherBtn = (txt, cls, val) => {
+        const b = document.createElement('button');
+        b.className = cls; b.innerHTML = txt;
+        b.onclick = () => {
+            state.history.push(JSON.stringify({
+                answers: state.answers, asked: state.asked, currentSign: state.currentSign,
+                confirmationMode: state.confirmationMode, confirmationQueue: state.confirmationQueue,
+                confirmedPatho: state.confirmedPatho, priorityQueue: state.priorityQueue,
+                isChrono: state.isChrono, startTime: state.startTime, dailyTarget: state.dailyTarget
+            }));
+            state.answers[signe] = val;
+            askNextQuestion();
+        };
+        btnGroup.appendChild(b);
+    };
+
+    addOtherBtn('<i class="ph-bold ph-x"></i> NON', 'btn btn-error', false);
+    addOtherBtn('Je ne sais pas', 'link', null);
+    
+    card.appendChild(btnGroup);
+
+    const navGroup = document.createElement('div'); 
+    navGroup.style.display = 'flex'; navGroup.style.gap = '15px'; navGroup.style.marginTop = '20px';
+    
+    if(state.history.length > 0) {
+        const btnBack = document.createElement('button'); 
+        btnBack.className='btn-back'; btnBack.innerHTML='<i class="ph-duotone ph-caret-left"></i> Retour';
+        btnBack.onclick = () => {
+            const prevState = JSON.parse(state.history.pop());
+            Object.assign(state, prevState);
+            renderCurrentQuestion();
+        };
+        navGroup.appendChild(btnBack);
+    }
+    
+    const btnAb = document.createElement('button'); 
+    btnAb.className='link'; btnAb.innerHTML='Abandonner'; 
+    btnAb.onclick = () => {
+        if(state.isGuest) { showAlert("Action limitée en mode invité.", "error"); return; }
+        renderAbandonMenu();
+    };
+    navGroup.appendChild(btnAb); 
+    card.appendChild(navGroup);
+    app.appendChild(card);
+}
+
+function startConfirmationPhase(targetPatho) {
+    state.confirmationMode = true;
+    state.confirmationQueue = [];
+
+    const pSigns = Object.keys(targetPatho.signes);
+    const unaskedSigns = pSigns.filter(s => !state.asked.includes(s));
+
+    // 🔬 ÉTAPE 1 : Trouver LA question paraclinique décisive
+    let proofSign = null;
+    if (targetPatho.paraclinique) {
+        proofSign = unaskedSigns.find(s => 
+            targetPatho.paraclinique.includes(s) &&
+            targetPatho.signes[s] >= 40 // Signe à haut poids
+        );
+    }
+
+    // Si pas de preuve, on prend le signe BOOST le plus important
+    if (!proofSign && targetPatho.boost) {
+        proofSign = unaskedSigns.find(s => 
+            targetPatho.boost.includes(s) && targetPatho.signes[s] >= 30
+        );
+    }
+
+    // 🩺 ÉTAPE 2 : Prendre 1-2 VRAIS signes cliniques manquants
+    const realSigns = unaskedSigns
+        .filter(s => s !== proofSign)
+        .sort((a, b) => targetPatho.signes[b] - targetPatho.signes[a])
+        .slice(0, 2); // Maximum 2 signes
+
+    // 🎭 ÉTAPE 3 : Prendre 1 PIÈGE depuis le TOP 2-3 des diagnostics différentiels
+    const competitors = state.ranked.slice(1, 3); // Rang 2 et 3
+    let trapSigns = [];
+
+    competitors.forEach(comp => {
+        const compSigns = Object.keys(comp.patho.signes).filter(s =>
+            !pSigns.includes(s) && // Pas un signe de la maladie correcte
+            !state.asked.includes(s) &&
+            comp.patho.signes[s] >= 15 // Signe significatif
+        );
+        trapSigns.push(...compSigns);
+    });
+
+    // On prend UN SEUL piège pertinent
+    trapSigns = trapSigns.slice(0, 1);
+
+    // 📋 ÉTAPE 4 : Construction de la queue (MAX 3 QUESTIONS)
+    state.confirmationQueue = [...realSigns, ...trapSigns]
+        .sort(() => 0.5 - Math.random()) // Mélange léger
+        .slice(0, 2); // Maximum 2 questions avant la preuve
+
+    // On ajoute la PREUVE en dernier
+    if (proofSign) {
+        state.confirmationQueue.push(proofSign);
+    }
+
+    console.log("✅ Phase de confirmation :", state.confirmationQueue.map(s => 
+        `${formatSigneName(s)} (${targetPatho.name})`
+    ));
+
+    askNextQuestion();
+}
+
          
          function askNextQuestion() {
-             // --- VERIFICATION PLAISANTIN ---
-             if (checkPlaisantin()) return; 
-             // -------------------------------
-         
-             if (state.asked.length >= 20) { showDiagnostic(); return; }
-         
-             if(state.asked.length > 0) {
-                 const lastSign = state.asked[state.asked.length - 1];
-                 const lastAnswer = state.answers[lastSign];
-                 
-                 if(lastAnswer === true) {
-                       for (const [parent, children] of Object.entries(REFINEMENTS)) {
-                         if (children.includes(lastSign)) {
-                             const siblings = children.filter(c => c !== lastSign);
-                             state.priorityQueue = state.priorityQueue.filter(q => !siblings.includes(q));
-                         }
-                     }
-                 }
-             }
-         
-             if(state.priorityQueue.length > 0) {
-                 const nextPriority = state.priorityQueue.shift();
-                 if(!state.asked.includes(nextPriority)) {
-                     state.currentSign = nextPriority; state.asked.push(nextPriority); renderCurrentQuestion(); return;
-                 } else { askNextQuestion(); return; }
-             }
-         
-             if (state.confirmationMode) {
-                 const lastSign = state.asked[state.asked.length - 1];
-                 
-                 const isSignPartOfPatho = Object.keys(state.confirmedPatho.signes).includes(lastSign);
-                 const userSaidYes = state.answers[lastSign] === true;
-         
-                 if (!isSignPartOfPatho && userSaidYes) {
-                     state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
-                     showAlert("Aïe ! Ce symptôme ne collait pas...", "error");
-                     askNextQuestion(); return;
-                 }
-         
-                 if (isSignPartOfPatho && !userSaidYes) {
-                     state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
-                     showAlert("Ah, fausse piste. Je continue à chercher...", "info");
-                     askNextQuestion(); return;
-                 }
-         
-                 if (state.confirmationQueue.length > 0) {
-                     const nextC = state.confirmationQueue.shift();
-                     state.currentSign = nextC; state.asked.push(nextC); renderCurrentQuestion(); return;
-                 } else { 
-                     showDiagnostic(); return; 
-                 }
-             }
-         
-             prepareSigns();
-             const remaining = state.allSigns.filter(s => !state.asked.includes(s));
-             if(remaining.length === 0) { showDiagnostic(); return; }
-         
-             const hasSymptom = Object.keys(state.answers).some(key => state.answers[key] === true);
-             if (!hasSymptom) {
-                 const generalSigns = remaining.filter(s => REFINEMENTS.hasOwnProperty(s));
-                 const pool = generalSigns.length > 0 ? generalSigns : remaining;
-                 const randomSign = pool[Math.floor(Math.random() * pool.length)];
-                 state.currentSign = randomSign; state.asked.push(randomSign); renderCurrentQuestion(); return;
-             }
-         
-             rankPathologies(); 
-             if(canShowDiagnostic()){ 
-                 const topPatho = state.ranked[0].patho;
-                 const confirmQuestions = prepareConfirmationQuestions(topPatho);
-                 if (confirmQuestions.length > 0) {
-                     state.confirmationMode = true; state.confirmedPatho = topPatho; state.confirmationQueue = confirmQuestions;
-                     const first = state.confirmationQueue.shift();
-                     state.currentSign = first; state.asked.push(first); renderCurrentQuestion(); return;
-                 } else { showDiagnostic(); return; }
-             }
-             
-             const signe = getNextSmartSign(state.ranked, remaining);
-             state.currentSign = signe; state.asked.push(signe); renderCurrentQuestion();
-         }
+    if (checkPlaisantin()) return; 
+    if (state.asked.length >= 30) { showDiagnostic(); return; }
+
+    rankPathologies(); 
+
+    if(canShowDiagnostic()) return; 
+
+    prepareSigns();
+    const remaining = state.allSigns.filter(s => !state.asked.includes(s));
+    
+    // CALCUL DU PROCHAIN SIGNE
+    const signe = getNextSmartSign(state.ranked, remaining);
+
+    // --- AJOUT DE LA SÉCURITÉ ICI ---
+    if (!signe) {
+        // Si on ne trouve plus de question et que le top score est très bas
+        const topProb = state.ranked.length > 0 ? parseFloat(state.ranked[0].prob) : 0;
+        
+        if (topProb < 5) {
+            renderPlaisantinEnd("healthy"); // On déclenche la fin "Patient en bonne santé"
+        } else {
+            showDiagnostic(); // Sinon on tente quand même de donner le meilleur résultat restant
+        }
+        return;
+    }
+    // --------------------------------
+
+    state.currentSign = signe; 
+    state.asked.push(signe); 
+    renderCurrentQuestion();
+}
          
                  function showDiagnostic() {
              setDocTitle("Analyse...");
@@ -2978,18 +3241,19 @@ function showDayDetails(dateStr, data) {
                  
                  // Remplacer la définition de pdfButton par :
          let pdfButton = '';
-         
-         if (top.patho.pdf && top.patho.pdf !== '#') {
-         if (state.isGuest) {
-         // --- PROTECTION INVITÉ : BOUTON VERROUILLÉ ---
-         pdfButton = `<button class="btn" style="background:rgba(125,125,125,0.1); border:1px dashed var(--text-muted); color:var(--text-muted); margin-top:10px; font-size:13px;" onclick="showAlert('Les fiches PDF sont réservées aux membres inscrits.<br>Créez un compte gratuit pour y accéder !', 'error')"><i class="ph-duotone ph-lock-key"></i> Fiche PDF (Verrouillée)</button>`;
-         } else {
-         // --- MEMBRE CONNECTÉ : LIEN ACTIF ---
-         pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.patho.pdf}" target="_blank" onclick="trackPdf()"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF</a>`;
-         }
-         } else {
-         pdfButton = `<span class="small" style="opacity:0.5"><i class="ph-duotone ph-file-x"></i> Pas de fiche PDF</span>`;
-         }
+
+if (top.patho.pdf && top.patho.pdf !== '#') {
+    // MODIFICATION ICI : On vérifie si c'est un invité standard (sans code premium)
+    if (state.isGuest && !state.isPremiumCode) {
+        // --- PROTECTION INVITÉ CLASSIQUE : BOUTON VERROUILLÉ ---
+        pdfButton = `<button class="btn" style="background:rgba(125,125,125,0.1); border:1px dashed var(--text-muted); color:var(--text-muted); margin-top:10px; font-size:13px;" onclick="showAlert('Les fiches PDF sont réservées aux membres inscrits ou partenaires.<br>Créez un compte gratuit pour y accéder !', 'error')"><i class="ph-duotone ph-lock-key"></i> Fiche PDF (Verrouillée)</button>`;
+    } else {
+        // --- MEMBRE CONNECTÉ OU CODE PREMIUM : LIEN ACTIF ---
+        pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.patho.pdf}" target="_blank" onclick="trackPdf()"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF</a>`;
+    }
+} else {
+    pdfButton = `<span class="small" style="opacity:0.5"><i class="ph-duotone ph-file-x"></i> Pas de fiche PDF</span>`;
+}
                  const diagDiv = document.createElement('div'); diagDiv.className='diagnostic-result';
                  diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div>
                  <div style="margin: 15px 0; max-width: 100%;">
@@ -3108,153 +3372,145 @@ state.progression.dailyHistory[todayKey].fail.push({ name: top.patho.name, time:
          
          
          function showDiagnosticDetails(data, wasManualError = false) {
-             window.scrollTo(0,0);
-             const top = data.patho;
-             setDocTitle(top.name);
-             const app = q('#app'); app.innerHTML = '';
-             const card = document.createElement('div'); card.className='card';
-             
-             if(wasManualError) {
-                 card.innerHTML = `<h2 style="color:var(--error)"><i class="ph-duotone ph-smiley-sad"></i> C'était : ${top.name}</h2>`;
-                 
-                 if(!state.progression.mastery) state.progression.mastery = {};
-                 let m = state.progression.mastery[top.name];
-                 if(!m) m = { success: 0, failures: 0, missedSigns: {} };
-                 if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
-                 
-                 m.failures++;
-                 
-                 Object.keys(top.signes).forEach(s => {
-                     if(state.answers[s] === false || state.answers[s] === null) { 
-                         if(!m.missedSigns[s]) m.missedSigns[s] = 0;
-                         m.missedSigns[s]++;
-                     }
-                 });
-                 
-                 Object.keys(state.answers).forEach(s => {
-                     if (state.answers[s] === true && !top.signes[s]) {
-                         if(!m.missedSigns[s]) m.missedSigns[s] = 0;
-                         m.missedSigns[s]++;
-                     }
-                 });
-         
-                 state.progression.mastery[top.name] = m;
-                 
-                 if(!state.progression.errorLog) state.progression.errorLog = {};
-                 state.progression.errorLog[top.name] = { date: Date.now(), count: (state.progression.errorLog[top.name]?.count || 0) + 1 };
-                 
-                 saveProgression();
-         
-             } else {
-                 card.innerHTML = `<h2><i class="ph-duotone ph-check-circle color-success"></i> ${top.name}</h2>`;
+    window.scrollTo(0, 0);
+    const top = data.patho;
+    setDocTitle(top.name);
+    const app = q('#app');
+    app.innerHTML = '';
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    // En-tête (Gagné ou Perdu)
+    if (wasManualError) {
+        card.innerHTML = `<h2 style="color:var(--error)"><i class="ph-duotone ph-smiley-sad"></i> C'était : ${top.name}</h2>`;
+        // Sauvegarde des stats (Echec)
+        if(!state.progression.mastery) state.progression.mastery = {};
+        let m = state.progression.mastery[top.name];
+        if(!m) m = { success: 0, failures: 0, missedSigns: {} };
+        if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
+        m.failures++;
+        
+        // Logique des signes manqués pour les stats
+        Object.keys(top.signes).forEach(s => {
+             if(state.answers[s] === false || state.answers[s] === null) { 
+                 if(!m.missedSigns[s]) m.missedSigns[s] = 0;
+                 m.missedSigns[s]++;
              }
-         
-             const desc = document.createElement('div'); desc.className='patho-desc'; desc.textContent = top.short; desc.style.marginBottom='20px'; desc.style.textAlign='center'; card.appendChild(desc);
-             
-             if(top.signes) { 
-                 const pathoSigns = Object.keys(top.signes);
-                 const correctSigns = [], missingSigns = [], notAskedSigns = [], erroneousSigns = [];
-                 pathoSigns.forEach(s => {
-                     const val = state.answers[s];
-                     if(val === true) correctSigns.push(s); 
-                     else if(val === false || val === null) missingSigns.push(s);
-                     else notAskedSigns.push(s);
-                 });
-                 state.allSigns.forEach(s => { if(state.answers[s] === true && !pathoSigns.includes(s)) erroneousSigns.push(s); });
-                 
-                 correctSigns.sort((a, b) => (top.signes[b] || 0) - (top.signes[a] || 0));
-                 missingSigns.sort((a, b) => (top.signes[b] || 0) - (top.signes[a] || 0));
-                 
-                 const resultsDiv = document.createElement('div'); resultsDiv.className='result-list';
-                 
-                 const createList = (title, items, type, typeLabel) => {
-                     if(items.length > 0) {
-                         let icon = '<i class="ph-duotone ph-info"></i>';
-                         let badgeClass = 'badge-neutral';
-                         
-                         if (type === 'correct') { icon = '<i class="ph-duotone ph-check-circle"></i>'; badgeClass = 'badge-correct'; }
-                         if (type === 'missing') { icon = '<i class="ph-duotone ph-warning"></i>'; badgeClass = 'badge-missing'; }
-                         
-                         const h = document.createElement('div'); 
-                         h.className = 'result-section-title';
-                         h.innerHTML = `${icon} ${title} <span style="opacity:0.6; font-size:0.9em; margin-left:auto;">${items.length}</span>`;
-                         resultsDiv.appendChild(h);
-         
-                         items.forEach(s => {
-                             const r = document.createElement('div'); 
-                             r.className = 'result-item'; 
-                             r.innerHTML = `
-                                 <div class="result-label">${formatSigneName(s)}</div>
-                                 <div class="status-badge ${badgeClass}">${typeLabel}</div>
-                             `;
-                             resultsDiv.appendChild(r);
-                         });
-                     }
-                 };
-                 
-                 if(wasManualError) {
-                     createList("Signes manqués (Faux Négatifs)", missingSigns, "missing", "Non");
-                     createList("Autres signes", notAskedSigns, "neutral", "Inconnu");
-                 } else {
-                     createList("Signes bien identifiés", correctSigns, "correct", "Validé");
-                     if(missingSigns.length > 0) {
-                         createList("Attention : Signes manqués", missingSigns, "missing", "Erreur");
-                     }
-                     createList("Autres signes du tableau", notAskedSigns, "neutral", "Non demandé");
-                 }
-                 card.appendChild(resultsDiv);
-             }
-         
-             if(top.pdf && top.pdf !== '#') {
-         // On crée un <button> pour l'invité (pas de href) et un <a> pour le membre
-         const pdfBtn = document.createElement(state.isGuest ? 'button' : 'a');
-         
-         pdfBtn.className = 'btn';
-         pdfBtn.style.marginTop = '20px'; 
-         pdfBtn.style.display = 'block'; 
-         pdfBtn.style.textAlign = 'center';
-         
-         if (state.isGuest) {
-         // --- PROTECTION INVITÉ ---
-         pdfBtn.innerHTML = '<i class="ph-duotone ph-lock-key"></i> Voir la fiche PDF (Compte requis)';
-         pdfBtn.style.background = 'rgba(125,125,125,0.1)';
-         pdfBtn.style.border = '1px dashed var(--text-muted)';
-         pdfBtn.style.color = 'var(--text-muted)';
-         // Pas de href, juste une alerte au clic
-         pdfBtn.onclick = () => showAlert("Créez un compte gratuit pour télécharger les fiches de révision PDF !", "error");
+        });
+        state.progression.mastery[top.name] = m;
+        
+        if(!state.progression.errorLog) state.progression.errorLog = {};
+        state.progression.errorLog[top.name] = { date: Date.now(), count: (state.progression.errorLog[top.name]?.count || 0) + 1 };
+        
+        saveProgression();
+    } else {
+        card.innerHTML = `<h2><i class="ph-duotone ph-check-circle color-success"></i> Bravo ! C'est bien : ${top.name}</h2>`;
+    }
+
+    // Description courte
+    const desc = document.createElement('div');
+    desc.className = 'patho-desc';
+    desc.textContent = top.short;
+    desc.style.marginBottom = '20px';
+    desc.style.textAlign = 'center';
+    card.appendChild(desc);
+
+    // --- LE CŒUR PÉDAGOGIQUE : COMPARATIF ---
+    if (top.signes) {
+        const resultsDiv = document.createElement('div');
+        resultsDiv.className = 'result-list';
+
+        // 1. Ce que l'étudiant a validé (VRAIS POSITIFS)
+        const goodSigns = Object.keys(state.answers).filter(s => 
+            state.answers[s] === true && top.signes[s]
+        );
+
+        // 2. Ce que l'étudiant a raté (FAUX NÉGATIFS - Oublis)
+        const missedSigns = Object.keys(top.signes).filter(s => 
+            top.signes[s] >= 10 && 
+            state.answers[s] !== true
+        );
+
+        // 3. Ce que l'étudiant a inventé (FAUX POSITIFS - Erreurs)
+        const wrongSigns = Object.keys(state.answers).filter(s => 
+            state.answers[s] === true && !top.signes[s]
+        );
+
+        // --- AFFICHAGE ---
+
+        // SECTION VERTE : Ce que tu savais
+        if (goodSigns.length > 0) {
+            resultsDiv.innerHTML += `<div class="result-section-title" style="color:var(--success)"><i class="ph-bold ph-check"></i> Bien vu (${goodSigns.length})</div>`;
+            goodSigns.forEach(s => {
+                resultsDiv.innerHTML += `<div class="result-item"><div class="result-label">${formatSigneName(s)}</div><div class="status-badge badge-correct">+${top.signes[s]} pts</div></div>`;
+            });
+        }
+
+        // SECTION ROUGE : Ce que tu as oublié (C'est là qu'on apprend !)
+        if (missedSigns.length > 0) {
+            resultsDiv.innerHTML += `<div class="result-section-title" style="color:var(--error); margin-top:15px;"><i class="ph-bold ph-warning"></i> Signes manquants / Non demandés</div>`;
+            resultsDiv.innerHTML += `<div class="small" style="text-align:left; margin-bottom:5px; opacity:0.8;">L'IA n'a pas pu confirmer ces signes (ou tu as dit Non) :</div>`;
+            missedSigns.sort((a,b) => top.signes[b] - top.signes[a]).forEach(s => {
+                const userMsg = state.answers[s] === false ? "Tu as dit NON" : "Pas demandé";
+                resultsDiv.innerHTML += `<div class="result-item" style="opacity:0.8"><div class="result-label">${formatSigneName(s)}</div><div class="status-badge badge-missing">${userMsg}</div></div>`;
+            });
+        }
+
+        // SECTION ORANGE : Ce que tu as inventé (Confusion)
+        if (wrongSigns.length > 0) {
+            resultsDiv.innerHTML += `<div class="result-section-title" style="color:orange; margin-top:15px;"><i class="ph-bold ph-prohibit"></i> Erreurs (Signes absents)</div>`;
+            wrongSigns.forEach(s => {
+                resultsDiv.innerHTML += `<div class="result-item"><div class="result-label">${formatSigneName(s)}</div><div class="status-badge badge-neutral">Inexistant</div></div>`;
+            });
+        }
+
+        card.appendChild(resultsDiv);
+    }
+
+    // Bouton PDF
+    let pdfButton = '';
+    if (top.pdf && top.pdf !== '#') {
+         if (state.isGuest && !state.isPremiumCode) {
+             pdfButton = `<button class="btn" style="background:rgba(125,125,125,0.1); border:1px dashed var(--text-muted); color:var(--text-muted); margin-top:10px; font-size:13px;" onclick="showAlert('Compte requis pour le PDF', 'error')"><i class="ph-duotone ph-lock-key"></i> Fiche PDF (Verrouillée)</button>`;
          } else {
-         // --- MEMBRE CONNECTÉ ---
-         pdfBtn.innerHTML = '<i class="ph-duotone ph-file-pdf"></i> Voir la fiche PDF complète';
-         pdfBtn.href = top.pdf; 
-         pdfBtn.target = "_blank";
-         pdfBtn.onclick = trackPdf;
+             pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.pdf}" target="_blank" onclick="trackPdf()"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF de révision</a>`;
          }
          
-         card.appendChild(pdfBtn);
-         }
-             
-             const btnGroup = document.createElement('div'); btnGroup.className='button-group';
-             
-             const btnReplay = document.createElement('button'); btnReplay.className='btn btn-success'; btnReplay.innerHTML = '<i class="ph-duotone ph-arrow-clockwise"></i> Rejouer tout de suite'; 
-             btnReplay.onclick = () => {
-                 const limit = checkGuestLimit();
-         if (!limit.allowed) {
-         showAlert(`Mode invité limité !<br>Prochaine partie dans : <strong>${limit.remaining}</strong>.<br>Créez un compte pour jouer en illimité !`, "error");
-         return;
-         }
-                  state.dailyTarget = null; 
-                  renderDemographics();
-             };
-         
-             const btnHome = document.createElement('button'); btnHome.className='link'; btnHome.innerHTML = '<i class="ph-duotone ph-house"></i> Accueil'; btnHome.onclick = renderHome;
-             btnGroup.appendChild(btnReplay); btnGroup.appendChild(btnHome); card.appendChild(btnGroup); app.appendChild(card);
-         }
+         const pdfContainer = document.createElement('div');
+         pdfContainer.style.textAlign = 'center';
+         pdfContainer.style.width = '100%';
+         pdfContainer.innerHTML = pdfButton;
+         card.appendChild(pdfContainer); 
+    } else {
+         card.innerHTML += `<div class="small" style="margin-top:10px; opacity:0.5; text-align:center;">Pas de fiche PDF disponible</div>`;
+    }
+
+    // Boutons de navigation
+    const btnGroup = document.createElement('div'); btnGroup.className = 'button-group';
+    const btnReplay = document.createElement('button'); btnReplay.className = 'btn btn-success'; btnReplay.innerHTML = '<i class="ph-duotone ph-arrow-clockwise"></i> Rejouer';
+    btnReplay.onclick = () => { 
+        const limit = checkGuestLimit();
+        if (!limit.allowed) {
+            showAlert(`Mode invité limité !`, "error"); return;
+        }
+        state.dailyTarget = null; 
+        renderDemographics(); 
+    };
+    
+    const btnHome = document.createElement('button'); btnHome.className = 'link'; btnHome.innerHTML = '<i class="ph-duotone ph-house"></i> Accueil';
+    btnHome.onclick = renderHome;
+
+    btnGroup.append(btnReplay, btnHome);
+    card.appendChild(btnGroup);
+    app.appendChild(card);
+}
          
          function renderGlossary() {
-             if(state.isGuest) {
-         showAlert("Le glossaire n'est pas disponible en mode invité.", "error");
-         return;
-         }
+    // On bloque l'accès seulement si l'utilisateur est un invité ET n'a pas de code Premium
+    if (state.isGuest && !state.isPremiumCode) {
+        showAlert("Le glossaire est réservé aux membres inscrits ou aux codes partenaires.", "error");
+        return;
+    }
              setDocTitle("Glossaire");
              window.scrollTo(0,0);
              const app = q('#app'); app.innerHTML='';

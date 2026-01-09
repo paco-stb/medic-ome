@@ -11,3 +11,14 @@ Spécialiste Hémato/Endo (Diabète, Anémie, Thyroïde...)
 Spécialiste Psy (Dépression, Schizophrénie...)
 Spécialiste ORL/Ophtalmo (Otite, Angine, Glaucome...)
 Spécialiste Infectio (Paludisme, Grippe, VIH...)
+
+douleur_thoracique : Oriente vers Cardio / Pneumo.
+douleur_abdominale : Oriente vers Digestif / Uro / Gynéco.
+fievre : Oriente vers Infectio / Inflammatoire.
+dyspnee (essoufflement) : Oriente vers Pneumo / Cardio.
+cephalees (maux de tête) : Oriente vers Neuro / ORL.
+troubles_neuro (malaise, déficit...) : Oriente vers la Neurologie.
+anomalie_peau : Oriente vers la Dermatologie.
+douleur_membre_traumatisme : Oriente vers Ortho / Rhumato.
+genes_urinaires : Oriente vers Uro / Néphro.
+trouble_psy : Oriente vers la Psychiatrie.

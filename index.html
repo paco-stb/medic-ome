@@ -774,7 +774,6 @@ const GENERAL_SYMPTOMS = [
          }
          
          let PATHOLOGIES = [];
-         const ACCESS_CODES = [ { code: "SuperCode1", pseudo:"Admin" } ];
          
          let state = {
               currentUser: null, 
@@ -796,6 +795,7 @@ const GENERAL_SYMPTOMS = [
                   dailyHistory: {}
               },
               isGuest: false, 
+              isPremiumCode: false, // AJOUT : Identifie l'accès illimité via code partenaire
               demo: {}, 
               currentSign: null, 
               answers: {}, 
@@ -1421,12 +1421,42 @@ const GENERAL_SYMPTOMS = [
     const inputCode = document.createElement('input'); inputCode.placeholder = 'Code...'; inputCode.className = 'input'; inputCode.style.margin = "0";
     const btnCode = document.createElement('button'); btnCode.className = 'btn'; btnCode.textContent = 'OK'; btnCode.style.width = "auto"; btnCode.style.margin = "0";
     
-    btnCode.onclick = () => {
-        const codeFound = ACCESS_CODES.find(ac => ac.code === inputCode.value);
-        if (codeFound) {
-            state.isGuest = true; state.pseudo = codeFound.pseudo; state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {} };
-            saveProgression(); updateHeader(); renderHome(); showAlert(`Accès Spécial : ${codeFound.pseudo}`, 'success');
-        } else { showAlert('Code invalide', 'error'); }
+    btnCode.onclick = async () => {
+        const codeSaisi = inputCode.value.trim();
+        if (!codeSaisi) return;
+
+        try {
+            // Recherche du code dans ta collection Firebase
+            const codeRef = doc(db, "access_codes", codeSaisi);
+            const codeSnap = await getDoc(codeRef);
+
+            if (codeSnap.exists() && codeSnap.data().active === true) {
+                const data = codeSnap.data();
+                
+                // Activation du mode "Privilégié"
+                state.isGuest = true;
+                state.isPremiumCode = true; // Débloque les PDF et le Glossaire
+                state.pseudo = data.pseudo;
+                
+                // Initialisation d'une progression propre pour la session
+                state.progression = { 
+                    correct: 0, 
+                    incorrect: 0, 
+                    streak: 0, 
+                    mastery: {}, 
+                    dailyHistory: {} 
+                };
+                
+                updateHeader();
+                renderHome();
+                showAlert(`Accès Partenaire : ${data.pseudo}`, 'success');
+            } else {
+                showAlert('Code invalide ou expiré', 'error');
+            }
+        } catch (e) {
+            console.error(e);
+            showAlert("Erreur de connexion à la base de données", "error");
+        }
     };
 
     codeGroup.append(inputCode, btnCode);
@@ -3122,18 +3152,19 @@ function startConfirmationPhase(targetPatho) {
                  
                  // Remplacer la définition de pdfButton par :
          let pdfButton = '';
-         
-         if (top.patho.pdf && top.patho.pdf !== '#') {
-         if (state.isGuest) {
-         // --- PROTECTION INVITÉ : BOUTON VERROUILLÉ ---
-         pdfButton = `<button class="btn" style="background:rgba(125,125,125,0.1); border:1px dashed var(--text-muted); color:var(--text-muted); margin-top:10px; font-size:13px;" onclick="showAlert('Les fiches PDF sont réservées aux membres inscrits.<br>Créez un compte gratuit pour y accéder !', 'error')"><i class="ph-duotone ph-lock-key"></i> Fiche PDF (Verrouillée)</button>`;
-         } else {
-         // --- MEMBRE CONNECTÉ : LIEN ACTIF ---
-         pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.patho.pdf}" target="_blank" onclick="trackPdf()"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF</a>`;
-         }
-         } else {
-         pdfButton = `<span class="small" style="opacity:0.5"><i class="ph-duotone ph-file-x"></i> Pas de fiche PDF</span>`;
-         }
+
+if (top.patho.pdf && top.patho.pdf !== '#') {
+    // MODIFICATION ICI : On vérifie si c'est un invité standard (sans code premium)
+    if (state.isGuest && !state.isPremiumCode) {
+        // --- PROTECTION INVITÉ CLASSIQUE : BOUTON VERROUILLÉ ---
+        pdfButton = `<button class="btn" style="background:rgba(125,125,125,0.1); border:1px dashed var(--text-muted); color:var(--text-muted); margin-top:10px; font-size:13px;" onclick="showAlert('Les fiches PDF sont réservées aux membres inscrits ou partenaires.<br>Créez un compte gratuit pour y accéder !', 'error')"><i class="ph-duotone ph-lock-key"></i> Fiche PDF (Verrouillée)</button>`;
+    } else {
+        // --- MEMBRE CONNECTÉ OU CODE PREMIUM : LIEN ACTIF ---
+        pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.patho.pdf}" target="_blank" onclick="trackPdf()"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF</a>`;
+    }
+} else {
+    pdfButton = `<span class="small" style="opacity:0.5"><i class="ph-duotone ph-file-x"></i> Pas de fiche PDF</span>`;
+}
                  const diagDiv = document.createElement('div'); diagDiv.className='diagnostic-result';
                  diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div>
                  <div style="margin: 15px 0; max-width: 100%;">
@@ -3350,18 +3381,19 @@ state.progression.dailyHistory[todayKey].fail.push({ name: top.patho.name, time:
     // Bouton PDF
     let pdfButton = '';
     if (top.pdf && top.pdf !== '#') {
-         if (state.isGuest) {
+         if (state.isGuest && !state.isPremiumCode) {
              pdfButton = `<button class="btn" style="background:rgba(125,125,125,0.1); border:1px dashed var(--text-muted); color:var(--text-muted); margin-top:10px; font-size:13px;" onclick="showAlert('Compte requis pour le PDF', 'error')"><i class="ph-duotone ph-lock-key"></i> Fiche PDF (Verrouillée)</button>`;
          } else {
              pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.pdf}" target="_blank" onclick="trackPdf()"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF de révision</a>`;
          }
+         
          const pdfContainer = document.createElement('div');
-pdfContainer.style.textAlign = 'center';
-pdfContainer.style.width = '100%';
-pdfContainer.innerHTML = pdfButton;
-card.appendChild(pdfContainer);
+         pdfContainer.style.textAlign = 'center';
+         pdfContainer.style.width = '100%';
+         pdfContainer.innerHTML = pdfButton;
+         card.appendChild(pdfContainer); 
     } else {
-         card.innerHTML += `<div class="small" style="margin-top:10px; opacity:0.5">Pas de fiche PDF disponible</div>`;
+         card.innerHTML += `<div class="small" style="margin-top:10px; opacity:0.5; text-align:center;">Pas de fiche PDF disponible</div>`;
     }
 
     // Boutons de navigation
@@ -3385,10 +3417,11 @@ card.appendChild(pdfContainer);
 }
          
          function renderGlossary() {
-             if(state.isGuest) {
-         showAlert("Le glossaire n'est pas disponible en mode invité.", "error");
-         return;
-         }
+    // On bloque l'accès seulement si l'utilisateur est un invité ET n'a pas de code Premium
+    if (state.isGuest && !state.isPremiumCode) {
+        showAlert("Le glossaire est réservé aux membres inscrits ou aux codes partenaires.", "error");
+        return;
+    }
              setDocTitle("Glossaire");
              window.scrollTo(0,0);
              const app = q('#app'); app.innerHTML='';

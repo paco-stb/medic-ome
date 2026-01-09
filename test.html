@@ -3242,8 +3242,7 @@ function startConfirmationPhase(targetPatho) {
     const pSigns = Object.keys(targetPatho.signes);
     const unaskedSigns = pSigns.filter(s => !state.asked.includes(s));
 
-    // --- 1. La Preuve (Examens ou signes majeurs) ---
-    // On cherche tous les candidats possibles pour la preuve
+    // --- 1. La Preuve Finale (Examens ou signes pathognomoniques) ---
     let potentialProofs = [];
     
     if (targetPatho.paraclinique) {
@@ -3253,7 +3252,6 @@ function startConfirmationPhase(targetPatho) {
         potentialProofs.push(...exams);
     }
     
-    // Si pas d'examen, on cherche les gros signes cliniques (Boost)
     if (potentialProofs.length === 0 && targetPatho.boost) {
         const boosts = unaskedSigns.filter(s => 
             targetPatho.boost.includes(s) && targetPatho.signes[s] >= 30
@@ -3261,54 +3259,53 @@ function startConfirmationPhase(targetPatho) {
         potentialProofs.push(...boosts);
     }
 
-    // NOUVEAU : On mélange les preuves possibles pour ne pas toujours demander la même
     let proofSign = null;
     if (potentialProofs.length > 0) {
         proofSign = potentialProofs.sort(() => 0.5 - Math.random())[0];
     }
 
-    // --- 2. Les Vrais Signes Cliniques (Konami Code) ---
-    // Au lieu de prendre les 2 plus forts strictement, on prend ceux qui ont un poids décent (>15)
-    // et on en pioche 2 au hasard dedans.
-    const decentSigns = unaskedSigns.filter(s => 
-        s !== proofSign && targetPatho.signes[s] >= 15
-    );
+    // --- 2. Les 3 Vrais Signes Cliniques (Les plus révélateurs) ---
+    // On trie par poids décroissant pour prendre les signes les plus importants
+    const realSignsCandidates = unaskedSigns
+        .filter(s => s !== proofSign && targetPatho.signes[s] >= 10)
+        .sort((a, b) => targetPatho.signes[b] - targetPatho.signes[a]); // Tri par poids décroissant
     
-    const realSigns = decentSigns
-        .sort(() => 0.5 - Math.random()) // MÉLANGE ALÉATOIRE
-        .slice(0, 2);
+    const realSigns = realSignsCandidates.slice(0, 3); // On prend les 3 meilleurs
 
-    // --- 3. Le Piège (Diagnostic Différentiel) ---
-    const competitors = state.ranked.slice(1, 4); // On regarde les 3 concurrents (pas juste 2)
+    // --- 3. Les 3 Pièges (Diagnostic Différentiel du Top 2-5) ---
+    const competitors = state.ranked.slice(1, 5); // Top 2, 3, 4, 5
     let trapSigns = [];
 
     competitors.forEach(comp => {
         const compSigns = Object.keys(comp.patho.signes).filter(s =>
             !pSigns.includes(s) && // Pas un signe de la bonne maladie
             !state.asked.includes(s) &&
-            comp.patho.signes[s] >= 20 // Un signe assez fort chez le concurrent
+            comp.patho.signes[s] >= 15 // Signe significatif chez le concurrent
         );
         trapSigns.push(...compSigns);
     });
 
-    // NOUVEAU : On mélange bien les pièges
-    const selectedTrap = trapSigns.length > 0 
-        ? trapSigns.sort(() => 0.5 - Math.random())[0] 
-        : null;
+    // On mélange les pièges et on en prend 3
+    trapSigns.sort(() => 0.5 - Math.random());
+    const selectedTraps = trapSigns.slice(0, 3);
 
-    // --- 4. Construction de la file finale ---
-    let finalSelection = [...realSigns];
-    if (selectedTrap) finalSelection.push(selectedTrap);
+    // --- 4. Construction de la file : 3 Vrais + 3 Faux, mélangés ---
+    let confirmationSigns = [...realSigns, ...selectedTraps];
+    
+    // Mélange aléatoire TOTAL (pas de pattern prévisible)
+    confirmationSigns.sort(() => 0.5 - Math.random());
+    
+    state.confirmationQueue = confirmationSigns;
 
-    // On mélange l'ordre des questions (pour ne pas toujours avoir Vrai, Vrai, Faux)
-    state.confirmationQueue = finalSelection.sort(() => 0.5 - Math.random());
-
-    // On ajoute la PREUVE toujours à la toute fin (Boss final)
+    // --- 5. La PREUVE toujours à la toute fin (Boss Final) ---
     if (proofSign) {
         state.confirmationQueue.push(proofSign);
     }
 
-    console.log("✅ Phase confirm (Aléatoire) :", state.confirmationQueue);
+    console.log("✅ Phase confirmation :", state.confirmationQueue);
+    console.log("   - Vrais signes :", realSigns);
+    console.log("   - Pièges :", selectedTraps);
+    console.log("   - Preuve finale :", proofSign);
 
     askNextQuestion();
 }

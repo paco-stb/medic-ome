@@ -701,6 +701,39 @@ const GENERAL_SYMPTOMS = [
     "Tétanos": "Infectio", "Botulisme": "Infectio", "Rubéole": "Infectio", 
     "Syphilis": "Infectio", "Oreillons": "Infectio", "Muguet Buccal": "Infectio"
 };
+         // MAPPING : Groupe de Maladie -> Symptôme Chef de file (Doit exister dans GENERAL_SYMPTOMS)
+const SYSTEM_LEADERS = {
+    "Cardio": "douleur_thoracique",
+    "Pneumo": "dyspnee", // ou toux, mais dyspnee est plus sensible en urgence
+    "Neuro": "troubles_neuro", // Couvre déficit, malaise...
+    "Digestif": "douleur_abdominale",
+    "Uro/Nephro": "genes_urinaires", // ou douleur_abdominale (flanc)
+    "Gynéco": "douleur_abdominale", // Pelvienne
+    "Dermato": "anomalie_peau",
+    "Rhumato": "douleur_membre_traumatisme",
+    "Endo/Hémato": "fievre", // Souvent systémique (ou fatigue, mais fievre est mieux)
+    "Psy": "trouble_psy",
+    "ORL/Ophtalmo": "cephalees", // ou troubles_visuels
+    "Infectio": "fievre"
+};
+
+// MAPPING : Facteur de Risque (state.demo) -> Bonus pour Groupes de maladies
+const CONTEXT_RULES = [
+    // Risque Vasculaire -> Cardio & Neuro
+    { trigger: ['tabac', 'diabete', 'hta', 'cholesterol', 'surpoids', 'homme_age'], targets: ['Cardio', 'Neuro'], bonus: 15 },
+    // Risque Pulmonaire -> Pneumo
+    { trigger: ['tabac', 'fumeur'], targets: ['Pneumo'], bonus: 15 },
+    // Risque Thrombo-embolique -> Cardio (EP)
+    { trigger: ['chirurgie', 'alitement', 'cancer', 'avion', 'voyage'], targets: ['Cardio'], bonus: 20 },
+    // Terrain Infectieux
+    { trigger: ['fievre', 'voyage', 'immuno', 'hiv'], targets: ['Infectio', 'Pneumo'], bonus: 10 },
+    // Terrain Gynéco
+    { trigger: ['femme', 'grossesse', 'contraception'], targets: ['Gynéco'], bonus: 10 },
+    // Terrain Psy/Jeune
+    { trigger: ['stress', 'jeune', 'etudiant'], targets: ['Psy'], bonus: 10 },
+    // Terrain Trauma/Sport
+    { trigger: ['sport', 'trauma', 'chute'], targets: ['Rhumato'], bonus: 20 }
+];
          
          // --- 3D-STYLE ICONS (USING PHOSPHOR DUOTONE) ---
          const ACHIEVEMENTS = [
@@ -2690,8 +2723,7 @@ function showDayDetails(dateStr, data) {
          
          function rankPathologies() {
     const scores = PATHOLOGIES.map(p => {
-        // --- POINT 2 : VETO STRICT ---
-        // Si l'utilisateur a répondu NON à un signe obligatoire (veto), on élimine la maladie
+        // --- 1. VETO STRICT ---
         if (p.veto && p.veto.some(v => state.answers[v] === false)) {
             return { patho: p, score: -1, prob: 0 };
         }
@@ -2699,20 +2731,40 @@ function showDayDetails(dateStr, data) {
         let matchPoints = 0;
         let maxPossiblePoints = 0;
 
-        // On parcourt tous les signes définis dans le JSON pour cette pathologie
+        // --- 2. CALCUL DES POINTS CLINIQUES ---
         for (const [signe, poids] of Object.entries(p.signes)) {
-            maxPossiblePoints += poids; // On cumule le score maximum théorique
+            maxPossiblePoints += poids;
 
             if (state.answers[signe] === true) {
-                matchPoints += poids; // L'utilisateur a le signe : + points
+                matchPoints += poids;
                 if (p.boost && p.boost.includes(signe)) matchPoints += 50; // Bonus Boost
             } else if (state.answers[signe] === false) {
-                matchPoints -= (poids * 0.5); // L'utilisateur n'a pas le signe : pénalité légère
+                matchPoints -= (poids * 0.5); // Pénalité
             }
         }
 
-        // --- POINT 4 : NORMALISATION ---
-        // On calcule un pourcentage de correspondance (0 à 100)
+        // --- 3. BONUS DE CONTEXTE (TERRAIN) ---
+        // On récupère le groupe de la maladie (ex: Cardio)
+        const pGroup = PATHO_GROUPS[p.name];
+        
+        if (pGroup && state.demo) {
+            // On parcourt nos règles de contexte
+            CONTEXT_RULES.forEach(rule => {
+                // Si le patient a UN des facteurs déclencheurs (ex: tabac)
+                const hasFactor = rule.trigger.some(t => state.demo[t]);
+                // Et que la maladie fait partie des cibles (ex: Cardio)
+                if (hasFactor && rule.targets.includes(pGroup)) {
+                    matchPoints += rule.bonus;
+                    // On augmente un peu le max possible pour lisser le % mais garder l'avantage relatif
+                    maxPossiblePoints += (rule.bonus * 0.5); 
+                }
+            });
+        }
+
+        // --- 4. NORMALISATION ---
+        // Sécurité division par zéro
+        if (maxPossiblePoints === 0) maxPossiblePoints = 1;
+
         let finalProb = (matchPoints / maxPossiblePoints) * 100;
         if (finalProb < 0) finalProb = 0;
         if (finalProb > 100) finalProb = 100;
@@ -2720,87 +2772,80 @@ function showDayDetails(dateStr, data) {
         return { patho: p, score: matchPoints, prob: finalProb.toFixed(1) };
     });
 
-    // On trie pour avoir les plus probables en premier
+    // Tri décroissant
     state.ranked = scores
-        .filter(s => s.score >= 0) // On cache les maladies éliminées par Veto
+        .filter(s => s.score >= -100) // On garde tout sauf les vetos violents
         .sort((a, b) => b.prob - a.prob);
 }
          
          function getNextSmartSign(ranked, remainingSigns) {
     if (!ranked || ranked.length === 0 || remainingSigns.length === 0) return null;
 
-    const topProb = ranked.length > 0 ? parseFloat(ranked[0].prob) : 0;
-    const topPatho = ranked[0].patho; // Nécessaire pour le verrou
+    const topProb = parseFloat(ranked[0].prob);
+    const topPatho = ranked[0].patho;
 
     // ============================================================
-    // 🛡️ VERROU DE SÉCURITÉ (INDISPENSABLE)
+    // 🛡️ VERROU DE SÉCURITÉ : VETO MANQUÉ
     // ============================================================
-    // Si la maladie n°1 a un Chef de File non posé, on le force.
+    // Si la maladie n°1 a un signe "Veto" ou "Chef de file" non posé, on le force.
     const missedGeneral = GENERAL_SYMPTOMS.find(gen => 
-        topPatho.signes[gen] &&       
+        topPatho.signes[gen] &&        
         !state.asked.includes(gen) && 
         remainingSigns.includes(gen)  
     );
+    if (missedGeneral) return missedGeneral; 
 
-    if (missedGeneral) {
-        return missedGeneral; // Priorité absolue !
-    }
     // ============================================================
-
-    // Pour la Phase 1 : On regarde large (Top 10)
-    const topCandidatesBroad = ranked.slice(0, 10).map(r => r.patho); 
-    // Pour les Phases 2 et 3 : On se concentre sur le podium (Top 3)
-    const top3 = ranked.slice(0, 3).map(r => r.patho);
-
-    // === PHASE 1 : EXPLORATION (Mix intelligent) ===
-    // Condition : Soit on est vraiment perdu (<10%), soit on est en début de partie (<25% et <4 questions)
-    if ( (topProb < 10 && state.asked.length < 10) || (topProb < 25 && state.asked.length < 4) ) {
+    // 🧠 PHASE 1 : ORIENTATION SYSTÉMIQUE (Contextuelle)
+    // ============================================================
+    // On l'active au début (moins de 4 questions) SI l'IA n'est pas encore sûre (<40%)
+    if (state.asked.length < 4 && topProb < 40) {
         
-        const availableGenerals = GENERAL_SYMPTOMS.filter(s => 
-            !state.asked.includes(s) && remainingSigns.includes(s)
-        );
+        // 1. On analyse les 5 premières maladies probables
+        // Grâce au bonus de terrain, si le patient fume, le Cardio/Pneumo est déjà en haut.
+        const top5Groups = ranked.slice(0, 5).map(r => PATHO_GROUPS[r.patho.name]);
+        
+        // 2. On compte quel système est majoritaire
+        const counts = {};
+        let maxGroup = null;
+        let maxCount = 0;
+        
+        for (const group of top5Groups) {
+            if(!group) continue;
+            counts[group] = (counts[group] || 0) + 1;
+            if (counts[group] > maxCount) {
+                maxCount = counts[group];
+                maxGroup = group;
+            }
+        }
 
-        if (availableGenerals.length > 0) {
-            const bestGen = getBestGeneralSign(availableGenerals, topCandidatesBroad);
-            if (bestGen) return bestGen;
+        // 3. Si un groupe domine (ex: 3 maladies sur 5 sont Cardio)
+        // ET qu'on n'a pas encore posé la question chef de file
+        if (maxGroup && SYSTEM_LEADERS[maxGroup]) {
+            const signLeader = SYSTEM_LEADERS[maxGroup];
+            
+            if (remainingSigns.includes(signLeader) && !state.asked.includes(signLeader)) {
+                 console.log(`🔎 Orientation Phase 1 : Système ${maxGroup} détecté -> Question : ${signLeader}`);
+                 return signLeader;
+            }
         }
     }
 
-    // === PHASE 2 : PRÉCISION (25% à 70%) ===
-    // J'ai ajusté le seuil bas à 25% pour coller à la sortie de la Phase 1
-    if (topProb >= 25 && topProb < 70) {
-        let pool = remainingSigns.filter(s => {
-            const isParaclinique = PATHOLOGIES.some(p => 
-                p.paraclinique && p.paraclinique.includes(s)
-            );
-            return !isParaclinique; 
-        });
-
-        if (pool.length === 0) pool = remainingSigns;
-
-        return selectBestSplitSign(pool, top3);
-    }
-
-    // === PHASE 3 : CONFIRMATION (> 70%) ===
+    // ============================================================
+    // ⚖️ PHASE 2 : DICHOTOMIE (Split 80/20) - inchangé
+    // ============================================================
+    // On prend le Top 3 pour calculer le meilleur split
+    const top3 = ranked.slice(0, 3).map(r => r.patho);
+    
+    // Si on est en phase de confirmation (>70%), on cherche d'abord les Boosts
     if (topProb >= 70) {
-        // Priorité Paraclinique
-        const paracliniqueSigns = remainingSigns.filter(s => 
-            topPatho.paraclinique && topPatho.paraclinique.includes(s) && topPatho.signes[s] >= 30
-        );
-        if (paracliniqueSigns.length > 0) {
-            const boostSign = paracliniqueSigns.find(s => topPatho.boost && topPatho.boost.includes(s));
-            return boostSign || paracliniqueSigns[0];
-        }
-        // Priorité Boost Clinique
         const boostSigns = Object.keys(topPatho.signes).filter(s =>
             topPatho.boost && topPatho.boost.includes(s) && !state.asked.includes(s) && remainingSigns.includes(s)
         );
         if (boostSigns.length > 0) return boostSigns[0];
-
-        return selectBestSplitSign(remainingSigns, top3);
     }
 
-    // Fallback
+    // Sinon algorithme de split standard
     return selectBestSplitSign(remainingSigns, top3);
 }
 

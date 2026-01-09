@@ -3131,57 +3131,73 @@ function startConfirmationPhase(targetPatho) {
     const pSigns = Object.keys(targetPatho.signes);
     const unaskedSigns = pSigns.filter(s => !state.asked.includes(s));
 
-    // 🔬 ÉTAPE 1 : Trouver LA question paraclinique décisive
-    let proofSign = null;
+    // --- 1. La Preuve (Examens ou signes majeurs) ---
+    // On cherche tous les candidats possibles pour la preuve
+    let potentialProofs = [];
+    
     if (targetPatho.paraclinique) {
-        proofSign = unaskedSigns.find(s => 
-            targetPatho.paraclinique.includes(s) &&
-            targetPatho.signes[s] >= 40 // Signe à haut poids
+        const exams = unaskedSigns.filter(s => 
+            targetPatho.paraclinique.includes(s) && targetPatho.signes[s] >= 40
         );
+        potentialProofs.push(...exams);
     }
-
-    // Si pas de preuve, on prend le signe BOOST le plus important
-    if (!proofSign && targetPatho.boost) {
-        proofSign = unaskedSigns.find(s => 
+    
+    // Si pas d'examen, on cherche les gros signes cliniques (Boost)
+    if (potentialProofs.length === 0 && targetPatho.boost) {
+        const boosts = unaskedSigns.filter(s => 
             targetPatho.boost.includes(s) && targetPatho.signes[s] >= 30
         );
+        potentialProofs.push(...boosts);
     }
 
-    // 🩺 ÉTAPE 2 : Prendre 1-2 VRAIS signes cliniques manquants
-    const realSigns = unaskedSigns
-        .filter(s => s !== proofSign)
-        .sort((a, b) => targetPatho.signes[b] - targetPatho.signes[a])
-        .slice(0, 2); // Maximum 2 signes
+    // NOUVEAU : On mélange les preuves possibles pour ne pas toujours demander la même
+    let proofSign = null;
+    if (potentialProofs.length > 0) {
+        proofSign = potentialProofs.sort(() => 0.5 - Math.random())[0];
+    }
 
-    // 🎭 ÉTAPE 3 : Prendre 1 PIÈGE depuis le TOP 2-3 des diagnostics différentiels
-    const competitors = state.ranked.slice(1, 3); // Rang 2 et 3
+    // --- 2. Les Vrais Signes Cliniques (Konami Code) ---
+    // Au lieu de prendre les 2 plus forts strictement, on prend ceux qui ont un poids décent (>15)
+    // et on en pioche 2 au hasard dedans.
+    const decentSigns = unaskedSigns.filter(s => 
+        s !== proofSign && targetPatho.signes[s] >= 15
+    );
+    
+    const realSigns = decentSigns
+        .sort(() => 0.5 - Math.random()) // MÉLANGE ALÉATOIRE
+        .slice(0, 2);
+
+    // --- 3. Le Piège (Diagnostic Différentiel) ---
+    const competitors = state.ranked.slice(1, 4); // On regarde les 3 concurrents (pas juste 2)
     let trapSigns = [];
 
     competitors.forEach(comp => {
         const compSigns = Object.keys(comp.patho.signes).filter(s =>
-            !pSigns.includes(s) && // Pas un signe de la maladie correcte
+            !pSigns.includes(s) && // Pas un signe de la bonne maladie
             !state.asked.includes(s) &&
-            comp.patho.signes[s] >= 15 // Signe significatif
+            comp.patho.signes[s] >= 20 // Un signe assez fort chez le concurrent
         );
         trapSigns.push(...compSigns);
     });
 
-    // On prend UN SEUL piège pertinent
-    trapSigns = trapSigns.slice(0, 1);
+    // NOUVEAU : On mélange bien les pièges
+    const selectedTrap = trapSigns.length > 0 
+        ? trapSigns.sort(() => 0.5 - Math.random())[0] 
+        : null;
 
-    // 📋 ÉTAPE 4 : Construction de la queue (MAX 3 QUESTIONS)
-    state.confirmationQueue = [...realSigns, ...trapSigns]
-        .sort(() => 0.5 - Math.random()) // Mélange léger
-        .slice(0, 2); // Maximum 2 questions avant la preuve
+    // --- 4. Construction de la file finale ---
+    let finalSelection = [...realSigns];
+    if (selectedTrap) finalSelection.push(selectedTrap);
 
-    // On ajoute la PREUVE en dernier
+    // On mélange l'ordre des questions (pour ne pas toujours avoir Vrai, Vrai, Faux)
+    state.confirmationQueue = finalSelection.sort(() => 0.5 - Math.random());
+
+    // On ajoute la PREUVE toujours à la toute fin (Boss final)
     if (proofSign) {
         state.confirmationQueue.push(proofSign);
     }
 
-    console.log("✅ Phase de confirmation :", state.confirmationQueue.map(s => 
-        `${formatSigneName(s)} (${targetPatho.name})`
-    ));
+    console.log("✅ Phase confirm (Aléatoire) :", state.confirmationQueue);
 
     askNextQuestion();
 }

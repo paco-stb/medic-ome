@@ -1729,38 +1729,8 @@ function startGuestMode() {
          }
          
          function renderAbandonMenu() {
-             setDocTitle("Abandon ?");
-             window.scrollTo(0,0);
-             const app = q('#app'); app.innerHTML = '';
-             const card = document.createElement('div'); card.className='card center';
-             card.innerHTML = `<h2>Abandonner ?</h2><p class="small">Vous arrêtez le cas clinique en cours.</p>`;
-             
-             const btnHome = document.createElement('button'); btnHome.className='btn'; btnHome.innerHTML='<i class="ph-duotone ph-house"></i> Juste arrêter (Retour Accueil)';
-             btnHome.onclick = renderHome;
-         
-             const divSearch = document.createElement('div');
-             divSearch.style.marginTop = '20px'; divSearch.style.width = '100%';
-             divSearch.innerHTML = `<p style="margin-bottom:10px; color:var(--accent);">Je pensais à une pathologie précise (C'était une erreur de l'IA) :</p>`;
-             const select = document.createElement('select'); select.className = 'input';
-             select.innerHTML = '<option value="">-- Choisir la pathologie --</option>';
-             [...PATHOLOGIES].sort((a,b)=>a.name.localeCompare(b.name)).forEach(p => {
-                 select.innerHTML += `<option value="${p.name}">${p.name}</option>`;
-             });
-             select.onchange = () => {
-                 if(!select.value) return;
-                 const patho = PATHOLOGIES.find(p=>p.name === select.value);
-                 state.progression.incorrect++;
-                 saveProgression();
-                 showDiagnosticDetails({patho: patho}, true); 
-             };
-             divSearch.appendChild(select);
-         
-             const btnBack = document.createElement('button'); btnBack.className='link'; btnBack.textContent='Annuler, reprendre';
-             btnBack.onclick = renderCurrentQuestion;
-         
-             card.append(btnHome, divSearch, btnBack);
-             app.appendChild(card);
-         }
+    showManualPathologySelection("abandon");
+}
 
           function renderCalendar(targetMonth = new Date()) {
     setDocTitle("Calendrier Intelligent");
@@ -3180,6 +3150,100 @@ function selectBestSplitSign(pool, topCandidates) {
              card.appendChild(btn);
              app.appendChild(card);
          }
+
+// === NOUVELLE FONCTION : Sélection manuelle de pathologie ===
+function showManualPathologySelection(reason) {
+    setDocTitle("Quelle pathologie ?");
+    window.scrollTo(0,0);
+    const app = q('#app'); 
+    app.innerHTML = '';
+    
+    const card = document.createElement('div'); 
+    card.className='card center';
+    
+    if(reason === "incorrect_diagnosis") {
+        card.innerHTML = `
+            <h2 style="color:var(--error)">
+                <i class="ph-duotone ph-magnifying-glass"></i> 
+                L'IA s'est trompée ?
+            </h2>
+            <p class="small" style="margin-bottom:20px">
+                Sélectionnez la pathologie à laquelle vous pensiez vraiment.
+            </p>
+        `;
+    } else {
+        card.innerHTML = `
+            <h2><i class="ph-duotone ph-book-open"></i> Abandon du cas</h2>
+            <p class="small" style="margin-bottom:20px">
+                Vous arrêtez le cas clinique en cours.
+            </p>
+        `;
+    }
+    
+    const btnHome = document.createElement('button'); 
+    btnHome.className='btn'; 
+    btnHome.innerHTML='<i class="ph-duotone ph-house"></i> Retour Accueil';
+    btnHome.onclick = renderHome;
+    card.appendChild(btnHome);
+    
+    const divSearch = document.createElement('div');
+    divSearch.style.marginTop = '30px'; 
+    divSearch.style.width = '100%';
+    divSearch.style.borderTop = '1px solid var(--glass-border)';
+    divSearch.style.paddingTop = '20px';
+    
+    divSearch.innerHTML = `
+        <p style="margin-bottom:10px; color:var(--accent); font-weight:600;">
+            <i class="ph-duotone ph-lightbulb"></i> 
+            Je pensais à une pathologie précise :
+        </p>
+    `;
+    
+    const select = document.createElement('select'); 
+    select.className = 'input';
+    select.innerHTML = '<option value="">-- Choisir la pathologie --</option>';
+    
+    [...PATHOLOGIES].sort((a,b) => a.name.localeCompare(b.name)).forEach(p => {
+        select.innerHTML += `<option value="${p.name}">${p.name}</option>`;
+    });
+    
+    select.onchange = () => {
+        if(!select.value) return;
+        const patho = PATHOLOGIES.find(p => p.name === select.value);
+        
+        state.progression.incorrect++;
+        
+        const todayKey = new Date().toISOString().split('T')[0];
+        if(!state.progression.dailyHistory) state.progression.dailyHistory = {};
+        if(!state.progression.dailyHistory[todayKey]) {
+            state.progression.dailyHistory[todayKey] = { success: [], fail: [] };
+        }
+        state.progression.dailyHistory[todayKey].fail.push({ 
+            name: patho.name, 
+            time: Date.now() 
+        });
+        
+        if(!state.progression.mastery) state.progression.mastery = {};
+        let m = state.progression.mastery[patho.name];
+        if(!m) m = { success: 0, failures: 0, missedSigns: {} };
+        if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
+        m.failures++;
+        state.progression.mastery[patho.name] = m;
+        
+        if(!state.progression.errorLog) state.progression.errorLog = {};
+        state.progression.errorLog[patho.name] = { 
+            date: Date.now(), 
+            count: (state.progression.errorLog[patho.name]?.count || 0) + 1 
+        };
+        
+        saveProgression();
+        showDiagnosticDetails({patho: patho}, true); 
+    };
+    
+    divSearch.appendChild(select);
+    card.appendChild(divSearch);
+    app.appendChild(card);
+}
          
          function renderCurrentQuestion() {
     setDocTitle(`Question ${state.asked.length}`);
@@ -3697,38 +3761,9 @@ state.progression.dailyHistory[todayKey].success.push({ name: top.patho.name, ti
                  
                  const btnFalse = document.createElement('button'); btnFalse.className='btn btn-error'; btnFalse.innerHTML='<i class="ph-bold ph-x"></i> Incorrect';
                  btnFalse.onclick = async () => { 
-                     // --- CORRECTION ICI ---
-                     if(state.isGuest) {
-                         localStorage.setItem('medicome_guest_last_play', Date.now().toString());
-                     }
-                     // ----------------------
-         
                      playSound('error');
-                     state.progression.incorrect++; state.progression.streak = 0;
-                     // --- AJOUT CALENDRIER (Défaite) ---
-const todayKey = new Date().toISOString().split('T')[0];
-if(!state.progression.dailyHistory) state.progression.dailyHistory = {};
-if(!state.progression.dailyHistory[todayKey]) state.progression.dailyHistory[todayKey] = { success: [], fail: [] };
-
-state.progression.dailyHistory[todayKey].fail.push({ name: top.patho.name, time: Date.now() });
-// ----------------------------------
-                     
-                     if(!state.progression.mastery) state.progression.mastery = {};
-                     const pName = top.patho.name;
-                     let m = state.progression.mastery[pName];
-                     if(!m) m = { success: 0, failures: 0, missedSigns: {} };
-                     if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
-                     m.failures++;
-                     state.progression.mastery[pName] = m;
-         
-                     if(!state.progression.errorLog) state.progression.errorLog = {};
-                     state.progression.errorLog[pName] = { date: Date.now(), count: (state.progression.errorLog[pName]?.count || 0) + 1 };
-         
-                     updateHeader(); await saveProgression(); 
-                     showAlert('<i class="ph-duotone ph-x-circle"></i> Aïe... Continuons','error'); 
-                     state.confirmationMode = false; state.diagnosticShown=false; 
-                     setTimeout(()=>askNextQuestion(), 800);
-                 };
+    showManualPathologySelection("incorrect_diagnosis");
+};
                  
                  btnGroup.appendChild(btnTrue); btnGroup.appendChild(btnFalse); card.appendChild(btnGroup); app.appendChild(card);
              }, 1500);
@@ -3744,23 +3779,38 @@ state.progression.dailyHistory[todayKey].fail.push({ name: top.patho.name, time:
     const card = document.createElement('div');
     card.className = 'card';
 
-    // En-tête (Gagné ou Perdu)
     if (wasManualError) {
-        card.innerHTML = `<h2 style="color:var(--error)"><i class="ph-duotone ph-smiley-sad"></i> C'était : ${top.name}</h2>`;
-        // Sauvegarde des stats (Echec)
+        card.innerHTML = `
+            <h2 style="color:var(--error)">
+                <i class="ph-duotone ph-x-circle"></i> 
+                C'était : ${top.name}
+            </h2>
+            <div class="alert alert-error" style="margin-top:15px;">
+                <i class="ph-bold ph-warning"></i> 
+                Analysons tes erreurs pour que tu progresses !
+            </div>
+        `;
+        
         if(!state.progression.mastery) state.progression.mastery = {};
         let m = state.progression.mastery[top.name];
         if(!m) m = { success: 0, failures: 0, missedSigns: {} };
         if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
         m.failures++;
         
-        // Logique des signes manqués pour les stats
         Object.keys(top.signes).forEach(s => {
              if(state.answers[s] === false || state.answers[s] === null) { 
                  if(!m.missedSigns[s]) m.missedSigns[s] = 0;
                  m.missedSigns[s]++;
              }
         });
+        
+        Object.keys(state.answers).forEach(s => {
+             if (state.answers[s] === true && !top.signes[s]) {
+                 if(!m.missedSigns[s]) m.missedSigns[s] = 0;
+                 m.missedSigns[s]++;
+             }
+        });
+
         state.progression.mastery[top.name] = m;
         
         if(!state.progression.errorLog) state.progression.errorLog = {};
@@ -3768,10 +3818,14 @@ state.progression.dailyHistory[todayKey].fail.push({ name: top.patho.name, time:
         
         saveProgression();
     } else {
-        card.innerHTML = `<h2><i class="ph-duotone ph-check-circle color-success"></i> Bravo ! C'est bien : ${top.name}</h2>`;
+        card.innerHTML = `
+            <h2>
+                <i class="ph-duotone ph-check-circle color-success"></i> 
+                Bravo ! C'est bien : ${top.name}
+            </h2>
+        `;
     }
 
-    // Description courte
     const desc = document.createElement('div');
     desc.className = 'patho-desc';
     desc.textContent = top.short;
@@ -3779,89 +3833,167 @@ state.progression.dailyHistory[todayKey].fail.push({ name: top.patho.name, time:
     desc.style.textAlign = 'center';
     card.appendChild(desc);
 
-    // --- LE CŒUR PÉDAGOGIQUE : COMPARATIF ---
     if (top.signes) {
         const resultsDiv = document.createElement('div');
         resultsDiv.className = 'result-list';
 
-        // 1. Ce que l'étudiant a validé (VRAIS POSITIFS)
         const goodSigns = Object.keys(state.answers).filter(s => 
             state.answers[s] === true && top.signes[s]
         );
 
-        // 2. Ce que l'étudiant a raté (FAUX NÉGATIFS - Oublis)
         const missedSigns = Object.keys(top.signes).filter(s => 
             top.signes[s] >= 10 && 
             state.answers[s] !== true
         );
 
-        // 3. Ce que l'étudiant a inventé (FAUX POSITIFS - Erreurs)
         const wrongSigns = Object.keys(state.answers).filter(s => 
             state.answers[s] === true && !top.signes[s]
         );
 
-        // --- AFFICHAGE ---
-
-        // SECTION VERTE : Ce que tu savais
+        // SECTION VERTE : Bien vu !
         if (goodSigns.length > 0) {
-            resultsDiv.innerHTML += `<div class="result-section-title" style="color:var(--success)"><i class="ph-bold ph-check"></i> Bien vu (${goodSigns.length})</div>`;
+            resultsDiv.innerHTML += `
+                <div class="result-section-title" style="color:var(--success)">
+                    <i class="ph-bold ph-check"></i> 
+                    ✅ Bien vu (${goodSigns.length})
+                </div>
+            `;
             goodSigns.forEach(s => {
-                resultsDiv.innerHTML += `<div class="result-item"><div class="result-label">${formatSigneName(s)}</div><div class="status-badge badge-correct">+${top.signes[s]} pts</div></div>`;
+                resultsDiv.innerHTML += `
+                    <div class="result-item">
+                        <div class="result-label">${formatSigneName(s)}</div>
+                        <div class="status-badge badge-correct">+${top.signes[s]} pts</div>
+                    </div>
+                `;
             });
         }
 
-        // SECTION ROUGE : Ce que tu as oublié (C'est là qu'on apprend !)
-        if (missedSigns.length > 0) {
-            resultsDiv.innerHTML += `<div class="result-section-title" style="color:var(--error); margin-top:15px;"><i class="ph-bold ph-warning"></i> Signes manquants / Non demandés</div>`;
-            resultsDiv.innerHTML += `<div class="small" style="text-align:left; margin-bottom:5px; opacity:0.8;">L'IA n'a pas pu confirmer ces signes (ou tu as dit Non) :</div>`;
-            missedSigns.sort((a,b) => top.signes[b] - top.signes[a]).forEach(s => {
-                const userMsg = state.answers[s] === false ? "Tu as dit NON" : "Pas demandé";
-                resultsDiv.innerHTML += `<div class="result-item" style="opacity:0.8"><div class="result-label">${formatSigneName(s)}</div><div class="status-badge badge-missing">${userMsg}</div></div>`;
+        // SÉPARER les VRAIES erreurs des signes "pas demandés"
+        const realMistakes = missedSigns.filter(s => 
+            state.answers[s] === false || state.answers[s] === null
+        );
+
+        const notAsked = missedSigns.filter(s => 
+            state.answers[s] === undefined
+        );
+
+        // SECTION ROUGE : Tes VRAIES erreurs
+        if (realMistakes.length > 0) {
+            resultsDiv.innerHTML += `
+                <div class="result-section-title" style="color:var(--error); margin-top:15px;">
+                    <i class="ph-bold ph-x-circle"></i> 
+                    ❌ Signes que tu as RATÉS (${realMistakes.length})
+                </div>
+                <div class="small" style="text-align:left; margin-bottom:5px; opacity:0.8; padding:0 15px;">
+                    Ces signes existaient, mais tu as répondu <strong>NON</strong> ou <strong>JE NE SAIS PAS</strong> :
+                </div>
+            `;
+            
+            realMistakes.sort((a,b) => top.signes[b] - top.signes[a]).forEach(s => {
+                const userMsg = state.answers[s] === false ? "❌ Tu as dit NON" : "❓ Tu as dit JE NE SAIS PAS";
+                
+                resultsDiv.innerHTML += `
+                    <div class="result-item" style="background:rgba(255,77,77,0.05);">
+                        <div class="result-label">
+                            ${formatSigneName(s)}
+                            <span style="font-size:0.85em; opacity:0.6; margin-left:8px;">
+                                (Poids : ${top.signes[s]})
+                            </span>
+                        </div>
+                        <div class="status-badge badge-missing">${userMsg}</div>
+                    </div>
+                `;
             });
         }
 
-        // SECTION ORANGE : Ce que tu as inventé (Confusion)
+        // SECTION BLEUE : Signes non explorés (pas ta faute)
+        if (notAsked.length > 0) {
+            resultsDiv.innerHTML += `
+                <div class="result-section-title" style="color:#6c9bd1; margin-top:15px;">
+                    <i class="ph-bold ph-info"></i> 
+                    ℹ️ Signes non explorés (${notAsked.length})
+                </div>
+                <div class="small" style="text-align:left; margin-bottom:5px; opacity:0.8; padding:0 15px;">
+                    L'IA n'a pas eu le temps de poser ces questions :
+                </div>
+            `;
+            
+            notAsked.sort((a,b) => top.signes[b] - top.signes[a]).forEach(s => {
+                resultsDiv.innerHTML += `
+                    <div class="result-item" style="opacity:0.7;">
+                        <div class="result-label">
+                            ${formatSigneName(s)}
+                            <span style="font-size:0.85em; opacity:0.6; margin-left:8px;">
+                                (Poids : ${top.signes[s]})
+                            </span>
+                        </div>
+                        <div class="status-badge badge-neutral">⏭️ Pas demandé</div>
+                    </div>
+                `;
+            });
+        }
+
+        // SECTION ORANGE : Inventions / Confusions
         if (wrongSigns.length > 0) {
-            resultsDiv.innerHTML += `<div class="result-section-title" style="color:orange; margin-top:15px;"><i class="ph-bold ph-prohibit"></i> Erreurs (Signes absents)</div>`;
+            resultsDiv.innerHTML += `
+                <div class="result-section-title" style="color:orange; margin-top:15px;">
+                    <i class="ph-bold ph-prohibit"></i> 
+                    🚫 Signes cochés À TORT (${wrongSigns.length})
+                </div>
+                <div class="small" style="text-align:left; margin-bottom:5px; opacity:0.8; padding:0 15px;">
+                    Ces signes n'existent PAS dans "${top.name}" :
+                </div>
+            `;
+            
             wrongSigns.forEach(s => {
-                resultsDiv.innerHTML += `<div class="result-item"><div class="result-label">${formatSigneName(s)}</div><div class="status-badge badge-neutral">Inexistant</div></div>`;
+                resultsDiv.innerHTML += `
+                    <div class="result-item">
+                        <div class="result-label">${formatSigneName(s)}</div>
+                        <div class="status-badge badge-neutral">❌ Inexistant</div>
+                    </div>
+                `;
             });
         }
 
         card.appendChild(resultsDiv);
     }
 
-    // Bouton PDF
     let pdfButton = '';
     if (top.pdf && top.pdf !== '#') {
-         if (state.isGuest && !state.isPremiumCode) {
-             pdfButton = `<button class="btn" style="background:rgba(125,125,125,0.1); border:1px dashed var(--text-muted); color:var(--text-muted); margin-top:10px; font-size:13px;" onclick="showAlert('Compte requis pour le PDF', 'error')"><i class="ph-duotone ph-lock-key"></i> Fiche PDF (Verrouillée)</button>`;
-         } else {
-             pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.pdf}" target="_blank" onclick="trackPdf()"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF de révision</a>`;
-         }
-         
-         const pdfContainer = document.createElement('div');
-         pdfContainer.style.textAlign = 'center';
-         pdfContainer.style.width = '100%';
-         pdfContainer.innerHTML = pdfButton;
-         card.appendChild(pdfContainer); 
+        if (state.isGuest && !state.isPremiumCode) {
+            pdfButton = `<button class="btn" style="background:rgba(125,125,125,0.1); border:1px dashed var(--text-muted); color:var(--text-muted); margin-top:10px; font-size:13px;" onclick="showAlert('Compte requis pour le PDF', 'error')"><i class="ph-duotone ph-lock-key"></i> Fiche PDF (Verrouillée)</button>`;
+        } else {
+            pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.pdf}" target="_blank" onclick="trackPdf()"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF de révision</a>`;
+        }
+        
+        const pdfContainer = document.createElement('div');
+        pdfContainer.style.textAlign = 'center';
+        pdfContainer.style.width = '100%';
+        pdfContainer.innerHTML = pdfButton;
+        card.appendChild(pdfContainer); 
     } else {
-         card.innerHTML += `<div class="small" style="margin-top:10px; opacity:0.5; text-align:center;">Pas de fiche PDF disponible</div>`;
+        card.innerHTML += `<div class="small" style="margin-top:10px; opacity:0.5; text-align:center;">Pas de fiche PDF disponible</div>`;
     }
 
-    // Boutons de navigation
-    const btnGroup = document.createElement('div'); btnGroup.className = 'button-group';
-    const btnReplay = document.createElement('button'); btnReplay.className = 'btn btn-success'; btnReplay.innerHTML = '<i class="ph-duotone ph-arrow-clockwise"></i> Rejouer';
+    const btnGroup = document.createElement('div'); 
+    btnGroup.className = 'button-group';
+    
+    const btnReplay = document.createElement('button'); 
+    btnReplay.className = 'btn btn-success'; 
+    btnReplay.innerHTML = '<i class="ph-duotone ph-arrow-clockwise"></i> Rejouer';
     btnReplay.onclick = () => { 
         const limit = checkGuestLimit();
         if (!limit.allowed) {
-            showAlert(`Mode invité limité !`, "error"); return;
+            showAlert(`Mode invité limité !`, "error"); 
+            return;
         }
         state.dailyTarget = null; 
         renderDemographics(); 
     };
     
-    const btnHome = document.createElement('button'); btnHome.className = 'link'; btnHome.innerHTML = '<i class="ph-duotone ph-house"></i> Accueil';
+    const btnHome = document.createElement('button'); 
+    btnHome.className = 'link'; 
+    btnHome.innerHTML = '<i class="ph-duotone ph-house"></i> Accueil';
     btnHome.onclick = renderHome;
 
     btnGroup.append(btnReplay, btnHome);

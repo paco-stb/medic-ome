@@ -3453,15 +3453,31 @@ function askNextSmartLeader() {
             state.asked.push(state.currentSign);
             renderCurrentQuestion();
             return;
-        } else {
-            // Plus de chefs de file compatibles → Passer aux questions précises
-            // On reprend la logique normale
-            askNextQuestion();
         }
-    } else {
-        // Cas par défaut : reprendre la logique normale
-        askNextQuestion();
     }
+    
+    // CAS 3 : Plus de chefs de file à poser → Passer aux questions détaillées
+    // ON NE RAPPELLE PAS askNextQuestion() pour éviter la boucle infinie
+    rankPathologies(); 
+    if(canShowDiagnostic()) return; 
+    
+    prepareSigns();
+    const remaining = state.allSigns.filter(s => !state.asked.includes(s));
+    const signe = getNextSmartSign(state.ranked, remaining);
+
+    if (!signe) {
+        const topProb = state.ranked.length > 0 ? parseFloat(state.ranked[0].prob) : 0;
+        if (topProb < 5) {
+            renderPlaisantinEnd("healthy");
+        } else {
+            showDiagnostic();
+        }
+        return;
+    }
+
+    state.currentSign = signe; 
+    state.asked.push(signe); 
+    renderCurrentQuestion();
 }
          
          function askNextQuestion() {

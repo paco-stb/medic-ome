@@ -3322,6 +3322,163 @@ function startConfirmationPhase(targetPatho) {
     askNextQuestion();
 }
 
+         // ========================================
+// NOUVELLES FONCTIONS POUR CHEFS DE FILE
+// ========================================
+
+// Choisir le premier chef de file selon le terrain du patient
+function getBestLeaderFromTerrain() {
+    // Terrain Cardio (Tabac, Diabète, HTA...)
+    if (state.demo.tabac || state.demo.diabete || state.demo.hta || state.demo.homme_age || state.demo.metabolique) {
+        return "douleur_thoracique";
+    }
+    // Terrain Infectieux (Fièvre, Voyage...)
+    if (state.demo.fievre || state.demo.voyage || state.demo.hiver || state.demo.epidemie) {
+        return "fievre";
+    }
+    // Terrain Gynéco (Femme + Grossesse)
+    if (state.demo.femme && (state.demo.grossesse || state.demo.sterilet)) {
+        return "douleur_abdominale";
+    }
+    // Terrain Digestif
+    if (state.demo.alcool || state.demo.medicaments) {
+        return "douleur_abdominale";
+    }
+    // Terrain Pulmonaire
+    if (state.demo.tabac || state.demo.fumeur) {
+        return "dyspnee";
+    }
+    // Terrain Urinaire
+    if (state.demo.femme) {
+        return "genes_urinaires";
+    }
+    // Terrain Neuro
+    if (state.demo.senior || state.demo.trauma) {
+        return "troubles_neuro";
+    }
+    
+    // Par défaut : le plus fréquent
+    return "douleur_thoracique";
+}
+
+// Trouver le prochain chef de file non posé
+function getNextUnaskedLeader() {
+    return GENERAL_SYMPTOMS.find(s => !state.asked.includes(s));
+}
+
+// Trouver les chefs de file qui peuvent coexister avec ceux déjà validés
+function getCompatibleLeaders(validatedLeaders) {
+    const compatible = new Set();
+    
+    // Pour chaque pathologie dans la base de données
+    PATHOLOGIES.forEach(patho => {
+        // Est-ce que cette pathologie contient TOUS les chefs de file validés ?
+        const hasAll = validatedLeaders.every(leader => patho.signes[leader]);
+        
+        if (hasAll) {
+            // Si oui, ajouter ses autres chefs de file à la liste des compatibles
+            GENERAL_SYMPTOMS.forEach(gen => {
+                if (patho.signes[gen] && !validatedLeaders.includes(gen)) {
+                    compatible.add(gen);
+                }
+            });
+        }
+    });
+    
+    return Array.from(compatible);
+}
+
+// Trouver une question aléatoire qui n'est PAS un chef de file
+function getRandomNonLeaderSign() {
+    const nonLeaders = state.allSigns.filter(s => 
+        !GENERAL_SYMPTOMS.includes(s) && !state.asked.includes(s)
+    );
+    
+    if (nonLeaders.length === 0) return null;
+    return nonLeaders[Math.floor(Math.random() * nonLeaders.length)];
+}
+
+// Logique principale pour poser les chefs de file intelligemment
+function askNextSmartLeader() {
+    // Récupérer les chefs de file déjà posés
+    const askedLeaders = state.asked.filter(s => GENERAL_SYMPTOMS.includes(s));
+    
+    // Récupérer ceux qui ont été validés (réponse OUI)
+    const validatedLeaders = askedLeaders.filter(s => state.answers[s] === true);
+    
+    // CAS 1 : Aucun chef de file validé ET on en a posé moins de 11
+    if (validatedLeaders.length === 0 && askedLeaders.length < 11) {
+        
+        if (askedLeaders.length === 0) {
+            // Toute première question → Basée sur le terrain
+            const firstLeader = getBestLeaderFromTerrain();
+            state.currentSign = firstLeader;
+            state.asked.push(firstLeader);
+            renderCurrentQuestion();
+            return;
+        } else {
+            // On a déjà posé des chefs de file mais tous NON → poser le suivant
+            const nextLeader = getNextUnaskedLeader();
+            if (nextLeader) {
+                state.currentSign = nextLeader;
+                state.asked.push(nextLeader);
+                renderCurrentQuestion();
+                return;
+            } else {
+                // Tous les 11 chefs de file ont été posés et tous NON
+                // → Dernière question aléatoire avant "Touriste"
+                const randomSign = getRandomNonLeaderSign();
+                if (randomSign) {
+                    state.currentSign = randomSign;
+                    state.asked.push(randomSign);
+                    renderCurrentQuestion();
+                    return;
+                } else {
+                    // Plus aucune question possible → Touriste
+                    renderPlaisantinEnd("healthy");
+                    return;
+                }
+            }
+        }
+    }
+    
+    // CAS 2 : Au moins 1 chef de file validé → Logique de compatibilité
+    if (validatedLeaders.length > 0) {
+        const compatibleLeaders = getCompatibleLeaders(validatedLeaders);
+        const unaskedCompatible = compatibleLeaders.filter(l => !state.asked.includes(l));
+        
+        if (unaskedCompatible.length > 0) {
+            // Poser un chef de file compatible
+            state.currentSign = unaskedCompatible[0];
+            state.asked.push(state.currentSign);
+            renderCurrentQuestion();
+            return;
+        }
+    }
+    
+    // CAS 3 : Plus de chefs de file à poser → Passer aux questions détaillées
+    // ON NE RAPPELLE PAS askNextQuestion() pour éviter la boucle infinie
+    rankPathologies(); 
+    if(canShowDiagnostic()) return; 
+    
+    prepareSigns();
+    const remaining = state.allSigns.filter(s => !state.asked.includes(s));
+    const signe = getNextSmartSign(state.ranked, remaining);
+
+    if (!signe) {
+        const topProb = state.ranked.length > 0 ? parseFloat(state.ranked[0].prob) : 0;
+        if (topProb < 5) {
+            renderPlaisantinEnd("healthy");
+        } else {
+            showDiagnostic();
+        }
+        return;
+    }
+
+    state.currentSign = signe; 
+    state.asked.push(signe); 
+    renderCurrentQuestion();
+}
          
          function askNextQuestion() {
     // 1. Vérification "Plaisantin" (Anti-Troll)
@@ -3333,14 +3490,24 @@ function startConfirmationPhase(targetPatho) {
         return; 
     }
 
-    // 3. GESTION DE LA CONFIRMATION (C'est ce bloc qui manquait !)
-    // Si on est en mode confirmation, on dépile la file d'attente
+    // ========================================
+    // NOUVEAU : Gestion intelligente des chefs de file
+    // ========================================
+    const askedLeaders = state.asked.filter(s => GENERAL_SYMPTOMS.includes(s));
+    const validatedLeaders = askedLeaders.filter(s => state.answers[s] === true);
+    
+    // Si on a posé moins de 11 chefs de file OU aucun n'est validé
+    if (askedLeaders.length < 11 || validatedLeaders.length === 0) {
+        askNextSmartLeader();
+        return;
+    }
+    // ========================================
+
+    // 3. GESTION DE LA CONFIRMATION
     if (state.confirmationMode) {
         if (state.confirmationQueue.length > 0) {
-            // On prend la prochaine question prévue dans la file
             const nextConfSign = state.confirmationQueue.shift();
             
-            // Sécurité : si on a déjà posé cette question (cas rare), on passe à la suivante
             if (state.asked.includes(nextConfSign)) {
                 askNextQuestion();
                 return;
@@ -3351,26 +3518,21 @@ function startConfirmationPhase(targetPatho) {
             renderCurrentQuestion();
             return;
         } else {
-            // Si la file est vide, la confirmation est finie -> On affiche le résultat
             showDiagnostic();
             return;
         }
     }
 
-    // 4. Moteur Standard (Si pas de confirmation en cours)
+    // 4. Moteur Standard
     rankPathologies(); 
 
-    // Vérifie si on doit déclencher la confirmation maintenant
-    // Si oui, canShowDiagnostic va appeler startConfirmationPhase qui rappellera askNextQuestion
     if(canShowDiagnostic()) return; 
 
     prepareSigns();
     const remaining = state.allSigns.filter(s => !state.asked.includes(s));
     
-    // Calcul du prochain signe par l'IA
     const signe = getNextSmartSign(state.ranked, remaining);
 
-    // Sécurité si plus de questions
     if (!signe) {
         const topProb = state.ranked.length > 0 ? parseFloat(state.ranked[0].prob) : 0;
         if (topProb < 5) {

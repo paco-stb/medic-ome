@@ -32,6 +32,28 @@
       <script src="https://unpkg.com/@phosphor-icons/web"></script>
       <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
       <style>
+         /* Ajout CSS pour les filtres calendrier */
+.filter-btn {
+    background: rgba(125,125,125,0.1);
+    border: 1px solid var(--glass-border);
+    color: var(--text-muted);
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex: 1;
+    white-space: nowrap;
+}
+.filter-btn:hover { background: rgba(125,125,125,0.2); }
+.filter-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+.filter-content { display: none; width: 100%; animation: fadeIn 0.3s ease; }
+.filter-content.active { display: block; }
          :root {
          --bg-dark: #020b16; --bg-light: #1e3c72;
          --glass-bg: rgba(13, 25, 48, 0.95); --glass-border: rgba(100, 200, 255, 0.15);
@@ -1749,7 +1771,7 @@ function startGuestMode() {
     // Titre
     card.innerHTML = `<h2><i class="ph-duotone ph-calendar-check color-accent"></i> Suivi & Mémoire</h2>`;
 
-    // --- 1. NAVIGATION MOIS ---
+    // --- 1. NAVIGATION MOIS (inchangé) ---
     const monthNames = ["Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"];
     const currentMonth = targetMonth.getMonth();
     const currentYear = targetMonth.getFullYear();
@@ -1771,38 +1793,30 @@ function startGuestMode() {
     navDiv.append(btnPrev, titleMonth, btnNext);
     card.appendChild(navDiv);
 
-    // --- 2. GRILLE DU CALENDRIER ---
+    // --- 2. GRILLE DU CALENDRIER (inchangé) ---
     const grid = document.createElement('div'); grid.className = 'calendar-grid';
-    
-    // Jours de la semaine
     const daysShort = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
     daysShort.forEach(d => {
         const el = document.createElement('div'); el.className = 'cal-day-name'; el.textContent = d;
         grid.appendChild(el);
     });
 
-    // Logique des dates
     const firstDay = new Date(currentYear, currentMonth, 1);
     const lastDay = new Date(currentYear, currentMonth + 1, 0);
     const daysInMonth = lastDay.getDate();
-    
-    // Ajustement pour commencer Lundi (0=Dimanche en JS)
     let startDay = firstDay.getDay() - 1; 
     if(startDay === -1) startDay = 6; 
 
-    // Cases vides avant le 1er
     for(let i=0; i<startDay; i++) {
         const empty = document.createElement('div'); empty.className = 'cal-day empty';
         grid.appendChild(empty);
     }
 
-    // Historique
     const history = state.progression.dailyHistory || {};
     const todayStr = new Date().toISOString().split('T')[0];
 
     for(let d=1; d<=daysInMonth; d++) {
         const dateObj = new Date(currentYear, currentMonth, d);
-        // Ajustement fuseau horaire local pour la clé string
         const localDateStr = new Date(dateObj.getTime() - (dateObj.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
         
         const dayCell = document.createElement('div'); 
@@ -1811,14 +1825,12 @@ function startGuestMode() {
 
         if(localDateStr === todayStr) dayCell.classList.add('today');
 
-        // Vérifier les données pour ce jour
         const dayData = history[localDateStr];
         if(dayData) {
             const dots = document.createElement('div'); dots.className = 'dots-container';
             const sCount = dayData.success ? dayData.success.length : 0;
             const fCount = dayData.fail ? dayData.fail.length : 0;
             
-            // Max 3 points pour pas surcharger
             for(let i=0; i<Math.min(sCount, 3); i++) {
                 const dot = document.createElement('div'); dot.className = 'dot dot-success'; dots.appendChild(dot);
             }
@@ -1826,30 +1838,28 @@ function startGuestMode() {
                  const dot = document.createElement('div'); dot.className = 'dot dot-error'; dots.appendChild(dot);
             }
             dayCell.appendChild(dots);
-
-            // Click pour voir les détails
             dayCell.onclick = () => showDayDetails(localDateStr, dayData);
         }
-
         grid.appendChild(dayCell);
     }
-
     card.appendChild(grid);
 
-    // --- 3. SECTION "À REVOIR" (SPACED REPETITION) ---
-    const memoryDiv = document.createElement('div'); 
-    memoryDiv.className = 'memory-list';
-    memoryDiv.innerHTML = `<h4 style="color:var(--text-muted); margin-bottom:10px; border-bottom:1px solid var(--glass-border); padding-bottom:5px;">
+    // --- 3. SECTION "À REVOIR" (MODIFIÉE) ---
+    const memorySection = document.createElement('div'); 
+    memorySection.style.marginTop = "25px";
+    memorySection.style.borderTop = "1px solid var(--glass-border)";
+    memorySection.style.paddingTop = "15px";
+
+    memorySection.innerHTML = `<h4 style="color:var(--text-muted); margin-bottom:15px; display:flex; align-items:center; gap:8px;">
         <i class="ph-duotone ph-clock-counter-clockwise"></i> À revoir (Ancienneté)
     </h4>`;
 
-    // Calculer la dernière fois que chaque patho a été vue (Succès)
+    // Calcul des dates
     const lastSeen = {};
     Object.entries(history).forEach(([date, data]) => {
         if(data.success) {
             data.success.forEach(item => {
-                const pName = (typeof item === 'string') ? item : item.name; // Compatibilité ancien format
-                // On garde la date la plus récente
+                const pName = (typeof item === 'string') ? item : item.name;
                 if(!lastSeen[pName] || date > lastSeen[pName]) {
                     lastSeen[pName] = date;
                 }
@@ -1857,38 +1867,95 @@ function startGuestMode() {
         }
     });
 
-    // Liste des pathos triées par "date la plus ancienne"
-    // On ne prend que celles qui ont été réussies au moins une fois
-    const sortedPathos = Object.entries(lastSeen).sort((a,b) => a[1].localeCompare(b[1]));
-    
-    if(sortedPathos.length === 0) {
-        memoryDiv.innerHTML += `<div class="small">Aucune donnée historique pour le moment. Jouez pour remplir le calendrier !</div>`;
-    } else {
-        // Afficher les 5 plus anciennes
-        sortedPathos.slice(0, 5).forEach(([name, dateStr]) => {
-            const date = new Date(dateStr);
-            const diffTime = Math.abs(new Date() - date);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-            
-            let tagClass = 'tag-ok';
-            let tagText = `Il y a ${diffDays}j`;
-            if(diffDays > 30) { tagClass = 'tag-urgent'; tagText = 'Urgent (> 1 mois)'; }
-            else if(diffDays > 14) { tagClass = 'tag-urgent'; style="color:orange"; tagText = '> 2 semaines'; }
+    // Buckets exclusifs
+    const buckets = {
+        '30': [], // > 30j
+        '15': [], // 15-30j
+        '10': [], // 10-14j
+        '7': []   // 7-9j
+    };
 
-            const row = document.createElement('div'); row.className = 'memory-item';
-            row.innerHTML = `
-                <span>${name}</span>
-                <span class="tag-time ${tagClass}">${tagText}</span>
-            `;
-            memoryDiv.appendChild(row);
-        });
-    }
+    const now = new Date();
+    Object.entries(lastSeen).forEach(([name, dateStr]) => {
+        const date = new Date(dateStr);
+        const diffTime = Math.abs(now - date);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+        
+        if(diffDays > 30) buckets['30'].push({name, days: diffDays});
+        else if(diffDays > 15) buckets['15'].push({name, days: diffDays});
+        else if(diffDays > 10) buckets['10'].push({name, days: diffDays});
+        else if(diffDays >= 7) buckets['7'].push({name, days: diffDays});
+    });
 
-    card.appendChild(memoryDiv);
+    // Création des contrôles (Boutons)
+    const filterContainer = document.createElement('div');
+    filterContainer.style.display = "flex";
+    filterContainer.style.gap = "8px";
+    filterContainer.style.marginBottom = "15px";
+    filterContainer.style.overflowX = "auto";
+    filterContainer.style.paddingBottom = "5px";
+
+    // Données pour générer l'UI
+    const tabs = [
+        { id: '30', label: '> 30 jours', color: 'var(--ruby)' },
+        { id: '15', label: '> 15 jours', color: 'orange' },
+        { id: '10', label: '> 10 jours', color: 'var(--gold)' },
+        { id: '7',  label: '> 7 jours',  color: 'var(--text-muted)' }
+    ];
+
+    // Créer les boutons
+    tabs.forEach((tab, index) => {
+        const count = buckets[tab.id].length;
+        const btn = document.createElement('button');
+        btn.className = `filter-btn ${index === 0 ? 'active' : ''}`; // Le premier actif par défaut
+        btn.innerHTML = `${tab.label} (${count})`;
+        if(count > 0) btn.style.fontWeight = "bold";
+        if(tab.id === '30' && count > 0) btn.style.color = 'var(--ruby)';
+        
+        btn.onclick = () => {
+            // Gestion active class
+            card.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            // Gestion affichage liste
+            card.querySelectorAll('.filter-content').forEach(c => c.classList.remove('active'));
+            const content = document.getElementById(`content-${tab.id}`);
+            if(content) content.classList.add('active');
+        };
+        filterContainer.appendChild(btn);
+    });
+    memorySection.appendChild(filterContainer);
+
+    // Créer les listes (Contenu)
+    tabs.forEach((tab, index) => {
+        const listDiv = document.createElement('div');
+        listDiv.id = `content-${tab.id}`;
+        listDiv.className = `filter-content ${index === 0 ? 'active' : ''}`; // Le premier visible par défaut
+        
+        const items = buckets[tab.id];
+        if(items.length === 0) {
+            listDiv.innerHTML = `<div class="small" style="padding:10px; font-style:italic;">Aucune pathologie dans cette tranche.</div>`;
+        } else {
+            items.sort((a,b) => b.days - a.days).forEach(item => {
+                const row = document.createElement('div');
+                row.className = 'memory-item';
+                // Style différent pour >30j
+                const badgeStyle = tab.id === '30' ? 'background:rgba(255,77,77,0.2); color:var(--error);' : 'background:rgba(255,255,255,0.1);';
+                
+                row.innerHTML = `
+                    <span>${item.name}</span>
+                    <span class="tag-time" style="${badgeStyle}">Il y a ${item.days}j</span>
+                `;
+                listDiv.appendChild(row);
+            });
+        }
+        memorySection.appendChild(listDiv);
+    });
+
+    card.appendChild(memorySection);
 
     // Bouton retour
     const btnHome = document.createElement('button'); btnHome.className='btn'; btnHome.textContent='Retour';
-    btnHome.style.marginTop='20px'; btnHome.onclick=renderProfile; // Ou renderHome selon ton choix
+    btnHome.style.marginTop='20px'; btnHome.onclick=renderProfile; 
     card.appendChild(btnHome);
 
     app.appendChild(card);
@@ -1901,26 +1968,48 @@ function showDayDetails(dateStr, data) {
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
     const niceDate = dateObj.toLocaleDateString('fr-FR', options);
 
-    let content = `<h3 style="color:var(--accent); margin-bottom:15px;">${niceDate}</h3>`;
+    let content = `<h3 style="color:var(--accent); margin-bottom:15px; text-transform:capitalize;">${niceDate}</h3>`;
     
-    // Succès
-    if(data.success && data.success.length > 0) {
-        content += `<h4 style="color:var(--success); margin-top:10px;"><i class="ph-bold ph-check"></i> Réussites (${data.success.length})</h4>
-        <ul style="text-align:left; font-size:14px; margin-bottom:15px; color:var(--text-main);">`;
-        data.success.forEach(item => {
+    // Fonction utilitaire pour grouper et compter
+    const getGroupedList = (arr) => {
+        if (!arr || arr.length === 0) return [];
+        const counts = {};
+        arr.forEach(item => {
             const name = (typeof item === 'string') ? item : item.name;
-            content += `<li>${name}</li>`;
+            counts[name] = (counts[name] || 0) + 1;
+        });
+        // Convertir en tableau [nom, count] trié par nombre décroissant
+        return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    };
+
+    // --- Succès ---
+    const successGroups = getGroupedList(data.success);
+    if(successGroups.length > 0) {
+        const total = data.success.length;
+        content += `<h4 style="color:var(--success); margin-top:10px; border-bottom:1px solid rgba(0,255,157,0.2); padding-bottom:5px;">
+            <i class="ph-bold ph-check"></i> Réussites (${total})
+        </h4>
+        <ul style="text-align:left; font-size:14px; margin-bottom:15px; color:var(--text-main); list-style:none; padding-left:5px;">`;
+        
+        successGroups.forEach(([name, count]) => {
+            const countBadge = count > 1 ? `<span style="background:rgba(0,255,157,0.2); color:var(--success); padding:2px 8px; border-radius:10px; font-size:11px; margin-left:8px; font-weight:bold;">x${count}</span>` : '';
+            content += `<li style="padding:4px 0; border-bottom:1px dashed rgba(255,255,255,0.05);">${name} ${countBadge}</li>`;
         });
         content += `</ul>`;
     }
 
-    // Echecs
-    if(data.fail && data.fail.length > 0) {
-        content += `<h4 style="color:var(--error); margin-top:10px;"><i class="ph-bold ph-x"></i> Erreurs (${data.fail.length})</h4>
-        <ul style="text-align:left; font-size:14px; margin-bottom:15px; color:var(--text-main);">`;
-        data.fail.forEach(item => {
-            const name = (typeof item === 'string') ? item : item.name;
-            content += `<li>${name}</li>`;
+    // --- Echecs ---
+    const failGroups = getGroupedList(data.fail);
+    if(failGroups.length > 0) {
+        const total = data.fail.length;
+        content += `<h4 style="color:var(--error); margin-top:10px; border-bottom:1px solid rgba(255,77,77,0.2); padding-bottom:5px;">
+            <i class="ph-bold ph-x"></i> Erreurs (${total})
+        </h4>
+        <ul style="text-align:left; font-size:14px; margin-bottom:15px; color:var(--text-main); list-style:none; padding-left:5px;">`;
+        
+        failGroups.forEach(([name, count]) => {
+            const countBadge = count > 1 ? `<span style="background:rgba(255,77,77,0.2); color:var(--error); padding:2px 8px; border-radius:10px; font-size:11px; margin-left:8px; font-weight:bold;">x${count}</span>` : '';
+            content += `<li style="padding:4px 0; border-bottom:1px dashed rgba(255,255,255,0.05);">${name} ${countBadge}</li>`;
         });
         content += `</ul>`;
     }
@@ -1929,15 +2018,15 @@ function showDayDetails(dateStr, data) {
     const total = (data.success?.length || 0) + (data.fail?.length || 0);
     const ratio = total > 0 ? Math.round(((data.success?.length || 0) / total) * 100) : 0;
     
-    content += `<div style="margin-top:20px; padding:10px; background:rgba(255,255,255,0.1); border-radius:8px;">
-        <strong>Efficacité du jour : ${ratio}%</strong>
+    content += `<div style="margin-top:20px; padding:12px; background:rgba(255,255,255,0.05); border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
+        <span>Efficacité du jour</span>
+        <strong style="color:${ratio >= 50 ? 'var(--success)' : 'var(--error)'}; font-size:1.2em;">${ratio}%</strong>
     </div>`;
 
-    content += `<button class="btn" style="margin-top:20px;" onclick="closeLightbox()">Fermer</button>`; // On réutilise le système de lightbox pour la modale
+    content += `<button class="btn" style="margin-top:20px;" onclick="closeLightbox()">Fermer</button>`;
 
-    // On utilise ta lightbox existante pour afficher ça
     const lb = document.getElementById('lightbox');
-    lb.innerHTML = `<div class="card center" style="max-width:400px; max-height:80vh; overflow-y:auto;" onclick="event.stopPropagation()">${content}</div>`;
+    lb.innerHTML = `<div class="card center" style="max-width:400px; max-height:85vh; overflow-y:auto;" onclick="event.stopPropagation()">${content}</div>`;
     lb.style.display = "flex";
 }
           
@@ -1991,11 +2080,11 @@ function showDayDetails(dateStr, data) {
              <div style="width:${percentage}%; background:var(--accent); height:100%;"></div>
          </div>
          <div class="small" style="margin-bottom:30px;">Progression globale : ${percentage}% (${unlockedPathos}/${totalPathos})</div>
-     `;
+      `;
 
    card.innerHTML = contentHTML;
 
-   // 1. D'ABORD : On crée le bouton "Succès" (mais on ne l'ajoute pas encore)
+      // Boutons Navigation
       const btnAch = document.createElement('button'); 
       btnAch.className='btn'; 
       btnAch.style.background = 'var(--gold)'; 
@@ -2004,7 +2093,6 @@ function showDayDetails(dateStr, data) {
       btnAch.innerHTML = '<i class="ph-duotone ph-trophy"></i> Voir mes Succès';
       btnAch.onclick = renderAchievementsPage;
 
-      // 2. ENSUITE : On crée le bouton "Calendrier"
       const btnCal = document.createElement('button'); 
       btnCal.className='btn'; 
       btnCal.style.background = 'var(--accent)'; 
@@ -2012,66 +2100,12 @@ function showDayDetails(dateStr, data) {
       btnCal.innerHTML = '<i class="ph-duotone ph-calendar-check"></i> Calendrier Intelligent';
       btnCal.onclick = () => renderCalendar();
 
-      // 3. ENFIN : On les ajoute à la carte dans l'ordre voulu
-      // On veut le calendrier AU-DESSUS des succès
       card.appendChild(btnCal);
       card.appendChild(btnAch);
 
-   // -----------------------------
-
-   const errorTracker = document.createElement('div');
-   errorTracker.className = 'error-tracker';
-   errorTracker.innerHTML = `<h3 style="color:var(--error); font-size:16px;"><i class="ph-duotone ph-warning"></i> Boîte à Erreurs (Suivi)</h3>`;
-   const now = Date.now();
-   let hasErrors = false;
-   Object.entries(prog.errorLog || {}).forEach(([pName, data]) => {
-      if (now - data.date > 7 * 24 * 60 * 60 * 1000) {
-         hasErrors = true;
-         const item = document.createElement('div');
-         item.className = 'error-item';
-         item.innerHTML = `<span>${pName}</span> <span style="opacity:0.7">À revoir !</span>`;
-         errorTracker.appendChild(item);
-      }
-   });
-   if (!hasErrors) errorTracker.innerHTML += `<div class="small">Aucune pathologie oubliée depuis 1 semaine. Bien joué !</div>`;
-   card.appendChild(errorTracker);
-
-   const globalMissedSigns = {};
-   Object.values(prog.mastery || {}).forEach(m => {
-      if (m.missedSigns) {
-         Object.entries(m.missedSigns).forEach(([sign, count]) => {
-            if (!globalMissedSigns[sign]) globalMissedSigns[sign] = 0;
-            globalMissedSigns[sign] += count;
-         });
-      }
-   });
-
-   const frequentMisses = Object.entries(globalMissedSigns)
-      .filter(([s, c]) => c >= 3)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5);
-
-   if (frequentMisses.length > 0) {
-      const weakDiv = document.createElement('div');
-      weakDiv.style.marginTop = "20px";
-      weakDiv.style.padding = "15px";
-      weakDiv.style.background = "rgba(255, 77, 77, 0.05)";
-      weakDiv.style.borderRadius = "12px";
-      weakDiv.style.border = "1px solid rgba(255, 77, 77, 0.2)";
-
-      let weakHTML = `<h3 style="color:var(--error); font-size:16px; margin-bottom:10px;"><i class="ph-duotone ph-trend-down"></i> Vos points faibles (Global)</h3>`;
-      weakHTML += `<div class="small" style="margin-bottom:10px;">Signes cliniques souvent oubliés ou erronés :</div>`;
-      weakHTML += `<ul style="text-align:left; padding-left:20px; color:var(--text-main);">`;
-
-      frequentMisses.forEach(([sign, count]) => {
-         weakHTML += `<li style="margin-bottom:4px;"><strong>${formatSigneName(sign)}</strong> (${count} erreurs)</li>`;
-      });
-
-      weakHTML += `</ul>`;
-      weakDiv.innerHTML = weakHTML;
-      card.appendChild(weakDiv);
-   }
-
+   // --- SECTION SUPPRIMÉE ICI (Boite a erreur & Points Faibles) ---
+   // Le code a été retiré comme demandé pour alléger le profil.
+   
    const masteryTitle = document.createElement('h3');
    masteryTitle.innerHTML = 'Maitrise Clinique';
    masteryTitle.style.marginTop = "30px";
@@ -2088,7 +2122,7 @@ function showDayDetails(dateStr, data) {
       const mItem = document.createElement('div');
 
       let sClass = 'm-locked',
-         icon = '<i class="ph-duotone ph-lock-key"></i>';
+          icon = '<i class="ph-duotone ph-lock-key"></i>';
       if (successCount >= 10) {
          sClass = 'm-master';
          icon = '<i class="ph-duotone ph-diamond color-ruby"></i>';

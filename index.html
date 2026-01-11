@@ -56,6 +56,8 @@
 .filter-content.active { display: block; }
          :root {
          --bg-dark: #020b16; --bg-light: #1e3c72;
+         --inner-bg: rgba(0, 0, 0, 0.2); /* Fond sombre pour les listes en mode dark */
+         --footer-bg: rgba(0, 0, 0, 0.5); /* Fond sombre pour le footer en mode dark */
          --glass-bg: rgba(13, 25, 48, 0.95); --glass-border: rgba(100, 200, 255, 0.15);
          --accent: #00d2ff; --accent-glow: rgba(0, 210, 255, 0.4);
          --text-main: #ffffff; --text-muted: #b0c4de;
@@ -65,6 +67,8 @@
          }
          [data-theme="light"] {
          --bg-dark: #e0f2fe; --bg-light: #f0f9ff;
+         --inner-bg: rgba(255, 255, 255, 0.5); /* Fond blanc semi-transparent en mode light */
+         --footer-bg: rgba(255, 255, 255, 0.8);
          --glass-bg: rgba(255, 255, 255, 0.95); --glass-border: rgba(0, 114, 255, 0.2);
          --accent: #0072ff; --accent-glow: rgba(0, 114, 255, 0.2);
          --text-main: #0f172a; --text-muted: #475569;
@@ -138,7 +142,7 @@
          .specialty-badge { font-size: 16px; font-weight: bold; color: var(--text-main); background: linear-gradient(90deg, rgba(0,210,255,0.2) 0%, rgba(0,210,255,0) 100%); padding: 10px 20px; border-radius: 30px; border-left: 4px solid var(--accent); display: inline-block; margin-bottom: 20px; }
          .error-tracker { margin-top: 20px; width: 100%; border-top: 1px solid var(--glass-border); padding-top: 15px; }
          .error-item { display: flex; justify-content: space-between; padding: 8px; background: rgba(255, 77, 77, 0.1); border-left: 3px solid var(--error); margin-bottom: 5px; border-radius: 4px; font-size: 13px; color: var(--text-main); }
-         .result-list { background: rgba(0, 0, 0, 0.2); border-radius: 16px; padding: 10px; margin-top: 15px; border: 1px solid var(--glass-border); }
+         .result-list { background: var(--inner-bg); border-radius: 16px; padding: 10px; margin-top: 15px; border: 1px solid var(--glass-border); }
          .result-section-title { font-size: 14px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 10px 5px; display: flex; align-items: center; gap: 8px; }
          .result-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: var(--glass-bg); border-bottom: 1px solid var(--glass-border); transition: all 0.2s ease; }
          .result-item:first-of-type { border-top-left-radius: 12px; border-top-right-radius: 12px; }
@@ -176,7 +180,7 @@
          .notif-modal { position: absolute; top: 60px; right: 20px; width: 300px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 12px; padding: 15px; z-index: 200; box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: none; max-height: 400px; overflow-y: auto; color: var(--text-main); }
          .notif-item { border-bottom: 1px solid var(--glass-border); padding: 10px 0; font-size: 13px; text-align: left; }
          .notif-date { font-size: 11px; color: var(--accent); margin-bottom: 4px; }
-         footer { text-align:center; padding:20px 15px; background: rgba(0,0,0,0.5); font-size:12px; border-top: 1px solid var(--glass-border); display: flex; flex-direction: column; align-items: center; gap: 10px; }
+         footer { text-align:center; padding:20px 15px; background: var(--footer-bg); font-size:12px; border-top: 1px solid var(--glass-border); display: flex; flex-direction: column; align-items: center; gap: 10px; }
          .footer-nav { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-bottom:5px;}
          .footer-link { color: var(--text-muted); text-decoration: none; cursor: pointer; opacity:0.8; transition:0.3s;} .footer-link:hover { color: var(--accent); opacity:1;}
          .social-links { display: flex; gap: 15px; margin-bottom: 5px; }
@@ -392,7 +396,7 @@
 .landing-info h1 {
     font-size: 2.5rem;
     margin-bottom: 15px;
-    background: linear-gradient(90deg, #fff, var(--text-muted));
+    background: linear-gradient(90deg, var(--text-main), var(--text-muted));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }

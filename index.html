@@ -3490,20 +3490,7 @@ function askNextSmartLeader() {
         return; 
     }
 
-    // ========================================
-    // NOUVEAU : Gestion intelligente des chefs de file
-    // ========================================
-    const askedLeaders = state.asked.filter(s => GENERAL_SYMPTOMS.includes(s));
-    const validatedLeaders = askedLeaders.filter(s => state.answers[s] === true);
-    
-    // Si on a posé moins de 11 chefs de file OU aucun n'est validé
-    if (askedLeaders.length < 11 || validatedLeaders.length === 0) {
-        askNextSmartLeader();
-        return;
-    }
-    // ========================================
-
-    // 3. GESTION DE LA CONFIRMATION
+    // 3. GESTION DE LA CONFIRMATION (PRIORITAIRE)
     if (state.confirmationMode) {
         if (state.confirmationQueue.length > 0) {
             const nextConfSign = state.confirmationQueue.shift();
@@ -3518,14 +3505,29 @@ function askNextSmartLeader() {
             renderCurrentQuestion();
             return;
         } else {
+            // File de confirmation terminée → Diagnostic
             showDiagnostic();
             return;
         }
     }
 
-    // 4. Moteur Standard
+    // ========================================
+    // NOUVEAU : Gestion intelligente des chefs de file
+    // ========================================
+    const askedLeaders = state.asked.filter(s => GENERAL_SYMPTOMS.includes(s));
+    const validatedLeaders = askedLeaders.filter(s => state.answers[s] === true);
+    
+    // Si on a posé moins de 11 chefs de file OU aucun n'est validé
+    if (askedLeaders.length < 11 || (validatedLeaders.length === 0 && askedLeaders.length < 11)) {
+        askNextSmartLeader();
+        return;
+    }
+    // ========================================
+
+    // 4. Moteur Standard (après chefs de file)
     rankPathologies(); 
 
+    // Vérifier si on peut déclencher la confirmation
     if(canShowDiagnostic()) return; 
 
     prepareSigns();

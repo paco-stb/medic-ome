@@ -26,19 +26,8 @@
       <meta name="theme-color" content="#1a1a2e">
       <meta name="apple-mobile-web-app-capable" content="yes">
       <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-      <meta property="og:type" content="website">
-      <meta property="og:url" content="https://medicome.fr/">
-      <meta property="og:title" content="Medicome - Cas Cliniques Interactifs ECN/EDN">
-      <meta property="og:description" content="Simulateur de diagnostic médical gratuit pour étudiants. +100 cas cliniques avec IA.">
-      <meta property="og:image" content="https://medicome.fr/logo.png">
-
-      <meta property="twitter:card" content="summary_large_image">
-      <meta property="twitter:url" content="https://medicome.fr/">
-      <meta property="twitter:title" content="Medicome - Cas Cliniques Interactifs">
-      <meta property="twitter:description" content="Simulateur de diagnostic médical gratuit.">
-      <meta property="twitter:image" content="https://medicome.fr/logo.png">
-      <link rel="apple-touch-icon" href="https://medicome.fr/favicon.png">
-      <link rel="icon" href="https://medicome.fr/favicon.png" type="image/png">
+      <link rel="apple-touch-icon" href="favicon.png">
+      <link rel="icon" href="favicon.png">
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
       <script src="https://unpkg.com/@phosphor-icons/web"></script>
       <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -884,7 +873,15 @@ const CONTEXT_RULES = [
               priorityQueue: [],
               isChrono: false, 
               startTime: null, 
-              dailyTarget: null
+              dailyTarget: null,
+            exam: {
+    active: false,
+    queue: [],
+    results: [],
+    currentIndex: 0,
+    totalTime: 0,
+    config: {}
+}
           };
          
          // === GUEST MODE ===
@@ -1538,6 +1535,279 @@ function startGuestMode() {
         if(heroBtn) heroBtn.onclick = startGuestMode;
     }, 100);
 }
+   // ========================================
+// FONCTIONS MODE EXAMEN BLANC
+// ========================================
+
+function renderExamConfig() {
+    setDocTitle("Configuration Examen");
+    window.scrollTo(0,0);
+    const app = q('#app'); app.innerHTML='';
+    const card = document.createElement('div'); card.className='card center';
+    
+    card.innerHTML = `
+        <h2><i class="ph-duotone ph-exam"></i> Examen Blanc</h2>
+        <p class="small" style="margin-bottom:25px">Configurez votre épreuve de révision</p>
+    `;
+
+    // 1. Nombre de cas (Slider + Chips)
+    const nbLabel = document.createElement('div');
+    nbLabel.className = 'section-label';
+    nbLabel.textContent = 'Nombre de cas';
+    card.appendChild(nbLabel);
+
+    const chipsNb = document.createElement('div');
+    chipsNb.className = 'chips-container';
+    let selectedCount = 10; // Par défaut
+    
+    [3, 5, 10, 20, 30].forEach(n => {
+        const chip = document.createElement('div');
+        chip.className = n === 10 ? 'chip selected' : 'chip';
+        chip.innerHTML = `<i class="ph-duotone ph-clipboard-text"></i> ${n} cas`;
+        chip.onclick = () => {
+            selectedCount = n;
+            chipsNb.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
+            chip.classList.add('selected');
+        };
+        chipsNb.appendChild(chip);
+    });
+    card.appendChild(chipsNb);
+
+    // 2. Spécialités (Toutes cochées par défaut)
+    const specLabel = document.createElement('div');
+    specLabel.className = 'section-label';
+    specLabel.textContent = 'Spécialités';
+    card.appendChild(specLabel);
+
+    const chipsSpec = document.createElement('div');
+    chipsSpec.className = 'chips-container';
+    
+    const uniqueSpecs = [...new Set(Object.values(PATHO_GROUPS))].sort();
+    const selectedSpecs = new Set(uniqueSpecs);
+
+    uniqueSpecs.forEach(spec => {
+        const chip = document.createElement('div');
+        chip.className = 'chip selected';
+        chip.innerHTML = `<i class="ph-duotone ph-check-circle"></i> ${spec}`;
+        chip.onclick = () => {
+            if (selectedSpecs.has(spec)) {
+                if(selectedSpecs.size === 1) return showAlert("Gardez au moins une spécialité", "error");
+                selectedSpecs.delete(spec);
+                chip.classList.remove('selected');
+                chip.innerHTML = `<i class="ph-duotone ph-circle"></i> ${spec}`;
+            } else {
+                selectedSpecs.add(spec);
+                chip.classList.add('selected');
+                chip.innerHTML = `<i class="ph-duotone ph-check-circle"></i> ${spec}`;
+            }
+        };
+        chipsSpec.appendChild(chip);
+    });
+    card.appendChild(chipsSpec);
+
+    // 3. Options
+    const optLabel = document.createElement('div');
+    optLabel.className = 'section-label';
+    optLabel.textContent = 'Options';
+    card.appendChild(optLabel);
+
+    const chipsOpt = document.createElement('div');
+    chipsOpt.className = 'chips-container';
+    let withTimer = true;
+
+    const chipTimer = document.createElement('div');
+    chipTimer.className = 'chip selected';
+    chipTimer.innerHTML = '<i class="ph-duotone ph-timer"></i> Chronomètre';
+    chipTimer.onclick = () => {
+        withTimer = !withTimer;
+        chipTimer.classList.toggle('selected');
+    };
+    chipsOpt.appendChild(chipTimer);
+    card.appendChild(chipsOpt);
+
+    // Boutons
+    const btnStart = document.createElement('button'); 
+    btnStart.className='btn'; 
+    btnStart.innerHTML='<i class="ph-bold ph-play"></i> Démarrer l\'examen';
+    btnStart.style.marginTop='30px';
+    btnStart.onclick = () => startExamSession({
+        count: selectedCount,
+        specs: Array.from(selectedSpecs),
+        timer: withTimer
+    });
+
+    const btnBack = document.createElement('button'); 
+    btnBack.className='link'; 
+    btnBack.textContent='Annuler';
+    btnBack.onclick=renderHome;
+
+    card.append(btnStart, btnBack);
+    app.appendChild(card);
+}
+
+function startExamSession(config) {
+    const pool = PATHOLOGIES.filter(p => {
+        const group = PATHO_GROUPS[p.name];
+        return config.specs.includes(group);
+    });
+
+    if (pool.length < config.count) {
+        return showAlert(`Pas assez de pathologies dans ces spécialités (${pool.length} disponibles)`, "error");
+    }
+
+    const shuffled = [...pool].sort(() => 0.5 - Math.random());
+    const queue = shuffled.slice(0, config.count);
+
+    state.exam = {
+        active: true,
+        queue: queue,
+        results: [],
+        currentIndex: 0,
+        totalTime: 0,
+        config: config,
+        startTime: Date.now()
+    };
+
+    playNextExamCase();
+}
+
+function playNextExamCase() {
+    const exam = state.exam;
+    if (exam.currentIndex >= exam.queue.length) {
+        renderExamSummary();
+        return;
+    }
+
+    const targetPatho = exam.queue[exam.currentIndex];
+    state.dailyTarget = targetPatho;
+    state.isChrono = exam.config.timer;
+    
+    renderExamCaseIntro(targetPatho, exam.currentIndex + 1, exam.queue.length);
+}
+
+function renderExamCaseIntro(patho, current, total) {
+    window.scrollTo(0,0);
+    const app = q('#app'); app.innerHTML='';
+    const card = document.createElement('div'); card.className='card center';
+    
+    const progress = Math.round((current / total) * 100);
+    
+    card.innerHTML = `
+        <div style="width:100%; background:rgba(125,125,125,0.1); border-radius:10px; height:6px; margin-bottom:20px;">
+            <div style="width:${progress}%; background:var(--accent); height:100%; border-radius:10px; transition:0.3s;"></div>
+        </div>
+        <div class="small" style="color:var(--accent); margin-bottom:10px;">
+            <i class="ph-duotone ph-student"></i> EXAMEN BLANC • CAS ${current}/${total}
+        </div>
+        <h2 style="margin:20px 0;">Faites deviner :</h2>
+        <div style="font-size:1.8rem; font-weight:bold; color:var(--text-main); margin:20px 0;">
+            ${patho.name}
+        </div>
+        <div style="background:rgba(0,210,255,0.1); padding:15px; border-radius:12px; border-left:3px solid var(--accent); margin:20px 0;">
+            <i class="ph-duotone ph-info"></i> Répondez aux questions en pensant à cette pathologie
+        </div>
+    `;
+    
+    const btnGo = document.createElement('button'); 
+    btnGo.className='btn btn-success';
+    btnGo.innerHTML='<i class="ph-bold ph-play"></i> Commencer le cas';
+    btnGo.onclick = () => {
+        state.answers = {}; state.asked = []; state.diagnosticShown = false; 
+        state.history = []; state.confirmationMode = false;
+        renderDemographics();
+    };
+    
+    card.appendChild(btnGo);
+    app.appendChild(card);
+}
+
+function renderExamSummary() {
+    setDocTitle("Résultats Examen");
+    state.exam.active = false;
+    state.dailyTarget = null;
+    
+    const totalTime = Math.round((Date.now() - state.exam.startTime) / 1000);
+    state.exam.totalTime = totalTime;
+
+    const app = q('#app'); app.innerHTML='';
+    const card = document.createElement('div'); card.className='card center';
+    
+    const correctCount = state.exam.results.filter(r => r.success).length;
+    const total = state.exam.results.length;
+    const percentage = Math.round((correctCount / total) * 100);
+    
+    let grade = percentage >= 90 ? "Excellent" : percentage >= 70 ? "Bien" : percentage >= 50 ? "Moyen" : "À revoir";
+    let color = percentage >= 70 ? 'var(--success)' : percentage >= 50 ? 'var(--gold)' : 'var(--error)';
+    
+    const minutes = Math.floor(totalTime / 60);
+    const seconds = totalTime % 60;
+    
+    card.innerHTML = `
+        <h2><i class="ph-duotone ph-check-circle"></i> Examen Terminé</h2>
+        <div style="margin:30px 0;">
+            <div style="font-size:4rem; font-weight:bold; color:${color};">
+                ${percentage}%
+            </div>
+            <div style="font-size:1.2rem; color:var(--text-muted); margin-top:10px;">
+                ${grade}
+            </div>
+        </div>
+        
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; width:100%; margin-bottom:30px;">
+            <div class="stat-box">
+                <div class="stat-number" style="color:var(--success)">${correctCount}</div>
+                <div class="stat-label">Réussites</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" style="color:var(--text-muted)">${minutes}:${seconds.toString().padStart(2,'0')}</div>
+                <div class="stat-label">Temps total</div>
+            </div>
+        </div>
+        
+        <div class="result-section-title" style="width:100%; text-align:left;">
+            <i class="ph-bold ph-list"></i> Détails des cas
+        </div>
+    `;
+
+    const resultList = document.createElement('div');
+    resultList.className = 'result-list';
+    
+    state.exam.results.forEach((res, idx) => {
+        const icon = res.success 
+            ? '<i class="ph-fill ph-check-circle" style="color:var(--success); font-size:1.3em;"></i>' 
+            : '<i class="ph-fill ph-x-circle" style="color:var(--error); font-size:1.3em;"></i>';
+        
+        const detail = res.success 
+            ? `${res.questions} questions` 
+            : `Confondu avec ${res.found}`;
+        
+        const row = document.createElement('div');
+        row.className = 'result-item';
+        row.innerHTML = `
+            <div style="display:flex; align-items:center; gap:10px;">
+                ${icon}
+                <strong>${res.target}</strong>
+            </div>
+            <div style="font-size:0.85em; color:var(--text-muted);">${detail}</div>
+        `;
+        resultList.appendChild(row);
+    });
+    
+    card.appendChild(resultList);
+
+    const btnHome = document.createElement('button'); 
+    btnHome.className='btn';
+    btnHome.innerHTML='<i class="ph-duotone ph-house"></i> Retour Accueil';
+    btnHome.style.marginTop='30px';
+    btnHome.onclick=renderHome;
+    
+    card.appendChild(btnHome);
+    app.appendChild(card);
+}
+
+// ========================================
+// FIN DES FONCTIONS MODE EXAMEN
+// ========================================
          
          function renderHome() {
              setDocTitle("Accueil");
@@ -1612,10 +1882,14 @@ function startGuestMode() {
          renderDemographics();
          };
          
-             const btnGloss = document.createElement('button'); btnGloss.className='link'; btnGloss.innerHTML='<i class="ph-duotone ph-book-bookmark"></i> Glossaire'; btnGloss.style.marginTop='12px'; btnGloss.onclick=renderGlossary;
-             const btnProf = document.createElement('button'); btnProf.className='link'; btnProf.innerHTML='<i class="ph-duotone ph-user-circle"></i> Profil & Succès'; btnProf.style.marginTop='6px'; btnProf.onclick=renderProfile;
-             
-             card.appendChild(btnDiag); card.appendChild(btnGloss); card.appendChild(btnProf); 
+            const btnExam = document.createElement('button'); btnExam.className='link'; btnExam.innerHTML='<i class="ph-duotone ph-exam"></i> Examen Blanc'; btnExam.style.marginTop='6px'; 
+btnExam.style.border='2px solid var(--accent)'; btnExam.style.fontWeight='700';
+btnExam.onclick=renderExamConfig;
+
+const btnGloss = document.createElement('button'); btnGloss.className='link'; btnGloss.innerHTML='<i class="ph-duotone ph-book-bookmark"></i> Glossaire'; btnGloss.style.marginTop='12px'; btnGloss.onclick=renderGlossary;
+const btnProf = document.createElement('button'); btnProf.className='link'; btnProf.innerHTML='<i class="ph-duotone ph-user-circle"></i> Profil & Succès'; btnProf.style.marginTop='6px'; btnProf.onclick=renderProfile;
+
+card.appendChild(btnDiag); card.appendChild(btnExam); card.appendChild(btnGloss); card.appendChild(btnProf);
              app.appendChild(card);
          
              const btnDaily = q('#btnDaily');
@@ -3664,125 +3938,194 @@ function askNextSmartLeader() {
 }
          
                  function showDiagnostic() {
-             setDocTitle("Analyse...");
-             window.scrollTo(0,0);
-             const app = q('#app'); app.innerHTML = '';
-             const loadingCard = document.createElement('div'); loadingCard.className = 'card center';
-             loadingCard.innerHTML = `<h3 style="color:var(--accent)"><i class="ph-duotone ph-magnifying-glass"></i> Analyse IA en cours...</h3><div style="margin: 30px 0; font-size: 50px; animation: spin 0.8s infinite linear;"><i class="ph-duotone ph-gear"></i></div><p class="small">Comparaison base de données...</p>`;
-             app.appendChild(loadingCard);
-         
-             setTimeout(() => {
-                 rankPathologies();
-                 const top = state.ranked[0];
-                 state.diagnosticShown = true;
-                 state.previousDiagnostics.push(top.patho.name);
-                 setDocTitle(`Diagnostic : ${top.patho.name}`);
-         
-                 app.innerHTML = ''; 
-                 const card = document.createElement('div'); card.className='card center';
-                 const title = document.createElement('h2'); title.innerHTML='<i class="ph-duotone ph-lightbulb"></i> Diagnostic Proposé'; card.appendChild(title);
-                 
-                 // Remplacer la définition de pdfButton par :
-         let pdfButton = '';
+    setDocTitle("Analyse...");
+    window.scrollTo(0, 0);
+    const app = q('#app');
+    app.innerHTML = '';
+    
+    // Carte de chargement
+    const loadingCard = document.createElement('div');
+    loadingCard.className = 'card center';
+    loadingCard.innerHTML = `<h3 style="color:var(--accent)"><i class="ph-duotone ph-magnifying-glass"></i> Analyse IA en cours...</h3><div style="margin: 30px 0; font-size: 50px; animation: spin 0.8s infinite linear;"><i class="ph-duotone ph-gear"></i></div><p class="small">Comparaison base de données...</p>`;
+    app.appendChild(loadingCard);
 
-if (top.patho.pdf && top.patho.pdf !== '#') {
-    // MODIFICATION ICI : On vérifie si c'est un invité standard (sans code premium)
-    if (state.isGuest && !state.isPremiumCode) {
-        // --- PROTECTION INVITÉ CLASSIQUE : BOUTON VERROUILLÉ ---
-        pdfButton = `<button class="btn" style="background:rgba(125,125,125,0.1); border:1px dashed var(--text-muted); color:var(--text-muted); margin-top:10px; font-size:13px;" onclick="showAlert('Les fiches PDF sont réservées aux membres inscrits ou partenaires.<br>Créez un compte gratuit pour y accéder !', 'error')"><i class="ph-duotone ph-lock-key"></i> Fiche PDF (Verrouillée)</button>`;
-    } else {
-        // --- MEMBRE CONNECTÉ OU CODE PREMIUM : LIEN ACTIF ---
-        pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.patho.pdf}" target="_blank" onclick="trackPdf()"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF</a>`;
-    }
-} else {
-    pdfButton = `<span class="small" style="opacity:0.5"><i class="ph-duotone ph-file-x"></i> Pas de fiche PDF</span>`;
+    setTimeout(async () => {
+        rankPathologies();
+        const top = state.ranked[0]; // La proposition n°1 de l'IA
+        state.diagnosticShown = true;
+        state.previousDiagnostics.push(top.patho.name);
+        setDocTitle(`Diagnostic : ${top.patho.name}`);
+
+        app.innerHTML = '';
+        const card = document.createElement('div');
+        card.className = 'card center';
+
+        // --- GESTION DU TITRE ET DE L'AFFICHAGE DU DIAGNOSTIC ---
+        const title = document.createElement('h2');
+        title.innerHTML = '<i class="ph-duotone ph-lightbulb"></i> Diagnostic Proposé';
+        card.appendChild(title);
+
+        // Gestion du bouton PDF (identique à avant)
+        let pdfButton = '';
+        if (top.patho.pdf && top.patho.pdf !== '#') {
+            if (state.isGuest && !state.isPremiumCode) {
+                pdfButton = `<button class="btn" style="background:rgba(125,125,125,0.1); border:1px dashed var(--text-muted); color:var(--text-muted); margin-top:10px; font-size:13px;" onclick="showAlert('Compte requis pour le PDF', 'error')"><i class="ph-duotone ph-lock-key"></i> Fiche PDF (Verrouillée)</button>`;
+            } else {
+                pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.patho.pdf}" target="_blank" onclick="trackPdf()"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF de révision</a>`;
+            }
+        } else {
+            pdfButton = `<span class="small" style="opacity:0.5"><i class="ph-duotone ph-file-x"></i> Pas de fiche PDF</span>`;
+        }
+
+        const diagDiv = document.createElement('div');
+        diagDiv.className = 'diagnostic-result';
+        diagDiv.innerHTML = `
+            <div class="diagnostic-name">${top.patho.name}</div>
+            <div class="patho-desc" style="margin-top:8px">${top.patho.short}</div>
+            <br>${pdfButton}
+        `;
+        card.appendChild(diagDiv);
+
+        // ============================================================
+        // 🚦 LOGIQUE DE VALIDATION (MODIFIÉE)
+        // ============================================================
+        const btnGroup = document.createElement('div');
+        btnGroup.className = 'button-group';
+
+        // --- CAS 1 : MODE EXAMEN (AUTOMATIQUE) ---
+        if (state.exam && state.exam.active) {
+            const targetName = state.dailyTarget.name;
+            const foundName = top.patho.name;
+            const isSuccess = (targetName === foundName);
+
+            // Enregistrement immédiat du résultat dans l'examen
+            state.exam.results.push({
+                target: targetName,
+                found: foundName,
+                success: isSuccess,
+                questions: state.asked.length
+            });
+
+            // Affichage du résultat automatique
+            const resultBanner = document.createElement('div');
+            resultBanner.style.width = "100%";
+            resultBanner.style.padding = "15px";
+            resultBanner.style.borderRadius = "12px";
+            resultBanner.style.marginTop = "20px";
+            resultBanner.style.marginBottom = "20px";
+            resultBanner.style.textAlign = "center";
+            resultBanner.style.fontWeight = "bold";
+
+            if (isSuccess) {
+                // VICTOIRE
+                playSound('success');
+                triggerConfetti();
+                resultBanner.style.background = "rgba(0, 255, 157, 0.15)";
+                resultBanner.style.border = "1px solid var(--success)";
+                resultBanner.style.color = "var(--success)";
+                resultBanner.innerHTML = `
+                    <div style="font-size:2em; margin-bottom:10px;"><i class="ph-fill ph-check-circle"></i></div>
+                    <div>DIAGNOSTIC CORRECT</div>
+                    <div class="small" style="opacity:0.8; font-weight:normal;">L'IA a bien trouvé la pathologie cible.</div>
+                `;
+            } else {
+                // ÉCHEC
+                playSound('error');
+                resultBanner.style.background = "rgba(255, 77, 77, 0.15)";
+                resultBanner.style.border = "1px solid var(--error)";
+                resultBanner.style.color = "var(--error)";
+                resultBanner.innerHTML = `
+                    <div style="font-size:2em; margin-bottom:10px;"><i class="ph-fill ph-x-circle"></i></div>
+                    <div>DIAGNOSTIC INCORRECT</div>
+                    <div class="small" style="opacity:0.8; font-weight:normal; margin-top:5px;">
+                        L'IA a proposé : <strong>${foundName}</strong><br>
+                        Il fallait faire deviner : <strong>${targetName}</strong>
+                    </div>
+                `;
+            }
+            card.insertBefore(resultBanner, btnGroup); // Insérer avant les boutons
+
+            // Bouton "Suivant"
+            const isLast = state.exam.currentIndex + 1 >= state.exam.queue.length;
+            const btnNext = document.createElement('button');
+            btnNext.className = 'btn';
+            btnNext.innerHTML = isLast 
+                ? '<i class="ph-bold ph-chart-line"></i> Voir les résultats finaux' 
+                : '<i class="ph-bold ph-arrow-right"></i> Cas Suivant';
+            
+            btnNext.onclick = () => {
+                state.exam.currentIndex++;
+                playNextExamCase();
+            };
+            btnGroup.appendChild(btnNext);
+
+        } 
+        // --- CAS 2 : MODE STANDARD / ENTRAÎNEMENT (MANUEL) ---
+        else {
+            const btnTrue = document.createElement('button');
+            btnTrue.className = 'btn btn-success';
+            btnTrue.innerHTML = '<i class="ph-bold ph-check"></i> Correct';
+            btnTrue.onclick = async () => {
+                // ... (Code de validation standard inchangé : Confetti, stats, etc.) ...
+                if (state.isGuest) { localStorage.setItem('medicome_guest_last_play', Date.now().toString()); }
+                triggerConfetti(); playSound('success');
+                state.progression.correct++; 
+                state.progression.streak = (state.progression.streak || 0) + 1;
+                
+                // Logic Calendrier Standard
+                const todayKey = new Date().toISOString().split('T')[0];
+                if (!state.progression.dailyHistory) state.progression.dailyHistory = {};
+                if (!state.progression.dailyHistory[todayKey]) state.progression.dailyHistory[todayKey] = { success: [], fail: [] };
+                state.progression.dailyHistory[todayKey].success.push({ name: top.patho.name, time: Date.now() });
+
+                // Gestion Défi du jour standard
+                if (state.dailyTarget && state.dailyTarget.name === top.patho.name) {
+                    const today = new Date().toDateString();
+                    if (state.progression.lastDaily !== today) {
+                        state.progression.lastDaily = today;
+                        state.progression.dailyStreak = (state.progression.dailyStreak || 0) + 1;
+                        showAlert(`<i class="ph-duotone ph-party-popper"></i> Défi du jour réussi !`, "success");
+                    }
+                }
+
+                // Stats Maîtrise
+                if (!state.progression.mastery) state.progression.mastery = {};
+                const pName = top.patho.name;
+                let m = state.progression.mastery[pName];
+                if (!m || typeof m === 'number') m = { success: (typeof m === 'number' ? m : 0), failures: 0, missedSigns: {} };
+                m.success++;
+
+                // Enregistrement des signes manqués (Logique existante)
+                Object.keys(top.patho.signes).forEach(s => {
+                    if (state.answers[s] === false || state.answers[s] === null) {
+                        if (!m.missedSigns[s]) m.missedSigns[s] = 0;
+                        m.missedSigns[s]++;
+                    }
+                });
+                state.progression.mastery[pName] = m;
+
+                updateHeader(); await saveProgression();
+                showAlert('<i class="ph-duotone ph-check-circle"></i> Diagnostic validé !', 'success');
+                showDiagnosticDetails({ patho: top.patho });
+            };
+
+            const btnFalse = document.createElement('button');
+            btnFalse.className = 'btn btn-error';
+            btnFalse.innerHTML = '<i class="ph-bold ph-x"></i> Incorrect';
+            btnFalse.onclick = async () => {
+                playSound('error');
+                showManualPathologySelection("incorrect_diagnosis");
+            };
+
+            btnGroup.appendChild(btnTrue);
+            btnGroup.appendChild(btnFalse);
+        }
+
+        card.appendChild(btnGroup);
+        app.appendChild(card);
+
+    }, 1500); // Fin du setTimeout
 }
-                 const diagDiv = document.createElement('div'); diagDiv.className='diagnostic-result';
-                 diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div>
-                 <div style="margin: 15px 0; max-width: 100%;">
-                 </div>
-                 <div class="patho-desc" style="margin-top:8px">${top.patho.short}</div><br>${pdfButton}`;
-                 card.appendChild(diagDiv);
-                 
-                 const btnGroup = document.createElement('div'); btnGroup.className='button-group';
-                 
-                 const btnTrue = document.createElement('button'); btnTrue.className='btn btn-success'; btnTrue.innerHTML='<i class="ph-bold ph-check"></i> Correct';
-                 btnTrue.onclick = async () => { 
-                     // --- CORRECTION ICI ---
-                     if(state.isGuest) {
-                         localStorage.setItem('medicome_guest_last_play', Date.now().toString());
-                     }
-                     // ----------------------
-         
-                     triggerConfetti(); playSound('success');
-                     state.progression.correct++; state.progression.streak = (state.progression.streak || 0) + 1;
-                     // --- AJOUT CALENDRIER (Victoire) ---
-const todayKey = new Date().toISOString().split('T')[0]; // Format "YYYY-MM-DD"
-if(!state.progression.dailyHistory) state.progression.dailyHistory = {};
-if(!state.progression.dailyHistory[todayKey]) state.progression.dailyHistory[todayKey] = { success: [], fail: [] };
-
-// On ajoute la patho si elle n'y est pas déjà pour éviter les doublons le même jour (optionnel)
-state.progression.dailyHistory[todayKey].success.push({ name: top.patho.name, time: Date.now() });
-// -----------------------------------
-                     
-                     if(state.dailyTarget && state.dailyTarget.name === top.patho.name) {
-                         const today = new Date().toDateString();
-                         if(state.progression.lastDaily !== today) {
-                             state.progression.lastDaily = today;
-                             state.progression.dailyStreak = (state.progression.dailyStreak || 0) + 1;
-                             showAlert(`<i class="ph-duotone ph-party-popper"></i> Défi du jour réussi ! Série : ${state.progression.dailyStreak}`, "success");
-                         }
-                     }
-         
-                     if(!state.progression.mastery) state.progression.mastery = {};
-                     const pName = top.patho.name;
-                     let m = state.progression.mastery[pName];
-                     if(!m) m = { success: 0, failures: 0, missedSigns: {} };
-                     if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
-                     
-                     m.success++;
-                     
-                     if(state.isChrono && state.startTime) {
-                         const duration = (Date.now() - state.startTime) / 1000;
-                         if(duration < 30) {
-                             state.progression.speedWins = (state.progression.speedWins || 0) + 1;
-                         }
-                         if(!state.progression.bestTimes) state.progression.bestTimes = {};
-                         if(!state.progression.bestTimes[pName] || duration < state.progression.bestTimes[pName]) {
-                             state.progression.bestTimes[pName] = duration;
-                             showAlert(`<i class="ph-duotone ph-lightning"></i> Nouveau Record : ${duration.toFixed(1)}s`, 'info');
-                         }
-                     }
-         
-                     Object.keys(top.patho.signes).forEach(s => {
-                         if(state.answers[s] === false || state.answers[s] === null) { 
-                             if(!m.missedSigns[s]) m.missedSigns[s] = 0;
-                             m.missedSigns[s]++;
-                         }
-                     });
-                     
-                     Object.keys(state.answers).forEach(s => {
-                         if (state.answers[s] === true && !top.patho.signes[s]) {
-                             if(!m.missedSigns[s]) m.missedSigns[s] = 0;
-                             m.missedSigns[s]++;
-                         }
-                     });
-         
-                     state.progression.mastery[pName] = m;
-                     
-                     updateHeader(); await saveProgression(); 
-                     showAlert('<i class="ph-duotone ph-check-circle"></i> Diagnostic validé !','success'); showDiagnosticDetails({patho: top.patho});
-                 };
-                 
-                 const btnFalse = document.createElement('button'); btnFalse.className='btn btn-error'; btnFalse.innerHTML='<i class="ph-bold ph-x"></i> Incorrect';
-                 btnFalse.onclick = async () => { 
-                     playSound('error');
-    showManualPathologySelection("incorrect_diagnosis");
-};
-                 
-                 btnGroup.appendChild(btnTrue); btnGroup.appendChild(btnFalse); card.appendChild(btnGroup); app.appendChild(card);
-             }, 1500);
-         }
          
          
          function showDiagnosticDetails(data, wasManualError = false) {
@@ -3991,8 +4334,37 @@ state.progression.dailyHistory[todayKey].success.push({ name: top.patho.name, ti
     }
 
     const btnGroup = document.createElement('div'); 
-    btnGroup.className = 'button-group';
+btnGroup.className = 'button-group';
+
+// === MODE EXAMEN ===
+if (state.exam && state.exam.active) {
+    const isSuccess = (top.name === state.dailyTarget.name);
     
+    // Enregistrer le résultat (une seule fois)
+    if (state.exam.results.length === state.exam.currentIndex) {
+        state.exam.results.push({
+            target: state.dailyTarget.name,
+            found: top.name,
+            success: isSuccess,
+            questions: state.asked.length
+        });
+    }
+    
+    const isLast = state.exam.currentIndex + 1 >= state.exam.queue.length;
+    const btnNext = document.createElement('button'); 
+    btnNext.className = 'btn';
+    btnNext.innerHTML = isLast 
+        ? '<i class="ph-bold ph-chart-line"></i> Voir les résultats' 
+        : '<i class="ph-bold ph-arrow-right"></i> Cas Suivant';
+    
+    btnNext.onclick = () => {
+        state.exam.currentIndex++;
+        playNextExamCase();
+    };
+    
+    btnGroup.appendChild(btnNext);
+} else {
+    // === MODE STANDARD ===
     const btnReplay = document.createElement('button'); 
     btnReplay.className = 'btn btn-success'; 
     btnReplay.innerHTML = '<i class="ph-duotone ph-arrow-clockwise"></i> Rejouer';
@@ -4012,8 +4384,10 @@ state.progression.dailyHistory[todayKey].success.push({ name: top.patho.name, ti
     btnHome.onclick = renderHome;
 
     btnGroup.append(btnReplay, btnHome);
-    card.appendChild(btnGroup);
-    app.appendChild(card);
+}
+
+card.appendChild(btnGroup);
+app.appendChild(card);
 }
          
          function renderGlossary() {

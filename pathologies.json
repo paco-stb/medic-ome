@@ -236,7 +236,7 @@
         "name": "Torsion du Testicule",
         "short": "Urgence urologique absolue",
         "pdf": "fiches/torsion.pdf",
-        "signes": {"douleur_abdominale": 5, "douleur_testiculaire_brutale": 30, "testicule_rouge_oedemateux": 20, "bourses_inflammatoires": 15, "signe_gouverneur_negatif": 15, "abolition_reflexe_cremasterien": 25, "retraction_testicule_anneau": 18, "absence_fievre": 10, "absence_signes_urinaires": 10},
+        "signes": {"douleur_abdominale": 27, "douleur_testiculaire_brutale": 30, "testicule_rouge_oedemateux": 20, "bourses_inflammatoires": 15, "signe_gouverneur_negatif": 15, "abolition_reflexe_cremasterien": 25, "retraction_testicule_anneau": 18, "absence_fievre": 10, "absence_signes_urinaires": 10},
         "paraclinique": [],
         "veto": ["douleur_testiculaire_brutale"],
         "boost": ["abolition_reflexe_cremasterien", "signe_gouverneur_negatif"],

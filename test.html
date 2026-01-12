@@ -3938,125 +3938,194 @@ function askNextSmartLeader() {
 }
          
                  function showDiagnostic() {
-             setDocTitle("Analyse...");
-             window.scrollTo(0,0);
-             const app = q('#app'); app.innerHTML = '';
-             const loadingCard = document.createElement('div'); loadingCard.className = 'card center';
-             loadingCard.innerHTML = `<h3 style="color:var(--accent)"><i class="ph-duotone ph-magnifying-glass"></i> Analyse IA en cours...</h3><div style="margin: 30px 0; font-size: 50px; animation: spin 0.8s infinite linear;"><i class="ph-duotone ph-gear"></i></div><p class="small">Comparaison base de données...</p>`;
-             app.appendChild(loadingCard);
-         
-             setTimeout(() => {
-                 rankPathologies();
-                 const top = state.ranked[0];
-                 state.diagnosticShown = true;
-                 state.previousDiagnostics.push(top.patho.name);
-                 setDocTitle(`Diagnostic : ${top.patho.name}`);
-         
-                 app.innerHTML = ''; 
-                 const card = document.createElement('div'); card.className='card center';
-                 const title = document.createElement('h2'); title.innerHTML='<i class="ph-duotone ph-lightbulb"></i> Diagnostic Proposé'; card.appendChild(title);
-                 
-                 // Remplacer la définition de pdfButton par :
-         let pdfButton = '';
+    setDocTitle("Analyse...");
+    window.scrollTo(0, 0);
+    const app = q('#app');
+    app.innerHTML = '';
+    
+    // Carte de chargement
+    const loadingCard = document.createElement('div');
+    loadingCard.className = 'card center';
+    loadingCard.innerHTML = `<h3 style="color:var(--accent)"><i class="ph-duotone ph-magnifying-glass"></i> Analyse IA en cours...</h3><div style="margin: 30px 0; font-size: 50px; animation: spin 0.8s infinite linear;"><i class="ph-duotone ph-gear"></i></div><p class="small">Comparaison base de données...</p>`;
+    app.appendChild(loadingCard);
 
-if (top.patho.pdf && top.patho.pdf !== '#') {
-    // MODIFICATION ICI : On vérifie si c'est un invité standard (sans code premium)
-    if (state.isGuest && !state.isPremiumCode) {
-        // --- PROTECTION INVITÉ CLASSIQUE : BOUTON VERROUILLÉ ---
-        pdfButton = `<button class="btn" style="background:rgba(125,125,125,0.1); border:1px dashed var(--text-muted); color:var(--text-muted); margin-top:10px; font-size:13px;" onclick="showAlert('Les fiches PDF sont réservées aux membres inscrits ou partenaires.<br>Créez un compte gratuit pour y accéder !', 'error')"><i class="ph-duotone ph-lock-key"></i> Fiche PDF (Verrouillée)</button>`;
-    } else {
-        // --- MEMBRE CONNECTÉ OU CODE PREMIUM : LIEN ACTIF ---
-        pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.patho.pdf}" target="_blank" onclick="trackPdf()"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF</a>`;
-    }
-} else {
-    pdfButton = `<span class="small" style="opacity:0.5"><i class="ph-duotone ph-file-x"></i> Pas de fiche PDF</span>`;
+    setTimeout(async () => {
+        rankPathologies();
+        const top = state.ranked[0]; // La proposition n°1 de l'IA
+        state.diagnosticShown = true;
+        state.previousDiagnostics.push(top.patho.name);
+        setDocTitle(`Diagnostic : ${top.patho.name}`);
+
+        app.innerHTML = '';
+        const card = document.createElement('div');
+        card.className = 'card center';
+
+        // --- GESTION DU TITRE ET DE L'AFFICHAGE DU DIAGNOSTIC ---
+        const title = document.createElement('h2');
+        title.innerHTML = '<i class="ph-duotone ph-lightbulb"></i> Diagnostic Proposé';
+        card.appendChild(title);
+
+        // Gestion du bouton PDF (identique à avant)
+        let pdfButton = '';
+        if (top.patho.pdf && top.patho.pdf !== '#') {
+            if (state.isGuest && !state.isPremiumCode) {
+                pdfButton = `<button class="btn" style="background:rgba(125,125,125,0.1); border:1px dashed var(--text-muted); color:var(--text-muted); margin-top:10px; font-size:13px;" onclick="showAlert('Compte requis pour le PDF', 'error')"><i class="ph-duotone ph-lock-key"></i> Fiche PDF (Verrouillée)</button>`;
+            } else {
+                pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.patho.pdf}" target="_blank" onclick="trackPdf()"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF de révision</a>`;
+            }
+        } else {
+            pdfButton = `<span class="small" style="opacity:0.5"><i class="ph-duotone ph-file-x"></i> Pas de fiche PDF</span>`;
+        }
+
+        const diagDiv = document.createElement('div');
+        diagDiv.className = 'diagnostic-result';
+        diagDiv.innerHTML = `
+            <div class="diagnostic-name">${top.patho.name}</div>
+            <div class="patho-desc" style="margin-top:8px">${top.patho.short}</div>
+            <br>${pdfButton}
+        `;
+        card.appendChild(diagDiv);
+
+        // ============================================================
+        // 🚦 LOGIQUE DE VALIDATION (MODIFIÉE)
+        // ============================================================
+        const btnGroup = document.createElement('div');
+        btnGroup.className = 'button-group';
+
+        // --- CAS 1 : MODE EXAMEN (AUTOMATIQUE) ---
+        if (state.exam && state.exam.active) {
+            const targetName = state.dailyTarget.name;
+            const foundName = top.patho.name;
+            const isSuccess = (targetName === foundName);
+
+            // Enregistrement immédiat du résultat dans l'examen
+            state.exam.results.push({
+                target: targetName,
+                found: foundName,
+                success: isSuccess,
+                questions: state.asked.length
+            });
+
+            // Affichage du résultat automatique
+            const resultBanner = document.createElement('div');
+            resultBanner.style.width = "100%";
+            resultBanner.style.padding = "15px";
+            resultBanner.style.borderRadius = "12px";
+            resultBanner.style.marginTop = "20px";
+            resultBanner.style.marginBottom = "20px";
+            resultBanner.style.textAlign = "center";
+            resultBanner.style.fontWeight = "bold";
+
+            if (isSuccess) {
+                // VICTOIRE
+                playSound('success');
+                triggerConfetti();
+                resultBanner.style.background = "rgba(0, 255, 157, 0.15)";
+                resultBanner.style.border = "1px solid var(--success)";
+                resultBanner.style.color = "var(--success)";
+                resultBanner.innerHTML = `
+                    <div style="font-size:2em; margin-bottom:10px;"><i class="ph-fill ph-check-circle"></i></div>
+                    <div>DIAGNOSTIC CORRECT</div>
+                    <div class="small" style="opacity:0.8; font-weight:normal;">L'IA a bien trouvé la pathologie cible.</div>
+                `;
+            } else {
+                // ÉCHEC
+                playSound('error');
+                resultBanner.style.background = "rgba(255, 77, 77, 0.15)";
+                resultBanner.style.border = "1px solid var(--error)";
+                resultBanner.style.color = "var(--error)";
+                resultBanner.innerHTML = `
+                    <div style="font-size:2em; margin-bottom:10px;"><i class="ph-fill ph-x-circle"></i></div>
+                    <div>DIAGNOSTIC INCORRECT</div>
+                    <div class="small" style="opacity:0.8; font-weight:normal; margin-top:5px;">
+                        L'IA a proposé : <strong>${foundName}</strong><br>
+                        Il fallait faire deviner : <strong>${targetName}</strong>
+                    </div>
+                `;
+            }
+            card.insertBefore(resultBanner, btnGroup); // Insérer avant les boutons
+
+            // Bouton "Suivant"
+            const isLast = state.exam.currentIndex + 1 >= state.exam.queue.length;
+            const btnNext = document.createElement('button');
+            btnNext.className = 'btn';
+            btnNext.innerHTML = isLast 
+                ? '<i class="ph-bold ph-chart-line"></i> Voir les résultats finaux' 
+                : '<i class="ph-bold ph-arrow-right"></i> Cas Suivant';
+            
+            btnNext.onclick = () => {
+                state.exam.currentIndex++;
+                playNextExamCase();
+            };
+            btnGroup.appendChild(btnNext);
+
+        } 
+        // --- CAS 2 : MODE STANDARD / ENTRAÎNEMENT (MANUEL) ---
+        else {
+            const btnTrue = document.createElement('button');
+            btnTrue.className = 'btn btn-success';
+            btnTrue.innerHTML = '<i class="ph-bold ph-check"></i> Correct';
+            btnTrue.onclick = async () => {
+                // ... (Code de validation standard inchangé : Confetti, stats, etc.) ...
+                if (state.isGuest) { localStorage.setItem('medicome_guest_last_play', Date.now().toString()); }
+                triggerConfetti(); playSound('success');
+                state.progression.correct++; 
+                state.progression.streak = (state.progression.streak || 0) + 1;
+                
+                // Logic Calendrier Standard
+                const todayKey = new Date().toISOString().split('T')[0];
+                if (!state.progression.dailyHistory) state.progression.dailyHistory = {};
+                if (!state.progression.dailyHistory[todayKey]) state.progression.dailyHistory[todayKey] = { success: [], fail: [] };
+                state.progression.dailyHistory[todayKey].success.push({ name: top.patho.name, time: Date.now() });
+
+                // Gestion Défi du jour standard
+                if (state.dailyTarget && state.dailyTarget.name === top.patho.name) {
+                    const today = new Date().toDateString();
+                    if (state.progression.lastDaily !== today) {
+                        state.progression.lastDaily = today;
+                        state.progression.dailyStreak = (state.progression.dailyStreak || 0) + 1;
+                        showAlert(`<i class="ph-duotone ph-party-popper"></i> Défi du jour réussi !`, "success");
+                    }
+                }
+
+                // Stats Maîtrise
+                if (!state.progression.mastery) state.progression.mastery = {};
+                const pName = top.patho.name;
+                let m = state.progression.mastery[pName];
+                if (!m || typeof m === 'number') m = { success: (typeof m === 'number' ? m : 0), failures: 0, missedSigns: {} };
+                m.success++;
+
+                // Enregistrement des signes manqués (Logique existante)
+                Object.keys(top.patho.signes).forEach(s => {
+                    if (state.answers[s] === false || state.answers[s] === null) {
+                        if (!m.missedSigns[s]) m.missedSigns[s] = 0;
+                        m.missedSigns[s]++;
+                    }
+                });
+                state.progression.mastery[pName] = m;
+
+                updateHeader(); await saveProgression();
+                showAlert('<i class="ph-duotone ph-check-circle"></i> Diagnostic validé !', 'success');
+                showDiagnosticDetails({ patho: top.patho });
+            };
+
+            const btnFalse = document.createElement('button');
+            btnFalse.className = 'btn btn-error';
+            btnFalse.innerHTML = '<i class="ph-bold ph-x"></i> Incorrect';
+            btnFalse.onclick = async () => {
+                playSound('error');
+                showManualPathologySelection("incorrect_diagnosis");
+            };
+
+            btnGroup.appendChild(btnTrue);
+            btnGroup.appendChild(btnFalse);
+        }
+
+        card.appendChild(btnGroup);
+        app.appendChild(card);
+
+    }, 1500); // Fin du setTimeout
 }
-                 const diagDiv = document.createElement('div'); diagDiv.className='diagnostic-result';
-                 diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div>
-                 <div style="margin: 15px 0; max-width: 100%;">
-                 </div>
-                 <div class="patho-desc" style="margin-top:8px">${top.patho.short}</div><br>${pdfButton}`;
-                 card.appendChild(diagDiv);
-                 
-                 const btnGroup = document.createElement('div'); btnGroup.className='button-group';
-                 
-                 const btnTrue = document.createElement('button'); btnTrue.className='btn btn-success'; btnTrue.innerHTML='<i class="ph-bold ph-check"></i> Correct';
-                 btnTrue.onclick = async () => { 
-                     // --- CORRECTION ICI ---
-                     if(state.isGuest) {
-                         localStorage.setItem('medicome_guest_last_play', Date.now().toString());
-                     }
-                     // ----------------------
-         
-                     triggerConfetti(); playSound('success');
-                     state.progression.correct++; state.progression.streak = (state.progression.streak || 0) + 1;
-                     // --- AJOUT CALENDRIER (Victoire) ---
-const todayKey = new Date().toISOString().split('T')[0]; // Format "YYYY-MM-DD"
-if(!state.progression.dailyHistory) state.progression.dailyHistory = {};
-if(!state.progression.dailyHistory[todayKey]) state.progression.dailyHistory[todayKey] = { success: [], fail: [] };
-
-// On ajoute la patho si elle n'y est pas déjà pour éviter les doublons le même jour (optionnel)
-state.progression.dailyHistory[todayKey].success.push({ name: top.patho.name, time: Date.now() });
-// -----------------------------------
-                     
-                     if(state.dailyTarget && state.dailyTarget.name === top.patho.name) {
-                         const today = new Date().toDateString();
-                         if(state.progression.lastDaily !== today) {
-                             state.progression.lastDaily = today;
-                             state.progression.dailyStreak = (state.progression.dailyStreak || 0) + 1;
-                             showAlert(`<i class="ph-duotone ph-party-popper"></i> Défi du jour réussi ! Série : ${state.progression.dailyStreak}`, "success");
-                         }
-                     }
-         
-                     if(!state.progression.mastery) state.progression.mastery = {};
-                     const pName = top.patho.name;
-                     let m = state.progression.mastery[pName];
-                     if(!m) m = { success: 0, failures: 0, missedSigns: {} };
-                     if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
-                     
-                     m.success++;
-                     
-                     if(state.isChrono && state.startTime) {
-                         const duration = (Date.now() - state.startTime) / 1000;
-                         if(duration < 30) {
-                             state.progression.speedWins = (state.progression.speedWins || 0) + 1;
-                         }
-                         if(!state.progression.bestTimes) state.progression.bestTimes = {};
-                         if(!state.progression.bestTimes[pName] || duration < state.progression.bestTimes[pName]) {
-                             state.progression.bestTimes[pName] = duration;
-                             showAlert(`<i class="ph-duotone ph-lightning"></i> Nouveau Record : ${duration.toFixed(1)}s`, 'info');
-                         }
-                     }
-         
-                     Object.keys(top.patho.signes).forEach(s => {
-                         if(state.answers[s] === false || state.answers[s] === null) { 
-                             if(!m.missedSigns[s]) m.missedSigns[s] = 0;
-                             m.missedSigns[s]++;
-                         }
-                     });
-                     
-                     Object.keys(state.answers).forEach(s => {
-                         if (state.answers[s] === true && !top.patho.signes[s]) {
-                             if(!m.missedSigns[s]) m.missedSigns[s] = 0;
-                             m.missedSigns[s]++;
-                         }
-                     });
-         
-                     state.progression.mastery[pName] = m;
-                     
-                     updateHeader(); await saveProgression(); 
-                     showAlert('<i class="ph-duotone ph-check-circle"></i> Diagnostic validé !','success'); showDiagnosticDetails({patho: top.patho});
-                 };
-                 
-                 const btnFalse = document.createElement('button'); btnFalse.className='btn btn-error'; btnFalse.innerHTML='<i class="ph-bold ph-x"></i> Incorrect';
-                 btnFalse.onclick = async () => { 
-                     playSound('error');
-    showManualPathologySelection("incorrect_diagnosis");
-};
-                 
-                 btnGroup.appendChild(btnTrue); btnGroup.appendChild(btnFalse); card.appendChild(btnGroup); app.appendChild(card);
-             }, 1500);
-         }
          
          
          function showDiagnosticDetails(data, wasManualError = false) {

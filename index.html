@@ -1882,9 +1882,21 @@ function renderExamSummary() {
          renderDemographics();
          };
          
-            const btnExam = document.createElement('button'); btnExam.className='link'; btnExam.innerHTML='<i class="ph-duotone ph-exam"></i> Examen Blanc'; btnExam.style.marginTop='6px'; 
-btnExam.style.border='2px solid var(--accent)'; btnExam.style.fontWeight='700';
-btnExam.onclick=renderExamConfig;
+           const btnExam = document.createElement('button'); 
+btnExam.className='btn'; 
+// Style violet pour le distinguer
+btnExam.style.background = 'linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%)'; 
+btnExam.style.marginTop='15px'; 
+btnExam.innerHTML='<i class="ph-duotone ph-exam"></i> Examen Blanc'; 
+
+btnExam.onclick = () => {
+    // On bloque les invités qui n'ont pas de code VIP
+    if (state.isGuest && !state.isPremiumCode) {
+        showAlert("Mode réservé aux inscrits ou accès partenaire.", "error");
+        return;
+    }
+    renderExamConfig();
+};
 
 const btnGloss = document.createElement('button'); btnGloss.className='link'; btnGloss.innerHTML='<i class="ph-duotone ph-book-bookmark"></i> Glossaire'; btnGloss.style.marginTop='12px'; btnGloss.onclick=renderGlossary;
 const btnProf = document.createElement('button'); btnProf.className='link'; btnProf.innerHTML='<i class="ph-duotone ph-user-circle"></i> Profil & Succès'; btnProf.style.marginTop='6px'; btnProf.onclick=renderProfile;
@@ -2700,12 +2712,21 @@ function showDayDetails(dateStr, data) {
          const card = document.createElement('div');
          card.className = 'card center';
          
-         // --- EN-TÊTE ---
-         if (state.dailyTarget) {
-         card.innerHTML = `<h3><i class="ph-duotone ph-sun color-gold"></i> Défi du Jour</h3><p class="small" style="margin-bottom:20px; color:var(--gold);">Cible : ${state.dailyTarget.name}</p>`;
-         } else {
-         card.innerHTML = `<h3 style="text-align:center; margin-bottom:15px;"><i class="ph-duotone ph-user-list"></i> Profil Patient</h3><p class="small" style="margin-bottom:20px">Définissez le terrain et le contexte clinique.</p>`;
-         }
+         // --- EN-TÊTE (Modifié pour gérer le titre Examen) ---
+          if (state.exam && state.exam.active) {
+             // Si on est en mode examen
+             const currentCase = state.exam.currentIndex + 1;
+             const totalCases = state.exam.queue.length;
+             card.innerHTML = `<h3><i class="ph-duotone ph-student color-accent"></i> Examen Blanc</h3><p class="small" style="margin-bottom:20px; color:var(--accent);">Cas Clinique ${currentCase} / ${totalCases}</p>`;
+          } 
+          else if (state.dailyTarget) {
+             // Si c'est le défi du jour normal
+             card.innerHTML = `<h3><i class="ph-duotone ph-sun color-gold"></i> Défi du Jour</h3><p class="small" style="margin-bottom:20px; color:var(--gold);">Cible : ${state.dailyTarget.name}</p>`;
+          } 
+          else {
+             // Si c'est un entrainement libre
+             card.innerHTML = `<h3 style="text-align:center; margin-bottom:15px;"><i class="ph-duotone ph-user-list"></i> Profil Patient</h3><p class="small" style="margin-bottom:20px">Définissez le terrain et le contexte clinique.</p>`;
+          }
          
          // --- 1. IDENTITÉ (Sexe & Âge) ---
          const genderContainer = document.createElement('div');
@@ -3942,7 +3963,7 @@ function askNextSmartLeader() {
     window.scrollTo(0, 0);
     const app = q('#app');
     app.innerHTML = '';
-    
+
     // Carte de chargement
     const loadingCard = document.createElement('div');
     loadingCard.className = 'card center';
@@ -3951,7 +3972,15 @@ function askNextSmartLeader() {
 
     setTimeout(async () => {
         rankPathologies();
-        const top = state.ranked[0]; // La proposition n°1 de l'IA
+        // SÉCURITÉ : Vérifier si on a un résultat
+        const top = state.ranked.length > 0 ? state.ranked[0] : null;
+
+        if (!top) {
+            // Si l'IA ne trouve rien du tout (cas rare), on force une sortie propre
+            app.innerHTML = `<div class="card center"><h2 style="color:var(--error)">Aucun diagnostic trouvé</h2><p>L'IA n'a pas pu trancher. Essayez de donner plus de symptômes.</p><button class="btn" onclick="renderHome()">Retour Accueil</button></div>`;
+            return;
+        }
+
         state.diagnosticShown = true;
         state.previousDiagnostics.push(top.patho.name);
         setDocTitle(`Diagnostic : ${top.patho.name}`);
@@ -3965,7 +3994,7 @@ function askNextSmartLeader() {
         title.innerHTML = '<i class="ph-duotone ph-lightbulb"></i> Diagnostic Proposé';
         card.appendChild(title);
 
-        // Gestion du bouton PDF (identique à avant)
+        // Gestion du bouton PDF
         let pdfButton = '';
         if (top.patho.pdf && top.patho.pdf !== '#') {
             if (state.isGuest && !state.isPremiumCode) {
@@ -3987,24 +4016,28 @@ function askNextSmartLeader() {
         card.appendChild(diagDiv);
 
         // ============================================================
-        // 🚦 LOGIQUE DE VALIDATION (MODIFIÉE)
+        // 🚦 LOGIQUE DE VALIDATION
         // ============================================================
         const btnGroup = document.createElement('div');
         btnGroup.className = 'button-group';
 
         // --- CAS 1 : MODE EXAMEN (AUTOMATIQUE) ---
-        if (state.exam && state.exam.active) {
+        // --- CAS 1 : MODE EXAMEN (AUTOMATIQUE) ---
+        if (state.exam && state.exam.active && state.dailyTarget) {
             const targetName = state.dailyTarget.name;
             const foundName = top.patho.name;
             const isSuccess = (targetName === foundName);
 
-            // Enregistrement immédiat du résultat dans l'examen
-            state.exam.results.push({
-                target: targetName,
-                found: foundName,
-                success: isSuccess,
-                questions: state.asked.length
-            });
+            // Enregistrement immédiat du résultat dans l'examen (si pas déjà fait)
+            const currentResultIndex = state.exam.results.length;
+            if (currentResultIndex === state.exam.currentIndex) {
+                state.exam.results.push({
+                    target: targetName,
+                    found: foundName,
+                    success: isSuccess,
+                    questions: state.asked.length
+                });
+            }
 
             // Affichage du résultat automatique
             const resultBanner = document.createElement('div');
@@ -4043,7 +4076,12 @@ function askNextSmartLeader() {
                     </div>
                 `;
             }
-            card.insertBefore(resultBanner, btnGroup); // Insérer avant les boutons
+            
+            // --- CORRECTION ICI ---
+            // On ajoute simplement le banner à la carte. 
+            // Comme le btnGroup est ajouté plus bas dans le code, le banner sera bien AU-DESSUS des boutons.
+            card.appendChild(resultBanner); 
+            // ---------------------
 
             // Bouton "Suivant"
             const isLast = state.exam.currentIndex + 1 >= state.exam.queue.length;
@@ -4059,14 +4097,13 @@ function askNextSmartLeader() {
             };
             btnGroup.appendChild(btnNext);
 
-        } 
+        }
         // --- CAS 2 : MODE STANDARD / ENTRAÎNEMENT (MANUEL) ---
         else {
             const btnTrue = document.createElement('button');
             btnTrue.className = 'btn btn-success';
             btnTrue.innerHTML = '<i class="ph-bold ph-check"></i> Correct';
             btnTrue.onclick = async () => {
-                // ... (Code de validation standard inchangé : Confetti, stats, etc.) ...
                 if (state.isGuest) { localStorage.setItem('medicome_guest_last_play', Date.now().toString()); }
                 triggerConfetti(); playSound('success');
                 state.progression.correct++; 
@@ -4095,7 +4132,6 @@ function askNextSmartLeader() {
                 if (!m || typeof m === 'number') m = { success: (typeof m === 'number' ? m : 0), failures: 0, missedSigns: {} };
                 m.success++;
 
-                // Enregistrement des signes manqués (Logique existante)
                 Object.keys(top.patho.signes).forEach(s => {
                     if (state.answers[s] === false || state.answers[s] === null) {
                         if (!m.missedSigns[s]) m.missedSigns[s] = 0;
@@ -4124,11 +4160,19 @@ function askNextSmartLeader() {
         card.appendChild(btnGroup);
         app.appendChild(card);
 
-    }, 1500); // Fin du setTimeout
+    }, 1500); 
 }
          
          
          function showDiagnosticDetails(data, wasManualError = false) {
+    // --- CORRECTIF SÉCURITÉ ---
+    // Si pour une raison quelconque, la pathologie est introuvable, on arrête tout pour éviter le crash.
+    if (!data || !data.patho) {
+        console.error("Erreur : Aucune pathologie transmise à l'affichage des détails.");
+        return;
+    }
+    // --------------------------
+
     window.scrollTo(0, 0);
     const top = data.patho;
     setDocTitle(top.name);
@@ -4137,6 +4181,9 @@ function askNextSmartLeader() {
     const card = document.createElement('div');
     card.className = 'card';
 
+    // ... (Le reste de la fonction reste identique, je ne remets pas tout pour ne pas surcharger)
+    // Mais assure-toi de garder tout le code qui est en dessous de "const card = ..." jusqu'à la fermeture de la fonction "}".
+    
     if (wasManualError) {
         card.innerHTML = `
             <h2 style="color:var(--error)">
@@ -4208,7 +4255,7 @@ function askNextSmartLeader() {
             state.answers[s] === true && !top.signes[s]
         );
 
-        // SECTION VERTE : Bien vu !
+        // SECTION VERTE
         if (goodSigns.length > 0) {
             resultsDiv.innerHTML += `
                 <div class="result-section-title" style="color:var(--success)">
@@ -4226,7 +4273,7 @@ function askNextSmartLeader() {
             });
         }
 
-        // SÉPARER les VRAIES erreurs des signes "pas demandés"
+        // SÉPARER les VRAIES erreurs
         const realMistakes = missedSigns.filter(s => 
             state.answers[s] === false || state.answers[s] === null
         );
@@ -4235,7 +4282,7 @@ function askNextSmartLeader() {
             state.answers[s] === undefined
         );
 
-        // SECTION ROUGE : Tes VRAIES erreurs
+        // SECTION ROUGE
         if (realMistakes.length > 0) {
             resultsDiv.innerHTML += `
                 <div class="result-section-title" style="color:var(--error); margin-top:15px;">
@@ -4264,7 +4311,7 @@ function askNextSmartLeader() {
             });
         }
 
-        // SECTION BLEUE : Signes non explorés (pas ta faute)
+        // SECTION BLEUE
         if (notAsked.length > 0) {
             resultsDiv.innerHTML += `
                 <div class="result-section-title" style="color:#6c9bd1; margin-top:15px;">
@@ -4291,7 +4338,7 @@ function askNextSmartLeader() {
             });
         }
 
-        // SECTION ORANGE : Inventions / Confusions
+        // SECTION ORANGE
         if (wrongSigns.length > 0) {
             resultsDiv.innerHTML += `
                 <div class="result-section-title" style="color:orange; margin-top:15px;">
@@ -4334,60 +4381,59 @@ function askNextSmartLeader() {
     }
 
     const btnGroup = document.createElement('div'); 
-btnGroup.className = 'button-group';
+    btnGroup.className = 'button-group';
 
-// === MODE EXAMEN ===
-if (state.exam && state.exam.active) {
-    const isSuccess = (top.name === state.dailyTarget.name);
-    
-    // Enregistrer le résultat (une seule fois)
-    if (state.exam.results.length === state.exam.currentIndex) {
-        state.exam.results.push({
-            target: state.dailyTarget.name,
-            found: top.name,
-            success: isSuccess,
-            questions: state.asked.length
-        });
-    }
-    
-    const isLast = state.exam.currentIndex + 1 >= state.exam.queue.length;
-    const btnNext = document.createElement('button'); 
-    btnNext.className = 'btn';
-    btnNext.innerHTML = isLast 
-        ? '<i class="ph-bold ph-chart-line"></i> Voir les résultats' 
-        : '<i class="ph-bold ph-arrow-right"></i> Cas Suivant';
-    
-    btnNext.onclick = () => {
-        state.exam.currentIndex++;
-        playNextExamCase();
-    };
-    
-    btnGroup.appendChild(btnNext);
-} else {
-    // === MODE STANDARD ===
-    const btnReplay = document.createElement('button'); 
-    btnReplay.className = 'btn btn-success'; 
-    btnReplay.innerHTML = '<i class="ph-duotone ph-arrow-clockwise"></i> Rejouer';
-    btnReplay.onclick = () => { 
-        const limit = checkGuestLimit();
-        if (!limit.allowed) {
-            showAlert(`Mode invité limité !`, "error"); 
-            return;
+    // === MODE EXAMEN ===
+    if (state.exam && state.exam.active) {
+        const isSuccess = (top.name === state.dailyTarget.name);
+        
+        if (state.exam.results.length === state.exam.currentIndex) {
+            state.exam.results.push({
+                target: state.dailyTarget.name,
+                found: top.name,
+                success: isSuccess,
+                questions: state.asked.length
+            });
         }
-        state.dailyTarget = null; 
-        renderDemographics(); 
-    };
-    
-    const btnHome = document.createElement('button'); 
-    btnHome.className = 'link'; 
-    btnHome.innerHTML = '<i class="ph-duotone ph-house"></i> Accueil';
-    btnHome.onclick = renderHome;
+        
+        const isLast = state.exam.currentIndex + 1 >= state.exam.queue.length;
+        const btnNext = document.createElement('button'); 
+        btnNext.className = 'btn';
+        btnNext.innerHTML = isLast 
+            ? '<i class="ph-bold ph-chart-line"></i> Voir les résultats' 
+            : '<i class="ph-bold ph-arrow-right"></i> Cas Suivant';
+        
+        btnNext.onclick = () => {
+            state.exam.currentIndex++;
+            playNextExamCase();
+        };
+        
+        btnGroup.appendChild(btnNext);
+    } else {
+        // === MODE STANDARD ===
+        const btnReplay = document.createElement('button'); 
+        btnReplay.className = 'btn btn-success'; 
+        btnReplay.innerHTML = '<i class="ph-duotone ph-arrow-clockwise"></i> Rejouer';
+        btnReplay.onclick = () => { 
+            const limit = checkGuestLimit();
+            if (!limit.allowed) {
+                showAlert(`Mode invité limité !`, "error"); 
+                return;
+            }
+            state.dailyTarget = null; 
+            renderDemographics(); 
+        };
+        
+        const btnHome = document.createElement('button'); 
+        btnHome.className = 'link'; 
+        btnHome.innerHTML = '<i class="ph-duotone ph-house"></i> Accueil';
+        btnHome.onclick = renderHome;
 
-    btnGroup.append(btnReplay, btnHome);
-}
+        btnGroup.append(btnReplay, btnHome);
+    }
 
-card.appendChild(btnGroup);
-app.appendChild(card);
+    card.appendChild(btnGroup);
+    app.appendChild(card);
 }
          
          function renderGlossary() {

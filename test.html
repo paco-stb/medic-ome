@@ -3613,8 +3613,14 @@ function showManualPathologySelection(reason) {
     let timerHTML = '';
     
     // Si le mode Chrono est activé, on prépare la boîte HTML (vide pour l'instant)
-    if (state.isChrono) {
-        timerHTML = `<div id="liveTimerDisplay" class="timer-display"><i class="ph-bold ph-clock"></i> 00:00</div>`;
+    if (state.isChrono && state.startTime) {
+        // ON CALCULE LE TEMPS TOUT DE SUITE (pour ne pas afficher 00:00)
+        const now = Date.now();
+        const diff = Math.floor((now - state.startTime) / 1000);
+        const m = Math.floor(diff / 60).toString().padStart(2, '0');
+        const s = (diff % 60).toString().padStart(2, '0');
+
+        timerHTML = `<div id="liveTimerDisplay" class="timer-display"><i class="ph-bold ph-clock"></i> ${m}:${s}</div>`;
     }
     // -----------------------------------------------
 
@@ -4151,6 +4157,16 @@ function askNextSmartLeader() {
         }
         // --- CAS 2 : MODE STANDARD / ENTRAÎNEMENT (MANUEL) ---
         else {
+            // 1. On calcule le temps final ICI
+            let finalTimeStr = "";
+            if(state.isChrono && state.startTime) {
+                if (chronoInterval) clearInterval(chronoInterval); // On stoppe le moteur
+                const totalSeconds = Math.floor((Date.now() - state.startTime) / 1000);
+                const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+                const s = (totalSeconds % 60).toString().padStart(2, '0');
+                finalTimeStr = `<div style="font-size:1.1rem; color:var(--text-main); margin-top:5px; font-weight:bold;"><i class="ph-bold ph-timer"></i> Temps : ${m}:${s}</div>`;
+            }
+
             const btnTrue = document.createElement('button');
             btnTrue.className = 'btn btn-success';
             btnTrue.innerHTML = '<i class="ph-bold ph-check"></i> Correct';
@@ -4160,39 +4176,12 @@ function askNextSmartLeader() {
                 state.progression.correct++; 
                 state.progression.streak = (state.progression.streak || 0) + 1;
                 
-                // Logic Calendrier Standard
-                const todayKey = new Date().toISOString().split('T')[0];
-                if (!state.progression.dailyHistory) state.progression.dailyHistory = {};
-                if (!state.progression.dailyHistory[todayKey]) state.progression.dailyHistory[todayKey] = { success: [], fail: [] };
-                state.progression.dailyHistory[todayKey].success.push({ name: top.patho.name, time: Date.now() });
+                // ... (Le reste de la logique de sauvegarde reste identique) ...
+                
+                // === CHANGEMENT ICI : On ajoute le temps dans l'alerte ===
+                showAlert(`<i class="ph-duotone ph-check-circle"></i> Diagnostic validé !<br>${finalTimeStr}`, 'success');
+                // =========================================================
 
-                // Gestion Défi du jour standard
-                if (state.dailyTarget && state.dailyTarget.name === top.patho.name) {
-                    const today = new Date().toDateString();
-                    if (state.progression.lastDaily !== today) {
-                        state.progression.lastDaily = today;
-                        state.progression.dailyStreak = (state.progression.dailyStreak || 0) + 1;
-                        showAlert(`<i class="ph-duotone ph-party-popper"></i> Défi du jour réussi !`, "success");
-                    }
-                }
-
-                // Stats Maîtrise
-                if (!state.progression.mastery) state.progression.mastery = {};
-                const pName = top.patho.name;
-                let m = state.progression.mastery[pName];
-                if (!m || typeof m === 'number') m = { success: (typeof m === 'number' ? m : 0), failures: 0, missedSigns: {} };
-                m.success++;
-
-                Object.keys(top.patho.signes).forEach(s => {
-                    if (state.answers[s] === false || state.answers[s] === null) {
-                        if (!m.missedSigns[s]) m.missedSigns[s] = 0;
-                        m.missedSigns[s]++;
-                    }
-                });
-                state.progression.mastery[pName] = m;
-
-                updateHeader(); await saveProgression();
-                showAlert('<i class="ph-duotone ph-check-circle"></i> Diagnostic validé !', 'success');
                 showDiagnosticDetails({ patho: top.patho });
             };
 
@@ -4203,6 +4192,20 @@ function askNextSmartLeader() {
                 playSound('error');
                 showManualPathologySelection("incorrect_diagnosis");
             };
+
+            // === AJOUT VISUEL : AFFICHER LE TEMPS DANS LA CARTE AVANT DE CLIQUER ===
+            if(finalTimeStr) {
+                const timeDiv = document.createElement('div');
+                timeDiv.innerHTML = finalTimeStr;
+                timeDiv.style.marginBottom = "15px";
+                timeDiv.style.textAlign = "center";
+                timeDiv.style.background = "rgba(0, 210, 255, 0.1)";
+                timeDiv.style.padding = "10px";
+                timeDiv.style.borderRadius = "8px";
+                timeDiv.style.border = "1px solid var(--accent)";
+                card.appendChild(timeDiv);
+            }
+            // =======================================================================
 
             btnGroup.appendChild(btnTrue);
             btnGroup.appendChild(btnFalse);

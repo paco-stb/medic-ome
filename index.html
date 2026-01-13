@@ -610,7 +610,16 @@
          import { getFirestore, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, collection, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
          import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
          import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-         
+
+         // --- AJOUTE CECI ICI ---
+   function getLocalDayKey() {
+       const date = new Date();
+       // On décale l'heure en soustrayant le décalage horaire
+       const localDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+       // On retourne la date au format AAAA-MM-JJ
+       return localDate.toISOString().split("T")[0];
+   }
+  
          // --- FONCTION POUR CHANGER LE TITRE DYNAMIQUEMENT ---
          function setDocTitle(titre) {
              const baseName = "Medicome - Cas Cliniques Interactifs";
@@ -626,20 +635,141 @@
          let GLOBAL_IMG_MAP = {};
          
          const REFINEMENTS = {
-    "douleur_thoracique": ["douleur_thoracique_constrictive", "douleur_thoracique_dechirante", "douleur_latero_thoracique_brutale", "douleur_thoracique_respiratoire", "douleur_thoracique_basithoracique", "irradiation_bras_gauche_machoire", "irradiation_dorsale_interscapulaire", "soulage_position_penche_avant"],
-    "douleur_abdominale": ["douleur_migratrice_epigastre_fid", "douleur_point_mcburney", "douleur_hypocondre_droit", "douleur_epigastrique_transfixiante", "douleur_abdominale_dorsale_brutale", "douleur_fossa_lombaire_brutale", "douleur_fig", "douleur_pelvienne_lateralisee", "douleur_pelvienne_bilaterale", "defense_fid", "contracture_invincible_ventre_bois"],
-    "toux": ["toux_seche", "toux_grasse", "toux_chronique", "toux_aboyante_rauque", "toux_quinteuse_emetisante", "reprise_inspiratoire_chant_coq", "expectorations_mousseuses_saumonees", "expectorations_purulentes", "hemoptysie"],
-    "dyspnee": ["dyspnee_effort", "dyspnee_brutale", "orthopnee", "dyspnee_expiratoire", "bradypnee_inspiratoire", "dyspnee_sifflante", "freinage_expiratoire"],
-    "fievre": ["fievre_elevee", "fievre_moderee", "frissons_intenses_inauguraux", "sueurs_nocturnes", "triade_frissons_chaleur_sueurs"],
-    "cephalees": ["cephalee_coup_tonnerre", "cephalees_progressives", "cephalee_unilaterale", "pulsatilite", "raideur_nuque", "photophobie_phonophobie"],
-    "troubles_visuels": ["diplopie", "vision_floue", "baisse_acuite_visuelle_unilaterale", "metamorphopsies", "scotome_central", "phosphenes_eclairs", "myodesopsies_pluie_suie", "vision_halos_colores"],
-    "troubles_neuro": ["hemiplegie", "aphasie", "perte_connaissance_brutale", "convulsions", "confusion", "tremblement_repos", "rigidite_plastique_roue_dentee", "paralysie_ascendante_symetrique"],
-    "anomalie_peau": ["ictere", "purpura_fulminans", "eruption_vesiculeuse_metamerique", "plaques_erythemato_squameuses", "erytheme_migrant_pathognomonique", "tache_vasculaire_saignante"],
-    "genes_urinaires": ["brulures_mictionnelles", "hematurie_macroscopique_totale", "urines_troubles_malodorantes", "pollakiurie", "dysurie", "anurie_oligurerie", "globe_vesical_palpable"],
-    "douleur_membre_traumatisme": ["impotence_fonctionnelle_totale", "raccourcissement_membre", "rotation_externe_pied", "deformtion_dos_fourchette", "douleur_brutale_intense", "abolition_pouls_distaux"],
-    "douleur_dos": ["douleur_lombaire_brutale_effort", "douleur_trajet_membre_inf", "rachialgies_inflammatoires", "impulsivite_toux"],
-    "trouble_psy": ["humeur_triste_constante", "idees_suicidaires", "syndrome_delirant_paranoide", "episode_maniaque", "peur_intense_brutale", "dysmorphophobie"]
+    "douleur_thoracique": [
+        "douleur_thoracique_constrictive",      // Infarctus
+        "douleur_thoracique_dechirante",        // Dissection
+        "douleur_latero_thoracique_brutale",    // Pneumothorax
+        "douleur_thoracique_respiratoire",      // Péricardite / Pneumonie
+        "douleur_thoracique_basithoracique",    // Embolie
+        "irradiation_bras_gauche_machoire",     // Infarctus
+        "irradiation_dorsale_interscapulaire",  // Dissection
+        "soulage_position_penche_avant",        // Péricardite
+        "douleur_thoracique_atypique"           // Angoisse / FA
+    ],
+    "douleur_abdominale": [
+        "douleur_migratrice_epigastre_fid",     // Appendicite
+        "douleur_point_mcburney",               // Appendicite
+        "douleur_hypocondre_droit",             // Cholécystite
+        "douleur_epigastrique_transfixiante",   // Pancréatite
+        "douleur_abdominale_dorsale_brutale",   // Rupture AAA
+        "douleur_fosse_lombaire_brutale",       // Colique Néphrétique (CORRIGÉ: fosse)
+        "douleur_fig",                          // Sigmoïdite
+        "douleur_pelvienne_lateralisee",        // GEU / Kyste
+        "douleur_pelvienne_bilaterale",         // Salpingite
+        "defense_fid",                          // Appendicite
+        "contracture_invincible_ventre_bois",   // Péritonite
+        "douleur_brutale_hcd",                  // Lithiase biliaire
+        "crampes_abdominales"                   // Gastro
+    ],
+    "toux": [
+        "toux_seche",                           // Pneumothorax / Grippe
+        "toux_grasse",                          // Bronchite
+        "toux_chronique",                       // Tuberculose
+        "toux_aboyante_rauque",                 // Laryngite
+        "toux_quinteuse_emetisante",            // Coqueluche
+        "reprise_inspiratoire_chant_coq",       // Coqueluche
+        "expectorations_mousseuses_roses",      // OAP (CORRIGÉ: roses)
+        "expectorations_purulentes",            // BPCO / Pneumonie
+        "hemoptysie"                            // EP / Cancer / Tuberculose
+    ],
+    "dyspnee": [
+        "dyspnee_effort",                       // Anémie / IC
+        "dyspnee_brutale",                      // EP
+        "orthopnee",                            // OAP
+        "dyspnee_expiratoire",                  // Asthme
+        "bradypnee_inspiratoire",               // Laryngite
+        "dyspnee_sifflante",                    // Asthme / Bronchiolite
+        "freinage_expiratoire",                 // Asthme / BPCO
+        "polypnee"                              // Choc
+    ],
+    "fievre": [
+        "fievre_elevee",                        // Grippe / Méningite
+        "fievre_moderee",                       // Appendicite
+        "frissons_intenses",                    // Pneumonie / Pyélo
+        "sueurs_nocturnes",                     // Tuberculose / Lymphome
+        "triade_frissons_chaleur_sueurs",       // Paludisme
+        "fievre_retour_voyage"                  // Paludisme
+    ],
+    "cephalees": [
+        "cephalee_coup_tonnerre",               // HSA
+        "cephalees_progressives",               // HSD / Tumeur
+        "cephalee_unilaterale",                 // Migraine
+        "pulsatilite",                          // Migraine
+        "raideur_nuque",                        // Méningite / HSA
+        "photophobie_phonophobie",              // Méningite / Migraine
+        "cephalees_retro_orbitaires",           // Grippe
+        "cephalees_matinales"                   // Apnée du sommeil
+    ],
+    "troubles_visuels": [
+        "diplopie",                             // Myasthénie
+        "vision_floue",                         
+        "baisse_acuite_visuelle_unilaterale",   // Glaucome / Névrite
+        "metamorphopsies",                      // DMLA
+        "scotome_central",                      // DMLA
+        "phosphenes_eclairs",                   // Décollement rétine
+        "myodesopsies_pluie_suie",              // Décollement rétine
+        "vision_halos_colores",                 // Glaucome
+        "amputation_champ_visuel_peripherique"  // Décollement rétine
+    ],
+    "troubles_neuro": [
+        "hemiplegie",                           // AVC
+        "aphasie",                              // AVC
+        "perte_connaissance_brutale",           // Épilepsie
+        "convulsions",                          // Épilepsie
+        "confusion",                            // Choc / Hypoglycémie
+        "tremblement_repos",                    // Parkinson
+        "rigidite_plastique_roue_dentee",       // Parkinson
+        "paralysie_ascendante_symetrique",      // Guillain-Barré
+        "paralysie_faciale_centrale"            // AVC
+    ],
+    "anomalie_peau": [
+        "ictere",                               // Cirrhose / Drépanocytose
+        "ictere_cutaneo_muqueux",               // Hépatite (AJOUTÉ)
+        "purpura_fulminans",                    // Méningite
+        "eruption_vesiculeuse_metamerique",     // Zona
+        "plaques_erythemato_squameuses",        // Psoriasis
+        "erytheme_migrant_pathognomonique",     // Lyme
+        "tache_vasculaire_saignante",           // Epistaxis
+        "melanodermie",                         // Addison
+        "eruption_maculo_papuleuse_descendante",// Rougeole
+        "prurit_nocturne"                       // Gale
+    ],
+    "genes_urinaires": [
+        "brulures_mictionnelles",               // Cystite / Pyélo
+        "hematurie_macroscopique_totale",       // Cancer Vessie
+        "urines_troubles_malodorantes",         // Cystite
+        "pollakiurie",                          // Cystite / Prostate
+        "dysurie",                              // Prostate
+        "anurie_oligurerie",                    // IRA
+        "globe_vesical_palpable"                // RAU
+    ],
+    "douleur_membre_traumatisme": [
+        "impotence_fonctionnelle_totale",       // Fracture
+        "raccourcissement_membre",              // Fracture col fémur
+        "rotation_externe_pied",                // Fracture col fémur
+        "deformtion_dos_fourchette",            // Pouteau-Colles (Laisser la faute car elle est dans le JSON)
+        "douleur_brutale_intense",              // Ischémie
+        "abolition_pouls_distaux",              // Ischémie
+        "articulation_rouge_chaude_gonflee",    // Arthrite
+        "monoarthrite_gros_orteil"              // Goutte
+    ],
+    "douleur_dos": [
+        "douleur_lombaire_brutale_effort",      // Lumbago
+        "douleur_trajet_membre_inf",            // Sciatique / Hernie
+        "rachialgies_inflammatoires",           // Spondylarthrite
+        "impulsivite_toux"                      // Hernie / Sciatique
+    ],
+    "trouble_psy": [
+        "humeur_triste_constante",              // Dépression
+        "idees_suicidaires",                    // Dépression
+        "syndrome_delirant_paranoide",          // Schizophrénie
+        "episode_maniaque",                     // Bipolaire
+        "peur_intense_brutale",                 // Panique
+        "dysmorphophobie",                      // Anorexie
+        "triade_3A"                             // Anorexie
+    ]
 };
+
     // Les "Chefs de file" : Questions génériques qui orientent vers une spécialité
 const GENERAL_SYMPTOMS = [
     "douleur_thoracique",       // Oriente vers Cardio / Pneumo
@@ -3558,7 +3688,7 @@ function showManualPathologySelection(reason) {
         
         state.progression.incorrect++;
         
-        const todayKey = new Date().toISOString().split('T')[0];
+        const todayKey = getLocalDayKey();
         if(!state.progression.dailyHistory) state.progression.dailyHistory = {};
         if(!state.progression.dailyHistory[todayKey]) {
             state.progression.dailyHistory[todayKey] = { success: [], fail: [] };

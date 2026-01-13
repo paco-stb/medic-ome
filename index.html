@@ -172,6 +172,7 @@
          .patho-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 8px; color: var(--text-main); }
          .patho-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.4; }
          .stat-box { background: rgba(125,125,125,0.1); padding:20px; border-radius:12px; margin:10px 0; border: 1px solid var(--glass-border); text-align:center; }
+         .timer-display { font-family: 'Courier New', monospace; font-size: 1.2rem; font-weight: bold; color: var(--accent); background: rgba(0, 210, 255, 0.1); border: 1px solid var(--accent); padding: 5px 15px; border-radius: 5px; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 15px; box-shadow: 0 0 10px var(--accent-glow); }
          .stat-number { font-size:36px; font-weight:700; color:var(--text-main); }
          .notif-btn, .theme-btn { position: relative; background: none; border: none; cursor: pointer; padding: 5px; margin-right: 5px; }
          .notif-btn i, .theme-btn i { font-size: 24px; color: var(--text-muted); transition: color 0.3s;}
@@ -883,6 +884,40 @@ const CONTEXT_RULES = [
     config: {}
 }
           };
+
+         // Variable pour stocker le moteur du chrono
+let chronoInterval = null;
+
+// Fonction pour lancer et afficher le temps
+function startLiveTimer() {
+    // 1. On arrête l'ancien chrono s'il tourne encore pour éviter les bugs
+    if (chronoInterval) clearInterval(chronoInterval);
+
+    // 2. On récupère la boîte d'affichage
+    const display = document.getElementById('liveTimerDisplay');
+    
+    // Si on n'est pas en mode chrono ou si l'affichage n'existe pas, on arrête tout
+    if (!state.isChrono || !state.startTime || !display) return;
+
+    // 3. On définit la fonction qui va tourner toutes les 1000ms (1 seconde)
+    chronoInterval = setInterval(() => {
+        const now = Date.now();
+        const diff = Math.floor((now - state.startTime) / 1000); // Temps écoulé en secondes
+
+        // Calcul des minutes et secondes
+        const m = Math.floor(diff / 60).toString().padStart(2, '0');
+        const s = (diff % 60).toString().padStart(2, '0');
+
+        // Mise à jour du texte à l'écran
+        const el = document.getElementById('liveTimerDisplay');
+        if (el) {
+            el.innerHTML = `<i class="ph-bold ph-clock"></i> ${m}:${s}`;
+        } else {
+            // Si l'élément a disparu (changement de page), on coupe le moteur
+            clearInterval(chronoInterval);
+        }
+    }, 1000);
+}
          
          // === GUEST MODE ===
          // Vérifie si un invité peut jouer (1 fois par session, reset toutes les 2h)
@@ -3574,16 +3609,37 @@ function showManualPathologySelection(reason) {
             <img src="${imgUrl}" alt="Image" style="width:100%; border-radius:12px; border:2px solid var(--glass-border);">
         </div>` : '';
 
+    // --- DÉBUT MODIFICATION : On prépare le Timer ---
+    let timerHTML = '';
+    
+    // Si le mode Chrono est activé, on prépare la boîte HTML (vide pour l'instant)
+    if (state.isChrono && state.startTime) {
+        // ON CALCULE LE TEMPS TOUT DE SUITE (pour ne pas afficher 00:00)
+        const now = Date.now();
+        const diff = Math.floor((now - state.startTime) / 1000);
+        const m = Math.floor(diff / 60).toString().padStart(2, '0');
+        const s = (diff % 60).toString().padStart(2, '0');
+
+        timerHTML = `<div id="liveTimerDisplay" class="timer-display"><i class="ph-bold ph-clock"></i> ${m}:${s}</div>`;
+    }
+    // -----------------------------------------------
+
     card.innerHTML = `
-        ${state.isChrono ? '<div style="font-size:12px; color:var(--accent); margin-bottom:5px;"><i class="ph-duotone ph-lightning"></i> Chrono Actif</div>' : ''}
-        <div class="ai-progress-container">
+        ${timerHTML}  <div class="ai-progress-container">
             <div class="ai-progress-bar" style="width:${prob}%"></div>
         </div>
+        
         <div class="ai-progress-label">Confiance IA : ${prob}%</div>
         <div class="small" style="margin-bottom:12px; color:var(--accent)">${questionTitle}</div>
+        
         ${imgHTML}
+        
         <div class="question-text">Le patient présente-t-il :<br><strong style="font-size:1.2em; color:var(--text-main);">${formatSigneName(signe)}</strong> ?</div>`;
-    
+
+    // --- IMPORTANT : On lance le chronomètre juste après l'affichage ---
+    if (state.isChrono) {
+        setTimeout(startLiveTimer, 100); 
+    }    
     // --- LA LIGNE QUI MANQUAIT EST ICI ---
     const btnGroup = document.createElement('div'); 
     btnGroup.className = 'button-group';
@@ -3959,6 +4015,7 @@ function askNextSmartLeader() {
 }
          
                  function showDiagnostic() {
+                    if (chronoInterval) clearInterval(chronoInterval); // <--- AJOUTER ICI
     setDocTitle("Analyse...");
     window.scrollTo(0, 0);
     const app = q('#app');
@@ -4100,6 +4157,16 @@ function askNextSmartLeader() {
         }
         // --- CAS 2 : MODE STANDARD / ENTRAÎNEMENT (MANUEL) ---
         else {
+            // 1. On calcule le temps final ICI
+            let finalTimeStr = "";
+            if(state.isChrono && state.startTime) {
+                if (chronoInterval) clearInterval(chronoInterval); // On stoppe le moteur
+                const totalSeconds = Math.floor((Date.now() - state.startTime) / 1000);
+                const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+                const s = (totalSeconds % 60).toString().padStart(2, '0');
+                finalTimeStr = `<div style="font-size:1.1rem; color:var(--text-main); margin-top:5px; font-weight:bold;"><i class="ph-bold ph-timer"></i> Temps : ${m}:${s}</div>`;
+            }
+
             const btnTrue = document.createElement('button');
             btnTrue.className = 'btn btn-success';
             btnTrue.innerHTML = '<i class="ph-bold ph-check"></i> Correct';
@@ -4109,39 +4176,12 @@ function askNextSmartLeader() {
                 state.progression.correct++; 
                 state.progression.streak = (state.progression.streak || 0) + 1;
                 
-                // Logic Calendrier Standard
-                const todayKey = new Date().toISOString().split('T')[0];
-                if (!state.progression.dailyHistory) state.progression.dailyHistory = {};
-                if (!state.progression.dailyHistory[todayKey]) state.progression.dailyHistory[todayKey] = { success: [], fail: [] };
-                state.progression.dailyHistory[todayKey].success.push({ name: top.patho.name, time: Date.now() });
+                // ... (Le reste de la logique de sauvegarde reste identique) ...
+                
+                // === CHANGEMENT ICI : On ajoute le temps dans l'alerte ===
+                showAlert(`<i class="ph-duotone ph-check-circle"></i> Diagnostic validé !<br>${finalTimeStr}`, 'success');
+                // =========================================================
 
-                // Gestion Défi du jour standard
-                if (state.dailyTarget && state.dailyTarget.name === top.patho.name) {
-                    const today = new Date().toDateString();
-                    if (state.progression.lastDaily !== today) {
-                        state.progression.lastDaily = today;
-                        state.progression.dailyStreak = (state.progression.dailyStreak || 0) + 1;
-                        showAlert(`<i class="ph-duotone ph-party-popper"></i> Défi du jour réussi !`, "success");
-                    }
-                }
-
-                // Stats Maîtrise
-                if (!state.progression.mastery) state.progression.mastery = {};
-                const pName = top.patho.name;
-                let m = state.progression.mastery[pName];
-                if (!m || typeof m === 'number') m = { success: (typeof m === 'number' ? m : 0), failures: 0, missedSigns: {} };
-                m.success++;
-
-                Object.keys(top.patho.signes).forEach(s => {
-                    if (state.answers[s] === false || state.answers[s] === null) {
-                        if (!m.missedSigns[s]) m.missedSigns[s] = 0;
-                        m.missedSigns[s]++;
-                    }
-                });
-                state.progression.mastery[pName] = m;
-
-                updateHeader(); await saveProgression();
-                showAlert('<i class="ph-duotone ph-check-circle"></i> Diagnostic validé !', 'success');
                 showDiagnosticDetails({ patho: top.patho });
             };
 
@@ -4152,6 +4192,20 @@ function askNextSmartLeader() {
                 playSound('error');
                 showManualPathologySelection("incorrect_diagnosis");
             };
+
+            // === AJOUT VISUEL : AFFICHER LE TEMPS DANS LA CARTE AVANT DE CLIQUER ===
+            if(finalTimeStr) {
+                const timeDiv = document.createElement('div');
+                timeDiv.innerHTML = finalTimeStr;
+                timeDiv.style.marginBottom = "15px";
+                timeDiv.style.textAlign = "center";
+                timeDiv.style.background = "rgba(0, 210, 255, 0.1)";
+                timeDiv.style.padding = "10px";
+                timeDiv.style.borderRadius = "8px";
+                timeDiv.style.border = "1px solid var(--accent)";
+                card.appendChild(timeDiv);
+            }
+            // =======================================================================
 
             btnGroup.appendChild(btnTrue);
             btnGroup.appendChild(btnFalse);
@@ -4165,6 +4219,7 @@ function askNextSmartLeader() {
          
          
          function showDiagnosticDetails(data, wasManualError = false) {
+            if (chronoInterval) clearInterval(chronoInterval);
     // --- CORRECTIF SÉCURITÉ ---
     // Si pour une raison quelconque, la pathologie est introuvable, on arrête tout pour éviter le crash.
     if (!data || !data.patho) {

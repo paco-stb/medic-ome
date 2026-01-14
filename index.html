@@ -1357,10 +1357,29 @@ function startGuestMode() {
                      try {
                          const docSnap = await getDoc(docRef);
                          if (docSnap.exists()) {
-                             const data = docSnap.data();
-                             if (data.pseudo) state.pseudo = data.pseudo;
-                             state.progression = { ...state.progression, ...data.progression };
-                         } else { saveProgression(); }
+    const data = docSnap.data();
+    if (data.pseudo) state.pseudo = data.pseudo;
+    state.progression = { ...state.progression, ...data.progression };
+
+    // --- DÉTECTION D'ABSENCE (NOUVEAU) ---
+    if (data.lastUpdate && data.lastUpdate.seconds) {
+        const lastDate = new Date(data.lastUpdate.seconds * 1000);
+        const now = new Date();
+        // Calcul de la différence en jours
+        const diffTime = Math.abs(now - lastDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+
+        if (diffDays >= 3) {
+            // On attend un peu que la page charge pour afficher le message
+            setTimeout(() => {
+                showAlert(`👋 Bon retour ${state.pseudo} ! Ça faisait ${diffDays} jours. Prêt à réviser ?`, "success");
+                triggerConfetti(); // Petite pluie de confettis pour l'encourager
+            }, 1000);
+        }
+    }
+    // -------------------------------------
+
+} else { saveProgression(); }
                          updateHeader(); renderHome();
                      } catch(e) { renderHome(); }
                  } else {

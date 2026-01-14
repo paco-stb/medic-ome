@@ -1501,6 +1501,7 @@ function startGuestMode() {
                  state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0, lastDaily: null, achievements: [], bestTimes: {}, errorLog: {}, pdfDownloads: 0, speedWins: 0, socialDone: false, reviewDone: false }; 
                  signOut(auth).then(() => { renderLogin(); updateHeader(); showAlert("Déconnecté", "success"); }).catch(() => { renderLogin(); updateHeader(); });
              };
+            checkAdminAccess();
          }
          
          function renderLogin() {
@@ -4718,6 +4719,139 @@ function askNextSmartLeader() {
         lb.innerHTML = '';
     }
 }
+         // ============================================================
+// ZONE ADMIN : EXPORTATION CSV AVANCÉE
+// ============================================================
+
+// 1. COLLE TON UID ICI ENTRE LES GUILLEMETS !
+const ADMIN_UID = "Kj5oyJpA4nXLDrjh3YqWCwlXEda2"; 
+
+// Vérifie si c'est toi et affiche le bouton
+function checkAdminAccess() {
+    // Si l'utilisateur est connecté ET que son ID correspond à l'Admin
+    if (state.currentUser && state.currentUser.uid === ADMIN_UID) {
+        // On crée le bouton s'il n'existe pas encore
+        if (!document.getElementById('btnAdminExport')) {
+            const btn = document.createElement('button');
+            btn.id = 'btnAdminExport';
+            btn.innerHTML = '<i class="ph-duotone ph-file-csv"></i> ADMIN : Suivi Élèves';
+            // Style : Bouton rouge flottant en bas à droite
+            btn.style.cssText = "position:fixed; bottom:15px; right:15px; background:#e74c3c; color:white; border:none; padding:12px 20px; border-radius:30px; z-index:9999; cursor:pointer; font-weight:bold; box-shadow:0 4px 15px rgba(0,0,0,0.4); font-family:sans-serif; transition:transform 0.2s;";
+            
+            btn.onmouseover = () => btn.style.transform = "scale(1.05)";
+            btn.onmouseout = () => btn.style.transform = "scale(1)";
+            btn.onclick = exportUsersToCSV;
+            
+            document.body.appendChild(btn);
+        }
+    } else {
+        // Si ce n'est pas toi (ou si tu te déconnectes), on enlève le bouton
+        const btn = document.getElementById('btnAdminExport');
+        if (btn) btn.remove();
+    }
+}
+
+// La fonction qui génère le fichier Excel
+async function exportUsersToCSV() {
+    const btn = document.getElementById('btnAdminExport');
+    if(btn) btn.innerHTML = '<i class="ph-duotone ph-spinner"></i> Analyse en cours...';
+
+    try {
+        // 1. Récupération des données depuis Firebase
+        // Seul l'Admin a le droit grâce aux règles de sécurité
+        const q = collection(db, "users"); 
+        const snapshot = await getDocs(q);
+
+        // 2. Création de l'entête du fichier CSV (Colonnes)
+        let csvContent = "data:text/csv;charset=utf-8,";
+        // On utilise le point-virgule (;) pour Excel
+        csvContent += "Pseudo;Email;Total Cas Joués;Réussites;Échecs;Série (Fidélité);Dernière Connexion;Activité Aujourd'hui;Meilleure Pathologie;Nb Succès;Liste Succès\n";
+
+        // Date du jour pour calculer l'activité quotidienne
+        const dateNow = new Date();
+        const localDate = new Date(dateNow.getTime() - (dateNow.getTimezoneOffset() * 60000));
+        const todayKey = localDate.toISOString().split("T")[0];
+
+        // 3. Analyse de chaque élève
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const prog = data.progression || {};
+            
+            // Fonction pour nettoyer le texte (enlève les ; et sauts de ligne)
+            const clean = (txt) => (txt || "").toString().replace(/;/g, " ").replace(/\n/g, " ");
+
+            // --- A. Infos de base ---
+            const pseudo = clean(data.pseudo || "Anonyme");
+            const email = clean(data.email || "Masqué");
+            const reussites = prog.correct || 0;
+            const echecs = prog.incorrect || 0;
+            const total = reussites + echecs;
+            const streak = prog.streak || 0;
+
+            let dateStr = "Jamais";
+            if (data.lastUpdate && data.lastUpdate.seconds) {
+                dateStr = new Date(data.lastUpdate.seconds * 1000).toLocaleDateString();
+            }
+
+            // --- B. Activité Aujourd'hui (Combien de cas joués ce jour ?) ---
+            let activityToday = 0;
+            if (prog.dailyHistory && prog.dailyHistory[todayKey]) {
+                const dayData = prog.dailyHistory[todayKey];
+                const daySuccess = dayData.success ? dayData.success.length : 0;
+                const dayFail = dayData.fail ? dayData.fail.length : 0;
+                activityToday = daySuccess + dayFail;
+            }
+
+            // --- C. Meilleure Pathologie (Spécialité) ---
+            let bestPathoName = "Aucune";
+            let bestPathoCount = 0;
+            const mastery = prog.mastery || {};
+            
+            Object.keys(mastery).forEach(key => {
+                const m = mastery[key];
+                // Parfois c'est juste un nombre, parfois un objet {success: N}
+                const count = (typeof m === 'number') ? m : (m.success || 0);
+                
+                if (count > bestPathoCount) {
+                    bestPathoCount = count;
+                    bestPathoName = key;
+                }
+            });
+            const bestPathoStr = bestPathoCount > 0 ? `${clean(bestPathoName)} (${bestPathoCount})` : "Rien";
+
+            // --- D. Succès / Trophées ---
+            const achList = prog.achievements || [];
+            const achCount = achList.length;
+            const achDetails = clean(achList.join(" | "));
+
+            // 4. Ajout de la ligne au fichier
+            csvContent += `${pseudo};${email};${total};${reussites};${echecs};${streak};${dateStr};${activityToday};${bestPathoStr};${achCount};${achDetails}\n`;
+        });
+
+        // 5. Déclenchement du téléchargement
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        const timeId = new Date().toLocaleTimeString().replace(/:/g, "h");
+        link.setAttribute("download", `Suivi_Medicome_${timeId}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        if(btn) {
+            btn.innerHTML = '<i class="ph-duotone ph-check"></i> Export Réussi !';
+            setTimeout(() => btn.innerHTML = '<i class="ph-duotone ph-file-csv"></i> ADMIN : Suivi Élèves', 3000);
+        }
+
+    } catch (error) {
+        console.error("Erreur Export:", error);
+        alert("Erreur : Impossible de récupérer les données.\nVérifiez vos règles Firebase ou votre UID Admin.");
+        if(btn) btn.innerHTML = 'Erreur';
+    }
+}
+// ============================================================
+// FIN ZONE ADMIN
+// ============================================================
       </script>
       <div id="lightbox" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center;" onclick="closeLightbox()"></div>
    </body>

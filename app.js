@@ -2177,7 +2177,7 @@ function showDayDetails(dateStr, data) {
                      <p>Hébergé par GitHub Pages (USA). Données stockées sur Google Firebase (Irlande).</p>
                      <br>
                      <h3>3. Données Personnelles</h3>
-                     <p>Email uniquement pour authentification. Aucune revente.</p>
+                     <p>Email uniquement pour authentification et traitement de données dans un objectif de recherche. Aucune revente.</p>
                      ${creditsHtml}
                  </div>
              `;

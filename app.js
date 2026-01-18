@@ -3283,15 +3283,14 @@ function startConfirmationPhase(targetPatho) {
         proofSign = potentialProofs.sort(() => 0.5 - Math.random())[0];
     }
 
-    // --- 2. Les 3 Vrais Signes Cliniques (Les plus révélateurs) ---
-    // On trie par poids décroissant pour prendre les signes les plus importants
-    const realSignsCandidates = unaskedSigns
+    // --- 2. TOUS les Vrais Signes Cliniques restants (sauf la preuve finale) ---
+    const realSigns = unaskedSigns
         .filter(s => s !== proofSign && targetPatho.signes[s] >= 10)
         .sort((a, b) => targetPatho.signes[b] - targetPatho.signes[a]); // Tri par poids décroissant
     
-    const realSigns = realSignsCandidates.slice(0, 3); // On prend les 3 meilleurs
+    const nbRealSigns = realSigns.length;
 
-    // --- 3. Les 3 Pièges (Diagnostic Différentiel du Top 2-5) ---
+    // --- 3. Autant de Pièges que de Vrais Signes (Diagnostic Différentiel du Top 2-5) ---
     const competitors = state.ranked.slice(1, 5); // Top 2, 3, 4, 5
     let trapSigns = [];
 
@@ -3304,11 +3303,11 @@ function startConfirmationPhase(targetPatho) {
         trapSigns.push(...compSigns);
     });
 
-    // On mélange les pièges et on en prend 3
+    // On mélange les pièges et on en prend exactement nbRealSigns
     trapSigns.sort(() => 0.5 - Math.random());
-    const selectedTraps = trapSigns.slice(0, 3);
+    const selectedTraps = trapSigns.slice(0, nbRealSigns);
 
-    // --- 4. Construction de la file : 3 Vrais + 3 Faux, mélangés ---
+    // --- 4. Construction de la file : TOUS les vrais + autant de faux, mélangés ---
     let confirmationSigns = [...realSigns, ...selectedTraps];
     
     // Mélange aléatoire TOTAL (pas de pattern prévisible)
@@ -3322,8 +3321,8 @@ function startConfirmationPhase(targetPatho) {
     }
 
     console.log("✅ Phase confirmation :", state.confirmationQueue);
-    console.log("   - Vrais signes :", realSigns);
-    console.log("   - Pièges :", selectedTraps);
+    console.log(`   - Vrais signes (${nbRealSigns}) :`, realSigns);
+    console.log(`   - Pièges (${selectedTraps.length}) :`, selectedTraps);
     console.log("   - Preuve finale :", proofSign);
 
     askNextQuestion();

@@ -814,17 +814,38 @@ function startGuestMode() {
          }
          
          async function saveProgression() {
-             checkAchievements();
-             if (!state.isGuest && state.currentUser) {
-                 try {
-                     const userRef = doc(db, "users", state.currentUser.uid);
-                     await setDoc(userRef, { progression: state.progression, pseudo: state.pseudo, lastUpdate: new Date() }, { merge: true });
-                 } catch (e) { console.error("Erreur sauvegarde Cloud", e); }
-             } else if (state.isGuest) {
-                 localStorage.setItem('medicome_guest_progression', JSON.stringify(state.progression));
-                 localStorage.setItem('medicome_guest_pseudo', state.pseudo);
-             }
-         }
+    checkAchievements();
+    
+    console.log("🔄 saveProgression() appelée", {
+        isGuest: state.isGuest,
+        currentUser: state.currentUser ? state.currentUser.uid : null,
+        correct: state.progression.correct,
+        incorrect: state.progression.incorrect,
+        streak: state.progression.streak
+    });
+    
+    if (!state.isGuest && state.currentUser) {
+        try {
+            console.log("📤 Envoi vers Firebase...");
+            const userRef = doc(db, "users", state.currentUser.uid);
+            await setDoc(userRef, { 
+                progression: state.progression, 
+                pseudo: state.pseudo, 
+                lastUpdate: new Date() 
+            }, { merge: true });
+            console.log("✅ Firebase sauvegarde réussie !");
+        } catch (e) { 
+            console.error("❌ Erreur sauvegarde Firebase:", e); 
+            showAlert("Erreur de sauvegarde : " + e.message, "error");
+        }
+    } else if (state.isGuest) {
+        localStorage.setItem('medicome_guest_progression', JSON.stringify(state.progression));
+        localStorage.setItem('medicome_guest_pseudo', state.pseudo);
+        console.log("💾 LocalStorage sauvegarde OK");
+    } else {
+        console.warn("⚠️ Aucune sauvegarde effectuée");
+    }
+}
          
          function checkAchievements() {
              if(!state.progression.achievements) state.progression.achievements = [];
@@ -3095,38 +3116,44 @@ function showManualPathologySelection(reason) {
         select.innerHTML += `<option value="${p.name}">${p.name}</option>`;
     });
     
-    select.onchange = () => {
-        if(!select.value) return;
-        const patho = PATHOLOGIES.find(p => p.name === select.value);
-        
-        state.progression.incorrect++;
-        
-        const todayKey = getLocalDayKey();
-        if(!state.progression.dailyHistory) state.progression.dailyHistory = {};
-        if(!state.progression.dailyHistory[todayKey]) {
-            state.progression.dailyHistory[todayKey] = { success: [], fail: [] };
-        }
-        state.progression.dailyHistory[todayKey].fail.push({ 
-            name: patho.name, 
-            time: Date.now() 
-        });
-        
-        if(!state.progression.mastery) state.progression.mastery = {};
-        let m = state.progression.mastery[patho.name];
-        if(!m) m = { success: 0, failures: 0, missedSigns: {} };
-        if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
-        m.failures++;
-        state.progression.mastery[patho.name] = m;
-        
-        if(!state.progression.errorLog) state.progression.errorLog = {};
-        state.progression.errorLog[patho.name] = { 
-            date: Date.now(), 
-            count: (state.progression.errorLog[patho.name]?.count || 0) + 1 
-        };
-        
-        saveProgression();
-        showDiagnosticDetails({patho: patho}, true); 
+    select.onchange = async () => {
+    if(!select.value) return;
+    const patho = PATHOLOGIES.find(p => p.name === select.value);
+    
+    state.progression.incorrect++;
+    state.progression.streak = 0;
+    
+    // Historique quotidien
+    const todayKey = getLocalDayKey();
+    if(!state.progression.dailyHistory) state.progression.dailyHistory = {};
+    if(!state.progression.dailyHistory[todayKey]) {
+        state.progression.dailyHistory[todayKey] = { success: [], fail: [] };
+    }
+    state.progression.dailyHistory[todayKey].fail.push({ 
+        name: patho.name, 
+        time: Date.now() 
+    });
+    
+    // Mise à jour mastery
+    if(!state.progression.mastery) state.progression.mastery = {};
+    let m = state.progression.mastery[patho.name];
+    if(!m) m = { success: 0, failures: 0, missedSigns: {} };
+    if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
+    m.failures++;
+    state.progression.mastery[patho.name] = m;
+    
+    // Log des erreurs
+    if(!state.progression.errorLog) state.progression.errorLog = {};
+    state.progression.errorLog[patho.name] = { 
+        date: Date.now(), 
+        count: (state.progression.errorLog[patho.name]?.count || 0) + 1 
     };
+    
+    // ✅ SAUVEGARDE IMMÉDIATE
+    await saveProgression();
+    
+    showDiagnosticDetails({patho: patho}, true); 
+};
     
     divSearch.appendChild(select);
     card.appendChild(divSearch);
@@ -3622,64 +3649,123 @@ function askNextSmartLeader() {
 
         // --- CAS 1 : MODE EXAMEN (AUTOMATIQUE) ---
         // --- CAS 1 : MODE EXAMEN (AUTOMATIQUE) ---
-        if (state.exam && state.exam.active && state.dailyTarget) {
-            const targetName = state.dailyTarget.name;
-            const foundName = top.patho.name;
-            const isSuccess = (targetName === foundName);
+if (state.exam && state.exam.active && state.dailyTarget) {
+    const targetName = state.dailyTarget.name;
+    const foundName = top.patho.name;
+    const isSuccess = (targetName === foundName);
 
-            // Enregistrement immédiat du résultat dans l'examen (si pas déjà fait)
-            const currentResultIndex = state.exam.results.length;
-            if (currentResultIndex === state.exam.currentIndex) {
-                state.exam.results.push({
-                    target: targetName,
-                    found: foundName,
-                    success: isSuccess,
-                    questions: state.asked.length
-                });
+    // ✅ MISE À JOUR DE LA PROGRESSION AVANT D'ENREGISTRER
+    if (isSuccess) {
+        state.progression.correct++;
+        state.progression.streak = (state.progression.streak || 0) + 1;
+        
+        // Mise à jour mastery
+        if(!state.progression.mastery) state.progression.mastery = {};
+        let m = state.progression.mastery[targetName];
+        if(!m) m = { success: 0, failures: 0, missedSigns: {} };
+        if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
+        m.success++;
+        state.progression.mastery[targetName] = m;
+        
+        // Historique quotidien
+        const todayKey = getLocalDayKey();
+        if(!state.progression.dailyHistory) state.progression.dailyHistory = {};
+        if(!state.progression.dailyHistory[todayKey]) {
+            state.progression.dailyHistory[todayKey] = { success: [], fail: [] };
+        }
+        state.progression.dailyHistory[todayKey].success.push({ 
+            name: targetName, 
+            time: Date.now() 
+        });
+        
+        // Gestion chrono
+        if (state.isChrono && state.startTime) {
+            const totalSeconds = (Date.now() - state.startTime) / 1000;
+            if (totalSeconds < 30) {
+                state.progression.speedWins = (state.progression.speedWins || 0) + 1;
             }
-
-            // Affichage du résultat automatique
-            const resultBanner = document.createElement('div');
-            resultBanner.style.width = "100%";
-            resultBanner.style.padding = "15px";
-            resultBanner.style.borderRadius = "12px";
-            resultBanner.style.marginTop = "20px";
-            resultBanner.style.marginBottom = "20px";
-            resultBanner.style.textAlign = "center";
-            resultBanner.style.fontWeight = "bold";
-
-            if (isSuccess) {
-                // VICTOIRE
-                playSound('success');
-                triggerConfetti();
-                resultBanner.style.background = "rgba(0, 255, 157, 0.15)";
-                resultBanner.style.border = "1px solid var(--success)";
-                resultBanner.style.color = "var(--success)";
-                resultBanner.innerHTML = `
-                    <div style="font-size:2em; margin-bottom:10px;"><i class="ph-fill ph-check-circle"></i></div>
-                    <div>DIAGNOSTIC CORRECT</div>
-                    <div class="small" style="opacity:0.8; font-weight:normal;">L'IA a bien trouvé la pathologie cible.</div>
-                `;
-            } else {
-                // ÉCHEC
-                playSound('error');
-                resultBanner.style.background = "rgba(255, 77, 77, 0.15)";
-                resultBanner.style.border = "1px solid var(--error)";
-                resultBanner.style.color = "var(--error)";
-                resultBanner.innerHTML = `
-                    <div style="font-size:2em; margin-bottom:10px;"><i class="ph-fill ph-x-circle"></i></div>
-                    <div>DIAGNOSTIC INCORRECT</div>
-                    <div class="small" style="opacity:0.8; font-weight:normal; margin-top:5px;">
-                        L'IA a proposé : <strong>${foundName}</strong><br>
-                        Il fallait faire deviner : <strong>${targetName}</strong>
-                    </div>
-                `;
+            const bestTime = state.progression.bestTimes || {};
+            if (!bestTime[targetName] || totalSeconds < bestTime[targetName]) {
+                bestTime[targetName] = totalSeconds;
+                state.progression.bestTimes = bestTime;
             }
-            
-            // --- CORRECTION ICI ---
-            // On ajoute simplement le banner à la carte. 
-            // Comme le btnGroup est ajouté plus bas dans le code, le banner sera bien AU-DESSUS des boutons.
-            card.appendChild(resultBanner); 
+        }
+        
+    } else {
+        state.progression.incorrect++;
+        state.progression.streak = 0;
+        
+        // Mise à jour mastery (échec)
+        if(!state.progression.mastery) state.progression.mastery = {};
+        let m = state.progression.mastery[targetName];
+        if(!m) m = { success: 0, failures: 0, missedSigns: {} };
+        if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
+        m.failures++;
+        state.progression.mastery[targetName] = m;
+        
+        // Historique quotidien
+        const todayKey = getLocalDayKey();
+        if(!state.progression.dailyHistory) state.progression.dailyHistory = {};
+        if(!state.progression.dailyHistory[todayKey]) {
+            state.progression.dailyHistory[todayKey] = { success: [], fail: [] };
+        }
+        state.progression.dailyHistory[todayKey].fail.push({ 
+            name: targetName, 
+            time: Date.now() 
+        });
+    }
+    
+    // ✅ SAUVEGARDE IMMÉDIATE
+    await saveProgression();
+
+    // Enregistrement dans state.exam.results (APRÈS la sauvegarde)
+    const currentResultIndex = state.exam.results.length;
+    if (currentResultIndex === state.exam.currentIndex) {
+        state.exam.results.push({
+            target: targetName,
+            found: foundName,
+            success: isSuccess,
+            questions: state.asked.length
+        });
+    }
+
+    // Affichage du résultat automatique
+    const resultBanner = document.createElement('div');
+    resultBanner.style.width = "100%";
+    resultBanner.style.padding = "15px";
+    resultBanner.style.borderRadius = "12px";
+    resultBanner.style.marginTop = "20px";
+    resultBanner.style.marginBottom = "20px";
+    resultBanner.style.textAlign = "center";
+    resultBanner.style.fontWeight = "bold";
+
+    if (isSuccess) {
+        playSound('success');
+        triggerConfetti();
+        resultBanner.style.background = "rgba(0, 255, 157, 0.15)";
+        resultBanner.style.border = "1px solid var(--success)";
+        resultBanner.style.color = "var(--success)";
+        resultBanner.innerHTML = `
+            <div style="font-size:2em; margin-bottom:10px;"><i class="ph-fill ph-check-circle"></i></div>
+            <div>DIAGNOSTIC CORRECT</div>
+            <div class="small" style="opacity:0.8; font-weight:normal;">L'IA a bien trouvé la pathologie cible.</div>
+        `;
+    } else {
+        playSound('error');
+        resultBanner.style.background = "rgba(255, 77, 77, 0.15)";
+        resultBanner.style.border = "1px solid var(--error)";
+        resultBanner.style.color = "var(--error)";
+        resultBanner.innerHTML = `
+            <div style="font-size:2em; margin-bottom:10px;"><i class="ph-fill ph-x-circle"></i></div>
+            <div>DIAGNOSTIC INCORRECT</div>
+            <div class="small" style="opacity:0.8; font-weight:normal; margin-top:5px;">
+                L'IA a proposé : <strong>${foundName}</strong><br>
+                Il fallait faire deviner : <strong>${targetName}</strong>
+            </div>
+        `;
+    }
+    
+    card.appendChild(resultBanner);
             // ---------------------
 
             // Bouton "Suivant"
@@ -3713,19 +3799,66 @@ function askNextSmartLeader() {
             btnTrue.className = 'btn btn-success';
             btnTrue.innerHTML = '<i class="ph-bold ph-check"></i> Correct';
             btnTrue.onclick = async () => {
-                if (state.isGuest) { localStorage.setItem('medicome_guest_last_play', Date.now().toString()); }
-                triggerConfetti(); playSound('success');
-                state.progression.correct++; 
-                state.progression.streak = (state.progression.streak || 0) + 1;
-                
-                // ... (Le reste de la logique de sauvegarde reste identique) ...
-                
-                // === CHANGEMENT ICI : On ajoute le temps dans l'alerte ===
-                showAlert(`<i class="ph-duotone ph-check-circle"></i> Diagnostic validé !<br>${finalTimeStr}`, 'success');
-                // =========================================================
-
-                showDiagnosticDetails({ patho: top.patho });
-            };
+    if (state.isGuest) { 
+        localStorage.setItem('medicome_guest_last_play', Date.now().toString()); 
+    }
+    
+    triggerConfetti(); 
+    playSound('success');
+    state.progression.correct++; 
+    state.progression.streak = (state.progression.streak || 0) + 1;
+    
+    // Mise à jour mastery
+    if(!state.progression.mastery) state.progression.mastery = {};
+    let m = state.progression.mastery[top.patho.name];
+    if(!m) m = { success: 0, failures: 0, missedSigns: {} };
+    if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} };
+    m.success++;
+    state.progression.mastery[top.patho.name] = m;
+    
+    // Historique quotidien
+    const todayKey = getLocalDayKey();
+    if(!state.progression.dailyHistory) state.progression.dailyHistory = {};
+    if(!state.progression.dailyHistory[todayKey]) {
+        state.progression.dailyHistory[todayKey] = { success: [], fail: [] };
+    }
+    state.progression.dailyHistory[todayKey].success.push({ 
+        name: top.patho.name, 
+        time: Date.now() 
+    });
+    
+    // Gestion chrono
+    let finalTimeStr = "";
+    if(state.isChrono && state.startTime) {
+        if (chronoInterval) clearInterval(chronoInterval);
+        const totalSeconds = (Date.now() - state.startTime) / 1000;
+        const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+        const s = Math.floor(totalSeconds % 60).toString().padStart(2, '0');
+        finalTimeStr = `<div style="font-size:1.1rem; color:var(--text-main); margin-top:5px; font-weight:bold;"><i class="ph-bold ph-timer"></i> Temps : ${m}:${s}</div>`;
+        
+        if (totalSeconds < 30) {
+            state.progression.speedWins = (state.progression.speedWins || 0) + 1;
+        }
+        const bestTime = state.progression.bestTimes || {};
+        if (!bestTime[top.patho.name] || totalSeconds < bestTime[top.patho.name]) {
+            bestTime[top.patho.name] = totalSeconds;
+            state.progression.bestTimes = bestTime;
+        }
+    }
+    
+    // Défi du jour
+    if (state.dailyTarget) {
+        const todayStr = new Date().toDateString();
+        state.progression.lastDaily = todayStr;
+        state.progression.dailyStreak = (state.progression.dailyStreak || 0) + 1;
+    }
+    
+    // ✅ SAUVEGARDE IMMÉDIATE
+    await saveProgression();
+    
+    showAlert(`<i class="ph-duotone ph-check-circle"></i> Diagnostic validé !<br>${finalTimeStr}`, 'success');
+    showDiagnosticDetails({ patho: top.patho });
+};
 
             const btnFalse = document.createElement('button');
             btnFalse.className = 'btn btn-error';

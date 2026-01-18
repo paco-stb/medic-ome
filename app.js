@@ -771,7 +771,9 @@ function startGuestMode() {
         }
     }
     // -------------------------------------
-
+ updateHeader(); 
+    updateStreakDisplay(); // ← NOUVEAU
+    renderHome();
 } else { saveProgression(); }
                          updateHeader(); renderHome();
                      } catch(e) { renderHome(); }
@@ -785,7 +787,7 @@ function startGuestMode() {
                          
                          if(state.progression.streak === undefined) state.progression.streak = 0;
                          if(!state.progression.mastery) state.progression.mastery = {};
-                         updateHeader(); renderHome();
+                         updateHeader(); updateStreakDisplay(); renderHome();
                          setTimeout(() => showAlert(`<i class="ph-duotone ph-party-popper"></i> Bon retour, ${state.pseudo} !`, 'success'), 500);
                      } else {
                          state.currentUser = null; state.pseudo = null; 
@@ -845,6 +847,7 @@ function startGuestMode() {
     } else {
         console.warn("⚠️ Aucune sauvegarde effectuée");
     }
+                  updateStreakDisplay();
 }
          
          function checkAchievements() {
@@ -936,6 +939,19 @@ function startGuestMode() {
              };
             checkAdminAccess();
          }
+
+function updateStreakDisplay() {
+    const pseudoBox = q("#pseudoBox");
+    if (!pseudoBox || !state.pseudo) return;
+    
+    const currentStreak = state.progression.streak || 0;
+    const streakDisplay = currentStreak > 0 
+        ? ` <span style="color:#ff9f43; margin-left:8px; display:inline-flex; align-items:center; gap:4px;"><i class="ph-duotone ph-fire"></i> ${currentStreak}</span>` 
+        : '';
+    
+    const guestLabel = state.isGuest ? " (Local)" : "";
+    pseudoBox.innerHTML = state.pseudo + guestLabel + streakDisplay;
+}
          
          function renderLogin() {
     setDocTitle(null);

@@ -1730,114 +1730,172 @@ card.appendChild(btnDiag); card.appendChild(btnExam); card.appendChild(btnGloss)
     }
     card.appendChild(grid);
 
-    // --- 3. SECTION "À REVOIR" (MODIFIÉE) ---
-    const memorySection = document.createElement('div'); 
-    memorySection.style.marginTop = "25px";
-    memorySection.style.borderTop = "1px solid var(--glass-border)";
-    memorySection.style.paddingTop = "15px";
+    // --- 3. SECTION "À REVOIR" (MODIFIÉE avec système de révision) ---
+const memorySection = document.createElement('div'); 
+memorySection.style.marginTop = "25px";
+memorySection.style.borderTop = "1px solid var(--glass-border)";
+memorySection.style.paddingTop = "15px";
 
-    memorySection.innerHTML = `<h4 style="color:var(--text-muted); margin-bottom:15px; display:flex; align-items:center; gap:8px;">
-        <i class="ph-duotone ph-clock-counter-clockwise"></i> À revoir (Ancienneté)
-    </h4>`;
+memorySection.innerHTML = `<h4 style="color:var(--text-muted); margin-bottom:15px; display:flex; align-items:center; gap:8px;">
+    <i class="ph-duotone ph-clock-counter-clockwise"></i> À revoir (Ancienneté)
+</h4>`;
 
-    // Calcul des dates
-    const lastSeen = {};
-    Object.entries(history).forEach(([date, data]) => {
-        if(data.success) {
-            data.success.forEach(item => {
-                const pName = (typeof item === 'string') ? item : item.name;
-                if(!lastSeen[pName] || date > lastSeen[pName]) {
-                    lastSeen[pName] = date;
+// Calcul des dates
+const lastSeen = {};
+Object.entries(history).forEach(([date, data]) => {
+    if(data.success) {
+        data.success.forEach(item => {
+            const pName = (typeof item === 'string') ? item : item.name;
+            if(!lastSeen[pName] || date > lastSeen[pName]) {
+                lastSeen[pName] = date;
+            }
+        });
+    }
+});
+
+// Buckets exclusifs
+const buckets = {
+    '30': [], // > 30j
+    '15': [], // 15-30j
+    '10': [], // 10-14j
+    '7': []   // 7-9j
+};
+
+const now = new Date();
+Object.entries(lastSeen).forEach(([name, dateStr]) => {
+    const date = new Date(dateStr);
+    const diffTime = Math.abs(now - date);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+    
+    if(diffDays > 30) buckets['30'].push({name, days: diffDays});
+    else if(diffDays > 15) buckets['15'].push({name, days: diffDays});
+    else if(diffDays > 10) buckets['10'].push({name, days: diffDays});
+    else if(diffDays >= 7) buckets['7'].push({name, days: diffDays});
+});
+
+// Création des contrôles (Boutons)
+const filterContainer = document.createElement('div');
+filterContainer.style.display = "flex";
+filterContainer.style.gap = "8px";
+filterContainer.style.marginBottom = "15px";
+filterContainer.style.overflowX = "auto";
+filterContainer.style.paddingBottom = "5px";
+
+const tabs = [
+    { id: '30', label: '> 30 jours', color: 'var(--ruby)' },
+    { id: '15', label: '> 15 jours', color: 'orange' },
+    { id: '10', label: '> 10 jours', color: 'var(--gold)' },
+    { id: '7',  label: '> 7 jours',  color: 'var(--text-muted)' }
+];
+
+// Créer les boutons
+tabs.forEach((tab, index) => {
+    const count = buckets[tab.id].length;
+    const btn = document.createElement('button');
+    btn.className = `filter-btn ${index === 0 ? 'active' : ''}`;
+    btn.innerHTML = `${tab.label} (${count})`;
+    if(count > 0) btn.style.fontWeight = "bold";
+    if(tab.id === '30' && count > 0) btn.style.color = 'var(--ruby)';
+    
+    btn.onclick = () => {
+        card.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        card.querySelectorAll('.filter-content').forEach(c => c.classList.remove('active'));
+        const content = document.getElementById(`content-${tab.id}`);
+        if(content) content.classList.add('active');
+    };
+    filterContainer.appendChild(btn);
+});
+memorySection.appendChild(filterContainer);
+
+// --- 🆕 FONCTION POUR MARQUER COMME RÉVISÉ ---
+window.markAsRevised = async (pathoName, bucketId) => {
+    // 1. Supprimer de l'historique des échecs
+    if(state.progression.dailyHistory) {
+        Object.keys(state.progression.dailyHistory).forEach(dateKey => {
+            const dayData = state.progression.dailyHistory[dateKey];
+            if(dayData.fail) {
+                dayData.fail = dayData.fail.filter(item => {
+                    const itemName = (typeof item === 'string') ? item : item.name;
+                    return itemName !== pathoName;
+                });
+            }
+        });
+    }
+    
+    // 2. Réduire le compteur d'échecs dans mastery
+    if(state.progression.mastery && state.progression.mastery[pathoName]) {
+        const m = state.progression.mastery[pathoName];
+        if(m.failures > 0) m.failures--;
+    }
+    
+    // 3. Supprimer du errorLog
+    if(state.progression.errorLog && state.progression.errorLog[pathoName]) {
+        delete state.progression.errorLog[pathoName];
+    }
+    
+    // 4. Sauvegarder
+    await saveProgression();
+    
+    // 5. Retirer visuellement l'élément
+    const itemElement = document.getElementById(`revision-item-${bucketId}-${pathoName.replace(/\s+/g, '-')}`);
+    if(itemElement) {
+        itemElement.style.transition = "all 0.3s ease";
+        itemElement.style.opacity = "0";
+        itemElement.style.transform = "translateX(-20px)";
+        setTimeout(() => {
+            itemElement.remove();
+            // Mettre à jour le compteur du bouton
+            const count = document.querySelectorAll(`#content-${bucketId} .memory-item`).length;
+            const btnLabel = tabs.find(t => t.id === bucketId)?.label;
+            const btn = Array.from(filterContainer.children).find(b => b.textContent.includes(btnLabel));
+            if(btn) btn.innerHTML = `${btnLabel} (${count})`;
+        }, 300);
+    }
+    
+    showAlert(`<i class="ph-duotone ph-check-circle"></i> ${pathoName} marquée comme révisée !`, 'success');
+};
+
+// Créer les listes (Contenu) avec checkboxes
+tabs.forEach((tab, index) => {
+    const listDiv = document.createElement('div');
+    listDiv.id = `content-${tab.id}`;
+    listDiv.className = `filter-content ${index === 0 ? 'active' : ''}`;
+    
+    const items = buckets[tab.id];
+    if(items.length === 0) {
+        listDiv.innerHTML = `<div class="small" style="padding:10px; font-style:italic;">Aucune pathologie dans cette tranche.</div>`;
+    } else {
+        items.sort((a,b) => b.days - a.days).forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'memory-item';
+            row.id = `revision-item-${tab.id}-${item.name.replace(/\s+/g, '-')}`;
+            
+            const badgeStyle = tab.id === '30' ? 'background:rgba(255,77,77,0.2); color:var(--error);' : 'background:rgba(255,255,255,0.1);';
+            
+            row.innerHTML = `
+                <label style="display:flex; align-items:center; gap:10px; cursor:pointer; flex:1;">
+                    <input type="checkbox" class="revision-checkbox" data-patho="${item.name}" data-bucket="${tab.id}" style="cursor:pointer; width:18px; height:18px;">
+                    <span style="flex:1;">${item.name}</span>
+                    <span class="tag-time" style="${badgeStyle}">Il y a ${item.days}j</span>
+                </label>
+            `;
+            
+            // Événement de coche
+            const checkbox = row.querySelector('.revision-checkbox');
+            checkbox.addEventListener('change', async (e) => {
+                if(e.target.checked) {
+                    await window.markAsRevised(item.name, tab.id);
                 }
             });
-        }
-    });
+            
+            listDiv.appendChild(row);
+        });
+    }
+    memorySection.appendChild(listDiv);
+});
 
-    // Buckets exclusifs
-    const buckets = {
-        '30': [], // > 30j
-        '15': [], // 15-30j
-        '10': [], // 10-14j
-        '7': []   // 7-9j
-    };
-
-    const now = new Date();
-    Object.entries(lastSeen).forEach(([name, dateStr]) => {
-        const date = new Date(dateStr);
-        const diffTime = Math.abs(now - date);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-        
-        if(diffDays > 30) buckets['30'].push({name, days: diffDays});
-        else if(diffDays > 15) buckets['15'].push({name, days: diffDays});
-        else if(diffDays > 10) buckets['10'].push({name, days: diffDays});
-        else if(diffDays >= 7) buckets['7'].push({name, days: diffDays});
-    });
-
-    // Création des contrôles (Boutons)
-    const filterContainer = document.createElement('div');
-    filterContainer.style.display = "flex";
-    filterContainer.style.gap = "8px";
-    filterContainer.style.marginBottom = "15px";
-    filterContainer.style.overflowX = "auto";
-    filterContainer.style.paddingBottom = "5px";
-
-    // Données pour générer l'UI
-    const tabs = [
-        { id: '30', label: '> 30 jours', color: 'var(--ruby)' },
-        { id: '15', label: '> 15 jours', color: 'orange' },
-        { id: '10', label: '> 10 jours', color: 'var(--gold)' },
-        { id: '7',  label: '> 7 jours',  color: 'var(--text-muted)' }
-    ];
-
-    // Créer les boutons
-    tabs.forEach((tab, index) => {
-        const count = buckets[tab.id].length;
-        const btn = document.createElement('button');
-        btn.className = `filter-btn ${index === 0 ? 'active' : ''}`; // Le premier actif par défaut
-        btn.innerHTML = `${tab.label} (${count})`;
-        if(count > 0) btn.style.fontWeight = "bold";
-        if(tab.id === '30' && count > 0) btn.style.color = 'var(--ruby)';
-        
-        btn.onclick = () => {
-            // Gestion active class
-            card.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            // Gestion affichage liste
-            card.querySelectorAll('.filter-content').forEach(c => c.classList.remove('active'));
-            const content = document.getElementById(`content-${tab.id}`);
-            if(content) content.classList.add('active');
-        };
-        filterContainer.appendChild(btn);
-    });
-    memorySection.appendChild(filterContainer);
-
-    // Créer les listes (Contenu)
-    tabs.forEach((tab, index) => {
-        const listDiv = document.createElement('div');
-        listDiv.id = `content-${tab.id}`;
-        listDiv.className = `filter-content ${index === 0 ? 'active' : ''}`; // Le premier visible par défaut
-        
-        const items = buckets[tab.id];
-        if(items.length === 0) {
-            listDiv.innerHTML = `<div class="small" style="padding:10px; font-style:italic;">Aucune pathologie dans cette tranche.</div>`;
-        } else {
-            items.sort((a,b) => b.days - a.days).forEach(item => {
-                const row = document.createElement('div');
-                row.className = 'memory-item';
-                // Style différent pour >30j
-                const badgeStyle = tab.id === '30' ? 'background:rgba(255,77,77,0.2); color:var(--error);' : 'background:rgba(255,255,255,0.1);';
-                
-                row.innerHTML = `
-                    <span>${item.name}</span>
-                    <span class="tag-time" style="${badgeStyle}">Il y a ${item.days}j</span>
-                `;
-                listDiv.appendChild(row);
-            });
-        }
-        memorySection.appendChild(listDiv);
-    });
-
-    card.appendChild(memorySection);
+card.appendChild(memorySection);
 
     // Bouton retour
     const btnHome = document.createElement('button'); btnHome.className='btn'; btnHome.textContent='Retour';

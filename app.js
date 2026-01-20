@@ -3336,7 +3336,7 @@ function showManualPathologySelection(reason) {
 // AFFICHAGE CONDITIONNEL SELON LE MODE
 // ==========================================
 
-if (state.useLLM) {
+if (state.useLLM && !state.confirmationMode) {
     // ========== MODE IA UNIQUEMENT ==========
     const chatContainer = document.createElement('div');
     chatContainer.style.cssText = "margin: 20px 0; padding: 20px; background: rgba(102,126,234,0.1); border-radius: 16px; border: 2px solid rgba(102,126,234,0.3);";

@@ -3285,6 +3285,96 @@ function showManualPathologySelection(reason) {
         setTimeout(startLiveTimer, 100); 
     }    
     // --- LA LIGNE QUI MANQUAIT EST ICI ---
+    // ==========================================
+    // DEBUT BLOC CHAT IA
+    // ==========================================
+    const chatContainer = document.createElement('div');
+    chatContainer.style.cssText = "margin: 15px 0; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid var(--glass-border);";
+    
+    chatContainer.innerHTML = `
+        <div style="font-size: 0.85em; margin-bottom: 8px; color: var(--accent); font-weight:bold; text-transform:uppercase; letter-spacing:1px;">
+            <i class="ph-duotone ph-chat-circle-text"></i> Réponse libre (IA)
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <input type="text" id="aiInput" class="input" placeholder="Ex: Oui, j'ai une douleur qui serre..." style="margin:0; flex:1; font-size:16px;">
+            <button id="aiSendBtn" class="btn" style="width: auto; padding: 0 15px; background:var(--accent);"><i class="ph-bold ph-paper-plane-right"></i></button>
+        </div>
+        <div id="aiLoader" style="display:none; font-size: 0.85em; color: var(--text-muted); margin-top: 8px; text-align: center;">
+            <i class="ph-bold ph-spinner ph-spin"></i> Analyse en cours...
+        </div>
+    `;
+
+    // Logique du Chat
+    setTimeout(() => {
+        const inputField = document.getElementById('aiInput');
+        const sendBtn = document.getElementById('aiSendBtn');
+        const loader = document.getElementById('aiLoader');
+
+        const handleAiSubmit = async () => {
+            const text = inputField.value.trim();
+            if (!text) return;
+
+            // UI Loading
+            inputField.disabled = true;
+            sendBtn.disabled = true;
+            loader.style.display = 'block';
+
+            // Appel IA
+            const result = await analyzeResponseWithLLM(text, state.currentSign);
+
+            // UI Reset
+            loader.style.display = 'none';
+            inputField.disabled = false;
+            sendBtn.disabled = false;
+            inputField.focus();
+
+            // Gestion du résultat (Copie de la logique des boutons)
+            if (result === true) {
+                // LOGIQUE OUI (Copie de btnOui)
+                state.history.push(JSON.stringify({
+                    answers: state.answers, asked: state.asked, currentSign: state.currentSign,
+                    confirmationMode: state.confirmationMode, confirmationQueue: state.confirmationQueue,
+                    confirmedPatho: state.confirmedPatho, priorityQueue: state.priorityQueue,
+                    isChrono: state.isChrono, startTime: state.startTime, dailyTarget: state.dailyTarget
+                }));
+                state.answers[state.currentSign] = true;
+                
+                // Gestion des raffinements (Priorité aux questions précises)
+                if (REFINEMENTS[state.currentSign]) {
+                    let shuffled = [...REFINEMENTS[state.currentSign]].sort(() => Math.random() - 0.5);
+                    state.priorityQueue.push(...shuffled);
+                }
+                
+                showAlert(`✅ L'IA a compris : OUI`, "success");
+                askNextQuestion();
+            } 
+            else if (result === false) {
+                // LOGIQUE NON (Copie de btnNon)
+                state.history.push(JSON.stringify({
+                    answers: state.answers, asked: state.asked, currentSign: state.currentSign,
+                    confirmationMode: state.confirmationMode, confirmationQueue: state.confirmationQueue,
+                    confirmedPatho: state.confirmedPatho, priorityQueue: state.priorityQueue,
+                    isChrono: state.isChrono, startTime: state.startTime, dailyTarget: state.dailyTarget
+                }));
+                state.answers[state.currentSign] = false;
+                
+                showAlert(`❌ L'IA a compris : NON`, "error");
+                askNextQuestion();
+            } 
+            else {
+                // Null / Pas compris
+                showAlert(`🤔 Réponse floue. Soyez plus précis.`, "warning");
+            }
+        };
+
+        sendBtn.onclick = handleAiSubmit;
+        inputField.onkeydown = (e) => { if(e.key === 'Enter') handleAiSubmit(); };
+    }, 50);
+
+    card.appendChild(chatContainer);
+    // ==========================================
+    // FIN BLOC CHAT IA
+    // ==========================================                                                           
     const btnGroup = document.createElement('div'); 
     btnGroup.className = 'button-group';
     // -------------------------------------
@@ -4470,3 +4560,60 @@ async function exportUsersToCSV() {
 // ============================================================
 // FIN ZONE ADMIN
 // ============================================================
+
+    // ============================================================
+// PARTIE INTELLIGENCE ARTIFICIELLE (LLM) - INTEGRATION
+// ============================================================
+
+let cachedOpenAIKey = null; // Stocke la clé tant que la page est ouverte
+
+async function analyzeResponseWithLLM(userText, symptomContext) {
+    // 1. Demander la clé si elle n'est pas encore enregistrée
+    if (!cachedOpenAIKey) {
+        cachedOpenAIKey = prompt("🔐 Mode IA : Colle ta clé API OpenAI (sk-...) pour activer le chat :");
+        if (!cachedOpenAIKey) return null; // Annulation
+    }
+
+    // 2. Préparer le prompt pour l'IA
+    const promptSysteme = `
+    Tu es un moteur de diagnostic médical pour une simulation étudiante.
+    Le système vérifie la présence du signe : "${symptomContext}".
+    L'étudiant répond : "${userText}".
+
+    Analyse l'intention et réponds UNIQUEMENT via ce JSON :
+    {"result": true} -> Si l'étudiant CONFIRME avoir ce symptôme.
+    {"result": false} -> Si l'étudiant NIE avoir ce symptôme.
+    {"result": null} -> Si la réponse est vague, "je ne sais pas", ou hors sujet.
+    `;
+
+    try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${cachedOpenAIKey}`
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini", // Modèle rapide et économique
+                messages: [{ role: "system", content: promptSysteme }],
+                temperature: 0 // Zéro créativité, on veut de la logique pure
+            })
+        });
+
+        if (!response.ok) {
+            if(response.status === 401) alert("Clé API invalide. Recharge la page pour réessayer.");
+            throw new Error("Erreur API");
+        }
+
+        const data = await response.json();
+        // Nettoyage pour garantir le format JSON
+        let cleanContent = data.choices[0].message.content.replace(/```json/g, "").replace(/```/g, "").trim();
+        const jsonResponse = JSON.parse(cleanContent);
+        
+        return jsonResponse.result;
+
+    } catch (error) {
+        console.error("Erreur IA:", error);
+        return null;
+    }
+}

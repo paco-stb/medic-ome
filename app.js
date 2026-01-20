@@ -5011,7 +5011,6 @@ function renderAnamnesisInput(chiefComplaint) {
     const card = document.createElement('div'); 
     card.className='card center';
     
-    // On affiche le motif qu'on a déjà trouvé pour rassurer l'utilisateur
     const formattedComplaint = formatSigneName(chiefComplaint);
 
     card.innerHTML = `
@@ -5041,21 +5040,23 @@ function renderAnamnesisInput(chiefComplaint) {
 
     // --- LOGIQUE DES BOUTONS ---
 
-    // 1. Bouton Passer (On va direct aux questions comme avant)
+    // 1. Bouton Passer
     q('#btnSkipAnamnesis').onclick = () => {
+        // ICI : On désactive l'IA pour la suite, on revient aux boutons
+        state.useLLM = false; 
         askNextQuestion();
     };
 
     // 2. Bouton Analyser
     q('#btnSendAnamnesis').onclick = async () => {
         const text = q('#anamnesisText').value;
-        if(!text) return; // Si vide, on ne fait rien
+        if(!text) return; 
 
         const btn = q('#btnSendAnamnesis');
         btn.innerHTML = '<i class="ph-duotone ph-spinner ph-spin"></i> Analyse IA en cours...';
         btn.disabled = true;
 
-        // Appel à notre nouvelle fonction IA
+        // Appel à notre fonction IA
         const analysis = await analyzeAnamnesis(text);
 
         if (analysis) {
@@ -5064,7 +5065,6 @@ function renderAnamnesisInput(chiefComplaint) {
             // A. On coche les symptômes trouvés (Présents)
             if(analysis.detected && analysis.detected.length > 0) {
                 analysis.detected.forEach(sign => {
-                    // On ne l'ajoute que s'il existe vraiment dans notre jeu
                     if(state.allSigns.includes(sign) && !state.asked.includes(sign)) {
                         state.answers[sign] = true;
                         state.asked.push(sign);
@@ -5091,14 +5091,20 @@ function renderAnamnesisInput(chiefComplaint) {
                 showAlert(`L'IA n'a pas trouvé de nouveaux symptômes connus.`, "warning");
             }
 
-            // D. On lance la suite (les questions précises)
+            // D. On lance la suite
             setTimeout(() => {
+                // ICI : C'est le moment crucial. On désactive l'IA pour repasser aux boutons
+                state.useLLM = false; 
                 askNextQuestion();
             }, 1500);
 
         } else {
             showAlert("Erreur d'analyse. On passe aux questions.", "error");
-            setTimeout(askNextQuestion, 1000);
+            setTimeout(() => {
+                // En cas d'erreur aussi, on repasse en manuel
+                state.useLLM = false; 
+                askNextQuestion();
+            }, 1000);
         }
     };
 }

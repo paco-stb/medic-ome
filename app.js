@@ -1533,9 +1533,13 @@ btnIA.onclick = () => {
         return;
     }
     if(audioCtx.state === 'suspended') audioCtx.resume();
-    state.useLLM = true; // MODE IA
+    
+    // --- CHANGEMENT ICI : On active le mode IA et on demande le motif ---
+    state.useLLM = true; 
     state.dailyTarget = null;
-    renderDemographics();
+    
+    // Au lieu d'aller direct aux paramètres, on va vers le motif
+    renderChiefComplaintInput(); 
 };
 
 btnDiagRow.append(btnQuestions, btnIA);
@@ -4653,4 +4657,129 @@ async function analyzeResponseWithLLM(userText, symptomContext) {
         console.error("Erreur IA:", error);
         return null;
     }
+         // --- NOUVELLE FONCTION : Analyse le motif de consultation ---
+async function analyzeChiefComplaint(userText) {
+    // On vérifie la clé API
+    if (!cachedOpenAIKey) {
+        cachedOpenAIKey = prompt("🔐 Clé OpenAI requise pour l'analyse du motif :");
+        if (!cachedOpenAIKey) return null;
+    }
+
+    // On donne la liste des symptômes généraux à l'IA pour qu'elle choisisse
+    const possibleSymptoms = GENERAL_SYMPTOMS.join(", ");
+
+    const promptSysteme = `
+    Tu es un assistant médical pédagogique.
+    L'utilisateur (étudiant jouant le patient) décrit son problème principal.
+    Ta mission : Associer sa phrase à L'UN des symptômes généraux suivants : [${possibleSymptoms}].
+    
+    Règles :
+    1. Si la phrase correspond clairement à l'un d'eux, renvoie UNIQUEMENT le code du symptôme (ex: "douleur_thoracique").
+    2. Si c'est trop vague ou hors sujet, renvoie "null".
+    3. Ne renvoie rien d'autre (pas de phrase, juste le code).
+    
+    Phrase utilisateur : "${userText}"
+    `;
+
+    try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${cachedOpenAIKey}`
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini", // Modèle rapide
+                messages: [{ role: "system", content: promptSysteme }],
+                temperature: 0
+            })
+        });
+
+        const data = await response.json();
+        // On nettoie la réponse (enlève les guillemets ou espaces)
+        const result = data.choices[0].message.content.trim().replace(/['"]+/g, '');
+        
+        // Sécurité : est-ce que le résultat est bien dans notre liste connue ?
+        if (GENERAL_SYMPTOMS.includes(result)) {
+            return result;
+        }
+        return null;
+
+    } catch (error) {
+        console.error("Erreur IA Motif:", error);
+        return null;
+    }
+}
+         // --- NOUVELLE FONCTION : Affiche l'écran de départ ---
+function renderChiefComplaintInput() {
+    setDocTitle("Motif de consultation");
+    window.scrollTo(0,0);
+    const app = q('#app'); app.innerHTML='';
+    
+    const card = document.createElement('div'); 
+    card.className='card center';
+    
+    card.innerHTML = `
+        <h2><i class="ph-duotone ph-chats-teardrop color-accent"></i> Motif de consultation</h2>
+        <p class="small" style="margin-bottom:20px;">Décrivez ce que ressent le patient pour orienter l'interrogatoire.</p>
+        
+        <div style="background:rgba(102,126,234,0.1); padding:15px; border-radius:12px; margin-bottom:20px; text-align:left;">
+            <label style="display:block; margin-bottom:10px; font-weight:bold; color:var(--accent);">
+                "Bonjour docteur, qu'est-ce qui vous amène ?"
+            </label>
+            <textarea id="motifInput" class="input" placeholder="Ex: J'ai une barre dans la poitrine qui serre fort..." style="min-height:80px;"></textarea>
+        </div>
+
+        <button id="btnValidateMotif" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <i class="ph-bold ph-paper-plane-right"></i> Envoyer
+        </button>
+        
+        <button id="btnSkipMotif" class="link" style="margin-top:15px; font-size:0.9em; opacity:0.7;">
+            Passer (Mode aléatoire classique)
+        </button>
+    `;
+    
+    app.appendChild(card);
+
+    // 1. Gestion du clic "Passer" (retour à l'ancien mode paramétrage)
+    q('#btnSkipMotif').onclick = () => {
+        renderDemographics(); 
+    };
+
+    // 2. Gestion de la validation IA
+    q('#btnValidateMotif').onclick = async () => {
+        const text = q('#motifInput').value;
+        if(!text) return;
+
+        const btn = q('#btnValidateMotif');
+        btn.innerHTML = '<i class="ph-duotone ph-spinner ph-spin"></i> Analyse...';
+        btn.disabled = true;
+
+        // Appel à l'IA
+        const detectedSymptom = await analyzeChiefComplaint(text);
+
+        if (detectedSymptom) {
+            // BINGO ! On a trouvé un point de départ (ex: douleur_thoracique)
+            state.currentSign = detectedSymptom;
+            
+            // On considère que cette question a été posée et validée
+            state.asked = [detectedSymptom]; 
+            state.answers[detectedSymptom] = true; 
+            
+            // On initialise les données démo par défaut (Adulte) pour gagner du temps
+            // (Ou tu peux rediriger vers renderDemographics() si tu veux préciser l'âge après)
+            state.demo = { adulte: true, homme: true }; 
+            
+            // On lance directement la suite (les questions pièges)
+            showAlert(`🔍 Orientation trouvée : ${formatSigneName(detectedSymptom)}`, "success");
+            setTimeout(() => {
+                askNextQuestion();
+            }, 1000);
+            
+        } else {
+            showAlert("Motif trop vague ou inconnu. On passe au profil classique.", "error");
+            setTimeout(renderDemographics, 1500);
+        }
+    };
+}
 }

@@ -1515,7 +1515,7 @@ const btnIA = document.createElement('button');
 btnIA.className = 'btn';
 btnIA.style.flex = '1';
 btnIA.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-btnIA.innerHTML = '<i class="ph-duotone ph-brain"></i> Diagnostic IA';
+btnIA.innerHTML = '<i class="ph-duotone ph-brain"></i> Diagnostic IA (non disponible)';
 
 if (state.isGuest) {
     const limit = checkGuestLimit();
@@ -4726,7 +4726,7 @@ function renderChiefComplaintInput() {
         
         <div style="background:rgba(102,126,234,0.1); padding:15px; border-radius:12px; margin-bottom:20px; text-align:left;">
             <label style="display:block; margin-bottom:10px; font-weight:bold; color:var(--accent);">
-                "Bonjour docteur, qu'est-ce qui vous amène ?"
+                "Bonjour ${state.pseudo}, qu'est-ce qui vous amène ?"
             </label>
             <textarea id="motifInput" class="input" placeholder="Ex: J'ai une barre dans la poitrine qui serre fort..." style="min-height:80px;"></textarea>
         </div>

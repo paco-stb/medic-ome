@@ -4635,7 +4635,7 @@ async function analyzeResponseWithLLM(userText, symptomContext) {
                 "Authorization": `Bearer ${cachedOpenAIKey}`
             },
             body: JSON.stringify({
-                model: "gpt-4o-mini", // Modèle rapide et économique
+                model: "gpt-5-mini", // Modèle rapide et économique
                 messages: [{ role: "system", content: promptSysteme }],
                 temperature: 0 // Zéro créativité, on veut de la logique pure
             })
@@ -4690,7 +4690,7 @@ async function analyzeChiefComplaint(userText) {
                 "Authorization": `Bearer ${cachedOpenAIKey}`
             },
             body: JSON.stringify({
-                model: "gpt-4o-mini", // Modèle rapide
+                model: "gpt-5-mini", // Modèle rapide
                 messages: [{ role: "system", content: promptSysteme }],
                 temperature: 0
             })
@@ -4821,7 +4821,7 @@ async function analyzeDetailedSymptoms(userText) {
                 "Authorization": `Bearer ${cachedOpenAIKey}`
             },
             body: JSON.stringify({
-                model: "gpt-4o-mini",
+                model: "gpt-5-mini",
                 messages: [{ role: "system", content: promptSysteme }],
                 temperature: 0
             })
@@ -4981,7 +4981,7 @@ async function analyzeAnamnesis(userText) {
                 "Authorization": `Bearer ${cachedOpenAIKey}`
             },
             body: JSON.stringify({
-                model: "gpt-4o-mini", // Rapide et efficace
+                model: "gpt-5-mini", // Rapide et efficace
                 messages: [
                     { role: "system", content: promptSysteme },
                     { role: "user", content: userText }

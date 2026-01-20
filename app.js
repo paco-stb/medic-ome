@@ -4657,6 +4657,7 @@ async function analyzeResponseWithLLM(userText, symptomContext) {
         console.error("Erreur IA:", error);
         return null;
     }
+}
          // --- NOUVELLE FONCTION : Analyse le motif de consultation ---
 async function analyzeChiefComplaint(userText) {
     // On vérifie la clé API

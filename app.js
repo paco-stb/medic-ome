@@ -4783,4 +4783,3 @@ function renderChiefComplaintInput() {
         }
     };
 }
-}

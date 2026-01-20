@@ -4760,26 +4760,181 @@ function renderChiefComplaintInput() {
         const detectedSymptom = await analyzeChiefComplaint(text);
 
         if (detectedSymptom) {
-            // BINGO ! On a trouvé un point de départ (ex: douleur_thoracique)
+            // 1. On enregistre le motif principal
             state.currentSign = detectedSymptom;
-            
-            // On considère que cette question a été posée et validée
             state.asked = [detectedSymptom]; 
             state.answers[detectedSymptom] = true; 
             
-            // On initialise les données démo par défaut (Adulte) pour gagner du temps
-            // (Ou tu peux rediriger vers renderDemographics() si tu veux préciser l'âge après)
+            // 2. On met des données démo par défaut (pour éviter les bugs)
             state.demo = { adulte: true, homme: true }; 
             
-            // On lance directement la suite (les questions pièges)
-            showAlert(`🔍 Orientation trouvée : ${formatSigneName(detectedSymptom)}`, "success");
+            // 3. Feedback visuel
+            showAlert(`✅ Motif retenu : ${formatSigneName(detectedSymptom)}`, "success");
+            
+            // 4. ET C'EST LÀ QUE ÇA CHANGE :
+            // Au lieu de lancer askNextQuestion(), on lance la nouvelle étape
             setTimeout(() => {
-                askNextQuestion();
+                renderAnamnesisStep(detectedSymptom); 
             }, 1000);
             
         } else {
             showAlert("Motif trop vague ou inconnu. On passe au profil classique.", "error");
             setTimeout(renderDemographics, 1500);
+        }
+    };
+}
+// ============================================================
+// NOUVEAU MODULE : ANAMNÈSE LIBRE (DITES-M'EN PLUS)
+// ============================================================
+
+// 1. Fonction IA pour extraire plusieurs symptômes d'un coup
+async function analyzeDetailedSymptoms(userText) {
+    // Vérification de la clé
+    if (!cachedOpenAIKey) {
+        cachedOpenAIKey = prompt("🔐 Clé OpenAI requise pour l'analyse :");
+        if (!cachedOpenAIKey) return [];
+    }
+
+    // On s'assure que la liste des signes est chargée
+    if(!state.allSigns || state.allSigns.length === 0) prepareSigns();
+    
+    // On crée une chaîne de texte avec tous les signes possibles pour aider l'IA
+    const allSignsList = state.allSigns.join(", ");
+
+    const promptSysteme = `
+    Tu es un assistant médical pour une simulation.
+    Ta mission : Analyser le récit du patient et trouver les signes cliniques présents.
+    
+    Voici la liste EXACTE des codes de signes autorisés (et rien d'autre) : 
+    [${allSignsList}]
+
+    Règles :
+    1. Analyse ce texte : "${userText}"
+    2. Si tu trouves des signes qui correspondent (ou synonymes évidents), renvoie un tableau JSON de chaînes.
+    3. Exemple : "J'ai chaud et je tousse" -> ["fievre", "toux"]
+    4. Renvoie UNIQUEMENT le tableau JSON brut (pas de phrase, pas de markdown).
+    5. Si rien ne correspond, renvoie [].
+    `;
+
+    try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${cachedOpenAIKey}`
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini",
+                messages: [{ role: "system", content: promptSysteme }],
+                temperature: 0
+            })
+        });
+
+        const data = await response.json();
+        let content = data.choices[0].message.content;
+        
+        // Nettoyage pour garantir un JSON valide
+        content = content.replace(/```json/g, "").replace(/```/g, "").trim();
+        
+        const foundSigns = JSON.parse(content);
+        
+        // Double sécurité : on ne garde que ce qui existe vraiment dans le jeu
+        return foundSigns.filter(s => state.allSigns.includes(s));
+
+    } catch (error) {
+        console.error("Erreur Extraction IA:", error);
+        return [];
+    }
+}
+
+// 2. L'écran "Dites-m'en plus"
+function renderAnamnesisStep(chiefComplaint) {
+    setDocTitle("Anamnèse");
+    window.scrollTo(0,0);
+    const app = q('#app'); 
+    app.innerHTML='';
+    
+    const card = document.createElement('div'); 
+    card.className='card center';
+    
+    // On formate le nom du motif (ex: "Douleur Thoracique")
+    const chiefName = formatSigneName(chiefComplaint);
+
+    card.innerHTML = `
+        <div style="margin-bottom:20px;">
+            <div class="icon-lg color-accent"><i class="ph-duotone ph-chat-centered-text"></i></div>
+            <h2 style="color:var(--accent)">C'est noté : ${chiefName}</h2>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; margin-bottom:20px; text-align:left; border-left: 3px solid var(--accent);">
+            <p style="margin-bottom:10px; font-weight:bold;">
+                <i class="ph-duotone ph-stethoscope"></i> Docteur ${state.pseudo || 'Medecin'} :
+            </p>
+            <p style="font-style:italic; opacity:0.9;">
+                "Très bien. Dites-m'en plus sur ces signes. Ressentez-vous autre chose ? Avez-vous des antécédents particuliers ? Décrivez tout."
+            </p>
+        </div>
+
+        <textarea id="anamnesisInput" class="input" placeholder="Ex: La douleur irradie dans le bras, j'ai des sueurs froides et je suis diabétique..." style="min-height:120px;"></textarea>
+
+        <button id="btnSendAnamnesis" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin-bottom:10px;">
+            <i class="ph-bold ph-magic-wand"></i> Analyser & Commencer l'examen
+        </button>
+        
+        <button id="btnSkipAnamnesis" class="link" style="font-size:0.9em; opacity:0.7;">
+            Passer cette étape (Aller aux questions)
+        </button>
+    `;
+    
+    app.appendChild(card);
+
+    // --- LOGIQUE DES BOUTONS ---
+
+    // Option A : Passer
+    q('#btnSkipAnamnesis').onclick = () => {
+        askNextQuestion(); 
+    };
+
+    // Option B : Analyser avec l'IA
+    q('#btnSendAnamnesis').onclick = async () => {
+        const text = q('#anamnesisInput').value;
+        if(!text) return;
+
+        const btn = q('#btnSendAnamnesis');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="ph-duotone ph-spinner ph-spin"></i> Analyse complète...';
+        btn.disabled = true;
+
+        // Appel à la fonction IA créée au-dessus
+        const detectedSigns = await analyzeDetailedSymptoms(text);
+
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+
+        if (detectedSigns.length > 0) {
+            let msg = "<strong>J'ai noté ces éléments :</strong><br>";
+            
+            detectedSigns.forEach(s => {
+                // On valide le signe
+                state.answers[s] = true;
+                // On l'ajoute à la liste des "posés" pour ne pas redemander
+                if(!state.asked.includes(s)) state.asked.push(s);
+                
+                msg += `- ${formatSigneName(s)}<br>`;
+            });
+            
+            // On affiche le résultat et on lance la suite
+            showAlert(msg, "success");
+            
+            setTimeout(() => {
+                askNextQuestion();
+            }, 2500); // Petit délai pour lire
+            
+        } else {
+            showAlert("Je n'ai pas repéré de signe spécifique connu. Je commence mon interrogatoire.", "warning");
+            setTimeout(() => {
+                askNextQuestion();
+            }, 1500);
         }
     };
 }

@@ -1560,7 +1560,7 @@ btnExam.onclick = () => {
 const btnGloss = document.createElement('button'); btnGloss.className='link'; btnGloss.innerHTML='<i class="ph-duotone ph-book-bookmark"></i> Glossaire'; btnGloss.style.marginTop='12px'; btnGloss.onclick=renderGlossary;
 const btnProf = document.createElement('button'); btnProf.className='link'; btnProf.innerHTML='<i class="ph-duotone ph-user-circle"></i> Profil & Succès'; btnProf.style.marginTop='6px'; btnProf.onclick=renderProfile;
 
-card.appendChild(btnDiag); card.appendChild(btnExam); card.appendChild(btnGloss); card.appendChild(btnProf);
+card.appendChild(btnExam); card.appendChild(btnGloss); card.appendChild(btnProf);
              app.appendChild(card);
          
              const btnDaily = q('#btnDaily');

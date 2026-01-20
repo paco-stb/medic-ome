@@ -4768,13 +4768,10 @@ function renderChiefComplaintInput() {
             // 2. On met des données démo par défaut (pour éviter les bugs)
             state.demo = { adulte: true, homme: true }; 
             
-            // 3. Feedback visuel
-            showAlert(`✅ Motif retenu : ${formatSigneName(detectedSymptom)}`, "success");
-            
-            // 4. ET C'EST LÀ QUE ÇA CHANGE :
-            // Au lieu de lancer askNextQuestion(), on lance la nouvelle étape
+            showAlert(`🔍 Orientation : ${formatSigneName(detectedSymptom)}`, "success");
             setTimeout(() => {
-                renderAnamnesisStep(detectedSymptom); 
+                // On passe le relais à l'anamnèse !
+                renderAnamnesisInput(detectedSymptom); 
             }, 1000);
             
         } else {
@@ -4935,6 +4932,173 @@ function renderAnamnesisStep(chiefComplaint) {
             setTimeout(() => {
                 askNextQuestion();
             }, 1500);
+        }
+    };
+}
+// --- NOUVELLE FONCTION : Analyse l'histoire complète (Anamnèse) ---
+async function analyzeAnamnesis(userText) {
+    // 1. Vérification de la clé (Sécurité)
+    if (!cachedOpenAIKey) {
+        cachedOpenAIKey = prompt("🔐 Clé OpenAI requise pour l'analyse :");
+        if (!cachedOpenAIKey) return null;
+    }
+
+    // 2. On prépare la liste de tous les symptômes possibles pour que l'IA sache quoi chercher
+    // On s'assure que la liste est chargée
+    if (!state.allSigns || state.allSigns.length === 0) {
+        let allSignsSet = new Set();
+        PATHOLOGIES.forEach(p => { Object.keys(p.signes).forEach(s => allSignsSet.add(s)); });
+        state.allSigns = Array.from(allSignsSet);
+    }
+    // On transforme la liste en texte pour l'IA
+    const signsList = state.allSigns.join(", ");
+
+    // 3. Le Prompt (Les instructions pour l'IA)
+    const promptSysteme = `
+    Tu es un assistant médical expert.
+    Voici une liste de codes de symptômes possibles : [${signsList}].
+    
+    L'utilisateur va décrire son histoire clinique.
+    Ta mission :
+    1. Repère tous les symptômes de la liste qui sont PRÉSENTS dans le texte.
+    2. Repère ceux qui sont explicitement ABSENTS (ex: "je n'ai pas de fièvre").
+    3. Renvoie UNIQUEMENT un objet JSON valide.
+    
+    Format attendu :
+    {
+      "detected": ["code_symptome_1", "code_symptome_2"],
+      "rejected": ["code_symptome_3"]
+    }
+    
+    Si rien n'est trouvé, renvoie des tableaux vides. Ne parle pas, renvoie juste le JSON.
+    `;
+
+    try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${cachedOpenAIKey}`
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini", // Rapide et efficace
+                messages: [
+                    { role: "system", content: promptSysteme },
+                    { role: "user", content: userText }
+                ],
+                temperature: 0
+            })
+        });
+
+        const data = await response.json();
+        // Nettoyage du résultat (au cas où l'IA ajoute des ```json ...)
+        let cleanContent = data.choices[0].message.content.replace(/```json/g, "").replace(/```/g, "").trim();
+        const result = JSON.parse(cleanContent);
+        
+        return result;
+
+    } catch (error) {
+        console.error("Erreur Anamnèse IA:", error);
+        return null;
+    }
+}
+function renderAnamnesisInput(chiefComplaint) {
+    setDocTitle("Anamnèse");
+    window.scrollTo(0,0);
+    const app = q('#app'); 
+    app.innerHTML='';
+    
+    const card = document.createElement('div'); 
+    card.className='card center';
+    
+    // On affiche le motif qu'on a déjà trouvé pour rassurer l'utilisateur
+    const formattedComplaint = formatSigneName(chiefComplaint);
+
+    card.innerHTML = `
+        <h2><i class="ph-duotone ph-chat-text color-accent"></i> L'histoire de la maladie</h2>
+        
+        <div style="margin-bottom:20px; background:rgba(0, 255, 157, 0.1); padding:10px; border-radius:8px; border:1px solid var(--success); color:var(--success);">
+            <i class="ph-bold ph-check"></i> Motif identifié : <strong>${formattedComplaint}</strong>
+        </div>
+
+        <p class="small" style="margin-bottom:15px;">
+            "Je vois. Pouvez-vous me raconter plus en détails ce qu'il s'est passé ? 
+            Depuis quand ? D'autres douleurs ? Des antécédents ?"
+        </p>
+        
+        <textarea id="anamnesisText" class="input" placeholder="Ex: C'est arrivé brutalement hier soir, j'ai aussi envie de vomir et j'ai des sueurs froides..." style="min-height:120px;"></textarea>
+
+        <button id="btnSendAnamnesis" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <i class="ph-bold ph-magic-wand"></i> Analyser & Commencer
+        </button>
+        
+        <button id="btnSkipAnamnesis" class="link" style="margin-top:15px;">
+            Passer cette étape
+        </button>
+    `;
+    
+    app.appendChild(card);
+
+    // --- LOGIQUE DES BOUTONS ---
+
+    // 1. Bouton Passer (On va direct aux questions comme avant)
+    q('#btnSkipAnamnesis').onclick = () => {
+        askNextQuestion();
+    };
+
+    // 2. Bouton Analyser
+    q('#btnSendAnamnesis').onclick = async () => {
+        const text = q('#anamnesisText').value;
+        if(!text) return; // Si vide, on ne fait rien
+
+        const btn = q('#btnSendAnamnesis');
+        btn.innerHTML = '<i class="ph-duotone ph-spinner ph-spin"></i> Analyse IA en cours...';
+        btn.disabled = true;
+
+        // Appel à notre nouvelle fonction IA
+        const analysis = await analyzeAnamnesis(text);
+
+        if (analysis) {
+            let countNew = 0;
+
+            // A. On coche les symptômes trouvés (Présents)
+            if(analysis.detected && analysis.detected.length > 0) {
+                analysis.detected.forEach(sign => {
+                    // On ne l'ajoute que s'il existe vraiment dans notre jeu
+                    if(state.allSigns.includes(sign) && !state.asked.includes(sign)) {
+                        state.answers[sign] = true;
+                        state.asked.push(sign);
+                        countNew++;
+                    }
+                });
+            }
+
+            // B. On coche les symptômes rejetés (Absents)
+            if(analysis.rejected && analysis.rejected.length > 0) {
+                analysis.rejected.forEach(sign => {
+                    if(state.allSigns.includes(sign) && !state.asked.includes(sign)) {
+                        state.answers[sign] = false;
+                        state.asked.push(sign);
+                        countNew++;
+                    }
+                });
+            }
+
+            // C. Résultat
+            if (countNew > 0) {
+                showAlert(`✅ L'IA a détecté ${countNew} informations !`, "success");
+            } else {
+                showAlert(`L'IA n'a pas trouvé de nouveaux symptômes connus.`, "warning");
+            }
+
+            // D. On lance la suite (les questions précises)
+            setTimeout(() => {
+                askNextQuestion();
+            }, 1500);
+
+        } else {
+            showAlert("Erreur d'analyse. On passe aux questions.", "error");
+            setTimeout(askNextQuestion, 1000);
         }
     };
 }

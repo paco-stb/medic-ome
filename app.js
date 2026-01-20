@@ -362,6 +362,7 @@ const CONTEXT_RULES = [
          let state = {
               currentUser: null, 
               pseudo: null, 
+              useLLM: false,     
               progression: { 
                   correct: 0, 
                   incorrect: 0, 
@@ -1473,29 +1474,72 @@ function renderExamSummary() {
              `;
              card.appendChild(howToCard);
          
-             const btnDiag = document.createElement('button'); btnDiag.className='btn'; btnDiag.innerHTML='<i class="ph-duotone ph-stethoscope"></i> Entraînement Libre'; btnDiag.style.marginTop='24px'; btnDiag.style.width='100%'; 
-            if (state.isGuest) {
+             // ========================================
+// LIGNE DE 2 BOUTONS : Questions + IA
+// ========================================
+const btnDiagRow = document.createElement('div');
+btnDiagRow.style.display = 'flex';
+btnDiagRow.style.gap = '15px';
+btnDiagRow.style.marginTop = '24px';
+btnDiagRow.style.width = '100%';
+
+// --- BOUTON 1 : DIAGNOSTIC QUESTIONS ---
+const btnQuestions = document.createElement('button');
+btnQuestions.className = 'btn';
+btnQuestions.style.flex = '1';
+btnQuestions.innerHTML = '<i class="ph-duotone ph-stethoscope"></i> Diagnostic Questions';
+
+if (state.isGuest) {
     const limit = checkGuestLimit();
-    // Si le joueur est bloqué, on change l'aspect du bouton tout de suite
     if (!limit.allowed) {
-        btnDiag.style.background = "linear-gradient(135deg, #555 0%, #333 100%)"; // Grisé
-        btnDiag.style.opacity = "0.7";
-        btnDiag.innerHTML = `<i class="ph-duotone ph-lock-key"></i> Bloqué (${limit.remaining})`;
+        btnQuestions.style.background = "linear-gradient(135deg, #555 0%, #333 100%)";
+        btnQuestions.style.opacity = "0.7";
+        btnQuestions.innerHTML = `<i class="ph-duotone ph-lock-key"></i> Bloqué (${limit.remaining})`;
     }
 }
-         btnDiag.onclick= () => {
-         // --- VERIFICATION LIMITE ---
-         const limit = checkGuestLimit();
-         if (!limit.allowed) {
-         showAlert(`Mode invité limité !<br>Prochaine partie dans : <strong>${limit.remaining}</strong>.<br>Créez un compte pour jouer en illimité !`, "error");
-         return;
-         }
-         // ---------------------------
-         
-         if(audioCtx.state === 'suspended') audioCtx.resume();
-         state.dailyTarget = null;
-         renderDemographics();
-         };
+
+btnQuestions.onclick = () => {
+    const limit = checkGuestLimit();
+    if (!limit.allowed) {
+        showAlert(`Mode invité limité !<br>Prochaine partie dans : <strong>${limit.remaining}</strong>.<br>Créez un compte pour jouer en illimité !`, "error");
+        return;
+    }
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    state.useLLM = false; // MODE QUESTIONS
+    state.dailyTarget = null;
+    renderDemographics();
+};
+
+// --- BOUTON 2 : DIAGNOSTIC IA ---
+const btnIA = document.createElement('button');
+btnIA.className = 'btn';
+btnIA.style.flex = '1';
+btnIA.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+btnIA.innerHTML = '<i class="ph-duotone ph-brain"></i> Diagnostic IA';
+
+if (state.isGuest) {
+    const limit = checkGuestLimit();
+    if (!limit.allowed) {
+        btnIA.style.background = "linear-gradient(135deg, #555 0%, #333 100%)";
+        btnIA.style.opacity = "0.7";
+        btnIA.innerHTML = `<i class="ph-duotone ph-lock-key"></i> Bloqué (${limit.remaining})`;
+    }
+}
+
+btnIA.onclick = () => {
+    const limit = checkGuestLimit();
+    if (!limit.allowed) {
+        showAlert(`Mode invité limité !<br>Prochaine partie dans : <strong>${limit.remaining}</strong>.<br>Créez un compte pour jouer en illimité !`, "error");
+        return;
+    }
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    state.useLLM = true; // MODE IA
+    state.dailyTarget = null;
+    renderDemographics();
+};
+
+btnDiagRow.append(btnQuestions, btnIA);
+card.appendChild(btnDiagRow);
          
            const btnExam = document.createElement('button'); 
 btnExam.className='btn'; 
@@ -3284,27 +3328,28 @@ function showManualPathologySelection(reason) {
     if (state.isChrono) {
         setTimeout(startLiveTimer, 100); 
     }    
-    // --- LA LIGNE QUI MANQUAIT EST ICI ---
     // ==========================================
-    // DEBUT BLOC CHAT IA
-    // ==========================================
+// AFFICHAGE CONDITIONNEL SELON LE MODE
+// ==========================================
+
+if (state.useLLM) {
+    // ========== MODE IA UNIQUEMENT ==========
     const chatContainer = document.createElement('div');
-    chatContainer.style.cssText = "margin: 15px 0; padding: 12px; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px solid var(--glass-border);";
+    chatContainer.style.cssText = "margin: 20px 0; padding: 20px; background: rgba(102,126,234,0.1); border-radius: 16px; border: 2px solid rgba(102,126,234,0.3);";
     
     chatContainer.innerHTML = `
-        <div style="font-size: 0.85em; margin-bottom: 8px; color: var(--accent); font-weight:bold; text-transform:uppercase; letter-spacing:1px;">
-            <i class="ph-duotone ph-chat-circle-text"></i> Réponse libre (IA)
+        <div style="font-size: 0.9em; margin-bottom: 12px; color: var(--accent); font-weight:bold; text-transform:uppercase; letter-spacing:1.5px; text-align:center;">
+            <i class="ph-duotone ph-brain"></i> Répondez librement à l'IA
         </div>
-        <div style="display: flex; gap: 8px;">
+        <div style="display: flex; gap: 10px;">
             <input type="text" id="aiInput" class="input" placeholder="Ex: Oui, j'ai une douleur qui serre..." style="margin:0; flex:1; font-size:16px;">
-            <button id="aiSendBtn" class="btn" style="width: auto; padding: 0 15px; background:var(--accent);"><i class="ph-bold ph-paper-plane-right"></i></button>
+            <button id="aiSendBtn" class="btn" style="width: auto; padding: 0 20px; background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);"><i class="ph-bold ph-paper-plane-right"></i></button>
         </div>
-        <div id="aiLoader" style="display:none; font-size: 0.85em; color: var(--text-muted); margin-top: 8px; text-align: center;">
-            <i class="ph-bold ph-spinner ph-spin"></i> Analyse en cours...
+        <div id="aiLoader" style="display:none; font-size: 0.85em; color: var(--text-muted); margin-top: 12px; text-align: center;">
+            <i class="ph-bold ph-spinner ph-spin"></i> Analyse IA en cours...
         </div>
     `;
 
-    // Logique du Chat
     setTimeout(() => {
         const inputField = document.getElementById('aiInput');
         const sendBtn = document.getElementById('aiSendBtn');
@@ -3314,23 +3359,19 @@ function showManualPathologySelection(reason) {
             const text = inputField.value.trim();
             if (!text) return;
 
-            // UI Loading
             inputField.disabled = true;
             sendBtn.disabled = true;
             loader.style.display = 'block';
 
-            // Appel IA
             const result = await analyzeResponseWithLLM(text, state.currentSign);
 
-            // UI Reset
             loader.style.display = 'none';
             inputField.disabled = false;
             sendBtn.disabled = false;
+            inputField.value = '';
             inputField.focus();
 
-            // Gestion du résultat (Copie de la logique des boutons)
             if (result === true) {
-                // LOGIQUE OUI (Copie de btnOui)
                 state.history.push(JSON.stringify({
                     answers: state.answers, asked: state.asked, currentSign: state.currentSign,
                     confirmationMode: state.confirmationMode, confirmationQueue: state.confirmationQueue,
@@ -3339,7 +3380,6 @@ function showManualPathologySelection(reason) {
                 }));
                 state.answers[state.currentSign] = true;
                 
-                // Gestion des raffinements (Priorité aux questions précises)
                 if (REFINEMENTS[state.currentSign]) {
                     let shuffled = [...REFINEMENTS[state.currentSign]].sort(() => Math.random() - 0.5);
                     state.priorityQueue.push(...shuffled);
@@ -3349,7 +3389,6 @@ function showManualPathologySelection(reason) {
                 askNextQuestion();
             } 
             else if (result === false) {
-                // LOGIQUE NON (Copie de btnNon)
                 state.history.push(JSON.stringify({
                     answers: state.answers, asked: state.asked, currentSign: state.currentSign,
                     confirmationMode: state.confirmationMode, confirmationQueue: state.confirmationQueue,
@@ -3362,8 +3401,7 @@ function showManualPathologySelection(reason) {
                 askNextQuestion();
             } 
             else {
-                // Null / Pas compris
-                showAlert(`🤔 Réponse floue. Soyez plus précis.`, "warning");
+                showAlert(`🤔 Réponse ambiguë. Reformulez (ex: "Oui" ou "Non, pas du tout")`, "error");
             }
         };
 
@@ -3372,14 +3410,12 @@ function showManualPathologySelection(reason) {
     }, 50);
 
     card.appendChild(chatContainer);
-    // ==========================================
-    // FIN BLOC CHAT IA
-    // ==========================================                                                           
+
+} else {
+    // ========== MODE QUESTIONS CLASSIQUE ==========
     const btnGroup = document.createElement('div'); 
     btnGroup.className = 'button-group';
-    // -------------------------------------
-    
-    // Bouton OUI avec raffinements aléatoires
+
     const btnOui = document.createElement('button');
     btnOui.className = 'btn btn-success';
     btnOui.innerHTML = '<i class="ph-bold ph-check"></i> OUI';
@@ -3419,6 +3455,7 @@ function showManualPathologySelection(reason) {
     addOtherBtn('Je ne sais pas', 'link', null);
     
     card.appendChild(btnGroup);
+}
 
     const navGroup = document.createElement('div'); 
     navGroup.style.display = 'flex'; navGroup.style.gap = '15px'; navGroup.style.marginTop = '20px';

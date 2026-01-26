@@ -6,7 +6,7 @@ if (window.location.hostname.includes("github.io")) { window.location.href = "ht
 
 // Importation des outils Firebase
 import { getFirestore, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, collection, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
@@ -20,11 +20,21 @@ const firebaseConfig = {
 };
 
 // Initialisation de l'application
-let app, auth, db;
+    let app, auth, db;
 try {
-    app = initializeApp(firebaseConfig);
+    // Vérification : Est-ce que Firebase tourne déjà ? (Lancé par apptest.js ?)
+    if (getApps().length === 0) {
+        // Non, on le lance
+        app = initializeApp(firebaseConfig);
+    } else {
+        // Oui, on récupère l'instance existante
+        app = getApps()[0];
+        console.log("🔄 app.js : Récupération de l'instance Firebase existante.");
+    }
+
     auth = getAuth(app);
     db = getFirestore(app);
+
 } catch (error) {
     console.error("Erreur Firebase:", error);
     document.querySelector('#app').innerHTML = `<div class="alert alert-error">Erreur de configuration : ${error.message}</div>`;

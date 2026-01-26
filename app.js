@@ -259,16 +259,22 @@ async function initApp() {
             }
         });
         
-        // Deep Linking
-        const urlParams = new URLSearchParams(window.location.search);
-        const ficheDemandee = urlParams.get('fiche');
-        if (ficheDemandee) {
-            const pathoTrouvee = PATHOLOGIES.find(p => p.name.toLowerCase() === ficheDemandee.toLowerCase());
-            if (pathoTrouvee) {
-                q('#app').innerHTML = ''; 
-                showDiagnosticDetails({patho: pathoTrouvee});
-                return;
-            }
+        // Deep Linking expérimental pour l'essai clinique
+const urlParams = new URLSearchParams(window.location.search);
+const directMode = urlParams.get('direct');
+
+if (directMode === 'ia') {
+    // Mode IA direct pour l'essai clinique
+    state.isGuest = true;
+    state.pseudo = "Participant";
+    state.progression = { 
+        correct: 0, incorrect: 0, streak: 0, mastery: {}, 
+        dailyStreak: 0, lastDaily: null, achievements: []
+    };
+    updateHeader();
+    renderChiefComplaintInput(); // ✅ Lancer directement le mode IA
+    return; // Stopper l'exécution normale
+}
         }
         
         loadTheme();

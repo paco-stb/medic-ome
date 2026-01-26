@@ -813,29 +813,34 @@ async function saveExperimentData(data) {
 // POINT D'ENTRÉE & ROUTAGE
 // ============================================================
 
+// ============================================================
+// POINT D'ENTRÉE & ROUTAGE (FIN DU FICHIER apptest.js)
+// ============================================================
+
 window.renderModeSelection = renderModeSelection;
 
 // 1. Définition des redirections
 window.startGeneratifMode = function() {
-    window.location.href = window.location.pathname + '?mode=generatif&direct=ia';
+    // On ajoute le paramètre mode=generatif pour que app.js le détecte
+    window.location.href = window.location.pathname + '?mode=generatif';
 }
 
 window.startClassiqueMode = function() {
-    experimentState.mode = 'classique';
-    experimentState.sessionId = Date.now().toString();
-    experimentState.startTime = Date.now();
-    experimentState.questionsAsked = [];
-    experimentState.wrongAnswers = 0;
-    experimentState.hintsGiven = 0;
-    experimentState.attempts = 0;
-    
-    // Sélection aléatoire d'une pathologie
-    experimentState.targetPathology = PATHOLOGIES[Math.floor(Math.random() * PATHOLOGIES.length)];
-    
-    // Génération du profil patient
-    generatePatientProfile(experimentState.targetPathology);
-    
-    renderClassiqueInterface();
+    experimentState.mode = 'classique';
+    experimentState.sessionId = Date.now().toString();
+    experimentState.startTime = Date.now();
+    experimentState.questionsAsked = [];
+    experimentState.wrongAnswers = 0;
+    experimentState.hintsGiven = 0;
+    experimentState.attempts = 0;
+    
+    // Sélection aléatoire d'une pathologie
+    experimentState.targetPathology = PATHOLOGIES[Math.floor(Math.random() * PATHOLOGIES.length)];
+    
+    // Génération du profil patient
+    generatePatientProfile(experimentState.targetPathology);
+    
+    renderClassiqueInterface();
 }
 
 // 2. Logique de démarrage (routage)
@@ -845,31 +850,35 @@ const currentMode = params.get('mode');
 console.log("🔍 Routeur APPTEST - Mode détecté :", currentMode);
 
 if (currentMode === 'generatif') {
-    // Mode Génératif → app.js prend le relais
-    console.log("✅ Mode Génératif (app.js prend le relais).");
-} 
+    // === CORRECTION 210 IQ ===
+    // On charge dynamiquement le moteur principal (app.js)
+    // Cela débloque le chargement infini
+    console.log("✅ Mode Génératif : Chargement dynamique de app.js...");
+    import('./app.js')
+        .then(() => console.log("🚀 Medicome Engine (app.js) chargé avec succès."))
+        .catch(err => console.error("❌ Erreur fatale au chargement de app.js :", err));
+} 
 else if (currentMode === 'classique') {
-    // Mode Classique → Lancement immédiat
-    console.log("🕵️ Mode Classique (Lancement immédiat).");
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            initExperiment().then(() => {
-                // ✅ Attendre que PATHOLOGIES soit chargé AVANT de lancer
-                window.startClassiqueMode();
-            });
-        });
-    } else {
-        initExperiment().then(() => {
-            window.startClassiqueMode();
-        });
-    }
+    // Mode Classique → Lancement immédiat
+    console.log("🕵️ Mode Classique (Lancement immédiat).");
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            initExperiment().then(() => {
+                window.startClassiqueMode();
+            });
+        });
+    } else {
+        initExperiment().then(() => {
+            window.startClassiqueMode();
+        });
+    }
 }
 else {
-    // Aucun mode → Menu de sélection
-    console.log("🧪 Menu de sélection.");
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initExperiment);
-    } else {
-        initExperiment();
-    }
+    // Aucun mode → Menu de sélection
+    console.log("🧪 Menu de sélection.");
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initExperiment);
+    } else {
+        initExperiment();
+    }
 }

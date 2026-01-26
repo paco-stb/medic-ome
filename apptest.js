@@ -200,15 +200,15 @@ window.startClassiqueMode = function() {
 
 function generatePatientProfile(pathology) {
     const profile = {
-        age: null,
-        gender: null,
-        terrain: []  // ✅ Initialisation correcte
+        age: "Adulte (45 ans)",  // ✅ Valeur par défaut
+        gender: Math.random() > 0.5 ? "Homme" : "Femme",  // ✅ Valeur par défaut
+        terrain: []
     };
     
     // ✅ Récupération sécurisée des facteurs
     const facteurs = pathology.facteurs || {};
     
-    // Détermination de l'âge en fonction des facteurs
+    // Détermination de l'âge basée sur les facteurs (si disponibles)
     if (facteurs['nourrisson_moins_2ans'] || facteurs['nourrisson']) {
         profile.age = "Nourrisson (< 2 ans)";
     } else if (facteurs['enfant'] || facteurs['enfant_3_15ans']) {
@@ -221,20 +221,16 @@ function generatePatientProfile(pathology) {
         profile.age = "Adulte (55 ans)";
     } else if (facteurs['sujet_age'] || facteurs['age_>65ans']) {
         profile.age = "Senior (72 ans)";
-    } else {
-        profile.age = "Adulte (45 ans)";
     }
     
-    // Détermination du genre
+    // Détermination du genre basée sur les facteurs (si disponibles)
     if (facteurs['homme'] || facteurs['homme_age'] || facteurs['homme_jeune']) {
         profile.gender = "Homme";
     } else if (facteurs['femme'] || facteurs['femme_jeune'] || facteurs['femme_age_procreer']) {
         profile.gender = "Femme";
-    } else {
-        profile.gender = Math.random() > 0.5 ? "Homme" : "Femme";
     }
     
-    // ✅ Terrain médical (sécurisé)
+    // Terrain médical (basé sur les facteurs si disponibles)
     if (facteurs['tabac'] || facteurs['tabagisme']) {
         profile.terrain.push("Tabagisme actif");
     }
@@ -257,7 +253,7 @@ function generatePatientProfile(pathology) {
         profile.terrain.push("Grossesse (28 SA)");
     }
     
-    // ✅ IMPORTANT : Sauvegarder le profil AVANT d'accéder aux signes
+    // ✅ IMPORTANT : Sauvegarder AVANT d'accéder aux signes
     experimentState.patientProfile = profile;
     
     // Identification du chef de file
@@ -289,9 +285,10 @@ function renderClassiqueInterface() {
     const profile = experimentState.patientProfile;
     const chiefComplaint = formatSymptomName(experimentState.chiefComplaint);
     
-    const terrainText = profile.terrain.length > 0 
-        ? profile.terrain.join(', ') 
-        : "Aucun antécédent notable";
+    // ✅ SÉCURITÉ : Vérifier que profile existe et que terrain est un tableau
+const terrainText = (profile && profile.terrain && profile.terrain.length > 0)
+    ? profile.terrain.join(', ') 
+    : "Aucun antécédent notable";
     
     app.innerHTML = `
         <div class="card center" style="max-width: 800px;">
@@ -831,57 +828,62 @@ async function saveExperimentData(data) {
 }
 
 // ============================================================
-// POINT D'ENTRÉE
+// POINT D'ENTRÉE & ROUTAGE
 // ============================================================
 
-// Fonction globale pour réinitialiser l'interface
-// ============================================================
-// POINT D'ENTRÉE & ROUTAGE (CORRIGÉ)
-// ============================================================
-
-// Fonction globale pour réinitialiser l'interface
 window.renderModeSelection = renderModeSelection;
 
-// 1. DÉFINITION DES REDIRECTIONS (Doit être défini avant l'exécution)
+// 1. Définition des redirections
 window.startGeneratifMode = function() {
-    window.location.href = window.location.pathname + '?mode=generatif';
+    window.location.href = window.location.pathname + '?mode=generatif&direct=ia';
 }
 
 window.startClassiqueMode = function() {
-    // Si on n'est pas déjà en mode classique, on recharge pour nettoyer l'environnement
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('mode') !== 'classique') {
-        window.location.href = window.location.pathname + '?mode=classique';
-    } else {
-        renderClassiqueInterface();
-    }
+    experimentState.mode = 'classique';
+    experimentState.sessionId = Date.now().toString();
+    experimentState.startTime = Date.now();
+    experimentState.questionsAsked = [];
+    experimentState.wrongAnswers = 0;
+    experimentState.hintsGiven = 0;
+    experimentState.attempts = 0;
+    
+    // Sélection aléatoire d'une pathologie
+    experimentState.targetPathology = PATHOLOGIES[Math.floor(Math.random() * PATHOLOGIES.length)];
+    
+    // Génération du profil patient
+    generatePatientProfile(experimentState.targetPathology);
+    
+    renderClassiqueInterface();
 }
 
-// 2. LOGIQUE DE DÉMARRAGE (ROUTAGE)
-// On regarde l'URL pour savoir quoi faire
+// 2. Logique de démarrage (routage)
 const params = new URLSearchParams(window.location.search);
 const currentMode = params.get('mode');
 
 console.log("🔍 Routeur APPTEST - Mode détecté :", currentMode);
 
 if (currentMode === 'generatif') {
-    // CAS 1 : Mode Original (Medicome)
-    // On ne fait RIEN. On laisse app.js s'exécuter.
+    // Mode Génératif → app.js prend le relais
     console.log("✅ Mode Génératif (app.js prend le relais).");
 } 
 else if (currentMode === 'classique') {
-    // CAS 2 : Mode Contrôle (Votre expérience)
+    // Mode Classique → Lancement immédiat
     console.log("🕵️ Mode Classique (Lancement immédiat).");
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
-            initExperiment().then(() => startClassiqueMode());
+            initExperiment().then(() => {
+                // ✅ Attendre que PATHOLOGIES soit chargé AVANT de lancer
+                window.startClassiqueMode();
+            });
         });
     } else {
-        initExperiment().then(() => startClassiqueMode());
+        initExperiment().then(() => {
+            window.startClassiqueMode();
+        });
     }
 }
 else {
-    // CAS 3 : Aucun mode (Menu de sélection)
+    // Aucun mode → Menu de sélection
     console.log("🧪 Menu de sélection.");
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initExperiment);

@@ -809,11 +809,57 @@ async function saveExperimentData(data) {
 // ============================================================
 
 // Fonction globale pour réinitialiser l'interface
+// ============================================================
+// POINT D'ENTRÉE & ROUTAGE (CORRIGÉ)
+// ============================================================
+
+// Fonction globale pour réinitialiser l'interface
 window.renderModeSelection = renderModeSelection;
 
-// Lancement automatique au chargement
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initExperiment);
-} else {
-    initExperiment();
+// 1. DÉFINITION DES REDIRECTIONS (Doit être défini avant l'exécution)
+window.startGeneratifMode = function() {
+    window.location.href = window.location.pathname + '?mode=generatif';
+}
+
+window.startClassiqueMode = function() {
+    // Si on n'est pas déjà en mode classique, on recharge pour nettoyer l'environnement
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('mode') !== 'classique') {
+        window.location.href = window.location.pathname + '?mode=classique';
+    } else {
+        renderClassiqueInterface();
+    }
+}
+
+// 2. LOGIQUE DE DÉMARRAGE (ROUTAGE)
+// On regarde l'URL pour savoir quoi faire
+const params = new URLSearchParams(window.location.search);
+const currentMode = params.get('mode');
+
+console.log("🔍 Routeur APPTEST - Mode détecté :", currentMode);
+
+if (currentMode === 'generatif') {
+    // CAS 1 : Mode Original (Medicome)
+    // On ne fait RIEN. On laisse app.js s'exécuter.
+    console.log("✅ Mode Génératif (app.js prend le relais).");
+} 
+else if (currentMode === 'classique') {
+    // CAS 2 : Mode Contrôle (Votre expérience)
+    console.log("🕵️ Mode Classique (Lancement immédiat).");
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            initExperiment().then(() => startClassiqueMode());
+        });
+    } else {
+        initExperiment().then(() => startClassiqueMode());
+    }
+}
+else {
+    // CAS 3 : Aucun mode (Menu de sélection)
+    console.log("🧪 Menu de sélection.");
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initExperiment);
+    } else {
+        initExperiment();
+    }
 }

@@ -169,7 +169,7 @@ window.startGeneratifMode = function() {
     alert("Mode Génératif Inversé sélectionné.\n\nVous allez maintenant être redirigé vers l'interface classique de Medicome.\n\nPensez à une pathologie et laissez l'IA la deviner !");
     
     // Redirection vers le mode normal (app.js)
-    window.location.href = 'index.html';
+    window.location.href = 'index.html?mode=generatif&direct=ia';
 }
 
 // ============================================================
@@ -202,11 +202,13 @@ function generatePatientProfile(pathology) {
     const profile = {
         age: null,
         gender: null,
-        terrain: []
+        terrain: []  // ✅ Initialisation correcte
     };
     
-    // Détermination de l'âge en fonction des facteurs
+    // ✅ Récupération sécurisée des facteurs
     const facteurs = pathology.facteurs || {};
+    
+    // Détermination de l'âge en fonction des facteurs
     if (facteurs['nourrisson_moins_2ans'] || facteurs['nourrisson']) {
         profile.age = "Nourrisson (< 2 ans)";
     } else if (facteurs['enfant'] || facteurs['enfant_3_15ans']) {
@@ -215,7 +217,7 @@ function generatePatientProfile(pathology) {
         profile.age = "Adolescent (16 ans)";
     } else if (facteurs['adulte_jeune'] || facteurs['jeune']) {
         profile.age = "Jeune adulte (28 ans)";
-    } else if (facteurs['age_>50ans'] || facteurs['adulte']) {
+    } else if (facteurs['plus_de_50ans'] || facteurs['adulte']) {
         profile.age = "Adulte (55 ans)";
     } else if (facteurs['sujet_age'] || facteurs['age_>65ans']) {
         profile.age = "Senior (72 ans)";
@@ -232,26 +234,40 @@ function generatePatientProfile(pathology) {
         profile.gender = Math.random() > 0.5 ? "Homme" : "Femme";
     }
     
-    // Terrain médical
-    if (facteurs['tabac'] || facteurs['tabagisme']) profile.terrain.push("Tabagisme actif");
-    if (facteurs['diabete']) profile.terrain.push("Diabète de type 2");
-    if (facteurs['hta']) profile.terrain.push("HTA");
-    if (facteurs['alcoolisme_chronique'] || facteurs['alcool']) profile.terrain.push("Éthylisme chronique");
-    if (facteurs['surpoids'] || facteurs['obesite']) profile.terrain.push("Obésité (IMC 32)");
-    if (facteurs['immunodepression']) profile.terrain.push("Immunodépression");
-    if (facteurs['grossesse_>20SA']) profile.terrain.push("Grossesse (28 SA)");
+    // ✅ Terrain médical (sécurisé)
+    if (facteurs['tabac'] || facteurs['tabagisme']) {
+        profile.terrain.push("Tabagisme actif");
+    }
+    if (facteurs['diabete']) {
+        profile.terrain.push("Diabète de type 2");
+    }
+    if (facteurs['hta']) {
+        profile.terrain.push("HTA");
+    }
+    if (facteurs['alcoolisme_chronique'] || facteurs['alcool']) {
+        profile.terrain.push("Éthylisme chronique");
+    }
+    if (facteurs['surpoids'] || facteurs['obesite']) {
+        profile.terrain.push("Obésité (IMC 32)");
+    }
+    if (facteurs['immunodepression']) {
+        profile.terrain.push("Immunodépression");
+    }
+    if (facteurs['grossesse']) {
+        profile.terrain.push("Grossesse (28 SA)");
+    }
     
+    // ✅ IMPORTANT : Sauvegarder le profil AVANT d'accéder aux signes
     experimentState.patientProfile = profile;
     
     // Identification du chef de file
-    const signes = pathology.signes;
+    const signes = pathology.signes || {};
     const generalSymptoms = [
         'douleur_thoracique', 'douleur_abdominale', 'fievre', 'dyspnee', 
         'cephalees', 'troubles_neuro', 'anomalie_peau', 'genes_urinaires',
         'douleur_membre_traumatisme', 'douleur_dos', 'trouble_psy', 'toux'
     ];
     
-    // Trouver le symptôme général le plus pondéré
     let maxWeight = 0;
     let chiefComplaint = null;
     for (const symptom of generalSymptoms) {

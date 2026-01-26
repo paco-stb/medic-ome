@@ -73,88 +73,87 @@ async function initExperiment() {
 // ============================================================
 
 function renderModeSelection() {
-    const app = document.getElementById('app');
-    app.innerHTML = `
-        <div class="card center" style="max-width: 700px;">
-            <h2><i class="ph-duotone ph-flask"></i> Étude Scientifique</h2>
-            <p class="small" style="margin-bottom: 30px; line-height: 1.6;">
-                Comparaison de deux paradigmes d'apprentissage médical :<br>
-                <strong>Raisonnement Génératif Inversé</strong> vs <strong>Démarche Classique</strong>
-            </p>
+    const app = document.getElementById('app');
+    app.innerHTML = `
+        <div class="card center" style="max-width: 900px;">
+            <h2><i class="ph-duotone ph-flask"></i> Étude Scientifique</h2>
+            <p class="small" style="margin-bottom: 30px; line-height: 1.6;">
+                Comparaison de deux paradigmes d'apprentissage médical :<br>
+                <strong>Raisonnement Génératif Inversé</strong> vs <strong>Démarche Classique</strong>
+            </p>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; margin-bottom: 20px;">
-                <!-- MODE GÉNÉRATIF INVERSÉ (MODE ACTUEL) -->
-                <div class="mode-card" id="modeGeneratif">
-                    <div class="mode-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-                        <i class="ph-duotone ph-brain" style="font-size: 3em; color: white;"></i>
-                    </div>
-                    <h3 style="margin: 15px 0 10px; color: var(--text-main);">Mode Génératif Inversé</h3>
-                    <p class="small" style="line-height: 1.5; margin-bottom: 15px;">
-                        Vous pensez à une pathologie, l'IA pose des questions pour la deviner.
-                        <br><strong>(Mode actuel de Medicome)</strong>
-                    </p>
-                    <button class="btn" style="width: 100%; font-size: 13px;" onclick="startGeneratifMode()">
-                        <i class="ph-bold ph-play"></i> Démarrer
-                    </button>
-                </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; width: 100%; margin-bottom: 30px;">
+                <!-- MODE GÉNÉRATIF INVERSÉ -->
+                <div class="mode-card">
+                    <div class="mode-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <i class="ph-duotone ph-brain" style="font-size: 3em; color: white;"></i>
+                    </div>
+                    <h3 style="margin: 15px 0 10px; color: var(--text-main);">Mode Génératif Inversé</h3>
+                    <p class="small" style="line-height: 1.5; margin-bottom: 15px; min-height: 80px;">
+                        Vous pensez à une pathologie, l'IA pose des questions pour la deviner.
+                        <br><strong>(Mode actuel de Medicome)</strong>
+                    </p>
+                    <button class="btn" style="width: 100%; font-size: 14px;" onclick="startGeneratifMode()">
+                        <i class="ph-bold ph-play"></i> Démarrer
+                    </button>
+                </div>
 
-                <!-- MODE CLASSIQUE (NOUVEAU) -->
-                <div class="mode-card" id="modeClassique">
-                    <div class="mode-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
-                        <i class="ph-duotone ph-detective" style="font-size: 3em; color: white;"></i>
-                    </div>
-                    <h3 style="margin: 15px 0 10px; color: var(--text-main);">Mode Classique</h3>
-                    <p class="small" style="line-height: 1.5; margin-bottom: 15px;">
-                        L'IA a une pathologie en tête, vous posez des questions pour la découvrir.
-                        <br><strong>(Démarche diagnostique traditionnelle)</strong>
-                    </p>
-                    <button class="btn" style="width: 100%; font-size: 13px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);" onclick="startClassiqueMode()">
-                        <i class="ph-bold ph-play"></i> Démarrer
-                    </button>
-                </div>
-            </div>
+                <!-- MODE CLASSIQUE -->
+                <div class="mode-card">
+                    <div class="mode-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <i class="ph-duotone ph-detective" style="font-size: 3em; color: white;"></i>
+                    </div>
+                    <h3 style="margin: 15px 0 10px; color: var(--text-main);">Mode Classique</h3>
+                    <p class="small" style="line-height: 1.5; margin-bottom: 15px; min-height: 80px;">
+                        L'IA a une pathologie en tête, vous posez des questions pour la découvrir.
+                        <br><strong>(Démarche diagnostique traditionnelle)</strong>
+                    </p>
+                    <button class="btn" style="width: 100%; font-size: 14px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);" onclick="startClassiqueMode()">
+                        <i class="ph-bold ph-play"></i> Démarrer
+                    </button>
+                </div>
+            </div>
 
-            <div style="background: rgba(255,159,67,0.1); padding: 15px; border-radius: 12px; border-left: 3px solid var(--gold); margin-top: 20px;">
-                <div style="font-weight: bold; color: var(--gold); margin-bottom: 8px;">
-                    <i class="ph-duotone ph-info"></i> À propos de cette étude
-                </div>
-                <div class="small" style="text-align: left; line-height: 1.5;">
-                    Cette interface permet de comparer l'efficacité pédagogique de deux approches :
-                    <br>• <strong>Génératif</strong> : Active la génération d'hypothèses (mode inversé)
-                    <br>• <strong>Classique</strong> : Interrogatoire diagnostique standard
-                    <br><br>
-                    Les données anonymisées (temps, questions, succès) seront collectées pour analyse statistique.
-                </div>
-            </div>
-        </div>
+            <div style="background: rgba(255,159,67,0.1); padding: 20px; border-radius: 12px; border-left: 3px solid var(--gold); text-align: left;">
+                <div style="font-weight: bold; color: var(--gold); margin-bottom: 10px;">
+                    <i class="ph-duotone ph-info"></i> À propos de cette étude
+                </div>
+                <div class="small" style="line-height: 1.6;">
+                    Cette interface permet de comparer l'efficacité pédagogique de deux approches :
+                    <br>• <strong>Génératif</strong> : Active la génération d'hypothèses (mode inversé)
+                    <br>• <strong>Classique</strong> : Interrogatoire diagnostique standard
+                    <br><br>
+                    Les données anonymisées (temps, questions, succès) seront collectées pour analyse statistique.
+                </div>
+            </div>
+        </div>
 
-        <style>
-            .mode-card {
-                background: var(--glass-bg);
-                border: 2px solid var(--glass-border);
-                border-radius: 16px;
-                padding: 25px;
-                transition: all 0.3s;
-                cursor: pointer;
-                text-align: center;
-            }
-            .mode-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-                border-color: var(--accent);
-            }
-            .mode-icon {
-                width: 80px;
-                height: 80px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                margin: 0 auto;
-                box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-            }
-        </style>
-    `;
+        <style>
+            .mode-card {
+                background: var(--glass-bg);
+                border: 2px solid var(--glass-border);
+                border-radius: 16px;
+                padding: 30px;
+                transition: all 0.3s;
+                text-align: center;
+            }
+            .mode-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                border-color: var(--accent);
+            }
+            .mode-icon {
+                width: 100px;
+                height: 100px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 15px;
+                box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            }
+        </style>
+    `;
 }
 
 // ============================================================
@@ -162,14 +161,12 @@ function renderModeSelection() {
 // ============================================================
 
 window.startGeneratifMode = function() {
-    experimentState.mode = 'generatif';
-    experimentState.sessionId = Date.now().toString();
-    experimentState.startTime = Date.now();
-    
-    alert("Mode Génératif Inversé sélectionné.\n\nVous allez maintenant être redirigé vers l'interface classique de Medicome.\n\nPensez à une pathologie et laissez l'IA la deviner !");
-    
-    // Redirection vers le mode normal (app.js)
-    window.location.href = 'index.html?mode=generatif&direct=ia';
+    experimentState.mode = 'generatif';
+    experimentState.sessionId = Date.now().toString();
+    experimentState.startTime = Date.now();
+    
+    // Redirection SANS le paramètre "direct=ia" qui cause le bug
+    window.location.href = 'index.html';
 }
 
 // ============================================================

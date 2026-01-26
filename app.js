@@ -1522,17 +1522,6 @@ async function exportUsersToCSV() {
 }
 
 // ============================================================
-// LANCEMENT FINAL SÉCURISÉ (GARDIEN)
+// LANCEMENT DE L'APPLICATION
 // ============================================================
-
-const urlParams = new URLSearchParams(window.location.search);
-const appMode = urlParams.get('mode');
-
-// L'application originale ne se lance QUE si on est en mode 'generatif'
-if (appMode === 'generatif') {
-    console.log("🚀 Lancement de Medicome Original (Mode Génératif)");
-    initApp(); 
-} else {
-    // Sinon, on laisse apptest.js gérer le menu ou le mode classique
-    console.log("💤 Medicome Original en veille (Menu ou Mode Classique actif)");
-}
+initApp();

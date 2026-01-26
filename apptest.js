@@ -294,118 +294,197 @@ function renderClassiqueInterface() {
         : "Aucun antécédent notable";
     
     app.innerHTML = `
-        <div class="card center" style="max-width: 1200px;">
-            <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; border-radius: 12px; margin-bottom: 25px;">
-                <h2 style="color: white; margin: 0; font-size: 1.5rem;">
-                    <i class="ph-duotone ph-detective"></i> Mode Classique - Enquête Diagnostique
-                </h2>
+        <div class="card center" style="max-width: 1000px; width: 95%; padding: 0; background: transparent; box-shadow: none;">
+            
+            <div class="header-banner">
+                <h2><i class="ph-duotone ph-detective"></i> Enquête Diagnostique</h2>
+                <div class="patient-summary">
+                    <span><i class="ph-duotone ph-user"></i> ${profile.gender}, ${profile.age}</span>
+                    <span class="sep">•</span>
+                    <span><i class="ph-duotone ph-warning-circle"></i> Motif : <strong>${chiefComplaint}</strong></span>
+                </div>
             </div>
 
-            <!-- PROFIL PATIENT -->
-            <div style="background: rgba(0,210,255,0.1); border: 2px solid var(--accent); border-radius: 12px; padding: 25px; margin-bottom: 25px; text-align: left;">
-                <h3 style="color: var(--accent); margin-bottom: 15px; font-size: 1.2rem;">
-                    <i class="ph-duotone ph-user-circle"></i> Profil du Patient
-                </h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
-                    <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
-                        <strong>Âge :</strong> ${profile.age}
+            <div class="game-grid">
+                
+                <div class="left-col">
+                    <div class="info-card terrain-card">
+                        <div class="card-label"><i class="ph-duotone ph-clipboard-text"></i> Terrain & Antécédents</div>
+                        <div class="card-value">${terrainText}</div>
                     </div>
-                    <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
-                        <strong>Sexe :</strong> ${profile.gender}
+                    
+                    <div class="stats-row">
+                        <div class="mini-stat">
+                            <div class="val" id="questionsCount">0</div>
+                            <div class="lbl">Questions</div>
+                        </div>
+                        <div class="mini-stat error-stat">
+                            <div class="val" id="wrongCount">0</div>
+                            <div class="lbl">Impasses</div>
+                        </div>
+                        <div class="mini-stat hint-stat">
+                            <div class="val" id="hintsCount">0</div>
+                            <div class="lbl">Indices</div>
+                        </div>
                     </div>
-                </div>
-                <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
-                    <strong>Terrain :</strong> ${terrainText}
-                </div>
-                <div style="margin-top: 15px; padding: 15px; background: rgba(255,215,0,0.15); border-radius: 8px; border-left: 3px solid var(--gold);">
-                    <strong style="color: var(--gold);">
-                        <i class="ph-duotone ph-warning-circle"></i> Motif de consultation :
-                    </strong>
-                    <div style="font-size: 1.3em; margin-top: 8px; color: var(--text-main);">${chiefComplaint}</div>
-                </div>
-            </div>
 
-            <!-- COMPTEURS -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 25px;">
-                <div class="stat-box" style="border-color: var(--accent);">
-                    <div class="stat-number" style="color: var(--accent);" id="questionsCount">0</div>
-                    <div class="stat-label">Questions posées</div>
-                </div>
-                <div class="stat-box" style="border-color: var(--error);">
-                    <div class="stat-number" style="color: var(--error);" id="wrongCount">0</div>
-                    <div class="stat-label">Impasses</div>
-                </div>
-                <div class="stat-box" style="border-color: var(--gold);">
-                    <div class="stat-number" style="color: var(--gold);" id="hintsCount">0</div>
-                    <div class="stat-label">Indices</div>
-                </div>
-            </div>
-
-            <!-- ZONE DE QUESTION -->
-            <div style="background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 16px; padding: 25px; margin-bottom: 25px;">
-                <h3 style="color: var(--text-main); margin-bottom: 15px; font-size: 1.1rem;">
-                    <i class="ph-duotone ph-chat-centered-text"></i> Posez votre question
-                </h3>
-                <textarea 
-                    id="questionInput" 
-                    class="input" 
-                    placeholder="Ex: Le patient présente-t-il une douleur thoracique constrictive ?"
-                    style="min-height: 100px; font-size: 15px; margin-bottom: 15px;"
-                ></textarea>
-                <button id="askBtn" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 100%;">
-                    <i class="ph-bold ph-paper-plane-right"></i> Envoyer la question
-                </button>
-            </div>
-
-            <!-- HISTORIQUE -->
-            <div style="margin-bottom: 25px;">
-                <h3 style="color: var(--text-muted); margin-bottom: 15px; font-size: 1.1rem;">
-                    <i class="ph-duotone ph-list-bullets"></i> Historique de l'interrogatoire
-                </h3>
-                <div id="historyList" style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px; min-height: 120px; max-height: 400px; overflow-y: auto;">
-                    <div class="small" style="text-align: center; color: var(--text-muted); opacity: 0.7;">
-                        Aucune question posée pour le moment
+                    <div class="history-container">
+                        <div class="history-header"><i class="ph-duotone ph-chats-circle"></i> Historique</div>
+                        <div id="historyList" class="history-content">
+                            <div class="empty-state">
+                                <i class="ph-duotone ph-chat-teardrop-dots"></i>
+                                <p>L'interrogatoire commence...</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- ZONE DE DIAGNOSTIC -->
-            <div style="background: rgba(255,215,0,0.1); border: 2px solid var(--gold); border-radius: 16px; padding: 25px; margin-bottom: 20px;">
-                <h3 style="color: var(--gold); margin-bottom: 15px; font-size: 1.1rem;">
-                    <i class="ph-duotone ph-lightbulb"></i> Votre Diagnostic Final
-                </h3>
-                <input 
-                    id="diagnosisInput" 
-                    class="input" 
-                    placeholder="Entrez le nom de la pathologie..."
-                    style="font-size: 16px; margin-bottom: 15px;"
-                />
-                <button id="submitDiagnosisBtn" class="btn" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); width: 100%;">
-                    <i class="ph-bold ph-check-circle"></i> Valider le diagnostic
-                </button>
-            </div>
+                <div class="right-col">
+                    
+                    <div class="action-card question-card">
+                        <label class="action-label"><i class="ph-bold ph-microphone"></i> Posez votre question</label>
+                        <div class="input-wrapper">
+                            <textarea id="questionInput" class="modern-input" placeholder="Ex: Avez-vous de la fièvre ? La douleur irradie-t-elle ?"></textarea>
+                            <div class="input-focus-border"></div>
+                        </div>
+                        <button id="askBtn" class="modern-btn btn-primary">
+                            <span>Envoyer</span> <i class="ph-bold ph-paper-plane-right"></i>
+                        </button>
+                    </div>
 
-            <button class="btn-back" onclick="renderModeSelection()">
-                <i class="ph-bold ph-arrow-left"></i> Retour sélection mode
-            </button>
+                    <div class="action-card diag-card">
+                        <label class="action-label gold-label"><i class="ph-fill ph-lightbulb"></i> Votre conclusion</label>
+                        <div class="input-wrapper">
+                            <input id="diagnosisInput" class="modern-input" placeholder="Nom de la pathologie...">
+                            <div class="input-focus-border gold-border"></div>
+                        </div>
+                        <button id="submitDiagnosisBtn" class="modern-btn btn-gold">
+                            <i class="ph-bold ph-check-circle"></i> Valider le diagnostic
+                        </button>
+                    </div>
+
+                    <button class="text-btn" onclick="renderModeSelection()">
+                        <i class="ph-bold ph-arrow-left"></i> Quitter
+                    </button>
+
+                </div>
+            </div>
         </div>
+
+        <style>
+            /* LAYOUT & GRID */
+            .header-banner {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                padding: 30px;
+                border-radius: 20px;
+                margin-bottom: 25px;
+                text-align: left;
+                box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            }
+            .header-banner h2 { color: white; margin: 0 0 10px 0; font-size: 1.8em; }
+            .patient-summary { color: rgba(255,255,255,0.9); display: flex; align-items: center; gap: 10px; font-size: 1.1em; }
+            .sep { opacity: 0.5; }
+
+            .game-grid {
+                display: grid;
+                grid-template-columns: 1fr 1.2fr; /* Colonne droite un peu plus large */
+                gap: 25px;
+            }
+            @media (max-width: 800px) { .game-grid { grid-template-columns: 1fr; } }
+
+            /* CARDS GÉNÉRIQUES */
+            .info-card, .action-card {
+                background: rgba(30, 30, 46, 0.8); /* Fond sombre */
+                border: 1px solid rgba(255,255,255,0.1);
+                border-radius: 16px;
+                padding: 20px;
+                backdrop-filter: blur(10px);
+            }
+
+            /* INFO PATIENT */
+            .card-label { font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+            .card-value { font-size: 1.1em; color: var(--text-main); line-height: 1.5; }
+
+            /* STATS */
+            .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 20px 0; }
+            .mini-stat { background: rgba(0,0,0,0.2); padding: 10px; border-radius: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+            .mini-stat .val { font-size: 1.4em; font-weight: bold; color: var(--accent); }
+            .mini-stat .lbl { font-size: 0.75em; color: var(--text-muted); margin-top: 4px; }
+            .error-stat .val { color: var(--error); }
+            .hint-stat .val { color: var(--gold); }
+
+            /* HISTORIQUE */
+            .history-container {
+                background: rgba(0,0,0,0.2);
+                border-radius: 16px;
+                border: 1px solid rgba(255,255,255,0.05);
+                height: 300px; /* Hauteur fixe avec scroll */
+                display: flex; flex-direction: column;
+            }
+            .history-header { padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); font-weight: bold; color: var(--text-muted); display:flex; gap:8px; align-items:center; }
+            .history-content { flex: 1; overflow-y: auto; padding: 15px; }
+            .empty-state { text-align: center; color: var(--text-muted); opacity: 0.5; margin-top: 80px; }
+            .empty-state i { font-size: 3em; margin-bottom: 10px; }
+
+            /* INPUTS MODERNES */
+            .action-label { display: block; margin-bottom: 12px; font-weight: 600; color: var(--accent); display:flex; align-items:center; gap:8px;}
+            .gold-label { color: var(--gold); }
+            
+            .input-wrapper { position: relative; margin-bottom: 15px; }
+            .modern-input {
+                width: 100%;
+                background: rgba(0,0,0,0.3);
+                border: 2px solid rgba(255,255,255,0.1);
+                border-radius: 12px;
+                padding: 15px;
+                color: white;
+                font-size: 1em;
+                font-family: inherit;
+                transition: all 0.3s ease;
+                outline: none;
+            }
+            textarea.modern-input { min-height: 100px; resize: vertical; }
+            
+            .modern-input:focus {
+                background: rgba(0,0,0,0.5);
+                border-color: var(--accent);
+                box-shadow: 0 0 20px rgba(102, 126, 234, 0.2);
+            }
+            #diagnosisInput:focus { border-color: var(--gold); box-shadow: 0 0 20px rgba(255, 159, 67, 0.2); }
+
+            /* BOUTONS */
+            .modern-btn {
+                width: 100%;
+                padding: 14px;
+                border: none;
+                border-radius: 12px;
+                font-size: 1em;
+                font-weight: 600;
+                cursor: pointer;
+                display: flex; align-items: center; justify-content: center; gap: 10px;
+                transition: transform 0.2s, box-shadow 0.2s;
+                color: white;
+            }
+            .modern-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+            .modern-btn:active { transform: translateY(0); }
+            
+            .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .btn-gold { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+            
+            .text-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 10px; width: 100%; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+            .text-btn:hover { color: white; }
+        </style>
     `;
     
+    // Réattachement des événements (Crucial !)
     document.getElementById('askBtn').onclick = handleQuestion;
     document.getElementById('submitDiagnosisBtn').onclick = validateDiagnosis;
     
     document.getElementById('questionInput').onkeydown = (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleQuestion();
-        }
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleQuestion(); }
     };
-    
     document.getElementById('diagnosisInput').onkeydown = (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            validateDiagnosis();
-        }
+        if (e.key === 'Enter') { e.preventDefault(); validateDiagnosis(); }
     };
 }
 

@@ -4,10 +4,10 @@
 // ============================================================
 
 import { getFirestore, doc, getDoc, setDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+// AJOUT DE getApps ICI :
+import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-// Configuration Firebase (même que app.js)
 const firebaseConfig = {
     apiKey: "AIzaSyCig9G4gYHU5h642YV1IZxthYm_IXp6vZU",
     authDomain: "medicome-paco.firebaseapp.com",
@@ -17,7 +17,14 @@ const firebaseConfig = {
     appId: "1:332171806096:web:36889325196a7a718b5f15"
 };
 
-const app = initializeApp(firebaseConfig);
+// CORRECTION : On vérifie si une app existe déjà pour éviter le crash
+let app;
+if (getApps().length === 0) {
+    app = initializeApp(firebaseConfig);
+} else {
+    app = getApps()[0];
+}
+
 const auth = getAuth(app);
 const db = getFirestore(app);
 
@@ -723,6 +730,9 @@ function renderFailureScreen(userGuess) {
 // ============================================================
 
 function formatSymptomName(sign) {
+    // SÉCURITÉ : Si le signe est vide (null/undefined), on renvoie un texte par défaut
+    if (!sign) return "Motif non spécifié";
+    
     return sign.replace(/_/g, ' ')
                .replace(/\b\w/g, c => c.toUpperCase());
 }

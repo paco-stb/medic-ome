@@ -627,4 +627,173 @@ function renderSuccessScreen(totalTime) {
                     ${experimentState.hintsGiven > 0 ? `Vous avez bénéficié de ${experimentState.hintsGiven} indice(s).` : 'Aucun indice n\'a été nécessaire ! ✨'}
                     <br><br>
                     <strong>Performance :</strong> 
-                    ${experimentState.questionsAsked.length <= 8
+                    ${experimentState.questionsAsked.length <= 8 ? '🏆 Excellent (≤ 8 questions)' : 
+                      experimentState.questionsAsked.length <= 15 ? '✅ Bien (9-15 questions)' : 
+                      '⚠️ À améliorer (> 15 questions)'}
+                </div>
+            </div>
+
+            <button class="btn" onclick="startClassiqueMode()" style="margin-top: 20px;">
+                <i class="ph-bold ph-arrow-clockwise"></i> Nouveau cas
+            </button>
+            <button class="btn-back" onclick="renderModeSelection()">
+                <i class="ph-bold ph-arrow-left"></i> Retour sélection mode
+            </button>
+        </div>
+    `;
+}
+
+function renderFailureScreen(userGuess) {
+    const app = document.getElementById('app');
+    const correctAnswer = experimentState.targetPathology.name;
+    
+    app.innerHTML = `
+        <div class="card center" style="max-width: 700px;">
+            <div style="font-size: 5em; color: var(--error); margin-bottom: 20px;">
+                <i class="ph-fill ph-x-circle"></i>
+            </div>
+            <h2 style="color: var(--error); margin-bottom: 15px;">
+                ❌ Diagnostic Incorrect
+            </h2>
+            
+            <div style="background: rgba(255,77,77,0.1); border: 1px solid var(--error); border-radius: 12px; padding: 20px; margin: 20px 0;">
+                <div style="margin-bottom: 15px;">
+                    <strong>Votre réponse :</strong>
+                    <div style="font-size: 1.2em; color: var(--error); margin-top: 5px;">${userGuess}</div>
+                </div>
+                <div>
+                    <strong>Réponse attendue :</strong>
+                    <div style="font-size: 1.5em; color: var(--success); margin-top: 5px;">${correctAnswer}</div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 30px 0; width: 100%;">
+                <div class="stat-box">
+                    <div class="stat-number">${experimentState.questionsAsked.length}</div>
+                    <div class="stat-label">Questions posées</div>
+                </div>
+                <div class="stat-box" style="border-color: var(--gold);">
+                    <div class="stat-number" style="color: var(--gold);">${experimentState.attempts}</div>
+                    <div class="stat-label">Tentatives</div>
+                </div>
+            </div>
+
+            <div style="background: rgba(0,210,255,0.1); border: 1px solid var(--accent); border-radius: 12px; padding: 20px; margin: 20px 0; text-align: left;">
+                <h3 style="color: var(--accent); margin-bottom: 10px;">
+                    <i class="ph-duotone ph-info"></i> À propos de cette pathologie
+                </h3>
+                <div class="small" style="line-height: 1.6;">
+                    <strong>${correctAnswer}</strong><br>
+                    ${experimentState.targetPathology.short}
+                </div>
+            </div>
+
+            <button class="btn" onclick="startClassiqueMode()" style="margin-top: 20px;">
+                <i class="ph-bold ph-arrow-clockwise"></i> Réessayer avec un nouveau cas
+            </button>
+            <button class="btn-back" onclick="renderModeSelection()">
+                <i class="ph-bold ph-arrow-left"></i> Retour sélection mode
+            </button>
+        </div>
+    `;
+}
+
+// ============================================================
+// UTILITAIRES
+// ============================================================
+
+function formatSymptomName(sign) {
+    return sign.replace(/_/g, ' ')
+               .replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function updateCounters() {
+    const questionsCount = document.getElementById('questionsCount');
+    const wrongCount = document.getElementById('wrongCount');
+    const hintsCount = document.getElementById('hintsCount');
+    
+    if (questionsCount) questionsCount.textContent = experimentState.questionsAsked.length;
+    if (wrongCount) wrongCount.textContent = experimentState.wrongAnswers;
+    if (hintsCount) hintsCount.textContent = experimentState.hintsGiven;
+}
+
+function addQuestionToHistory(question, answer) {
+    const historyList = document.getElementById('historyList');
+    
+    // Supprime le message "Aucune question"
+    if (experimentState.questionsAsked.length === 1) {
+        historyList.innerHTML = '';
+    }
+    
+    const answerIcon = answer 
+        ? '<i class="ph-fill ph-check-circle" style="color: var(--success);"></i>' 
+        : '<i class="ph-fill ph-x-circle" style="color: var(--error);"></i>';
+    
+    const answerText = answer ? 'OUI' : 'NON';
+    const answerColor = answer ? 'var(--success)' : 'var(--error)';
+    
+    const questionItem = document.createElement('div');
+    questionItem.style.cssText = `
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 15px;
+        background: var(--glass-bg);
+        border-bottom: 1px solid var(--glass-border);
+        margin-bottom: 8px;
+        border-radius: 8px;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    questionItem.innerHTML = `
+        <div style="flex: 1; text-align: left; color: var(--text-main);">
+            <strong style="color: var(--accent);">Q${experimentState.questionsAsked.length}.</strong> ${question}
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; margin-left: 15px;">
+            ${answerIcon}
+            <strong style="color: ${answerColor}; font-size: 14px; min-width: 40px;">${answerText}</strong>
+        </div>
+    `;
+    
+    historyList.appendChild(questionItem);
+    
+    // Scroll automatique vers le bas
+    historyList.scrollTop = historyList.scrollHeight;
+}
+
+// ============================================================
+// SAUVEGARDE DES DONNÉES EXPÉRIMENTALES
+// ============================================================
+
+async function saveExperimentData(data) {
+    try {
+        const currentUser = auth.currentUser;
+        const experimentData = {
+            ...data,
+            userId: currentUser ? currentUser.uid : 'anonymous',
+            userEmail: currentUser ? currentUser.email : null,
+            questionsDetail: experimentState.questionsAsked,
+            patientProfile: experimentState.patientProfile,
+            chiefComplaint: experimentState.chiefComplaint
+        };
+        
+        await addDoc(collection(db, "experiment_results"), experimentData);
+        console.log("✅ Données expérimentales sauvegardées");
+    } catch (error) {
+        console.error("❌ Erreur sauvegarde données:", error);
+    }
+}
+
+// ============================================================
+// POINT D'ENTRÉE
+// ============================================================
+
+// Fonction globale pour réinitialiser l'interface
+window.renderModeSelection = renderModeSelection;
+
+// Lancement automatique au chargement
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initExperiment);
+} else {
+    initExperiment();
+}

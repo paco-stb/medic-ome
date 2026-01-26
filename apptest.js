@@ -133,24 +133,31 @@ function renderModeSelection() {
                 background: var(--glass-bg);
                 border: 2px solid var(--glass-border);
                 border-radius: 16px;
-                padding: 30px;
+                padding: 20px; /* Réduit de 30 à 20 */
                 transition: all 0.3s;
                 text-align: center;
+                cursor: pointer; /* Ajout pour l'UX */
             }
             .mode-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                transform: translateY(-3px);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
                 border-color: var(--accent);
             }
+            /* C'est ici qu'on gère la taille des "images" (les bulles) */
             .mode-icon {
-                width: 100px;
-                height: 100px;
+                width: 60px;  /* Réduit de 100px à 60px */
+                height: 60px; /* Réduit de 100px à 60px */
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                margin: 0 auto 15px;
-                box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+                margin: 0 auto 10px;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            }
+            /* On réduit aussi la taille de l'icône à l'intérieur */
+            .mode-icon i {
+                font-size: 1.8em !important; /* Réduit de 3em à 1.8em */
+                color: white;
             }
         </style>
     `;

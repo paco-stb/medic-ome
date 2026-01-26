@@ -259,10 +259,20 @@ async function initApp() {
             }
         });
         
-        // Deep Linking expérimental pour l'essai clinique
+        // Deep Linking
 const urlParams = new URLSearchParams(window.location.search);
-const directMode = urlParams.get('direct');
+const ficheDemandee = urlParams.get('fiche');
+if (ficheDemandee) {
+    const pathoTrouvee = PATHOLOGIES.find(p => p.name.toLowerCase() === ficheDemandee.toLowerCase());
+    if (pathoTrouvee) {
+        q('#app').innerHTML = ''; 
+        showDiagnosticDetails({patho: pathoTrouvee});
+        return;
+    }
+}
 
+// ✅ CORRECTION : Détecter le mode IA APRÈS le chargement complet
+const directMode = urlParams.get('direct');
 if (directMode === 'ia') {
     // Mode IA direct pour l'essai clinique
     state.isGuest = true;
@@ -272,14 +282,13 @@ if (directMode === 'ia') {
         dailyStreak: 0, lastDaily: null, achievements: []
     };
     updateHeader();
-    renderChiefComplaintInput(); // ✅ Lancer directement le mode IA
-    return; // Stopper l'exécution normale
+    renderChiefComplaintInput(); // ✅ Maintenant PATHOLOGIES est chargé
+    return;
 }
-        }
-        
-        loadTheme();
-        startAuthListener();
-        fetchNotifications();
+
+loadTheme();
+startAuthListener();
+fetchNotifications();
         
         // Listeners boutons globaux
         const btnLegal = q('#legalLink'); if(btnLegal) btnLegal.onclick = renderLegalPage;

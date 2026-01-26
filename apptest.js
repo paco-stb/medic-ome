@@ -455,94 +455,78 @@ async function handleQuestion() {
 // ============================================================
 
 async function analyzeQuestion(questionText) {
-    // 1. Vérification de la clé API
-    if (!cachedOpenAIKey) {
-        // Idéalement, codez votre clé en dur ici pour l'étude si c'est sur une tablette contrôlée
-        // ou utilisez une variable d'environnement. Pour l'instant, on garde le prompt.
-        cachedOpenAIKey = prompt("🔐 Clé OpenAI requise pour le mode expérimental (sk-...) :");
-        if (!cachedOpenAIKey) return null;
-    }
+    if (!cachedOpenAIKey) {
+        cachedOpenAIKey = prompt("🔐 Clé OpenAI requise pour le mode expérimental (sk-...) :");
+        if (!cachedOpenAIKey) return null;
+    }
 
-    const targetPathology = experimentState.targetPathology;
-    
-    // On donne à l'IA la liste des signes PRÉSENTS pour qu'elle privilégie ces clés
-    const presentSignsKeys = Object.keys(targetPathology.signes).join(", ");
+    const targetPathology = experimentState.targetPathology;
+    const presentSignsKeys = Object.keys(targetPathology.signes).join(", ");
 
-    // 2. Construction du Prompt "Intelligent"
-    // On demande à l'IA de normaliser la question, qu'elle soit dans la liste ou non.
-    const systemPrompt = `Tu es un moteur sémantique pour une simulation médicale.
-Le patient souffre de : "${targetPathology.name}".
-Voici les signes CLINIQUES PRÉSENTS (code_interne) chez ce patient : [${presentSignsKeys}].
+    const systemPrompt = `Tu es un moteur sémantique médical. Le patient souffre de "${targetPathology.name}".
+Signes PRÉSENTS dans la pathologie : [${presentSignsKeys}]
 
-L'étudiant docteur pose la question : "${questionText}"
+L'étudiant pose : "${questionText}"
 
 Ta mission :
-1. Identifie le symptôme ou le signe médical visé par la question.
-2. Si ce signe correspond à l'un des "codes internes" de la liste ci-dessus (même approximativement, ex: "mal au bide" -> "douleur_abdominale"), utilise ce code EXACT.
-3. Si le signe N'EST PAS dans la liste (l'étudiant cherche un signe absent), génère un code standard snake_case (ex: "toux", "fievre", "ictere").
-4. Si la question est hors-sujet ou incompréhensible, renvoie null.
+1. Identifie le symptôme/signe médical visé
+2. Si le signe correspond à un code de la liste (même approximativement), utilise ce code EXACT
+3. Si le signe n'est PAS dans la liste, génère quand même un code snake_case standard (ex: "ictere", "boiterie", "prurit")
+4. IMPORTANT : Tu dois TOUJOURS renvoyer un code, même si le signe est absent de la pathologie
 
-Réponds UNIQUEMENT au format JSON strict :
-{"detected_sign": "code_du_signe_ou_null"}`;
+Réponds UNIQUEMENT en JSON :
+{"detected_sign": "code_du_signe"}
 
-    try {
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${cachedOpenAIKey}`
-            },
-            body: JSON.stringify({
-                model: "gpt-4o-mini", // Modèle rapide et économique, suffisant pour ça
-                messages: [{ role: "system", content: systemPrompt }],
-                temperature: 0 // Zéro créativité, on veut de la précision logique
-            })
-        });
+JAMAIS {"detected_sign": null} sauf si la question est totalement incompréhensible.`;
 
-        if (!response.ok) {
-            if (response.status === 401) {
-                alert("❌ Clé API invalide. Veuillez recharger la page.");
-                cachedOpenAIKey = null;
-            }
-            throw new Error(`Erreur API: ${response.status}`);
-        }
+    try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${cachedOpenAIKey}`
+            },
+            body: JSON.stringify({
+                model: "gpt-4o-mini",
+                messages: [{ role: "system", content: systemPrompt }],
+                temperature: 0
+            })
+        });
 
-        const data = await response.json();
-        
-        // 3. Nettoyage robuste du JSON (au cas où l'IA ajoute des ```json ... ```)
-        let cleanContent = data.choices[0].message.content
-            .replace(/```json/g, "")
-            .replace(/```/g, "")
-            .trim();
+        if (!response.ok) {
+            if (response.status === 401) {
+                alert("❌ Clé API invalide.");
+                cachedOpenAIKey = null;
+            }
+            throw new Error(`Erreur API: ${response.status}`);
+        }
 
-        const result = JSON.parse(cleanContent);
+        const data = await response.json();
+        let cleanContent = data.choices[0].message.content
+            .replace(/```json/g, "")
+            .replace(/```/g, "")
+            .trim();
 
-        // Si l'IA n'a rien compris
-        if (!result.detected_sign) return null;
+        const result = JSON.parse(cleanContent);
 
-        // 4. Logique de Vérité (Le Miroir)
-        // On vérifie si le signe détecté existe dans notre JSON de pathologie
-        
-        const signDataInJson = targetPathology.signes[result.detected_sign];
-        
-        // Si signDataInJson existe (il a un poids), alors le signe est PRÉSENT (TRUE)
-        // Si undefined, alors le signe est ABSENT (FALSE), mais la question est valide !
-        
-        const isPresent = signDataInJson !== undefined;
+        if (!result.detected_sign) {
+            return null;
+        }
 
-        // (Optionnel) On peut récupérer le poids pour le scoring futur
-        const weight = isPresent ? signDataInJson : 0;
+        const signDataInJson = targetPathology.signes[result.detected_sign];
+        const isPresent = signDataInJson !== undefined;
+        const weight = isPresent ? signDataInJson : 0;
 
-        return {
-            sign: result.detected_sign, // Le code (ex: "douleur_thoracique" ou "toux")
-            answer: isPresent,          // true (Oui) ou false (Non)
-            weight: weight              // Points potentiels
-        };
+        return {
+            sign: result.detected_sign,
+            answer: isPresent,
+            weight: weight
+        };
 
-    } catch (error) {
-        console.error("Erreur critique LLM:", error);
-        return null;
-    }
+    } catch (error) {
+        console.error("Erreur critique LLM:", error);
+        return null;
+    }
 }
 
 // ============================================================

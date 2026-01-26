@@ -1,11 +1,11 @@
 // ============================================================
-// APPTEST.JS - MODE EXPÉRIMENTAL POUR ÉTUDE SCIENTIFIQUE
-// Comparaison : Raisonnement Génératif Inversé vs Classique
+// APPTEST.JS - VERSION FUSIONNÉE (AUTONOME)
+// Contient : Mode Classique + Mode Génératif dans un seul fichier
 // ============================================================
 
-import { getFirestore, doc, getDoc, setDoc, addDoc, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-// AJOUT DE getApps ICI :
+// 1. IMPORTS
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
@@ -17,877 +17,400 @@ const firebaseConfig = {
     appId: "1:332171806096:web:36889325196a7a718b5f15"
 };
 
-// CORRECTION : On vérifie si une app existe déjà pour éviter le crash
-let app;
-if (getApps().length === 0) {
-    app = initializeApp(firebaseConfig);
-} else {
-    app = getApps()[0];
-}
-
-const auth = getAuth(app);
+// Initialisation sécurisée
+let app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getFirestore(app);
+const auth = getAuth(app);
 
 // ============================================================
-// VARIABLES GLOBALES
+// 2. VARIABLES GLOBALES PARTAGÉES
 // ============================================================
 
 let PATHOLOGIES = [];
+let cachedOpenAIKey = null;
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let GLOBAL_IMG_MAP = {};
+
+// --- ÉTAT MODE CLASSIQUE (TU DEVINES) ---
 let experimentState = {
-    mode: null, // 'generatif' ou 'classique'
-    targetPathology: null,
-    patientProfile: {},
-    chiefComplaint: null,
-    questionsAsked: [],
-    wrongAnswers: 0,
-    startTime: null,
-    sessionId: null,
-    hintsGiven: 0,
-    attempts: 0
+    mode: null, targetPathology: null, patientProfile: {},
+    chiefComplaint: null, questionsAsked: [], wrongAnswers: 0,
+    startTime: null, hintsGiven: 0, attempts: 0, sessionId: null
 };
 
-let cachedOpenAIKey = null;
+// --- ÉTAT MODE GÉNÉRATIF (IA DEVINE - JEU ORIGINAL) ---
+let genState = {
+    answers: {}, asked: [], ranked: [], currentSign: null, demo: {},
+    history: [], startTime: null
+};
 
 // ============================================================
-// INITIALISATION
+// 3. INITIALISATION & ROUTAGE
 // ============================================================
 
-async function initExperiment() {
+async function initApp() {
     try {
         const response = await fetch('./pathologies.json');
+        if (!response.ok) throw new Error("Fichier pathologies.json introuvable");
         PATHOLOGIES = await response.json();
-        renderModeSelection();
+        
+        // Charger images
+        PATHOLOGIES.forEach(p => {
+            if(p.images) Object.entries(p.images).forEach(([k,v]) => GLOBAL_IMG_MAP[k] = v);
+        });
+
+        // Routeur simple basé sur l'URL
+        const params = new URLSearchParams(window.location.search);
+        const mode = params.get('mode');
+
+        if (mode === 'generatif') {
+            initGeneratifMode(); // Lance le moteur IA
+        } else if (mode === 'classique') {
+            startClassiqueMode(); // Lance le moteur Enquête
+        } else {
+            renderModeSelection(); // Affiche le menu
+        }
+
     } catch (error) {
-        console.error("Erreur chargement pathologies:", error);
-        document.getElementById('app').innerHTML = `
-            <div class="card center">
-                <h2 style="color:var(--error)">Erreur de chargement</h2>
-                <p class="small">${error.message}</p>
-            </div>
-        `;
+        document.getElementById('app').innerHTML = `<div class="card center"><h2 style="color:red">Erreur</h2><p>${error.message}</p></div>`;
     }
 }
 
-// ============================================================
-// SÉLECTION DU MODE EXPÉRIMENTAL
-// ============================================================
-
 function renderModeSelection() {
+    
     const app = document.getElementById('app');
     app.innerHTML = `
         <div class="card center" style="max-width: 700px;">
             <h2><i class="ph-duotone ph-flask"></i> Étude Scientifique</h2>
-            <p class="small" style="margin-bottom: 30px; line-height: 1.6;">
-                Comparaison de deux paradigmes d'apprentissage médical :<br>
-                <strong>Raisonnement Génératif Inversé</strong> vs <strong>Démarche Classique</strong>
-            </p>
+            <p class="small" style="margin-bottom: 30px;">Choisissez le protocole :</p>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; margin-bottom: 20px;">
-                <!-- MODE GÉNÉRATIF INVERSÉ (MODE ACTUEL) -->
-                <div class="mode-card" id="modeGeneratif">
+                <div class="mode-card" onclick="selectMode('generatif')">
                     <div class="mode-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                         <i class="ph-duotone ph-brain" style="font-size: 3em; color: white;"></i>
                     </div>
-                    <h3 style="margin: 15px 0 10px; color: var(--text-main);">Mode Génératif Inversé</h3>
-                    <p class="small" style="line-height: 1.5; margin-bottom: 15px;">
-                        Vous pensez à une pathologie, l'IA pose des questions pour la deviner.
-                        <br><strong>(Mode actuel de Medicome)</strong>
-                    </p>
-                    <button class="btn" style="width: 100%; font-size: 13px;" onclick="startGeneratifMode()">
-                        <i class="ph-bold ph-play"></i> Démarrer
-                    </button>
+                    <h3 style="margin: 15px 0 10px; color: var(--text-main);">Mode Inversé</h3>
+                    <p class="small">L'IA vous pose des questions pour deviner votre pathologie.</p>
                 </div>
 
-                <!-- MODE CLASSIQUE (NOUVEAU) -->
-                <div class="mode-card" id="modeClassique">
+                <div class="mode-card" onclick="selectMode('classique')">
                     <div class="mode-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                         <i class="ph-duotone ph-detective" style="font-size: 3em; color: white;"></i>
                     </div>
                     <h3 style="margin: 15px 0 10px; color: var(--text-main);">Mode Classique</h3>
-                    <p class="small" style="line-height: 1.5; margin-bottom: 15px;">
-                        L'IA a une pathologie en tête, vous posez des questions pour la découvrir.
-                        <br><strong>(Démarche diagnostique traditionnelle)</strong>
-                    </p>
-                    <button class="btn" style="width: 100%; font-size: 13px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);" onclick="startClassiqueMode()">
-                        <i class="ph-bold ph-play"></i> Démarrer
-                    </button>
+                    <p class="small">Vous posez des questions à l'IA pour trouver le diagnostic.</p>
                 </div>
             </div>
-
-            <div style="background: rgba(255,159,67,0.1); padding: 15px; border-radius: 12px; border-left: 3px solid var(--gold); margin-top: 20px;">
-                <div style="font-weight: bold; color: var(--gold); margin-bottom: 8px;">
-                    <i class="ph-duotone ph-info"></i> À propos de cette étude
-                </div>
-                <div class="small" style="text-align: left; line-height: 1.5;">
-                    Cette interface permet de comparer l'efficacité pédagogique de deux approches :
-                    <br>• <strong>Génératif</strong> : Active la génération d'hypothèses (mode inversé)
-                    <br>• <strong>Classique</strong> : Interrogatoire diagnostique standard
-                    <br><br>
-                    Les données anonymisées (temps, questions, succès) seront collectées pour analyse statistique.
-                </div>
-            </div>
+            <div class="small" style="opacity:0.6">Medicome Research</div>
         </div>
-
         <style>
-            .mode-card {
-                background: var(--glass-bg);
-                border: 2px solid var(--glass-border);
-                border-radius: 16px;
-                padding: 25px;
-                transition: all 0.3s;
-                cursor: pointer;
-                text-align: center;
-            }
-            .mode-card:hover {
-                transform: translateY(-5px);
-                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-                border-color: var(--accent);
-            }
-            .mode-icon {
-                width: 80px;
-                height: 80px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                margin: 0 auto;
-                box-shadow: 0 8px 20px rgba(0,0,0,0.3);
-            }
+            .mode-card { background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 16px; padding: 25px; cursor: pointer; text-align: center; transition: 0.3s; }
+            .mode-card:hover { transform: translateY(-5px); border-color: var(--accent); }
+            .mode-icon { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
         </style>
     `;
 }
 
-// ============================================================
-// MODE GÉNÉRATIF INVERSÉ (MODE ACTUEL)
-// ============================================================
-
-window.startGeneratifMode = function() {
-    experimentState.mode = 'generatif';
-    experimentState.sessionId = Date.now().toString();
-    experimentState.startTime = Date.now();
-    
-    alert("Mode Génératif Inversé sélectionné.\n\nVous allez maintenant être redirigé vers l'interface classique de Medicome.\n\nPensez à une pathologie et laissez l'IA la deviner !");
-    
-    // Redirection vers le mode normal (app.js)
-    window.location.href = 'index.html?mode=generatif&direct=ia';
+window.selectMode = function(mode) {
+    // Recharge la page avec le bon paramètre pour nettoyer la mémoire
+    window.location.href = `?mode=${mode}`;
 }
 
 // ============================================================
-// MODE CLASSIQUE (NOUVEAU - EXPÉRIMENTAL)
+// 4. API OPENAI (PARTAGÉE)
 // ============================================================
 
-window.startClassiqueMode = function() {
-    experimentState.mode = 'classique';
-    experimentState.sessionId = Date.now().toString();
-    experimentState.startTime = Date.now();
-    experimentState.questionsAsked = [];
-    experimentState.wrongAnswers = 0;
-    experimentState.hintsGiven = 0;
-    experimentState.attempts = 0;
-    
-    // Sélection aléatoire d'une pathologie
-    experimentState.targetPathology = PATHOLOGIES[Math.floor(Math.random() * PATHOLOGIES.length)];
-    
-    // Génération du profil patient
-    generatePatientProfile(experimentState.targetPathology);
-    
-    renderClassiqueInterface();
-}
-
-// ============================================================
-// GÉNÉRATION DU PROFIL PATIENT
-// ============================================================
-
-function generatePatientProfile(pathology) {
-    const profile = {
-        age: "Adulte (45 ans)",  // ✅ Valeur par défaut
-        gender: Math.random() > 0.5 ? "Homme" : "Femme",  // ✅ Valeur par défaut
-        terrain: []
-    };
-    
-    // ✅ Récupération sécurisée des facteurs
-    const facteurs = pathology.facteurs || {};
-    
-    // Détermination de l'âge basée sur les facteurs (si disponibles)
-    if (facteurs['nourrisson_moins_2ans'] || facteurs['nourrisson']) {
-        profile.age = "Nourrisson (< 2 ans)";
-    } else if (facteurs['enfant'] || facteurs['enfant_3_15ans']) {
-        profile.age = "Enfant (8 ans)";
-    } else if (facteurs['adolescent'] || facteurs['sujet_jeune']) {
-        profile.age = "Adolescent (16 ans)";
-    } else if (facteurs['adulte_jeune'] || facteurs['jeune']) {
-        profile.age = "Jeune adulte (28 ans)";
-    } else if (facteurs['plus_de_50ans'] || facteurs['adulte']) {
-        profile.age = "Adulte (55 ans)";
-    } else if (facteurs['sujet_age'] || facteurs['age_>65ans']) {
-        profile.age = "Senior (72 ans)";
-    }
-    
-    // Détermination du genre basée sur les facteurs (si disponibles)
-    if (facteurs['homme'] || facteurs['homme_age'] || facteurs['homme_jeune']) {
-        profile.gender = "Homme";
-    } else if (facteurs['femme'] || facteurs['femme_jeune'] || facteurs['femme_age_procreer']) {
-        profile.gender = "Femme";
-    }
-    
-    // Terrain médical (basé sur les facteurs si disponibles)
-    if (facteurs['tabac'] || facteurs['tabagisme']) {
-        profile.terrain.push("Tabagisme actif");
-    }
-    if (facteurs['diabete']) {
-        profile.terrain.push("Diabète de type 2");
-    }
-    if (facteurs['hta']) {
-        profile.terrain.push("HTA");
-    }
-    if (facteurs['alcoolisme_chronique'] || facteurs['alcool']) {
-        profile.terrain.push("Éthylisme chronique");
-    }
-    if (facteurs['surpoids'] || facteurs['obesite']) {
-        profile.terrain.push("Obésité (IMC 32)");
-    }
-    if (facteurs['immunodepression']) {
-        profile.terrain.push("Immunodépression");
-    }
-    if (facteurs['grossesse']) {
-        profile.terrain.push("Grossesse (28 SA)");
-    }
-    
-    // ✅ IMPORTANT : Sauvegarder AVANT d'accéder aux signes
-    experimentState.patientProfile = profile;
-    
-    // Identification du chef de file
-    const signes = pathology.signes || {};
-    const generalSymptoms = [
-        'douleur_thoracique', 'douleur_abdominale', 'fievre', 'dyspnee', 
-        'cephalees', 'troubles_neuro', 'anomalie_peau', 'genes_urinaires',
-        'douleur_membre_traumatisme', 'douleur_dos', 'trouble_psy', 'toux'
-    ];
-    
-    let maxWeight = 0;
-    let chiefComplaint = null;
-    for (const symptom of generalSymptoms) {
-        if (signes[symptom] && signes[symptom] > maxWeight) {
-            maxWeight = signes[symptom];
-            chiefComplaint = symptom;
-        }
-    }
-    
-    experimentState.chiefComplaint = chiefComplaint || 'douleur_abdominale';
-}
-
-// ============================================================
-// INTERFACE MODE CLASSIQUE
-// ============================================================
-
-function renderClassiqueInterface() {
-    const app = document.getElementById('app');
-    const profile = experimentState.patientProfile;
-    const chiefComplaint = formatSymptomName(experimentState.chiefComplaint);
-    
-    // ✅ SÉCURITÉ : Vérifier que profile existe et que terrain est un tableau
-const terrainText = (profile && profile.terrain && profile.terrain.length > 0)
-    ? profile.terrain.join(', ') 
-    : "Aucun antécédent notable";
-    
-    app.innerHTML = `
-        <div class="card center" style="max-width: 800px;">
-            <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
-                <h2 style="color: white; margin: 0;">
-                    <i class="ph-duotone ph-detective"></i> Mode Classique - Enquête Diagnostique
-                </h2>
-            </div>
-
-            <!-- PROFIL PATIENT -->
-            <div style="background: rgba(0,210,255,0.1); border: 1px solid var(--accent); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: left;">
-                <h3 style="color: var(--accent); margin-bottom: 15px;">
-                    <i class="ph-duotone ph-user-circle"></i> Profil du Patient
-                </h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                    <div><strong>Âge :</strong> ${profile.age}</div>
-                    <div><strong>Sexe :</strong> ${profile.gender}</div>
-                </div>
-                <div style="margin-top: 10px;">
-                    <strong>Terrain :</strong> ${terrainText}
-                </div>
-                <div style="margin-top: 15px; padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px;">
-                    <strong style="color: var(--gold);">
-                        <i class="ph-duotone ph-warning-circle"></i> Motif de consultation :
-                    </strong>
-                    <div style="font-size: 1.2em; margin-top: 5px;">${chiefComplaint}</div>
-                </div>
-            </div>
-
-            <!-- COMPTEURS -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-                <div class="stat-box">
-                    <div class="stat-number" id="questionsCount">0</div>
-                    <div class="stat-label">Questions posées</div>
-                </div>
-                <div class="stat-box" style="border-color: var(--error);">
-                    <div class="stat-number" style="color: var(--error);" id="wrongCount">0</div>
-                    <div class="stat-label">Impasses</div>
-                </div>
-                <div class="stat-box" style="border-color: var(--gold);">
-                    <div class="stat-number" style="color: var(--gold);" id="hintsCount">0</div>
-                    <div class="stat-label">Indices</div>
-                </div>
-            </div>
-
-            <!-- ZONE DE QUESTION -->
-            <div style="background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 16px; padding: 25px; margin-bottom: 20px;">
-                <h3 style="color: var(--text-main); margin-bottom: 15px;">
-                    <i class="ph-duotone ph-chat-centered-text"></i> Posez votre question
-                </h3>
-                <textarea 
-                    id="questionInput" 
-                    class="input" 
-                    placeholder="Ex: Le patient présente-t-il une douleur thoracique constrictive ?"
-                    style="min-height: 80px; font-size: 15px;"
-                ></textarea>
-                <button id="askBtn" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin-top: 10px;">
-                    <i class="ph-bold ph-paper-plane-right"></i> Envoyer la question
-                </button>
-            </div>
-
-            <!-- HISTORIQUE DES QUESTIONS -->
-            <div id="questionsHistory" style="margin-bottom: 20px;">
-                <h3 style="color: var(--text-muted); margin-bottom: 10px;">
-                    <i class="ph-duotone ph-list-bullets"></i> Historique de l'interrogatoire
-                </h3>
-                <div id="historyList" style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; min-height: 100px;">
-                    <div class="small" style="text-align: center; color: var(--text-muted);">
-                        Aucune question posée pour le moment
-                    </div>
-                </div>
-            </div>
-
-            <!-- ZONE DE DIAGNOSTIC -->
-            <div style="background: rgba(255,215,0,0.1); border: 2px solid var(--gold); border-radius: 16px; padding: 25px;">
-                <h3 style="color: var(--gold); margin-bottom: 15px;">
-                    <i class="ph-duotone ph-lightbulb"></i> Votre Diagnostic
-                </h3>
-                <input 
-                    id="diagnosisInput" 
-                    class="input" 
-                    placeholder="Entrez le nom de la pathologie..."
-                    style="font-size: 16px;"
-                />
-                <button id="submitDiagnosisBtn" class="btn" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); margin-top: 10px;">
-                    <i class="ph-bold ph-check-circle"></i> Valider le diagnostic
-                </button>
-            </div>
-
-            <button class="btn-back" style="margin-top: 20px;" onclick="renderModeSelection()">
-                <i class="ph-bold ph-arrow-left"></i> Retour sélection mode
-            </button>
-        </div>
-    `;
-    
-    // Event listeners
-    document.getElementById('askBtn').onclick = handleQuestion;
-    document.getElementById('submitDiagnosisBtn').onclick = validateDiagnosis;
-    
-    // Entrée au clavier
-    document.getElementById('questionInput').onkeydown = (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleQuestion();
-        }
-    };
-    
-    document.getElementById('diagnosisInput').onkeydown = (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            validateDiagnosis();
-        }
-    };
-}
-
-// ============================================================
-// TRAITEMENT DES QUESTIONS (LLM)
-// ============================================================
-
-async function handleQuestion() {
-    const questionText = document.getElementById('questionInput').value.trim();
-    if (!questionText) return;
-    
-    const btn = document.getElementById('askBtn');
-    btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> Analyse en cours...';
-    btn.disabled = true;
-    
-    // Analyse de la question via LLM
-    const result = await analyzeQuestion(questionText);
-    
-    btn.innerHTML = '<i class="ph-bold ph-paper-plane-right"></i> Envoyer la question';
-    btn.disabled = false;
-    
-    if (result === null) {
-        alert("❌ Question non comprise ou trop vague. Reformulez de manière plus précise.\n\nExemple : 'Le patient a-t-il une douleur constrictive ?'");
-        return;
-    }
-    
-    // Enregistrement de la question
-    experimentState.questionsAsked.push({
-        question: questionText,
-        sign: result.sign,
-        answer: result.answer,
-        timestamp: Date.now() - experimentState.startTime
-    });
-    
-    updateCounters();
-    addQuestionToHistory(questionText, result.answer);
-    
-    // Gestion des mauvaises réponses consécutives
-    if (!result.answer) {
-        experimentState.wrongAnswers++;
-        if (experimentState.wrongAnswers >= 5) {
-            giveHint();
-        }
-    } else {
-        experimentState.wrongAnswers = 0; // Reset si bonne réponse
-    }
-    
-    document.getElementById('questionInput').value = '';
-    document.getElementById('questionInput').focus();
-}
-
-// ============================================================
-// ANALYSE DE LA QUESTION PAR LLM (CORRIGÉE & OPTIMISÉE)
-// ============================================================
-
-async function analyzeQuestion(questionText) {
-    // 1. Vérification de la clé API
+async function callOpenAI(systemPrompt, userText = null) {
     if (!cachedOpenAIKey) {
-        // Idéalement, codez votre clé en dur ici pour l'étude si c'est sur une tablette contrôlée
-        // ou utilisez une variable d'environnement. Pour l'instant, on garde le prompt.
-        cachedOpenAIKey = prompt("🔐 Clé OpenAI requise pour le mode expérimental (sk-...) :");
+        cachedOpenAIKey = prompt("🔐 Clé OpenAI requise (sk-...) :");
         if (!cachedOpenAIKey) return null;
     }
-
-    const targetPathology = experimentState.targetPathology;
-    
-    // On donne à l'IA la liste des signes PRÉSENTS pour qu'elle privilégie ces clés
-    const presentSignsKeys = Object.keys(targetPathology.signes).join(", ");
-
-    // 2. Construction du Prompt "Intelligent"
-    // On demande à l'IA de normaliser la question, qu'elle soit dans la liste ou non.
-    const systemPrompt = `Tu es un moteur sémantique pour une simulation médicale.
-Le patient souffre de : "${targetPathology.name}".
-Voici les signes CLINIQUES PRÉSENTS (code_interne) chez ce patient : [${presentSignsKeys}].
-
-L'étudiant docteur pose la question : "${questionText}"
-
-Ta mission :
-1. Identifie le symptôme ou le signe médical visé par la question.
-2. Si ce signe correspond à l'un des "codes internes" de la liste ci-dessus (même approximativement, ex: "mal au bide" -> "douleur_abdominale"), utilise ce code EXACT.
-3. Si le signe N'EST PAS dans la liste (l'étudiant cherche un signe absent), génère un code standard snake_case (ex: "toux", "fievre", "ictere").
-4. Si la question est hors-sujet ou incompréhensible, renvoie null.
-
-Réponds UNIQUEMENT au format JSON strict :
-{"detected_sign": "code_du_signe_ou_null"}`;
-
     try {
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        const messages = [{ role: "system", content: systemPrompt }];
+        if(userText) messages.push({ role: "user", content: userText });
+
+        const req = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${cachedOpenAIKey}`
-            },
-            body: JSON.stringify({
-                model: "gpt-4o-mini", // Modèle rapide et économique, suffisant pour ça
-                messages: [{ role: "system", content: systemPrompt }],
-                temperature: 0 // Zéro créativité, on veut de la précision logique
-            })
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${cachedOpenAIKey}` },
+            body: JSON.stringify({ model: "gpt-4o-mini", messages: messages, temperature: 0 })
         });
-
-        if (!response.ok) {
-            if (response.status === 401) {
-                alert("❌ Clé API invalide. Veuillez recharger la page.");
-                cachedOpenAIKey = null;
-            }
-            throw new Error(`Erreur API: ${response.status}`);
-        }
-
-        const data = await response.json();
-        
-        // 3. Nettoyage robuste du JSON (au cas où l'IA ajoute des ```json ... ```)
-        let cleanContent = data.choices[0].message.content
-            .replace(/```json/g, "")
-            .replace(/```/g, "")
-            .trim();
-
-        const result = JSON.parse(cleanContent);
-
-        // Si l'IA n'a rien compris
-        if (!result.detected_sign) return null;
-
-        // 4. Logique de Vérité (Le Miroir)
-        // On vérifie si le signe détecté existe dans notre JSON de pathologie
-        
-        const signDataInJson = targetPathology.signes[result.detected_sign];
-        
-        // Si signDataInJson existe (il a un poids), alors le signe est PRÉSENT (TRUE)
-        // Si undefined, alors le signe est ABSENT (FALSE), mais la question est valide !
-        
-        const isPresent = signDataInJson !== undefined;
-
-        // (Optionnel) On peut récupérer le poids pour le scoring futur
-        const weight = isPresent ? signDataInJson : 0;
-
-        return {
-            sign: result.detected_sign, // Le code (ex: "douleur_thoracique" ou "toux")
-            answer: isPresent,          // true (Oui) ou false (Non)
-            weight: weight              // Points potentiels
-        };
-
-    } catch (error) {
-        console.error("Erreur critique LLM:", error);
-        return null;
+        const data = await req.json();
+        let clean = data.choices[0].message.content.replace(/```json/g, "").replace(/```/g, "").trim();
+        return JSON.parse(clean);
+    } catch (e) { 
+        console.error("Erreur IA", e); 
+        alert("Erreur API OpenAI. Vérifiez la console.");
+        return null; 
     }
 }
 
-// ============================================================
-// SYSTÈME D'INDICES
-// ============================================================
-
-function giveHint() {
-    const targetPathology = experimentState.targetPathology;
-    
-    // Trouver les signes très pondérés non encore demandés
-    const askedSigns = experimentState.questionsAsked.map(q => q.sign);
-    const availableHints = Object.entries(targetPathology.signes)
-        .filter(([sign, weight]) => weight >= 40 && !askedSigns.includes(sign))
-        .sort((a, b) => b[1] - a[1]); // Tri par poids décroissant
-    
-    if (availableHints.length === 0) {
-        alert("💡 Indice : Revoyez les signes paracliniques et les examens complémentaires caractéristiques !");
-        return;
-    }
-    
-    const [hintSign, hintWeight] = availableHints[0];
-    const hintText = formatSymptomName(hintSign);
-    
-    experimentState.hintsGiven++;
-    experimentState.wrongAnswers = 0; // Reset après indice
-    
-    alert(`💡 INDICE RÉVÉLATEUR\n\nUn signe clé à rechercher :\n\n"${hintText}"\n\n(Pondération : ${hintWeight} points)`);
-    
-    updateCounters();
-}
-
-// ============================================================
-// VALIDATION DU DIAGNOSTIC
-// ============================================================
-
-async function validateDiagnosis() {
-    const diagnosisInput = document.getElementById('diagnosisInput').value.trim();
-    if (!diagnosisInput) {
-        alert("⚠️ Veuillez entrer un diagnostic avant de valider.");
-        return;
-    }
-    
-    const targetName = experimentState.targetPathology.name.toLowerCase();
-    const userGuess = diagnosisInput.toLowerCase();
-    
-    experimentState.attempts++;
-    
-    // Comparaison stricte ou similarité
-    const isCorrect = targetName === userGuess || 
-                      targetName.includes(userGuess) || 
-                      userGuess.includes(targetName);
-    
-    const endTime = Date.now();
-    const totalTime = Math.round((endTime - experimentState.startTime) / 1000);
-    
-    // Sauvegarde des données expérimentales
-    await saveExperimentData({
-        mode: 'classique',
-        sessionId: experimentState.sessionId,
-        targetPathology: experimentState.targetPathology.name,
-        userGuess: diagnosisInput,
-        success: isCorrect,
-        questionsAsked: experimentState.questionsAsked.length,
-        wrongAnswers: experimentState.wrongAnswers,
-        hintsGiven: experimentState.hintsGiven,
-        attempts: experimentState.attempts,
-        totalTimeSeconds: totalTime,
-        timestamp: new Date()
-    });
-    
-    if (isCorrect) {
-        renderSuccessScreen(totalTime);
+function playSound(type) {
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    if(type === 'success') {
+        osc.frequency.setValueAtTime(500, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime+0.2);
     } else {
-        renderFailureScreen(diagnosisInput);
+        osc.type='sawtooth'; osc.frequency.setValueAtTime(150, audioCtx.currentTime);
     }
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime); gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime+0.3);
+    osc.start(); osc.stop(audioCtx.currentTime+0.3);
 }
 
 // ============================================================
-// ÉCRANS DE RÉSULTAT
+// 5. MODE CLASSIQUE (L'IA EST LE PATIENT)
 // ============================================================
 
-function renderSuccessScreen(totalTime) {
-    const app = document.getElementById('app');
-    const minutes = Math.floor(totalTime / 60);
-    const seconds = totalTime % 60;
-    
-    app.innerHTML = `
-        <div class="card center" style="max-width: 700px;">
-            <div style="font-size: 5em; color: var(--success); margin-bottom: 20px; animation: float 2s ease-in-out infinite;">
-                <i class="ph-fill ph-check-circle"></i>
-            </div>
-            <h2 style="color: var(--success); margin-bottom: 15px;">
-                🎉 DIAGNOSTIC CORRECT !
-            </h2>
-            <div style="font-size: 1.5em; margin: 20px 0; color: var(--text-main);">
-                ${experimentState.targetPathology.name}
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin: 30px 0; width: 100%;">
-                <div class="stat-box" style="border-color: var(--accent);">
-                    <div class="stat-number" style="color: var(--accent);">${experimentState.questionsAsked.length}</div>
-                    <div class="stat-label">Questions</div>
-                </div>
-                <div class="stat-box" style="border-color: var(--gold);">
-                    <div class="stat-number" style="color: var(--gold);">${minutes}:${seconds.toString().padStart(2, '0')}</div>
-                    <div class="stat-label">Temps</div>
-                </div>
-                <div class="stat-box" style="border-color: var(--ruby);">
-                    <div class="stat-number" style="color: var(--ruby);">${experimentState.hintsGiven}</div>
-                    <div class="stat-label">Indices</div>
-                </div>
-            </div>
-
-            <div style="background: rgba(0,255,157,0.1); border: 1px solid var(--success); border-radius: 12px; padding: 20px; margin: 20px 0; text-align: left;">
-                <h3 style="color: var(--success); margin-bottom: 10px;">
-                    <i class="ph-duotone ph-check-square"></i> Résumé de votre démarche
-                </h3>
-                <div class="small" style="line-height: 1.6;">
-                    Vous avez réussi à identifier la pathologie cible en ${experimentState.questionsAsked.length} questions.
-                    ${experimentState.hintsGiven > 0 ? `Vous avez bénéficié de ${experimentState.hintsGiven} indice(s).` : 'Aucun indice n\'a été nécessaire ! ✨'}
-                    <br><br>
-                    <strong>Performance :</strong> 
-                    ${experimentState.questionsAsked.length <= 8 ? '🏆 Excellent (≤ 8 questions)' : 
-                      experimentState.questionsAsked.length <= 15 ? '✅ Bien (9-15 questions)' : 
-                      '⚠️ À améliorer (> 15 questions)'}
-                </div>
-            </div>
-
-            <button class="btn" onclick="startClassiqueMode()" style="margin-top: 20px;">
-                <i class="ph-bold ph-arrow-clockwise"></i> Nouveau cas
-            </button>
-            <button class="btn-back" onclick="renderModeSelection()">
-                <i class="ph-bold ph-arrow-left"></i> Retour sélection mode
-            </button>
-        </div>
-    `;
-}
-
-function renderFailureScreen(userGuess) {
-    const app = document.getElementById('app');
-    const correctAnswer = experimentState.targetPathology.name;
-    
-    app.innerHTML = `
-        <div class="card center" style="max-width: 700px;">
-            <div style="font-size: 5em; color: var(--error); margin-bottom: 20px;">
-                <i class="ph-fill ph-x-circle"></i>
-            </div>
-            <h2 style="color: var(--error); margin-bottom: 15px;">
-                ❌ Diagnostic Incorrect
-            </h2>
-            
-            <div style="background: rgba(255,77,77,0.1); border: 1px solid var(--error); border-radius: 12px; padding: 20px; margin: 20px 0;">
-                <div style="margin-bottom: 15px;">
-                    <strong>Votre réponse :</strong>
-                    <div style="font-size: 1.2em; color: var(--error); margin-top: 5px;">${userGuess}</div>
-                </div>
-                <div>
-                    <strong>Réponse attendue :</strong>
-                    <div style="font-size: 1.5em; color: var(--success); margin-top: 5px;">${correctAnswer}</div>
-                </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 30px 0; width: 100%;">
-                <div class="stat-box">
-                    <div class="stat-number">${experimentState.questionsAsked.length}</div>
-                    <div class="stat-label">Questions posées</div>
-                </div>
-                <div class="stat-box" style="border-color: var(--gold);">
-                    <div class="stat-number" style="color: var(--gold);">${experimentState.attempts}</div>
-                    <div class="stat-label">Tentatives</div>
-                </div>
-            </div>
-
-            <div style="background: rgba(0,210,255,0.1); border: 1px solid var(--accent); border-radius: 12px; padding: 20px; margin: 20px 0; text-align: left;">
-                <h3 style="color: var(--accent); margin-bottom: 10px;">
-                    <i class="ph-duotone ph-info"></i> À propos de cette pathologie
-                </h3>
-                <div class="small" style="line-height: 1.6;">
-                    <strong>${correctAnswer}</strong><br>
-                    ${experimentState.targetPathology.short}
-                </div>
-            </div>
-
-            <button class="btn" onclick="startClassiqueMode()" style="margin-top: 20px;">
-                <i class="ph-bold ph-arrow-clockwise"></i> Réessayer avec un nouveau cas
-            </button>
-            <button class="btn-back" onclick="renderModeSelection()">
-                <i class="ph-bold ph-arrow-left"></i> Retour sélection mode
-            </button>
-        </div>
-    `;
-}
-
-// ============================================================
-// UTILITAIRES
-// ============================================================
-
-function formatSymptomName(sign) {
-    // SÉCURITÉ : Si le signe est vide (null/undefined), on renvoie un texte par défaut
-    if (!sign) return "Motif non spécifié";
-    
-    return sign.replace(/_/g, ' ')
-               .replace(/\b\w/g, c => c.toUpperCase());
-}
-
-function updateCounters() {
-    const questionsCount = document.getElementById('questionsCount');
-    const wrongCount = document.getElementById('wrongCount');
-    const hintsCount = document.getElementById('hintsCount');
-    
-    if (questionsCount) questionsCount.textContent = experimentState.questionsAsked.length;
-    if (wrongCount) wrongCount.textContent = experimentState.wrongAnswers;
-    if (hintsCount) hintsCount.textContent = experimentState.hintsGiven;
-}
-
-function addQuestionToHistory(question, answer) {
-    const historyList = document.getElementById('historyList');
-    
-    // Supprime le message "Aucune question"
-    if (experimentState.questionsAsked.length === 1) {
-        historyList.innerHTML = '';
-    }
-    
-    const answerIcon = answer 
-        ? '<i class="ph-fill ph-check-circle" style="color: var(--success);"></i>' 
-        : '<i class="ph-fill ph-x-circle" style="color: var(--error);"></i>';
-    
-    const answerText = answer ? 'OUI' : 'NON';
-    const answerColor = answer ? 'var(--success)' : 'var(--error)';
-    
-    const questionItem = document.createElement('div');
-    questionItem.style.cssText = `
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 15px;
-        background: var(--glass-bg);
-        border-bottom: 1px solid var(--glass-border);
-        margin-bottom: 8px;
-        border-radius: 8px;
-        animation: fadeIn 0.3s ease;
-    `;
-    
-    questionItem.innerHTML = `
-        <div style="flex: 1; text-align: left; color: var(--text-main);">
-            <strong style="color: var(--accent);">Q${experimentState.questionsAsked.length}.</strong> ${question}
-        </div>
-        <div style="display: flex; align-items: center; gap: 8px; margin-left: 15px;">
-            ${answerIcon}
-            <strong style="color: ${answerColor}; font-size: 14px; min-width: 40px;">${answerText}</strong>
-        </div>
-    `;
-    
-    historyList.appendChild(questionItem);
-    
-    // Scroll automatique vers le bas
-    historyList.scrollTop = historyList.scrollHeight;
-}
-
-// ============================================================
-// SAUVEGARDE DES DONNÉES EXPÉRIMENTALES
-// ============================================================
-
-async function saveExperimentData(data) {
-    try {
-        const currentUser = auth.currentUser;
-        const experimentData = {
-            ...data,
-            userId: currentUser ? currentUser.uid : 'anonymous',
-            userEmail: currentUser ? currentUser.email : null,
-            questionsDetail: experimentState.questionsAsked,
-            patientProfile: experimentState.patientProfile,
-            chiefComplaint: experimentState.chiefComplaint
-        };
-        
-        await addDoc(collection(db, "experiment_results"), experimentData);
-        console.log("✅ Données expérimentales sauvegardées");
-    } catch (error) {
-        console.error("❌ Erreur sauvegarde données:", error);
-    }
-}
-
-// ============================================================
-// POINT D'ENTRÉE & ROUTAGE
-// ============================================================
-
-window.renderModeSelection = renderModeSelection;
-
-// 1. Définition des redirections
-window.startGeneratifMode = function() {
-    window.location.href = window.location.pathname + '?mode=generatif&direct=ia';
-}
-
-window.startClassiqueMode = function() {
+function startClassiqueMode() {
     experimentState.mode = 'classique';
-    experimentState.sessionId = Date.now().toString();
-    experimentState.startTime = Date.now();
     experimentState.questionsAsked = [];
     experimentState.wrongAnswers = 0;
     experimentState.hintsGiven = 0;
-    experimentState.attempts = 0;
-    
-    // Sélection aléatoire d'une pathologie
+    experimentState.startTime = Date.now();
     experimentState.targetPathology = PATHOLOGIES[Math.floor(Math.random() * PATHOLOGIES.length)];
     
-    // Génération du profil patient
-    generatePatientProfile(experimentState.targetPathology);
+    // Génération Profil Patient
+    const f = experimentState.targetPathology.facteurs || {};
+    const p = { age: "45 ans", gender: Math.random()>0.5?"Homme":"Femme", terrain: [] };
+    if(f.enfant) p.age = "Enfant (8 ans)"; if(f.sujet_age) p.age = "Senior (75 ans)";
+    if(f.femme) p.gender = "Femme"; if(f.homme) p.gender = "Homme";
+    if(f.tabac) p.terrain.push("Tabagisme"); if(f.diabete) p.terrain.push("Diabète");
+    if(p.terrain.length===0) p.terrain.push("RAS");
+    experimentState.patientProfile = p;
+
+    // Motif principal
+    let motif = "Malaise"; let max=0;
+    for(let s in experimentState.targetPathology.signes) {
+        if(experimentState.targetPathology.signes[s] > max) { max = experimentState.targetPathology.signes[s]; motif = s; }
+    }
+    experimentState.chiefComplaint = motif;
     
     renderClassiqueInterface();
 }
 
-// 2. Logique de démarrage (routage)
-const params = new URLSearchParams(window.location.search);
-const currentMode = params.get('mode');
+function renderClassiqueInterface() {
+    const p = experimentState.patientProfile;
+    document.getElementById('app').innerHTML = `
+        <div class="card center" style="max-width:800px;">
+            <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                <h2 style="color:white; margin:0;"><i class="ph-duotone ph-detective"></i> Mode Classique</h2>
+            </div>
+            
+            <div style="text-align:left; background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; margin-bottom:20px;">
+                <div><strong>Patient :</strong> ${p.gender}, ${p.age}</div>
+                <div><strong>ATCD :</strong> ${p.terrain.join(', ')}</div>
+                <div style="margin-top:10px; color:var(--gold);"><strong>Motif :</strong> ${experimentState.chiefComplaint.replace(/_/g,' ')}</div>
+            </div>
 
-console.log("🔍 Routeur APPTEST - Mode détecté :", currentMode);
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <input id="qInput" class="input" placeholder="Posez votre question..." style="margin:0;">
+                <button id="btnAsk" class="btn" onclick="handleClassiqueQ()" style="width:auto;"><i class="ph-bold ph-paper-plane-right"></i></button>
+            </div>
+            
+            <div id="history" style="height:200px; overflow-y:auto; background:rgba(0,0,0,0.2); padding:10px; border-radius:8px; text-align:left; margin-bottom:20px;">
+                <div class="small" style="text-align:center; opacity:0.5;">Historique vide</div>
+            </div>
 
-if (currentMode === 'generatif') {
-    // Mode Génératif → app.js prend le relais
-    console.log("✅ Mode Génératif (app.js prend le relais).");
-} 
-else if (currentMode === 'classique') {
-    // Mode Classique → Lancement immédiat
-    console.log("🕵️ Mode Classique (Lancement immédiat).");
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            initExperiment().then(() => {
-                // ✅ Attendre que PATHOLOGIES soit chargé AVANT de lancer
-                window.startClassiqueMode();
-            });
-        });
+            <div style="border-top:1px solid var(--glass-border); padding-top:20px;">
+                <input id="diagInput" class="input" placeholder="Votre diagnostic...">
+                <button class="btn" onclick="validateClassique()" style="background:var(--success);">Valider</button>
+            </div>
+            <button class="link" onclick="selectMode('menu')">Menu</button>
+        </div>
+    `;
+    document.getElementById('qInput').onkeydown = (e) => { if(e.key === 'Enter') handleClassiqueQ(); };
+}
+
+async function handleClassiqueQ() {
+    const input = document.getElementById('qInput');
+    const txt = input.value.trim(); if(!txt) return;
+    const btn = document.getElementById('btnAsk'); btn.disabled=true; btn.innerHTML='...';
+    
+    // Prompt optimisé pour simuler le patient
+    const target = experimentState.targetPathology;
+    const present = Object.keys(target.signes).join(", ");
+    const prompt = `Simulation Médicale. Patient a: "${target.name}". 
+    Signes présents: [${present}].
+    Question étudiant: "${txt}".
+    1. Si la question porte sur un signe PRÉSENT, return {"answer": true, "sign": "code_signe"}.
+    2. Si signe ABSENT, return {"answer": false, "sign": "code_signe"}.
+    3. Si hors sujet, null.`;
+    
+    const res = await callOpenAI(prompt);
+    
+    btn.disabled=false; btn.innerHTML='<i class="ph-bold ph-paper-plane-right"></i>';
+    input.value=''; input.focus();
+
+    if(res) {
+        experimentState.questionsAsked.push(txt);
+        const list = document.getElementById('history');
+        if(experimentState.questionsAsked.length === 1) list.innerHTML = '';
+        const div = document.createElement('div');
+        div.style.marginBottom = "5px"; div.style.padding="5px"; div.style.borderBottom="1px solid rgba(255,255,255,0.05)";
+        div.innerHTML = `<strong>Q:</strong> ${txt} <span style="float:right; font-weight:bold; color:${res.answer?'#2ecc71':'#e74c3c'}">${res.answer?'OUI':'NON'}</span>`;
+        list.appendChild(div); list.scrollTop = list.scrollHeight;
+        
+        if(!res.answer) {
+            experimentState.wrongAnswers++;
+            if(experimentState.wrongAnswers >= 5) alert(`💡 Indice : ${target.short}`);
+        } else { experimentState.wrongAnswers=0; }
+    } else { alert("Je n'ai pas compris."); }
+}
+
+function validateClassique() {
+    const guess = document.getElementById('diagInput').value.toLowerCase();
+    const target = experimentState.targetPathology.name.toLowerCase();
+    if(target.includes(guess) || guess.includes(target)) {
+        playSound('success');
+        if(window.confetti) window.confetti();
+        document.getElementById('app').innerHTML = `<div class="card center"><h1 style="color:var(--success)">Gagné !</h1><h3>${experimentState.targetPathology.name}</h3><p>Trouvé en ${experimentState.questionsAsked.length} questions.</p><button class="btn" onclick="selectMode('menu')">Menu</button></div>`;
     } else {
-        initExperiment().then(() => {
-            window.startClassiqueMode();
-        });
+        playSound('error');
+        alert(`Non, ce n'est pas ça.`);
     }
 }
-else {
-    // Aucun mode → Menu de sélection
-    console.log("🧪 Menu de sélection.");
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initExperiment);
-    } else {
-        initExperiment();
-    }
+
+// ============================================================
+// 6. MODE GÉNÉRATIF (L'IA DEVINE - RESTAURÉ)
+// ============================================================
+
+function initGeneratifMode() {
+    // Initialisation du jeu original
+    genState.answers = {};
+    genState.asked = [];
+    genState.ranked = [];
+    renderGenMotif();
 }
+
+function renderGenMotif() {
+    document.getElementById('app').innerHTML = `
+        <div class="card center">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 10px; border-radius: 12px; margin-bottom: 20px;">
+                <h2 style="color:white; margin:0;"><i class="ph-duotone ph-brain"></i> Mode Inversé</h2>
+            </div>
+            <p class="small">Pensez à une pathologie. Je vais la deviner.</p>
+            <div style="background:rgba(102,126,234,0.1); padding:15px; border-radius:12px; margin:20px 0; text-align:left;">
+                <label style="color:var(--accent); font-weight:bold;">"Bonjour, qu'est-ce qui vous amène ?"</label>
+                <textarea id="genMotif" class="input" placeholder="Ex: Douleur thoracique..." style="min-height:80px;"></textarea>
+            </div>
+            <button id="btnGenStart" class="btn">Commencer</button>
+            <button class="link" onclick="selectMode('menu')">Menu</button>
+        </div>
+    `;
+    
+    document.getElementById('btnGenStart').onclick = async () => {
+        const txt = document.getElementById('genMotif').value; if(!txt) return;
+        const btn = document.getElementById('btnGenStart'); btn.innerHTML='...'; btn.disabled=true;
+        
+        // Analyse du motif par IA pour trouver le premier signe
+        const allSigns = []; PATHOLOGIES.forEach(p=>Object.keys(p.signes).forEach(s=>allSigns.push(s)));
+        const prompt = `Texte: "${txt}". Trouve le signe médical correspondant dans cette liste: [${allSigns.slice(0,50).join(',')}...]. Return {"sign": "code"}. Si rien, return {"sign": "douleur_abdominale"}.`;
+        
+        const res = await callOpenAI(prompt);
+        const startSign = res ? res.sign : "douleur_abdominale";
+        
+        genState.currentSign = startSign;
+        genState.asked = [startSign];
+        genState.answers[startSign] = true;
+        askNextGen();
+    };
+}
+
+function askNextGen() {
+    // 1. Calcul des scores (Moteur de jeu original)
+    genState.ranked = PATHOLOGIES.map(p => {
+        let score = 0; let max = 0;
+        for(let s in p.signes) {
+            max += p.signes[s];
+            if(genState.answers[s] === true) score += p.signes[s];
+            if(genState.answers[s] === false) score -= (p.signes[s] * 0.5);
+        }
+        return { patho: p, prob: max>0 ? (score/max)*100 : 0 };
+    }).sort((a,b) => b.prob - a.prob);
+
+    // 2. Vérification victoire
+    const top = genState.ranked[0];
+    if(top && top.prob > 85 && genState.asked.length > 5) {
+        renderGenResult(top.patho);
+        return;
+    }
+
+    // 3. Choix prochaine question
+    let nextSign = null;
+    if(top) {
+        // Cherche un signe du Top 1 non encore posé
+        for(let s in top.patho.signes) {
+            if(!genState.asked.includes(s)) { nextSign = s; break; }
+        }
+    }
+    // Fallback si tout est posé
+    if(!nextSign) {
+        const all = []; PATHOLOGIES.forEach(p=>Object.keys(p.signes).forEach(s=>all.push(s)));
+        nextSign = all.find(s => !genState.asked.includes(s));
+    }
+    
+    if(!nextSign) { renderGenResult(top.patho); return; }
+
+    genState.currentSign = nextSign;
+    genState.asked.push(nextSign);
+    renderGenQuestion();
+}
+
+function renderGenQuestion() {
+    const sign = genState.currentSign;
+    const displaySign = sign.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+    const imgUrl = GLOBAL_IMG_MAP[sign];
+    
+    document.getElementById('app').innerHTML = `
+        <div class="card center">
+            <div style="font-size:0.8em; color:var(--accent);">Confiance IA : ${genState.ranked[0]?.prob.toFixed(0)}%</div>
+            ${imgUrl ? `<img src="${imgUrl}" style="max-width:100%; border-radius:8px; margin:10px 0;">` : ''}
+            <h3>Le patient présente-t-il :</h3>
+            <h2 style="color:var(--text-main); margin:20px 0;">${displaySign} ?</h2>
+            
+            <div style="display:flex; gap:10px; margin-bottom:15px;">
+                <input id="iaChat" class="input" placeholder="Répondre à l'IA (ex: Oui, beaucoup...)" style="margin:0;">
+                <button id="iaSend" class="btn" style="width:auto;"><i class="ph-bold ph-paper-plane-right"></i></button>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-success" onclick="handleGenAnswer(true)">OUI</button>
+                <button class="btn btn-error" onclick="handleGenAnswer(false)">NON</button>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('iaSend').onclick = async () => {
+        const txt = document.getElementById('iaChat').value; if(!txt) return;
+        const btn = document.getElementById('iaSend'); btn.innerHTML='...';
+        const prompt = `Context: Diag. Signe: "${sign}". User: "${txt}". Si OUI return {"r":true}. Si NON return {"r":false}.`;
+        const res = await callOpenAI(prompt);
+        if(res) handleGenAnswer(res.r);
+        else btn.innerHTML='<i class="ph-bold ph-paper-plane-right"></i>';
+    };
+}
+
+window.handleGenAnswer = function(val) {
+    genState.answers[genState.currentSign] = val;
+    if(val) playSound('success'); else playSound('error');
+    askNextGen();
+}
+
+function renderGenResult(patho) {
+    if(window.confetti) window.confetti();
+    document.getElementById('app').innerHTML = `
+        <div class="card center">
+            <h2>Diagnostic IA</h2>
+            <h1 style="color:var(--accent);">${patho.name}</h1>
+            <p>${patho.short || ''}</p>
+            <div style="margin-top:20px;">
+                <button class="btn btn-success" onclick="selectMode('generatif')">C'est ça (Rejouer)</button>
+                <button class="btn btn-error" onclick="selectMode('generatif')">C'est faux</button>
+            </div>
+            <button class="link" onclick="selectMode('menu')">Menu</button>
+        </div>
+    `;
+}
+
+// LANCEMENT
+initApp();

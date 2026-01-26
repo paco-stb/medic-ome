@@ -271,20 +271,6 @@ if (ficheDemandee) {
     }
 }
 
-// ✅ CORRECTION : Détecter le mode IA APRÈS le chargement complet
-const directMode = urlParams.get('direct');
-if (directMode === 'ia') {
-    // Mode IA direct pour l'essai clinique
-    state.isGuest = true;
-    state.pseudo = "Participant";
-    state.progression = { 
-        correct: 0, incorrect: 0, streak: 0, mastery: {}, 
-        dailyStreak: 0, lastDaily: null, achievements: []
-    };
-    updateHeader();
-    renderChiefComplaintInput(); // ✅ Maintenant PATHOLOGIES est chargé
-    return;
-}
 
 loadTheme();
 startAuthListener();

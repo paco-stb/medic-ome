@@ -1521,5 +1521,18 @@ async function exportUsersToCSV() {
     } catch (error) { console.error("Erreur Export:", error); alert("Erreur export."); if(btn) btn.innerHTML = 'Erreur'; }
 }
 
-// LANCEMENT FINAL
-initApp();
+// ============================================================
+// LANCEMENT FINAL SÉCURISÉ (GARDIEN)
+// ============================================================
+
+const urlParams = new URLSearchParams(window.location.search);
+const appMode = urlParams.get('mode');
+
+// L'application originale ne se lance QUE si on est en mode 'generatif'
+if (appMode === 'generatif') {
+    console.log("🚀 Lancement de Medicome Original (Mode Génératif)");
+    initApp(); 
+} else {
+    // Sinon, on laisse apptest.js gérer le menu ou le mode classique
+    console.log("💤 Medicome Original en veille (Menu ou Mode Classique actif)");
+}

@@ -278,127 +278,128 @@ function generatePatientProfile(pathology) {
 // ============================================================
 
 function renderClassiqueInterface() {
-    const app = document.getElementById('app');
-    const profile = experimentState.patientProfile;
-    const chiefComplaint = formatSymptomName(experimentState.chiefComplaint);
-    
-    // ✅ SÉCURITÉ : Vérifier que profile existe et que terrain est un tableau
-const terrainText = (profile && profile.terrain && profile.terrain.length > 0)
-    ? profile.terrain.join(', ') 
-    : "Aucun antécédent notable";
-    
-    app.innerHTML = `
-        <div class="card center" style="max-width: 800px;">
-            <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
-                <h2 style="color: white; margin: 0;">
-                    <i class="ph-duotone ph-detective"></i> Mode Classique - Enquête Diagnostique
-                </h2>
-            </div>
+    const app = document.getElementById('app');
+    const profile = experimentState.patientProfile;
+    const chiefComplaint = formatSymptomName(experimentState.chiefComplaint);
+    
+    const terrainText = (profile && profile.terrain && profile.terrain.length > 0)
+        ? profile.terrain.join(', ') 
+        : "Aucun antécédent notable";
+    
+    app.innerHTML = `
+        <div class="card center" style="max-width: 900px;">
+            <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; border-radius: 12px; margin-bottom: 25px;">
+                <h2 style="color: white; margin: 0; font-size: 1.5rem;">
+                    <i class="ph-duotone ph-detective"></i> Mode Classique - Enquête Diagnostique
+                </h2>
+            </div>
 
-            <!-- PROFIL PATIENT -->
-            <div style="background: rgba(0,210,255,0.1); border: 1px solid var(--accent); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: left;">
-                <h3 style="color: var(--accent); margin-bottom: 15px;">
-                    <i class="ph-duotone ph-user-circle"></i> Profil du Patient
-                </h3>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                    <div><strong>Âge :</strong> ${profile.age}</div>
-                    <div><strong>Sexe :</strong> ${profile.gender}</div>
-                </div>
-                <div style="margin-top: 10px;">
-                    <strong>Terrain :</strong> ${terrainText}
-                </div>
-                <div style="margin-top: 15px; padding: 12px; background: rgba(255,255,255,0.1); border-radius: 8px;">
-                    <strong style="color: var(--gold);">
-                        <i class="ph-duotone ph-warning-circle"></i> Motif de consultation :
-                    </strong>
-                    <div style="font-size: 1.2em; margin-top: 5px;">${chiefComplaint}</div>
-                </div>
-            </div>
+            <!-- PROFIL PATIENT -->
+            <div style="background: rgba(0,210,255,0.1); border: 2px solid var(--accent); border-radius: 12px; padding: 25px; margin-bottom: 25px; text-align: left;">
+                <h3 style="color: var(--accent); margin-bottom: 15px; font-size: 1.2rem;">
+                    <i class="ph-duotone ph-user-circle"></i> Profil du Patient
+                </h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                        <strong>Âge :</strong> ${profile.age}
+                    </div>
+                    <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                        <strong>Sexe :</strong> ${profile.gender}
+                    </div>
+                </div>
+                <div style="padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                    <strong>Terrain :</strong> ${terrainText}
+                </div>
+                <div style="margin-top: 15px; padding: 15px; background: rgba(255,215,0,0.15); border-radius: 8px; border-left: 3px solid var(--gold);">
+                    <strong style="color: var(--gold);">
+                        <i class="ph-duotone ph-warning-circle"></i> Motif de consultation :
+                    </strong>
+                    <div style="font-size: 1.3em; margin-top: 8px; color: var(--text-main);">${chiefComplaint}</div>
+                </div>
+            </div>
 
-            <!-- COMPTEURS -->
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-                <div class="stat-box">
-                    <div class="stat-number" id="questionsCount">0</div>
-                    <div class="stat-label">Questions posées</div>
-                </div>
-                <div class="stat-box" style="border-color: var(--error);">
-                    <div class="stat-number" style="color: var(--error);" id="wrongCount">0</div>
-                    <div class="stat-label">Impasses</div>
-                </div>
-                <div class="stat-box" style="border-color: var(--gold);">
-                    <div class="stat-number" style="color: var(--gold);" id="hintsCount">0</div>
-                    <div class="stat-label">Indices</div>
-                </div>
-            </div>
+            <!-- COMPTEURS -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 25px;">
+                <div class="stat-box" style="border-color: var(--accent);">
+                    <div class="stat-number" style="color: var(--accent);" id="questionsCount">0</div>
+                    <div class="stat-label">Questions posées</div>
+                </div>
+                <div class="stat-box" style="border-color: var(--error);">
+                    <div class="stat-number" style="color: var(--error);" id="wrongCount">0</div>
+                    <div class="stat-label">Impasses</div>
+                </div>
+                <div class="stat-box" style="border-color: var(--gold);">
+                    <div class="stat-number" style="color: var(--gold);" id="hintsCount">0</div>
+                    <div class="stat-label">Indices</div>
+                </div>
+            </div>
 
-            <!-- ZONE DE QUESTION -->
-            <div style="background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 16px; padding: 25px; margin-bottom: 20px;">
-                <h3 style="color: var(--text-main); margin-bottom: 15px;">
-                    <i class="ph-duotone ph-chat-centered-text"></i> Posez votre question
-                </h3>
-                <textarea 
-                    id="questionInput" 
-                    class="input" 
-                    placeholder="Ex: Le patient présente-t-il une douleur thoracique constrictive ?"
-                    style="min-height: 80px; font-size: 15px;"
-                ></textarea>
-                <button id="askBtn" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin-top: 10px;">
-                    <i class="ph-bold ph-paper-plane-right"></i> Envoyer la question
-                </button>
-            </div>
+            <!-- ZONE DE QUESTION -->
+            <div style="background: var(--glass-bg); border: 2px solid var(--glass-border); border-radius: 16px; padding: 25px; margin-bottom: 25px;">
+                <h3 style="color: var(--text-main); margin-bottom: 15px; font-size: 1.1rem;">
+                    <i class="ph-duotone ph-chat-centered-text"></i> Posez votre question
+                </h3>
+                <textarea 
+                    id="questionInput" 
+                    class="input" 
+                    placeholder="Ex: Le patient présente-t-il une douleur thoracique constrictive ?"
+                    style="min-height: 100px; font-size: 15px; margin-bottom: 15px;"
+                ></textarea>
+                <button id="askBtn" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); width: 100%;">
+                    <i class="ph-bold ph-paper-plane-right"></i> Envoyer la question
+                </button>
+            </div>
 
-            <!-- HISTORIQUE DES QUESTIONS -->
-            <div id="questionsHistory" style="margin-bottom: 20px;">
-                <h3 style="color: var(--text-muted); margin-bottom: 10px;">
-                    <i class="ph-duotone ph-list-bullets"></i> Historique de l'interrogatoire
-                </h3>
-                <div id="historyList" style="background: rgba(0,0,0,0.2); border-radius: 12px; padding: 15px; min-height: 100px;">
-                    <div class="small" style="text-align: center; color: var(--text-muted);">
-                        Aucune question posée pour le moment
-                    </div>
-                </div>
-            </div>
+            <!-- HISTORIQUE -->
+            <div style="margin-bottom: 25px;">
+                <h3 style="color: var(--text-muted); margin-bottom: 15px; font-size: 1.1rem;">
+                    <i class="ph-duotone ph-list-bullets"></i> Historique de l'interrogatoire
+                </h3>
+                <div id="historyList" style="background: rgba(0,0,0,0.3); border-radius: 12px; padding: 20px; min-height: 120px; max-height: 400px; overflow-y: auto;">
+                    <div class="small" style="text-align: center; color: var(--text-muted); opacity: 0.7;">
+                        Aucune question posée pour le moment
+                    </div>
+                </div>
+            </div>
 
-            <!-- ZONE DE DIAGNOSTIC -->
-            <div style="background: rgba(255,215,0,0.1); border: 2px solid var(--gold); border-radius: 16px; padding: 25px;">
-                <h3 style="color: var(--gold); margin-bottom: 15px;">
-                    <i class="ph-duotone ph-lightbulb"></i> Votre Diagnostic
-                </h3>
-                <input 
-                    id="diagnosisInput" 
-                    class="input" 
-                    placeholder="Entrez le nom de la pathologie..."
-                    style="font-size: 16px;"
-                />
-                <button id="submitDiagnosisBtn" class="btn" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); margin-top: 10px;">
-                    <i class="ph-bold ph-check-circle"></i> Valider le diagnostic
-                </button>
-            </div>
+            <!-- ZONE DE DIAGNOSTIC -->
+            <div style="background: rgba(255,215,0,0.1); border: 2px solid var(--gold); border-radius: 16px; padding: 25px; margin-bottom: 20px;">
+                <h3 style="color: var(--gold); margin-bottom: 15px; font-size: 1.1rem;">
+                    <i class="ph-duotone ph-lightbulb"></i> Votre Diagnostic Final
+                </h3>
+                <input 
+                    id="diagnosisInput" 
+                    class="input" 
+                    placeholder="Entrez le nom de la pathologie..."
+                    style="font-size: 16px; margin-bottom: 15px;"
+                />
+                <button id="submitDiagnosisBtn" class="btn" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); width: 100%;">
+                    <i class="ph-bold ph-check-circle"></i> Valider le diagnostic
+                </button>
+            </div>
 
-            <button class="btn-back" style="margin-top: 20px;" onclick="renderModeSelection()">
-                <i class="ph-bold ph-arrow-left"></i> Retour sélection mode
-            </button>
-        </div>
-    `;
-    
-    // Event listeners
-    document.getElementById('askBtn').onclick = handleQuestion;
-    document.getElementById('submitDiagnosisBtn').onclick = validateDiagnosis;
-    
-    // Entrée au clavier
-    document.getElementById('questionInput').onkeydown = (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            handleQuestion();
-        }
-    };
-    
-    document.getElementById('diagnosisInput').onkeydown = (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            validateDiagnosis();
-        }
-    };
+            <button class="btn-back" onclick="renderModeSelection()">
+                <i class="ph-bold ph-arrow-left"></i> Retour sélection mode
+            </button>
+        </div>
+    `;
+    
+    document.getElementById('askBtn').onclick = handleQuestion;
+    document.getElementById('submitDiagnosisBtn').onclick = validateDiagnosis;
+    
+    document.getElementById('questionInput').onkeydown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleQuestion();
+        }
+    };
+    
+    document.getElementById('diagnosisInput').onkeydown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            validateDiagnosis();
+        }
+    };
 }
 
 // ============================================================

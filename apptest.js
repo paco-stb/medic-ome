@@ -75,7 +75,7 @@ async function initExperiment() {
 function renderModeSelection() {
     const app = document.getElementById('app');
     app.innerHTML = `
-        <div class="card center" style="max-width: 900px;">
+        <div class="card center" style="max-width: 1200px;">
             <h2><i class="ph-duotone ph-flask"></i> Étude Scientifique</h2>
             <p class="small" style="margin-bottom: 30px; line-height: 1.6;">
                 Comparaison de deux paradigmes d'apprentissage médical :<br>
@@ -294,7 +294,7 @@ function renderClassiqueInterface() {
         : "Aucun antécédent notable";
     
     app.innerHTML = `
-        <div class="card center" style="max-width: 900px;">
+        <div class="card center" style="max-width: 1200px;">
             <div style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); padding: 20px; border-radius: 12px; margin-bottom: 25px;">
                 <h2 style="color: white; margin: 0; font-size: 1.5rem;">
                     <i class="ph-duotone ph-detective"></i> Mode Classique - Enquête Diagnostique
@@ -672,59 +672,173 @@ function renderSuccessScreen(totalTime) {
     `;
 }
 
+// DANS apptest.js - Remplace la fonction renderFailureScreen
+
 function renderFailureScreen(userGuess) {
-    const app = document.getElementById('app');
-    const correctAnswer = experimentState.targetPathology.name;
-    
-    app.innerHTML = `
-        <div class="card center" style="max-width: 700px;">
-            <div style="font-size: 5em; color: var(--error); margin-bottom: 20px;">
-                <i class="ph-fill ph-x-circle"></i>
-            </div>
-            <h2 style="color: var(--error); margin-bottom: 15px;">
-                ❌ Diagnostic Incorrect
-            </h2>
-            
-            <div style="background: rgba(255,77,77,0.1); border: 1px solid var(--error); border-radius: 12px; padding: 20px; margin: 20px 0;">
-                <div style="margin-bottom: 15px;">
-                    <strong>Votre réponse :</strong>
-                    <div style="font-size: 1.2em; color: var(--error); margin-top: 5px;">${userGuess}</div>
-                </div>
-                <div>
-                    <strong>Réponse attendue :</strong>
-                    <div style="font-size: 1.5em; color: var(--success); margin-top: 5px;">${correctAnswer}</div>
-                </div>
-            </div>
+    const app = document.getElementById('app');
+    const correctAnswer = experimentState.targetPathology.name;
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 30px 0; width: 100%;">
-                <div class="stat-box">
-                    <div class="stat-number">${experimentState.questionsAsked.length}</div>
-                    <div class="stat-label">Questions posées</div>
-                </div>
-                <div class="stat-box" style="border-color: var(--gold);">
-                    <div class="stat-number" style="color: var(--gold);">${experimentState.attempts}</div>
-                    <div class="stat-label">Tentatives</div>
-                </div>
-            </div>
+    // 1. LOGIQUE : Récupérer les signes correctement identifiés
+    // On filtre l'historique pour ne garder que les réponses "true"
+    const foundSignsObjects = experimentState.questionsAsked.filter(q => q.answer === true);
+    // On dédoublonne les signes (au cas où on a posé 2 questions sur le même signe)
+    const uniqueSigns = [...new Set(foundSignsObjects.map(q => q.sign))];
 
-            <div style="background: rgba(0,210,255,0.1); border: 1px solid var(--accent); border-radius: 12px; padding: 20px; margin: 20px 0; text-align: left;">
-                <h3 style="color: var(--accent); margin-bottom: 10px;">
-                    <i class="ph-duotone ph-info"></i> À propos de cette pathologie
-                </h3>
-                <div class="small" style="line-height: 1.6;">
-                    <strong>${correctAnswer}</strong><br>
-                    ${experimentState.targetPathology.short}
-                </div>
-            </div>
+    // 2. CONSTRUCTION DU HTML POUR LES SIGNES TROUVÉS
+    let foundSignsHTML = '';
+    if (uniqueSigns.length > 0) {
+        foundSignsHTML = `
+            <div class="signs-grid">
+                ${uniqueSigns.map(sign => `
+                    <div class="sign-badge">
+                        <i class="ph-bold ph-check-circle"></i>
+                        ${formatSymptomName(sign)}
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    } else {
+        foundSignsHTML = `
+            <div class="empty-signs">
+                <i class="ph-duotone ph-magnifying-glass"></i>
+                Aucun symptôme clé identifié lors de l'interrogatoire.
+            </div>
+        `;
+    }
 
-            <button class="btn" onclick="startClassiqueMode()" style="margin-top: 20px;">
-                <i class="ph-bold ph-arrow-clockwise"></i> Réessayer avec un nouveau cas
-            </button>
-            <button class="btn-back" onclick="renderModeSelection()">
-                <i class="ph-bold ph-arrow-left"></i> Retour sélection mode
-            </button>
-        </div>
-    `;
+    // 3. RENDU DE L'INTERFACE
+    app.innerHTML = `
+        <div class="card center" style="max-width: 800px; padding: 0; overflow: hidden;">
+            
+            <div style="background: linear-gradient(135deg, #ff5f6d 0%, #ffc371 100%); padding: 30px 20px; color: white; position: relative;">
+                <div style="font-size: 4em; margin-bottom: 10px; animation: popIn 0.5s ease;">
+                    <i class="ph-fill ph-x-circle"></i>
+                </div>
+                <h2 style="color: white; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">Diagnostic Incorrect</h2>
+                <p style="opacity: 0.9; margin-top: 5px;">Il y avait un piège ?</p>
+            </div>
+
+            <div style="padding: 30px;">
+                
+                <div class="comparison-container">
+                    <div class="comparison-box user-box">
+                        <div class="comp-label">Votre hypothèse</div>
+                        <div class="comp-val user-val">${userGuess}</div>
+                    </div>
+                    <div class="vs-badge">VS</div>
+                    <div class="comparison-box real-box">
+                        <div class="comp-label">La réalité</div>
+                        <div class="comp-val real-val">${correctAnswer}</div>
+                    </div>
+                </div>
+
+                <div class="investigation-report">
+                    <h3 class="report-title">
+                        <i class="ph-duotone ph-clipboard-text"></i> Rapport d'enquête
+                    </h3>
+                    <p class="small" style="margin-bottom: 15px;">Voici les éléments cliniques que vous aviez correctement repérés :</p>
+                    ${foundSignsHTML}
+                </div>
+
+                <div class="patho-info-card">
+                    <div class="info-header">
+                        <i class="ph-bold ph-info"></i> À propos de : ${correctAnswer}
+                    </div>
+                    <div class="info-content">
+                        ${experimentState.targetPathology.short}
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 15px; margin-top: 30px; flex-wrap: wrap;">
+                    <button class="btn" onclick="startClassiqueMode()" style="flex: 1; background: var(--accent);">
+                        <i class="ph-bold ph-arrow-clockwise"></i> Nouveau Patient
+                    </button>
+                    <button class="btn-back" onclick="renderModeSelection()" style="flex: 1;">
+                        <i class="ph-bold ph-list"></i> Menu
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <style>
+            @keyframes popIn { 0% { transform: scale(0); } 80% { transform: scale(1.1); } 100% { transform: scale(1); } }
+            
+            .comparison-container {
+                display: flex;
+                align-items: center;
+                gap: 15px;
+                margin-bottom: 30px;
+                position: relative;
+            }
+            .comparison-box {
+                flex: 1;
+                padding: 15px;
+                border-radius: 12px;
+                background: var(--glass-bg);
+                border: 1px solid var(--glass-border);
+                text-align: center;
+            }
+            .user-box { border-color: var(--error); background: rgba(255, 77, 77, 0.05); }
+            .real-box { border-color: var(--success); background: rgba(0, 255, 157, 0.05); }
+            
+            .comp-label { font-size: 0.8em; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 5px; }
+            .comp-val { font-weight: bold; font-size: 1.1em; }
+            .user-val { color: var(--error); text-decoration: line-through; }
+            .real-val { color: var(--success); }
+
+            .vs-badge {
+                background: var(--glass-bg);
+                border: 1px solid var(--glass-border);
+                width: 30px; height: 30px;
+                border-radius: 50%;
+                display: flex; align-items: center; justify-content: center;
+                font-size: 0.8em; font-weight: bold; color: var(--text-muted);
+                box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            }
+
+            .investigation-report {
+                text-align: left;
+                background: rgba(255,255,255,0.03);
+                border-radius: 12px;
+                padding: 20px;
+                border: 1px solid var(--glass-border);
+                margin-bottom: 25px;
+            }
+            .report-title { color: var(--text-main); font-size: 1.1em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+            
+            .signs-grid {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .sign-badge {
+                background: rgba(0, 255, 157, 0.1);
+                border: 1px solid var(--success);
+                color: var(--success);
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-size: 0.9em;
+                display: flex; align-items: center; gap: 6px;
+            }
+            .empty-signs {
+                color: var(--text-muted);
+                font-style: italic;
+                font-size: 0.9em;
+                display: flex; align-items: center; gap: 8px;
+            }
+
+            .patho-info-card {
+                text-align: left;
+                border-left: 3px solid var(--accent);
+                background: rgba(102, 126, 234, 0.1);
+                border-radius: 0 12px 12px 0;
+                padding: 15px;
+            }
+            .info-header { color: var(--accent); font-weight: bold; margin-bottom: 8px; }
+            .info-content { color: var(--text-main); font-size: 0.95em; line-height: 1.5; }
+        </style>
+    `;
 }
 
 // ============================================================

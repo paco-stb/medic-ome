@@ -260,21 +260,20 @@ async function initApp() {
         });
         
         // Deep Linking
-const urlParams = new URLSearchParams(window.location.search);
-const ficheDemandee = urlParams.get('fiche');
-if (ficheDemandee) {
-    const pathoTrouvee = PATHOLOGIES.find(p => p.name.toLowerCase() === ficheDemandee.toLowerCase());
-    if (pathoTrouvee) {
-        q('#app').innerHTML = ''; 
-        showDiagnosticDetails({patho: pathoTrouvee});
-        return;
-    }
-}
+        const urlParams = new URLSearchParams(window.location.search);
+        const ficheDemandee = urlParams.get('fiche');
+        if (ficheDemandee) {
+            const pathoTrouvee = PATHOLOGIES.find(p => p.name.toLowerCase() === ficheDemandee.toLowerCase());
+            if (pathoTrouvee) {
+                q('#app').innerHTML = ''; 
+                showDiagnosticDetails({patho: pathoTrouvee});
+                return;
+            }
+        }
 
-
-loadTheme();
-startAuthListener();
-fetchNotifications();
+        loadTheme();
+        startAuthListener();
+        fetchNotifications();
         
         // Listeners boutons globaux
         const btnLegal = q('#legalLink'); if(btnLegal) btnLegal.onclick = renderLegalPage;
@@ -393,26 +392,65 @@ function startAuthListener() {
                         const now = new Date();
                         const diffTime = Math.abs(now - lastDate);
                         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-                        if (diffDays >= 3) { setTimeout(() => { showAlert(`👋 Bon retour ${state.pseudo} ! Ça faisait ${diffDays} jours. Prêt à réviser ?`, "success"); triggerConfetti(); }, 1000); }
+                        if (diffDays >= 3) { 
+                            setTimeout(() => { 
+                                showAlert(`👋 Bon retour ${state.pseudo} ! Ça faisait ${diffDays} jours. Prêt à réviser ?`, "success"); 
+                                triggerConfetti(); 
+                            }, 1000); 
+                        }
                     }
                     updateHeader(); updateStreakDisplay(); renderHome();
-                } else { saveProgression(); updateHeader(); renderHome(); }
-            } catch(e) { renderHome(); }
+                } else { 
+                    saveProgression(); 
+                    updateHeader(); 
+                    renderHome(); 
+                }
+            } catch(e) { 
+                renderHome(); 
+            }
         } else {
+            // Vérifier si on vient du mode expérimental
+            const urlParams = new URLSearchParams(window.location.search);
+            const isExperimentMode = urlParams.get('mode') === 'generatif';
+            
+            if (isExperimentMode) {
+                // Mode expérimental : créer une session invité automatique
+                state.isGuest = true; 
+                state.pseudo = "Participant";
+                state.progression = { 
+                    correct: 0, incorrect: 0, streak: 0, mastery: {}, 
+                    dailyStreak: 0, lastDaily: null, achievements: []
+                };
+                updateHeader();
+                renderHome();
+                return;
+            }
+
+            // Sinon, comportement normal
             const savedGuest = localStorage.getItem('medicome_guest_progression');
             const savedPseudo = localStorage.getItem('medicome_guest_pseudo');
             if(!state.isGuest && savedGuest && savedPseudo) {
-                state.isGuest = true; state.pseudo = savedPseudo;
+                state.isGuest = true; 
+                state.pseudo = savedPseudo;
                 const parsed = JSON.parse(savedGuest);
                 state.progression = { ...state.progression, ...parsed };
                 if(state.progression.streak === undefined) state.progression.streak = 0;
                 if(!state.progression.mastery) state.progression.mastery = {};
-                updateHeader(); updateStreakDisplay(); renderHome();
+                updateHeader(); 
+                updateStreakDisplay(); 
+                renderHome();
                 setTimeout(() => showAlert(`<i class="ph-duotone ph-party-popper"></i> Bon retour, ${state.pseudo} !`, 'success'), 500);
             } else {
-                state.currentUser = null; state.pseudo = null; 
-                state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0, lastDaily: null, achievements: [], bestTimes: {}, errorLog: {}, pdfDownloads: 0, speedWins: 0, socialDone: false, reviewDone: false };
-                renderLogin(); updateHeader();
+                state.currentUser = null; 
+                state.pseudo = null; 
+                state.progression = { 
+                    correct: 0, incorrect: 0, streak: 0, mastery: {}, 
+                    dailyStreak: 0, lastDaily: null, achievements: [], 
+                    bestTimes: {}, errorLog: {}, pdfDownloads: 0, 
+                    speedWins: 0, socialDone: false, reviewDone: false 
+                };
+                renderLogin(); 
+                updateHeader();
             }
         }
     });

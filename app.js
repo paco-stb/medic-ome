@@ -428,30 +428,30 @@ function startAuthListener() {
             const urlParams = new URLSearchParams(window.location.search);
             const isExperimentMode = urlParams.get('mode') === 'generatif';
             
-            if (isExperimentMode) {
-                // === MODE EXPÉRIMENTAL : Démarrage direct ===
-                state.isGuest = true; 
-                state.pseudo = "Participant Étude";
-                state.progression = { 
-                    correct: 0, incorrect: 0, streak: 0, mastery: {}, 
-                    dailyStreak: 0, lastDaily: null, achievements: []
-                };
-                
-                updateHeader();
-                
-                // Configuration pour sauter l'accueil
-                state.useLLM = true; // On force l'IA
-                state.dailyTarget = null; // Pas de pathologie imposée au début
-                
-                // On lance direct la config patient au lieu de l'accueil
-                setTimeout(() => {
-                    renderDemographics();
-                    // Petit feedback pour confirmer que ça a marché
-                    console.log("🚀 Mode Generatif détecté : Saut de l'accueil.");
-                }, 100);
-                
-                return; // On arrête là pour ne pas charger le reste
-            }
+            const useLLMFromURL = urlParams.get('useLLM') === 'true';
+
+if (isExperimentMode) {
+    // === MODE EXPÉRIMENTAL : Démarrage direct ===
+    state.isGuest = true; 
+    state.pseudo = "Participant Étude";
+    state.progression = { 
+        correct: 0, incorrect: 0, streak: 0, mastery: {}, 
+        dailyStreak: 0, lastDaily: null, achievements: []
+    };
+    
+    updateHeader();
+    
+    // MODIFICATION ICI :
+    state.useLLM = useLLMFromURL; // ✅ Active le mode IA si demandé
+    state.dailyTarget = null;
+    
+    setTimeout(() => {
+        renderDemographics();
+        console.log("🚀 Mode Generatif détecté : Saut de l'accueil.");
+    }, 100);
+    
+    return;
+}
 
             // 2. Sinon, comportement normal (Invité ou Login)
             const savedGuest = localStorage.getItem('medicome_guest_progression');

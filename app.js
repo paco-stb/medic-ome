@@ -360,16 +360,28 @@ function checkGuestAvailability() {
 }
 
 function checkGuestLimit() {
-    if (!state.isGuest) return { allowed: true }; 
+    // Si l'utilisateur est connecté, pas de limite
+    if (!state.isGuest) return { allowed: true };
+    
+    // CORRECTION ICI : Si c'est un code Premium ou le Mode Étude, on autorise tout
+    if (state.isPremiumCode) return { allowed: true };
+
+    // Sinon, on applique la limite de temps classique (2h)
     const lastPlayed = localStorage.getItem('medicome_guest_last_play');
     if (!lastPlayed) return { allowed: true };
+    
     const now = Date.now();
     const twoHours = 2 * 60 * 60 * 1000; 
     const diff = now - parseInt(lastPlayed);
+    
     if (diff < twoHours) {
         const remainingMinutes = Math.ceil((twoHours - diff) / (60000));
         let timeText = remainingMinutes + " min";
-        if (remainingMinutes > 60) { const h = Math.floor(remainingMinutes / 60); const m = remainingMinutes % 60; timeText = `${h}h ${m}min`; }
+        if (remainingMinutes > 60) { 
+            const h = Math.floor(remainingMinutes / 60); 
+            const m = remainingMinutes % 60; 
+            timeText = `${h}h ${m}min`; 
+        }
         return { allowed: false, remaining: timeText };
     }
     return { allowed: true };
@@ -424,36 +436,36 @@ function startAuthListener() {
         } else {
             // --- UTILISATEUR NON CONNECTÉ ---
             
-            // 1. Vérifier si on vient du mode expérimental (CORRECTION ICI)
+            // 1. Vérifier si on vient du mode expérimental
             const urlParams = new URLSearchParams(window.location.search);
             const isExperimentMode = urlParams.get('mode') === 'generatif';
-            
             const useLLMFromURL = urlParams.get('useLLM') === 'true';
 
-if (isExperimentMode) {
-    // === MODE EXPÉRIMENTAL : Démarrage direct ===
-    state.isGuest = true; 
-    state.pseudo = "Participant Étude";
-    state.progression = { 
-        correct: 0, incorrect: 0, streak: 0, mastery: {}, 
-        dailyStreak: 0, lastDaily: null, achievements: []
-    };
-    
-    updateHeader();
-    
-    // MODIFICATION ICI :
-    state.useLLM = useLLMFromURL; // ✅ Active le mode IA si demandé
-    state.dailyTarget = null;
-    
-    setTimeout(() => {
-        renderDemographics();
-        console.log("🚀 Mode Generatif détecté : Saut de l'accueil.");
-    }, 100);
-    
-    return;
-}
+            if (isExperimentMode) {
+                // === MODE EXPÉRIMENTAL : Démarrage direct ===
+                state.isGuest = true; 
+                state.isPremiumCode = true; // <--- CORRECTION IMPORTANTE ICI (Active l'illimité)
+                state.pseudo = "Participant Étude";
+                
+                state.progression = { 
+                    correct: 0, incorrect: 0, streak: 0, mastery: {}, 
+                    dailyStreak: 0, lastDaily: null, achievements: []
+                };
+                
+                updateHeader();
+                
+                state.useLLM = useLLMFromURL; // Active le mode IA si demandé
+                state.dailyTarget = null;
+                
+                setTimeout(() => {
+                    renderDemographics();
+                    console.log("🚀 Mode Generatif détecté (via Étude) : Accès Illimité activé.");
+                }, 100);
+                
+                return;
+            }
 
-            // 2. Sinon, comportement normal (Invité ou Login)
+            // 2. Sinon, comportement normal (Invité classique ou Login)
             const savedGuest = localStorage.getItem('medicome_guest_progression');
             const savedPseudo = localStorage.getItem('medicome_guest_pseudo');
             

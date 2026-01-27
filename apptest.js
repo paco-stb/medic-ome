@@ -75,6 +75,97 @@ async function initExperiment() {
 function renderModeSelection() {
     const app = document.getElementById('app');
     app.innerHTML = `
+        <div class="card center" style="max-width: 500px;">
+            <h2><i class="ph-duotone ph-flask"></i> Étude Scientifique</h2>
+            <p class="small" style="margin-bottom: 30px; line-height: 1.6;">
+                Accès réservé aux participants de l'étude.
+            </p>
+
+            <div style="background:rgba(102,126,234,0.1); padding:15px; border-radius:12px; margin-bottom:20px; text-align:left;">
+                <label style="display:block; margin-bottom:10px; font-weight:bold; color:var(--accent);">
+                    <i class="ph-duotone ph-key"></i> Code d'accès de l'étude
+                </label>
+                <input id="studyCodeInput" class="input" placeholder="Entrez le code fourni..." style="margin:0;">
+            </div>
+
+            <button id="validateCodeBtn" class="btn" style="width:100%;">
+                <i class="ph-bold ph-check"></i> Valider
+            </button>
+        </div>
+
+        <style>
+            .mode-card {
+                background: var(--glass-bg);
+                border: 2px solid var(--glass-border);
+                border-radius: 16px;
+                padding: 20px;
+                transition: all 0.3s;
+                text-align: center;
+                cursor: pointer;
+            }
+            .mode-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                border-color: var(--accent);
+            }
+            .mode-icon {
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin: 0 auto 10px;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            }
+            .mode-icon i {
+                font-size: 1.8em !important;
+                color: white;
+            }
+        </style>
+    `;
+
+    document.getElementById('validateCodeBtn').onclick = validateStudyCode;
+    document.getElementById('studyCodeInput').onkeydown = (e) => {
+        if (e.key === 'Enter') validateStudyCode();
+    };
+}
+
+async function validateStudyCode() {
+    const codeInput = document.getElementById('studyCodeInput');
+    const code = codeInput.value.trim();
+    
+    if (!code) {
+        alert("⚠️ Veuillez entrer un code d'accès.");
+        return;
+    }
+
+    const btn = document.getElementById('validateCodeBtn');
+    btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> Vérification...';
+    btn.disabled = true;
+
+    try {
+        const codeRef = doc(db, "access_codes", code);
+        const codeSnap = await getDoc(codeRef);
+
+        if (codeSnap.exists() && codeSnap.data().active === true) {
+            renderModeChoices();
+        } else {
+            alert("❌ Code invalide ou expiré.");
+            btn.innerHTML = '<i class="ph-bold ph-check"></i> Valider';
+            btn.disabled = false;
+        }
+    } catch (error) {
+        console.error(error);
+        alert("❌ Erreur de connexion.");
+        btn.innerHTML = '<i class="ph-bold ph-check"></i> Valider';
+        btn.disabled = false;
+    }
+}
+
+function renderModeChoices() {
+    const app = document.getElementById('app');
+    app.innerHTML = `
         <div class="card center" style="max-width: 1200px;">
             <h2><i class="ph-duotone ph-flask"></i> Étude Scientifique</h2>
             <p class="small" style="margin-bottom: 30px; line-height: 1.6;">
@@ -83,7 +174,6 @@ function renderModeSelection() {
             </p>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; width: 100%; margin-bottom: 30px;">
-                <!-- MODE GÉNÉRATIF INVERSÉ -->
                 <div class="mode-card">
                     <div class="mode-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                         <i class="ph-duotone ph-brain" style="font-size: 3em; color: white;"></i>
@@ -98,7 +188,6 @@ function renderModeSelection() {
                     </button>
                 </div>
 
-                <!-- MODE CLASSIQUE -->
                 <div class="mode-card">
                     <div class="mode-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
                         <i class="ph-duotone ph-detective" style="font-size: 3em; color: white;"></i>
@@ -127,39 +216,6 @@ function renderModeSelection() {
                 </div>
             </div>
         </div>
-
-        <style>
-            .mode-card {
-                background: var(--glass-bg);
-                border: 2px solid var(--glass-border);
-                border-radius: 16px;
-                padding: 20px; /* Réduit de 30 à 20 */
-                transition: all 0.3s;
-                text-align: center;
-                cursor: pointer; /* Ajout pour l'UX */
-            }
-            .mode-card:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-                border-color: var(--accent);
-            }
-            /* C'est ici qu'on gère la taille des "images" (les bulles) */
-            .mode-icon {
-                width: 60px;  /* Réduit de 100px à 60px */
-                height: 60px; /* Réduit de 100px à 60px */
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                margin: 0 auto 10px;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            }
-            /* On réduit aussi la taille de l'icône à l'intérieur */
-            .mode-icon i {
-                font-size: 1.8em !important; /* Réduit de 3em à 1.8em */
-                color: white;
-            }
-        </style>
     `;
 }
 
@@ -620,28 +676,27 @@ JAMAIS {"detected_sign": null} sauf si la question est totalement incompréhensi
 // ============================================================
 
 function giveHint() {
-    const targetPathology = experimentState.targetPathology;
-    
-    // Trouver les signes très pondérés non encore demandés
-    const askedSigns = experimentState.questionsAsked.map(q => q.sign);
-    const availableHints = Object.entries(targetPathology.signes)
-        .filter(([sign, weight]) => weight >= 40 && !askedSigns.includes(sign))
-        .sort((a, b) => b[1] - a[1]); // Tri par poids décroissant
-    
-    if (availableHints.length === 0) {
-        alert("💡 Indice : Revoyez les signes paracliniques et les examens complémentaires caractéristiques !");
-        return;
-    }
-    
-    const [hintSign, hintWeight] = availableHints[0];
-    const hintText = formatSymptomName(hintSign);
-    
-    experimentState.hintsGiven++;
-    experimentState.wrongAnswers = 0; // Reset après indice
-    
-    alert(`💡 INDICE RÉVÉLATEUR\n\nUn signe clé à rechercher :\n\n"${hintText}"\n\n(Pondération : ${hintWeight} points)`);
-    
-    updateCounters();
+    const targetPathology = experimentState.targetPathology;
+    
+    const askedSigns = experimentState.questionsAsked.map(q => q.sign);
+    const availableHints = Object.entries(targetPathology.signes)
+        .filter(([sign, weight]) => weight >= 20 && !askedSigns.includes(sign))
+        .sort((a, b) => b[1] - a[1]);
+    
+    if (availableHints.length === 0) {
+        alert("💡 Indice : Repensez aux signes cliniques évocateurs et aux examens complémentaires clés.");
+        return;
+    }
+    
+    const [hintSign, hintWeight] = availableHints[0];
+    const hintText = formatSymptomName(hintSign);
+    
+    experimentState.hintsGiven++;
+    experimentState.wrongAnswers = 0;
+    
+    alert(`💡 INDICE\n\nUn signe clé à rechercher :\n\n"${hintText}"\n\n(Pondération : ${hintWeight} points)`);
+    
+    updateCounters();
 }
 
 // ============================================================
@@ -695,75 +750,82 @@ async function validateDiagnosis() {
 // ============================================================
 
 function renderSuccessScreen(totalTime) {
-    const app = document.getElementById('app');
-    const minutes = Math.floor(totalTime / 60);
-    const seconds = totalTime % 60;
-    
-    app.innerHTML = `
-        <div class="card center" style="max-width: 700px;">
-            <div style="font-size: 5em; color: var(--success); margin-bottom: 20px; animation: float 2s ease-in-out infinite;">
-                <i class="ph-fill ph-check-circle"></i>
-            </div>
-            <h2 style="color: var(--success); margin-bottom: 15px;">
-                🎉 DIAGNOSTIC CORRECT !
-            </h2>
-            <div style="font-size: 1.5em; margin: 20px 0; color: var(--text-main);">
-                ${experimentState.targetPathology.name}
-            </div>
+    const app = document.getElementById('app');
+    const minutes = Math.floor(totalTime / 60);
+    const seconds = totalTime % 60;
+    const patho = experimentState.targetPathology;
+    
+    let pdfButton = '';
+    if (patho.pdf && patho.pdf !== '#') {
+        pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${patho.pdf}" target="_blank"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF de révision</a>`;
+    }
+    
+    app.innerHTML = `
+        <div class="card center" style="max-width: 700px;">
+            <div style="font-size: 5em; color: var(--success); margin-bottom: 20px; animation: float 2s ease-in-out infinite;">
+                <i class="ph-fill ph-check-circle"></i>
+            </div>
+            <h2 style="color: var(--success); margin-bottom: 15px;">
+                🎉 DIAGNOSTIC CORRECT !
+            </h2>
+            <div style="font-size: 1.5em; margin: 20px 0; color: var(--text-main);">
+                ${patho.name}
+            </div>
+            <div class="patho-desc" style="margin-bottom: 20px; text-align: center;">
+                ${patho.short}
+            </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin: 30px 0; width: 100%;">
-                <div class="stat-box" style="border-color: var(--accent);">
-                    <div class="stat-number" style="color: var(--accent);">${experimentState.questionsAsked.length}</div>
-                    <div class="stat-label">Questions</div>
-                </div>
-                <div class="stat-box" style="border-color: var(--gold);">
-                    <div class="stat-number" style="color: var(--gold);">${minutes}:${seconds.toString().padStart(2, '0')}</div>
-                    <div class="stat-label">Temps</div>
-                </div>
-                <div class="stat-box" style="border-color: var(--ruby);">
-                    <div class="stat-number" style="color: var(--ruby);">${experimentState.hintsGiven}</div>
-                    <div class="stat-label">Indices</div>
-                </div>
-            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin: 30px 0; width: 100%;">
+                <div class="stat-box" style="border-color: var(--accent);">
+                    <div class="stat-number" style="color: var(--accent);">${experimentState.questionsAsked.length}</div>
+                    <div class="stat-label">Questions</div>
+                </div>
+                <div class="stat-box" style="border-color: var(--gold);">
+                    <div class="stat-number" style="color: var(--gold);">${minutes}:${seconds.toString().padStart(2, '0')}</div>
+                    <div class="stat-label">Temps</div>
+                </div>
+                <div class="stat-box" style="border-color: var(--ruby);">
+                    <div class="stat-number" style="color: var(--ruby);">${experimentState.hintsGiven}</div>
+                    <div class="stat-label">Indices</div>
+                </div>
+            </div>
 
-            <div style="background: rgba(0,255,157,0.1); border: 1px solid var(--success); border-radius: 12px; padding: 20px; margin: 20px 0; text-align: left;">
-                <h3 style="color: var(--success); margin-bottom: 10px;">
-                    <i class="ph-duotone ph-check-square"></i> Résumé de votre démarche
-                </h3>
-                <div class="small" style="line-height: 1.6;">
-                    Vous avez réussi à identifier la pathologie cible en ${experimentState.questionsAsked.length} questions.
-                    ${experimentState.hintsGiven > 0 ? `Vous avez bénéficié de ${experimentState.hintsGiven} indice(s).` : 'Aucun indice n\'a été nécessaire ! ✨'}
-                    <br><br>
-                    <strong>Performance :</strong> 
-                    ${experimentState.questionsAsked.length <= 8 ? '🏆 Excellent (≤ 8 questions)' : 
-                      experimentState.questionsAsked.length <= 15 ? '✅ Bien (9-15 questions)' : 
-                      '⚠️ À améliorer (> 15 questions)'}
-                </div>
-            </div>
+            <div style="background: rgba(0,255,157,0.1); border: 1px solid var(--success); border-radius: 12px; padding: 20px; margin: 20px 0; text-align: left;">
+                <h3 style="color: var(--success); margin-bottom: 10px;">
+                    <i class="ph-duotone ph-check-square"></i> Résumé de votre démarche
+                </h3>
+                <div class="small" style="line-height: 1.6;">
+                    Vous avez réussi à identifier la pathologie cible en ${experimentState.questionsAsked.length} questions.
+                    ${experimentState.hintsGiven > 0 ? `Vous avez bénéficié de ${experimentState.hintsGiven} indice(s).` : 'Aucun indice nécessaire ! ✨'}
+                    <br><br>
+                    <strong>Performance :</strong> 
+                    ${experimentState.questionsAsked.length <= 8 ? '🏆 Excellent (≤ 8 questions)' : 
+                      experimentState.questionsAsked.length <= 15 ? '✅ Bien (9-15 questions)' : 
+                      '⚠️ À améliorer (> 15 questions)'}
+                </div>
+            </div>
 
-            <button class="btn" onclick="startClassiqueMode()" style="margin-top: 20px;">
-                <i class="ph-bold ph-arrow-clockwise"></i> Nouveau cas
-            </button>
-            <button class="btn-back" onclick="renderModeSelection()">
-                <i class="ph-bold ph-arrow-left"></i> Retour sélection mode
-            </button>
-        </div>
-    `;
+            ${pdfButton ? `<div style="text-align:center; width:100%;">${pdfButton}</div>` : ''}
+
+            <button class="btn" onclick="startClassiqueMode()" style="margin-top: 20px;">
+                <i class="ph-bold ph-arrow-clockwise"></i> Nouveau cas
+            </button>
+            <button class="btn-back" onclick="renderModeSelection()">
+                <i class="ph-bold ph-arrow-left"></i> Retour sélection mode
+            </button>
+        </div>
+    `;
 }
 
-// DANS apptest.js - Remplace la fonction renderFailureScreen
 
 function renderFailureScreen(userGuess) {
     const app = document.getElementById('app');
     const correctAnswer = experimentState.targetPathology.name;
+    const patho = experimentState.targetPathology;
 
-    // 1. LOGIQUE : Récupérer les signes correctement identifiés
-    // On filtre l'historique pour ne garder que les réponses "true"
     const foundSignsObjects = experimentState.questionsAsked.filter(q => q.answer === true);
-    // On dédoublonne les signes (au cas où on a posé 2 questions sur le même signe)
     const uniqueSigns = [...new Set(foundSignsObjects.map(q => q.sign))];
 
-    // 2. CONSTRUCTION DU HTML POUR LES SIGNES TROUVÉS
     let foundSignsHTML = '';
     if (uniqueSigns.length > 0) {
         foundSignsHTML = `
@@ -785,7 +847,11 @@ function renderFailureScreen(userGuess) {
         `;
     }
 
-    // 3. RENDU DE L'INTERFACE
+    let pdfButton = '';
+    if (patho.pdf && patho.pdf !== '#') {
+        pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${patho.pdf}" target="_blank"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF de révision</a>`;
+    }
+
     app.innerHTML = `
         <div class="card center" style="max-width: 800px; padding: 0; overflow: hidden;">
             
@@ -794,7 +860,7 @@ function renderFailureScreen(userGuess) {
                     <i class="ph-fill ph-x-circle"></i>
                 </div>
                 <h2 style="color: white; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">Diagnostic Incorrect</h2>
-                <p style="opacity: 0.9; margin-top: 5px;">Il y avait un piège ?</p>
+                <p style="opacity: 0.9; margin-top: 5px;">Analysons ensemble</p>
             </div>
 
             <div style="padding: 30px;">
@@ -815,7 +881,7 @@ function renderFailureScreen(userGuess) {
                     <h3 class="report-title">
                         <i class="ph-duotone ph-clipboard-text"></i> Rapport d'enquête
                     </h3>
-                    <p class="small" style="margin-bottom: 15px;">Voici les éléments cliniques que vous aviez correctement repérés :</p>
+                    <p class="small" style="margin-bottom: 15px;">Signes que vous aviez correctement repérés :</p>
                     ${foundSignsHTML}
                 </div>
 
@@ -824,9 +890,11 @@ function renderFailureScreen(userGuess) {
                         <i class="ph-bold ph-info"></i> À propos de : ${correctAnswer}
                     </div>
                     <div class="info-content">
-                        ${experimentState.targetPathology.short}
+                        ${patho.short}
                     </div>
                 </div>
+
+                ${pdfButton ? `<div style="text-align:center; width:100%; margin-top:20px;">${pdfButton}</div>` : ''}
 
                 <div style="display: flex; gap: 15px; margin-top: 30px; flex-wrap: wrap;">
                     <button class="btn" onclick="startClassiqueMode()" style="flex: 1; background: var(--accent);">

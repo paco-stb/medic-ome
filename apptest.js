@@ -614,7 +614,8 @@ Ta mission :
 1. Identifie le symptôme/signe médical visé
 2. Si le signe correspond à un code de la liste (même approximativement), utilise ce code EXACT
 3. Si le signe n'est PAS dans la liste, génère quand même un code snake_case standard (ex: "ictere", "boiterie", "prurit")
-4. IMPORTANT : Tu dois TOUJOURS renvoyer un code, même si le signe est absent de la pathologie
+4. Si l'input contient des INSULTES, des VULGARITÉS (ex: "merde", "putain", "connard") ou du TEXTE ALÉATOIRE sans sens médical, tu DOIS renvoyer null.
+5. IMPORTANT : Tu dois TOUJOURS renvoyer un code, même si le signe est absent de la pathologie
 
 Réponds UNIQUEMENT en JSON :
 {"detected_sign": "code_du_signe"}

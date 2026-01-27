@@ -229,7 +229,7 @@ window.startGeneratifMode = function() {
     experimentState.startTime = Date.now();
     
     // Redirection SANS le paramètre "direct=ia" qui cause le bug
-    window.location.href = 'index.html';
+    window.location.href = window.location.pathname + '?mode=generatif&useLLM=true';
 }
 
 // ============================================================
@@ -849,111 +849,57 @@ function renderFailureScreen(userGuess) {
 
     let pdfButton = '';
     if (patho.pdf && patho.pdf !== '#') {
-        pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${patho.pdf}" target="_blank"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF de révision</a>`;
+        pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:15px;" href="${patho.pdf}" target="_blank"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF de révision</a>`;
     }
 
     app.innerHTML = `
-        <div class="card center" style="max-width: 800px; padding: 0; overflow: hidden;">
+        <div class="card center" style="max-width: 700px;">
             
-            <div style="background: linear-gradient(135deg, #ff5f6d 0%, #ffc371 100%); padding: 30px 20px; color: white; position: relative;">
-                <div style="font-size: 4em; margin-bottom: 10px; animation: popIn 0.5s ease;">
-                    <i class="ph-fill ph-x-circle"></i>
+            <div style="font-size: 4em; color: var(--error); margin-bottom: 20px;">
+                <i class="ph-fill ph-x-circle"></i>
+            </div>
+            <h2 style="color: var(--error); margin-bottom: 15px;">
+                Diagnostic Incorrect
+            </h2>
+            
+            <div style="background: rgba(255,77,77,0.1); border: 1px solid var(--error); border-radius: 12px; padding: 20px; margin: 20px 0; text-align: left;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div>
+                        <div class="small" style="color: var(--text-muted); margin-bottom: 5px;">Votre hypothèse</div>
+                        <div style="font-size: 1.1em; color: var(--error); font-weight: bold;">${userGuess}</div>
+                    </div>
+                    <div style="color: var(--text-muted); font-size: 1.5em;">→</div>
+                    <div>
+                        <div class="small" style="color: var(--text-muted); margin-bottom: 5px;">La réalité</div>
+                        <div style="font-size: 1.1em; color: var(--success); font-weight: bold;">${correctAnswer}</div>
+                    </div>
                 </div>
-                <h2 style="color: white; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">Diagnostic Incorrect</h2>
-                <p style="opacity: 0.9; margin-top: 5px;">Analysons ensemble</p>
+                <div class="patho-desc" style="color: var(--text-muted); font-size: 0.9em; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    ${patho.short}
+                </div>
             </div>
 
-            <div style="padding: 30px;">
-                
-                <div class="comparison-container">
-                    <div class="comparison-box user-box">
-                        <div class="comp-label">Votre hypothèse</div>
-                        <div class="comp-val user-val">${userGuess}</div>
-                    </div>
-                    <div class="vs-badge">VS</div>
-                    <div class="comparison-box real-box">
-                        <div class="comp-label">La réalité</div>
-                        <div class="comp-val real-val">${correctAnswer}</div>
-                    </div>
-                </div>
-
-                <div class="investigation-report">
-                    <h3 class="report-title">
-                        <i class="ph-duotone ph-clipboard-text"></i> Rapport d'enquête
-                    </h3>
-                    <p class="small" style="margin-bottom: 15px;">Signes que vous aviez correctement repérés :</p>
-                    ${foundSignsHTML}
-                </div>
-
-                <div class="patho-info-card">
-                    <div class="info-header">
-                        <i class="ph-bold ph-info"></i> À propos de : ${correctAnswer}
-                    </div>
-                    <div class="info-content">
-                        ${patho.short}
-                    </div>
-                </div>
-
-                ${pdfButton ? `<div style="text-align:center; width:100%; margin-top:20px;">${pdfButton}</div>` : ''}
-
-                <div style="display: flex; gap: 15px; margin-top: 30px; flex-wrap: wrap;">
-                    <button class="btn" onclick="startClassiqueMode()" style="flex: 1; background: var(--accent);">
-                        <i class="ph-bold ph-arrow-clockwise"></i> Nouveau Patient
-                    </button>
-                    <button class="btn-back" onclick="renderModeSelection()" style="flex: 1;">
-                        <i class="ph-bold ph-list"></i> Menu
-                    </button>
-                </div>
-
+            <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 20px; margin: 20px 0; text-align: left; border: 1px solid var(--glass-border);">
+                <h3 style="color: var(--text-main); font-size: 1.1em; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                    <i class="ph-duotone ph-clipboard-text"></i> Signes correctement identifiés
+                </h3>
+                ${foundSignsHTML}
             </div>
+
+            ${pdfButton ? `<div style="text-align:center; width:100%;">${pdfButton}</div>` : ''}
+
+            <div style="display: flex; gap: 15px; margin-top: 30px; width: 100%;">
+                <button class="btn" onclick="startClassiqueMode()" style="flex: 1;">
+                    <i class="ph-bold ph-arrow-clockwise"></i> Nouveau cas
+                </button>
+                <button class="btn-back" onclick="renderModeSelection()" style="flex: 1;">
+                    <i class="ph-bold ph-arrow-left"></i> Menu
+                </button>
+            </div>
+
         </div>
 
         <style>
-            @keyframes popIn { 0% { transform: scale(0); } 80% { transform: scale(1.1); } 100% { transform: scale(1); } }
-            
-            .comparison-container {
-                display: flex;
-                align-items: center;
-                gap: 15px;
-                margin-bottom: 30px;
-                position: relative;
-            }
-            .comparison-box {
-                flex: 1;
-                padding: 15px;
-                border-radius: 12px;
-                background: var(--glass-bg);
-                border: 1px solid var(--glass-border);
-                text-align: center;
-            }
-            .user-box { border-color: var(--error); background: rgba(255, 77, 77, 0.05); }
-            .real-box { border-color: var(--success); background: rgba(0, 255, 157, 0.05); }
-            
-            .comp-label { font-size: 0.8em; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 5px; }
-            .comp-val { font-weight: bold; font-size: 1.1em; }
-            .user-val { color: var(--error); text-decoration: line-through; }
-            .real-val { color: var(--success); }
-
-            .vs-badge {
-                background: var(--glass-bg);
-                border: 1px solid var(--glass-border);
-                width: 30px; height: 30px;
-                border-radius: 50%;
-                display: flex; align-items: center; justify-content: center;
-                font-size: 0.8em; font-weight: bold; color: var(--text-muted);
-                box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            }
-
-            .investigation-report {
-                text-align: left;
-                background: rgba(255,255,255,0.03);
-                border-radius: 12px;
-                padding: 20px;
-                border: 1px solid var(--glass-border);
-                margin-bottom: 25px;
-            }
-            .report-title { color: var(--text-main); font-size: 1.1em; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
-            
             .signs-grid {
                 display: flex;
                 flex-wrap: wrap;
@@ -966,24 +912,18 @@ function renderFailureScreen(userGuess) {
                 padding: 6px 12px;
                 border-radius: 20px;
                 font-size: 0.9em;
-                display: flex; align-items: center; gap: 6px;
+                display: flex;
+                align-items: center;
+                gap: 6px;
             }
             .empty-signs {
                 color: var(--text-muted);
                 font-style: italic;
                 font-size: 0.9em;
-                display: flex; align-items: center; gap: 8px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
             }
-
-            .patho-info-card {
-                text-align: left;
-                border-left: 3px solid var(--accent);
-                background: rgba(102, 126, 234, 0.1);
-                border-radius: 0 12px 12px 0;
-                padding: 15px;
-            }
-            .info-header { color: var(--accent); font-weight: bold; margin-bottom: 8px; }
-            .info-content { color: var(--text-main); font-size: 0.95em; line-height: 1.5; }
         </style>
     `;
 }

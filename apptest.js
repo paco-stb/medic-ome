@@ -31,7 +31,8 @@ const db = getFirestore(app);
 // ============================================================
 // VARIABLES GLOBALES
 // ============================================================
-
+const ADMIN_UID = "Kj5oyJpA4nXLDrjh3YqWCwlXEda2"; // Ton ID unique
+let isAdminSession = false; // Par défaut, c'est caché
 let PATHOLOGIES = [];
 let experimentState = {
     mode: null, // 'generatif' ou 'classique'
@@ -135,13 +136,23 @@ function renderModeSelection() {
 async function validateStudyCode() {
     const codeInput = document.getElementById('studyCodeInput');
     const code = codeInput.value.trim();
+    const btn = document.getElementById('validateCodeBtn');
     
+    // --- DETECTION AUTOMATIQUE ADMIN ---
+    // Si l'utilisateur connecté est TOI, on ouvre tout de suite
+    if (auth.currentUser && auth.currentUser.uid === ADMIN_UID) {
+        console.log("👑 Admin identifié :", auth.currentUser.email);
+        isAdminSession = true; 
+        renderModeChoices(); // On affiche le menu avec le bouton secret
+        return;
+    }
+    // -----------------------------------
+
     if (!code) {
         alert("⚠️ Veuillez entrer un code d'accès.");
         return;
     }
 
-    const btn = document.getElementById('validateCodeBtn');
     btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> Vérification...';
     btn.disabled = true;
 
@@ -150,6 +161,7 @@ async function validateStudyCode() {
         const codeSnap = await getDoc(codeRef);
 
         if (codeSnap.exists() && codeSnap.data().active === true) {
+            isAdminSession = false; // C'est un étudiant, pas de bouton export
             renderModeChoices();
         } else {
             alert("❌ Code invalide ou expiré.");
@@ -209,13 +221,21 @@ function renderModeChoices() {
                     <i class="ph-duotone ph-info"></i> À propos de cette étude
                 </div>
                 <div class="small" style="line-height: 1.6;">
-                    Cette interface permet de comparer l'efficacité pédagogique de deux approches :
-                    <br>• <strong>Génératif</strong> : Active la génération d'hypothèses (mode inversé)
-                    <br>• <strong>Classique</strong> : Interrogatoire diagnostique standard
-                    <br><br>
-                    Les données anonymisées (temps, questions, succès) seront collectées pour analyse statistique.
+                    Cette interface permet de comparer l'efficacité pédagogique... (Données anonymisées).
                 </div>
             </div>
+
+            ${isAdminSession ? `
+            <div style="margin-top: 30px; border-top: 1px solid var(--glass-border); padding-top: 20px; background: rgba(102, 126, 234, 0.1); border-radius: 8px; border: 1px solid var(--accent);">
+                <p style="color: var(--accent); font-weight:bold; font-size: 0.9em; margin-bottom:10px;">
+                    <i class="ph-duotone ph-crown"></i> BONJOUR ADMINISTRATEUR
+                </p>
+                <button id="btnExportData" class="text-btn" onclick="downloadExperimentData()" style="color: var(--text-main); font-size: 0.9em;">
+                    <i class="ph-bold ph-download-simple"></i> Télécharger les Résultats (CSV)
+                </button>
+            </div>
+            ` : ''}
+
         </div>
     `;
 }
@@ -1111,3 +1131,78 @@ else {
         initExperiment();
     }
 }
+
+// ============================================================
+// 4. FONCTION ADMIN : EXPORT CSV
+// (À coller tout en bas du fichier, hors des autres fonctions)
+// ============================================================
+
+async function downloadExperimentData() {
+    const btn = document.getElementById('btnExportData');
+    if(btn) btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> Récupération...';
+
+    try {
+        // On vérifie que db et collection sont bien accessibles
+        // (Ils sont définis tout en haut du fichier normalement)
+        const querySnapshot = await getDocs(collection(db, "experiment_results"));
+        
+        if (querySnapshot.empty) {
+            alert("📭 Aucune donnée trouvée pour l'instant.");
+            if(btn) btn.innerHTML = '<i class="ph-bold ph-download-simple"></i> Télécharger les Résultats (CSV)';
+            return;
+        }
+
+        // Préparation du CSV
+        let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
+        csvContent += "Date;Session ID;Mode;Pathologie Cible;Diagnostic Joueur;Succès;Nb Questions;Nb Indices;Nb Erreurs;Temps (sec)\n";
+
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            
+            let dateStr = "N/A";
+            if (data.timestamp && data.timestamp.seconds) {
+                dateStr = new Date(data.timestamp.seconds * 1000).toLocaleString('fr-FR');
+            }
+
+            const clean = (txt) => (txt ? String(txt).replace(/;/g, ",").replace(/\n/g, " ") : "");
+
+            const row = [
+                dateStr,
+                clean(data.sessionId),
+                clean(data.mode),
+                clean(data.targetPathology),
+                clean(data.userGuess),
+                data.success ? "OUI" : "NON",
+                data.questionsAsked || 0,
+                data.hintsGiven || 0,
+                data.wrongAnswers || 0,
+                data.totalTimeSeconds || 0
+            ];
+
+            csvContent += row.join(";") + "\n";
+        });
+
+        // Lancement du téléchargement
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        const filename = `RESULTATS_ETUDE_${new Date().toISOString().slice(0,10)}.csv`;
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        if(btn) btn.innerHTML = '<i class="ph-bold ph-check"></i> Export Réussi !';
+        setTimeout(() => {
+            if(btn) btn.innerHTML = '<i class="ph-bold ph-download-simple"></i> Télécharger les Résultats (CSV)';
+        }, 3000);
+
+    } catch (error) {
+        console.error("Erreur Export:", error);
+        alert("Erreur lors de l'export : " + error.message);
+        if(btn) btn.innerHTML = 'Erreur';
+    }
+}
+
+// IMPORTANT : Cette ligne permet au bouton HTML de trouver la fonction
+window.downloadExperimentData = downloadExperimentData;

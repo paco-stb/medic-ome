@@ -442,28 +442,34 @@ function startAuthListener() {
             const useLLMFromURL = urlParams.get('useLLM') === 'true';
 
             if (isExperimentMode) {
-                // === MODE EXPÉRIMENTAL : Démarrage direct ===
-                state.isGuest = true; 
-                state.isPremiumCode = true; // <--- CORRECTION IMPORTANTE ICI (Active l'illimité)
-                state.pseudo = "Participant Étude";
-                
-                state.progression = { 
-                    correct: 0, incorrect: 0, streak: 0, mastery: {}, 
-                    dailyStreak: 0, lastDaily: null, achievements: []
-                };
-                
-                updateHeader();
-                
-                state.useLLM = useLLMFromURL; // Active le mode IA si demandé
-                state.dailyTarget = null;
-                
-                setTimeout(() => {
-                    renderDemographics();
-                    console.log("🚀 Mode Generatif détecté (via Étude) : Accès Illimité activé.");
-                }, 100);
-                
-                return;
-            }
+    // === MODE EXPÉRIMENTAL : Démarrage direct ===
+    state.isGuest = true; 
+    state.isPremiumCode = true;
+    state.pseudo = "Participant Étude";
+    
+    state.progression = { 
+        correct: 0, incorrect: 0, streak: 0, mastery: {}, 
+        dailyStreak: 0, lastDaily: null, achievements: []
+    };
+    
+    updateHeader();
+    
+    state.useLLM = useLLMFromURL; // Active le mode IA si demandé
+    state.dailyTarget = null;
+    
+    setTimeout(() => {
+        if (state.useLLM) {
+            // Mode IA : on commence par le terrain puis questions ouvertes
+            renderDemographics();
+        } else {
+            // Mode classique
+            renderDemographics();
+        }
+        console.log("🚀 Mode Generatif détecté (via Étude) : Accès Illimité activé.");
+    }, 100);
+    
+    return;
+}
 
             // 2. Sinon, comportement normal (Invité classique ou Login)
             const savedGuest = localStorage.getItem('medicome_guest_progression');
@@ -981,7 +987,13 @@ function renderDemographics() {
     const card = document.createElement('div'); card.className = 'card center';
     if (state.exam && state.exam.active) { const currentCase = state.exam.currentIndex + 1; const totalCases = state.exam.queue.length; card.innerHTML = `<h3><i class="ph-duotone ph-student color-accent"></i> Examen Blanc</h3><p class="small" style="margin-bottom:20px; color:var(--accent);">Cas Clinique ${currentCase} / ${totalCases}</p>`; } 
     else if (state.dailyTarget) { card.innerHTML = `<h3><i class="ph-duotone ph-sun color-gold"></i> Défi du Jour</h3><p class="small" style="margin-bottom:20px; color:var(--gold);">Cible : ${state.dailyTarget.name}</p>`; } 
-    else { card.innerHTML = `<h3 style="text-align:center; margin-bottom:15px;"><i class="ph-duotone ph-user-list"></i> Profil Patient</h3><p class="small" style="margin-bottom:20px">Définissez le terrain et le contexte clinique.</p>`; }
+    else { 
+        if (state.useLLM) {
+            card.innerHTML = `<h3 style="text-align:center; margin-bottom:15px;"><i class="ph-duotone ph-brain color-accent"></i> Mode IA - Profil Patient</h3><p class="small" style="margin-bottom:20px; color:var(--accent);">Étape 1/3 : Définissez le terrain clinique</p>`;
+        } else {
+            card.innerHTML = `<h3 style="text-align:center; margin-bottom:15px;"><i class="ph-duotone ph-user-list"></i> Profil Patient</h3><p class="small" style="margin-bottom:20px">Définissez le terrain et le contexte clinique.</p>`;
+        }
+    }
     const genderContainer = document.createElement('div'); genderContainer.className = 'gender-selector';
     genderContainer.innerHTML = `<button class="gender-btn" id="btn-femme" onclick="selectGender('femme')" title="Femme"><i class="ph-duotone ph-gender-female"></i></button><button class="gender-btn" id="btn-homme" onclick="selectGender('homme')" title="Homme"><i class="ph-duotone ph-gender-male"></i></button>`;
     card.appendChild(document.createElement('label')).textContent = "Identité"; card.appendChild(genderContainer);
@@ -998,9 +1010,16 @@ function renderDemographics() {
     card.appendChild(chipsDiv);
     window.toggleGenderSpecificTags = (g) => { const labelFemme = document.getElementById('label-femme'); if(labelFemme) labelFemme.style.display = (g === 'femme') ? 'block' : 'none'; const chips = document.querySelectorAll('[data-gender="femme"]'); chips.forEach(c => { if (g === 'femme') c.style.display = 'flex'; else { c.style.display = 'none'; c.classList.remove('selected'); selectedFactors.delete(c.id.replace('chip-', '')); } }); };
     toggleGenderSpecificTags(null); 
-    if (!state.dailyTarget) { const chronoDiv = document.createElement('div'); chronoDiv.style.margin = '10px 0 20px 0'; chronoDiv.style.textAlign = 'center'; chronoDiv.innerHTML = `<label style="cursor:pointer; color:var(--text-muted); font-size:13px;"><input type="checkbox" id="chronoToggle" style="margin-right:6px; vertical-align:middle;"> <i class="ph-duotone ph-lightning"></i> Mode Chrono</label>`; card.appendChild(chronoDiv); }
+    if (!state.dailyTarget && !state.useLLM) { const chronoDiv = document.createElement('div'); chronoDiv.style.margin = '10px 0 20px 0'; chronoDiv.style.textAlign = 'center'; chronoDiv.innerHTML = `<label style="cursor:pointer; color:var(--text-muted); font-size:13px;"><input type="checkbox" id="chronoToggle" style="margin-right:6px; vertical-align:middle;"> <i class="ph-duotone ph-lightning"></i> Mode Chrono</label>`; card.appendChild(chronoDiv); }
     const btnGroup = document.createElement('div'); btnGroup.className = 'button-group';
-    const btnStart = document.createElement('button'); btnStart.className = 'btn'; btnStart.innerHTML = '<i class="ph-duotone ph-play"></i> Lancer le cas';
+    const btnStart = document.createElement('button'); btnStart.className = 'btn'; 
+    
+    if (state.useLLM) {
+        btnStart.innerHTML = '<i class="ph-duotone ph-arrow-right"></i> Étape suivante';
+    } else {
+        btnStart.innerHTML = '<i class="ph-duotone ph-play"></i> Lancer le cas';
+    }
+    
     btnStart.onclick = () => {
         if (!selectedGender && !state.dailyTarget) { if(Math.random() > 0.5) selectedGender = 'femme'; else selectedGender = 'homme'; }
         const ageVal = q('#demo-age').value;
@@ -1039,9 +1058,19 @@ function renderDemographics() {
         state.answers = {}; state.asked = []; state.diagnosticShown = false; state.previousDiagnostics = []; state.history = [];
         state.confirmationMode = false; state.confirmationQueue = []; state.confirmedPatho = null;
         state.priorityQueue = [];
-        if (state.dailyTarget) state.isChrono = false; else state.isChrono = q('#chronoToggle')?.checked || false;
+        
+        if (state.dailyTarget) state.isChrono = false; 
+        else if (state.useLLM) state.isChrono = false;
+        else state.isChrono = q('#chronoToggle')?.checked || false;
+        
         if (state.isChrono) state.startTime = Date.now(); else state.startTime = null;
-        askNextQuestion();
+        
+        // BIFURCATION : Mode IA ou Mode classique
+        if (state.useLLM) {
+            renderChiefComplaintInput();
+        } else {
+            askNextQuestion();
+        }
     };
     const btnCancel = document.createElement('button'); btnCancel.className = 'link'; btnCancel.textContent = 'Annuler'; btnCancel.onclick = renderHome;
     btnGroup.appendChild(btnStart); btnGroup.appendChild(btnCancel); card.appendChild(btnGroup); app.appendChild(card);
@@ -1209,40 +1238,111 @@ async function analyzeAnamnesis(userText) {
 function renderChiefComplaintInput() {
     setDocTitle("Motif de consultation"); window.scrollTo(0,0); const app = q('#app'); app.innerHTML='';
     const card = document.createElement('div'); card.className='card center';
-    card.innerHTML = `<h2><i class="ph-duotone ph-chats-teardrop color-accent"></i> Motif de consultation</h2><p class="small" style="margin-bottom:20px;">Décrivez ce que ressent le patient pour orienter l'interrogatoire.</p><div style="background:rgba(102,126,234,0.1); padding:15px; border-radius:12px; margin-bottom:20px; text-align:left;"><label style="display:block; margin-bottom:10px; font-weight:bold; color:var(--accent);">"Bonjour ${state.pseudo}, qu'est-ce qui vous amène ?"</label><textarea id="motifInput" class="input" placeholder="Ex: J'ai une barre dans la poitrine qui serre fort..." style="min-height:80px;"></textarea></div><button id="btnValidateMotif" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"><i class="ph-bold ph-paper-plane-right"></i> Envoyer</button><button id="btnSkipMotif" class="link" style="margin-top:15px; font-size:0.9em; opacity:0.7;">Passer (Mode aléatoire classique)</button>`;
+    card.innerHTML = `<h2><i class="ph-duotone ph-chats-teardrop color-accent"></i> Motif de consultation</h2><p class="small" style="margin-bottom:10px; color:var(--accent);">Étape 2/3 : Identification du symptôme principal</p><p class="small" style="margin-bottom:20px;">Décrivez ce que ressent le patient pour orienter l'interrogatoire.</p><div style="background:rgba(102,126,234,0.1); padding:15px; border-radius:12px; margin-bottom:20px; text-align:left;"><label style="display:block; margin-bottom:10px; font-weight:bold; color:var(--accent);">"Bonjour ${state.pseudo}, qu'est-ce qui vous amène ?"</label><textarea id="motifInput" class="input" placeholder="Ex: J'ai une barre dans la poitrine qui serre fort..." style="min-height:80px;"></textarea></div><button id="btnValidateMotif" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"><i class="ph-bold ph-paper-plane-right"></i> Valider le motif</button><button id="btnBackDemo" class="link" style="margin-top:15px;">← Retour au terrain</button>`;
     app.appendChild(card);
-    q('#btnSkipMotif').onclick = () => { renderDemographics(); };
+    
+    q('#btnBackDemo').onclick = () => { renderDemographics(); };
+    
     q('#btnValidateMotif').onclick = async () => {
-        const text = q('#motifInput').value; if(!text) return;
-        const btn = q('#btnValidateMotif'); btn.innerHTML = '<i class="ph-duotone ph-spinner ph-spin"></i> Analyse...'; btn.disabled = true;
+        const text = q('#motifInput').value.trim(); 
+        if(!text) return showAlert("Veuillez décrire le motif de consultation", "error");
+        
+        const btn = q('#btnValidateMotif'); 
+        btn.innerHTML = '<i class="ph-duotone ph-spinner ph-spin"></i> Analyse IA...'; 
+        btn.disabled = true;
+        
         const detectedSymptom = await analyzeChiefComplaint(text);
+        
         if (detectedSymptom) {
-            state.currentSign = detectedSymptom; state.asked = [detectedSymptom]; state.answers[detectedSymptom] = true; 
-            state.demo = { adulte: true, homme: true }; 
-            showAlert(`🔍 Orientation : ${formatSigneName(detectedSymptom)}`, "success");
-            setTimeout(() => { renderAnamnesisInput(detectedSymptom); }, 1000);
-        } else { showAlert("Motif trop vague ou inconnu. On passe au profil classique.", "error"); setTimeout(renderDemographics, 1500); }
+            // Chef de file identifié
+            state.currentSign = detectedSymptom; 
+            state.asked = [detectedSymptom]; 
+            state.answers[detectedSymptom] = true; 
+            
+            showAlert(`✅ Motif identifié : ${formatSigneName(detectedSymptom)}`, "success");
+            
+            setTimeout(() => {
+                renderAnamnesisInput(detectedSymptom);
+            }, 1000);
+        } else {
+            btn.innerHTML = '<i class="ph-bold ph-paper-plane-right"></i> Valider le motif';
+            btn.disabled = false;
+            showAlert("⚠️ Motif trop vague ou non reconnu. Soyez plus précis (ex: 'douleur thoracique', 'fièvre', 'maux de tête'...)", "error");
+        }
     };
 }
 
 function renderAnamnesisInput(chiefComplaint) {
-    setDocTitle("Anamnèse"); window.scrollTo(0,0); const app = q('#app'); app.innerHTML='';
+    setDocTitle("Anamnèse complète"); window.scrollTo(0,0); const app = q('#app'); app.innerHTML='';
     const card = document.createElement('div'); card.className='card center';
     const formattedComplaint = formatSigneName(chiefComplaint);
-    card.innerHTML = `<h2><i class="ph-duotone ph-chat-text color-accent"></i> L'histoire de la maladie</h2><div style="margin-bottom:20px; background:rgba(0, 255, 157, 0.1); padding:10px; border-radius:8px; border:1px solid var(--success); color:var(--success);"><i class="ph-bold ph-check"></i> Motif identifié : <strong>${formattedComplaint}</strong></div><p class="small" style="margin-bottom:15px;">"Je vois. Pouvez-vous me raconter plus en détails ce qu'il s'est passé ? Depuis quand ? D'autres douleurs ? Des antécédents ?"</p><textarea id="anamnesisText" class="input" placeholder="Ex: C'est arrivé brutalement hier soir, j'ai aussi envie de vomir et j'ai des sueurs froides..." style="min-height:120px;"></textarea><button id="btnSendAnamnesis" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"><i class="ph-bold ph-magic-wand"></i> Analyser & Commencer</button><button id="btnSkipAnamnesis" class="link" style="margin-top:15px;">Passer cette étape</button>`;
+    
+    card.innerHTML = `<h2><i class="ph-duotone ph-chat-text color-accent"></i> Histoire de la maladie</h2><p class="small" style="margin-bottom:10px; color:var(--accent);">Étape 3/3 : Anamnèse détaillée</p><div style="margin-bottom:20px; background:rgba(0, 255, 157, 0.1); padding:10px; border-radius:8px; border:1px solid var(--success); color:var(--success);"><i class="ph-bold ph-check"></i> Motif identifié : <strong>${formattedComplaint}</strong></div><p class="small" style="margin-bottom:15px;">"Je vois. Pouvez-vous me raconter <strong>tout</strong> en détails ?<br>Depuis quand ? Comment ça a commencé ? D'autres symptômes ? Des antécédents ?"</p><div style="background:rgba(255,159,67,0.1); padding:12px; border-radius:8px; border-left:3px solid var(--gold); margin-bottom:15px; text-align:left;"><i class="ph-duotone ph-lightbulb"></i> <strong>Conseil :</strong> Décrivez tous les signes que vous connaissez pour votre pathologie cible.</div><textarea id="anamnesisText" class="input" placeholder="Ex: C'est arrivé brutalement hier soir en montant les escaliers. J'ai une douleur qui serre comme un étau, ça irradie dans le bras gauche et la mâchoire. J'ai aussi des sueurs froides et des nausées. Je suis diabétique et fumeur..." style="min-height:150px;"></textarea><button id="btnSendAnamnesis" class="btn" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"><i class="ph-bold ph-magic-wand"></i> Analyser et continuer</button><button id="btnBackMotif" class="link" style="margin-top:15px;">← Retour au motif</button>`;
+    
     app.appendChild(card);
-    q('#btnSkipAnamnesis').onclick = () => { state.useLLM = false; askNextQuestion(); };
+    
+    q('#btnBackMotif').onclick = () => { 
+        // On revient au motif, on réinitialise
+        state.answers = {}; 
+        state.asked = []; 
+        renderChiefComplaintInput(); 
+    };
+    
     q('#btnSendAnamnesis').onclick = async () => {
-        const text = q('#anamnesisText').value; if(!text) return; 
-        const btn = q('#btnSendAnamnesis'); btn.innerHTML = '<i class="ph-duotone ph-spinner ph-spin"></i> Analyse IA en cours...'; btn.disabled = true;
+        const text = q('#anamnesisText').value.trim(); 
+        if(!text) return showAlert("Veuillez décrire l'histoire clinique", "error");
+        
+        const btn = q('#btnSendAnamnesis'); 
+        btn.innerHTML = '<i class="ph-duotone ph-spinner ph-spin"></i> Analyse IA en cours...'; 
+        btn.disabled = true;
+        
+        // Préparation de tous les signes disponibles
+        if (!state.allSigns || state.allSigns.length === 0) {
+            prepareSigns();
+        }
+        
         const analysis = await analyzeAnamnesis(text);
+        
         if (analysis) {
             let countNew = 0;
-            if(analysis.detected && analysis.detected.length > 0) { analysis.detected.forEach(sign => { if(state.allSigns.includes(sign) && !state.asked.includes(sign)) { state.answers[sign] = true; state.asked.push(sign); countNew++; } }); }
-            if(analysis.rejected && analysis.rejected.length > 0) { analysis.rejected.forEach(sign => { if(state.allSigns.includes(sign) && !state.asked.includes(sign)) { state.answers[sign] = false; state.asked.push(sign); countNew++; } }); }
-            if (countNew > 0) { showAlert(`✅ L'IA a détecté ${countNew} informations !`, "success"); } else { showAlert(`L'IA n'a pas trouvé de nouveaux symptômes connus.`, "warning"); }
-            setTimeout(() => { state.useLLM = false; askNextQuestion(); }, 1500);
-        } else { showAlert("Erreur d'analyse. On passe aux questions.", "error"); setTimeout(() => { state.useLLM = false; askNextQuestion(); }, 1000); }
+            
+            // Signes PRÉSENTS détectés
+            if(analysis.detected && analysis.detected.length > 0) {
+                analysis.detected.forEach(sign => {
+                    if(state.allSigns.includes(sign) && !state.asked.includes(sign)) {
+                        state.answers[sign] = true;
+                        state.asked.push(sign);
+                        countNew++;
+                    }
+                });
+            }
+            
+            // Signes ABSENTS détectés
+            if(analysis.rejected && analysis.rejected.length > 0) {
+                analysis.rejected.forEach(sign => {
+                    if(state.allSigns.includes(sign) && !state.asked.includes(sign)) {
+                        state.answers[sign] = false;
+                        state.asked.push(sign);
+                        countNew++;
+                    }
+                });
+            }
+            
+            if (countNew > 0) {
+                showAlert(`✅ L'IA a extrait ${countNew} signe(s) de votre récit !`, "success");
+            } else {
+                showAlert(`ℹ️ Aucun nouveau signe détecté. L'IA va maintenant poser des questions.`, "warning");
+            }
+            
+            setTimeout(() => {
+                // IMPORTANT : On passe maintenant aux questions binaires
+                askNextQuestion();
+            }, 1500);
+        } else {
+            btn.innerHTML = '<i class="ph-bold ph-magic-wand"></i> Analyser et continuer';
+            btn.disabled = false;
+            showAlert("❌ Erreur d'analyse. Réessayez ou simplifiez votre description.", "error");
+        }
     };
 }
 

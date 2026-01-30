@@ -1616,9 +1616,160 @@ function renderPathoStats(patho) {
 }
 
 function renderLegalPage() {
-    setDocTitle("Mentions Légales"); window.scrollTo(0,0); const app = q('#app'); app.innerHTML = ''; const card = document.createElement('div'); card.className='card center';
-    card.innerHTML = `<h2 style="color:var(--text-main); margin-bottom:15px;">Mentions Légales</h2><div style="text-align:left; line-height:1.6;"><h3>1. Éditeur du site</h3><p>Le site Medicome.fr est édité à titre personnel. <br>Contact : via le formulaire de contact du site.</p><br><h3>2. Hébergement</h3><p>Hébergé par GitHub Pages (USA). Données stockées sur Google Firebase (Irlande).</p><br><h3>3. Données Personnelles</h3><p>Email uniquement pour authentification et traitement de données dans un objectif de recherche. Aucune revente.</p></div>`;
-    const btnBack = document.createElement('button'); btnBack.className='btn'; btnBack.textContent='Retour'; btnBack.style.marginTop = '20px'; btnBack.onclick = () => { if(state.pseudo) renderHome(); else renderLogin(); }; card.appendChild(btnBack); app.appendChild(card);
+    setDocTitle("Mentions Légales");
+    window.scrollTo(0, 0);
+    const app = q('#app');
+    app.innerHTML = '';
+    const card = document.createElement('div');
+    card.className = 'card center';
+
+    // On prépare le gros bloc de texte des crédits pour que ce soit plus propre
+    const creditsHtml = `
+        <h3 style="margin-top:20px; border-top:1px solid var(--glass-border); padding-top:15px;">4. Crédits Images</h3>
+        <p style="font-size:0.9em; color:var(--text-muted); margin-bottom:10px;">
+            Les images médicales sont issues de banques d'images libres (Wikimedia Commons, Open-i, Wellcome Collection) sous licence Creative Commons (CC-BY, SA, ou Domaine Public). Le design du logo Medicome a été réalisé par Hector Bastogy.
+        </p>
+        
+        <div style="text-align:left; font-size:0.8em; max-height:300px; overflow-y:auto; background:rgba(0,0,0,0.2); padding:15px; border-radius:8px; line-height:1.4;">
+            
+            <strong style="color:var(--accent); display:block; margin-top:10px;"> Cardio & Vasculaire</strong>
+            <div>• <strong>st_elevation_ecg.png</strong> : Wikimedia Commons / Own work</div>
+            <div>• <strong>dvt_leg_swelling.png</strong> : Wikimedia Commons / James Heilman, MD</div>
+            <div>• <strong>hemoptysis_tissue.png</strong> : Wikimedia Commons / Dezidor</div>
+            <div>• <strong>cyanosis_lips.png</strong> : Wikimedia Commons / Thomas Godart</div>
+            <div>• <strong>livedo_reticularis.png</strong> : Wikimedia Commons / Uva L</div>
+            <div>• <strong>pale_leg_ischemia.png</strong> : Open-i / Park CB et al. (2014)</div>
+
+            <strong style="color:var(--accent); display:block; margin-top:10px;"> Dermatologie : Rougeurs & Éruptions</strong>
+            <div>• <strong>erysipelas_leg.png</strong> : Wikimedia Commons / Grook Da Oger</div>
+            <div>• <strong>urticaria_hives.png</strong> : Wikimedia Commons / Verysmallkisses</div>
+            <div>• <strong>psoriasis_plaque.png</strong> : Wikimedia Commons / MediaJet</div>
+            <div>• <strong>eczema_flexural.png</strong> : Wikimedia Commons / Gzzz</div>
+            <div>• <strong>anaphylaxis_rash.png</strong> : Wikimedia Commons / מ.י.ש.הו 0</div>
+            <div>• <strong>erythema_migrans.png</strong> : Wikimedia Commons / BruceBlaus</div>
+            <div>• <strong>lupus_butterfly_rash.png</strong> : Wikimedia Commons / Doktorinternet</div>
+            <div>• <strong>cushing_striae.png</strong> : Wikimedia Commons / PanaromicTiger</div>
+            <div>• <strong>addison_hyperpigmentation.png</strong> : Wellcome Collection</div>
+            <div>• <strong>peau_d_orange_breast.png</strong> : Open-i / Nouh MA et al. (2011)</div>
+            <div>• <strong>shingles_zoster.png</strong> : Wikimedia Commons / N.M. Matheson</div>
+            <div>• <strong>chickenpox_rash.png</strong> : Open-i / Singh R, Xess I (2010)</div>
+            <div>• <strong>rubella_rash.png</strong> : Wikimedia Commons / CDC</div>
+
+            <strong style="color:var(--accent); display:block; margin-top:10px;"> Dermatologie : Lésions & Tumeurs</strong>
+            <div>• <strong>severe_acne_face.png</strong> : Wikimedia Commons / Sedef94</div>
+            <div>• <strong>pcos_acne.png</strong> : Wikimedia Commons / Medical Photographic Library</div>
+            <div>• <strong>impetigo_crusts.png</strong> : Open-i / Lakshmi C. et al</div>
+            <div>• <strong>scabies_burrow.png</strong> : Open-i / Sugathan P. et al (2010)</div>
+            <div>• <strong>syphilis_chancre.png</strong> : Open-i / Burnett A (2014)</div>
+            <div>• <strong>melanoma.png</strong> : Wikimedia Commons / J.C.T. Braga et al.</div>
+            <div>• <strong>basal_cell_carcinoma.png</strong> : Open-i / Cureus</div>
+            <div>• <strong>hirsutism_face.png</strong> : Wikimedia Commons / Gacaferri Lumezi B et al.</div>
+            <div>• <strong>cervical_lymphadenopathy.png</strong> : Wikimedia Commons / Hudson Bernard</div>
+
+            <strong style="color:var(--accent); display:block; margin-top:10px;"> Dermatologie : Sang </strong>
+            <div>• <strong>purpura_skin.png</strong> : Wikimedia Commons / Hektor</div>
+            <div>• <strong>janeway_lesions.png</strong> : Wikimedia Commons / Warfieldian</div>
+            <div>• <strong>henoch_schonlein_purpura.png</strong> : Wikimedia Commons / Diasbuenasio</div>
+            <div>• <strong>ecchymoses_petechiae.png</strong> : Wikimedia Commons / James Heilman, MD</div>
+
+            <strong style="color:var(--accent); display:block; margin-top:10px;"> Visage & Cou</strong>
+            <div>• <strong>facial_droop.png</strong> : Wikimedia Commons / Another-anon-artist-234</div>
+            <div>• <strong>myxedema_face.png</strong> : Scientific Animations (Wiki)</div>
+            <div>• <strong>moon_face_cushing.png</strong> : Wikimedia Commons / Ozlem Celik et al.</div>
+            <div>• <strong>acromegaly_face.png</strong> : Wikimedia Commons / Philippe Chanson</div>
+            <div>• <strong>nuchal_rigidity_exam.png</strong> : Wikimedia Commons / L.A. Marty, M.D</div>
+            <div>• <strong>mumps_parotitis.png</strong> : Wikimedia Commons / Fischer, Louis (1914)</div>
+
+            <strong style="color:var(--accent); display:block; margin-top:10px;"> Yeux (Ophtalmo)</strong>
+            <div>• <strong>conjunctivitis_red_eye.png</strong> : Wikimedia Commons / Tanalai</div>
+            <div>• <strong>scleral_icterus.png</strong> : Wikimedia Commons / Unknown author</div>
+            <div>• <strong>exophthalmos.png</strong> : Wikimedia Commons / CDC / Dr. Sellers</div>
+            <div>• <strong>fixed_dilated_pupil.png</strong> : Wikimedia Commons / Jonathan Trobe, M.D.</div>
+            <div>• <strong>stye_hordeolum.png</strong> : Wikimedia Commons / Andre Riemann</div>
+            <div>• <strong>ptosis_eye.png</strong> : Wikimedia Commons / Mohankumar Kurukumbi</div>
+            <div>• <strong>amsler_grid_distortion.png</strong> : Wikimedia Commons / Isislunsky</div>
+
+            <strong style="color:var(--accent); display:block; margin-top:10px;"> Bouche & Gorge (ORL)</strong>
+            <div>• <strong>coated_tongue.png</strong> : Wikimedia Commons / Grook da oger</div>
+            <div>• <strong>strawberry_tongue.png</strong> : Wikimedia Commons / Martin Kronawitter</div>
+            <div>• <strong>atrophic_glossitis.png</strong> : Wikimedia Commons / Jihoon Kim et al.</div>
+            <div>• <strong>oral_thrush.png</strong> : Wikimedia Commons / Sol Silverman, Jr., D.D.S.</div>
+            <div>• <strong>tonsillar_exudate.png</strong> : Wikimedia Commons / Nick Berman</div>
+            <div>• <strong>mono_tonsils.png</strong> : Wikimedia Commons / Fateagued</div>
+            <div>• <strong>koplik_spots.png</strong> : Wikimedia Commons / Dctrzl</div>
+
+            <strong style="color:var(--accent); display:block; margin-top:10px;"> Os & Articulations (Rhumato/Ortho)</strong>
+            <div>• <strong>colles_fracture_fork.png</strong> : Wikimedia Commons / Sylvain Letuffe</div>
+            <div>• <strong>hip_fracture_rotation.png</strong> : Wikimedia Commons / DocP</div>
+            <div>• <strong>leg_shortening.png</strong> : Wikimedia Commons / Fischer, Louis</div>
+            <div>• <strong>septic_arthritis_knee.png</strong> : Wikimedia Commons / CDC (NIH)</div>
+            <div>• <strong>gout_toe_podagra.png</strong> : Wikimedia Commons / Gonzosft</div>
+            <div>• <strong>dactylitis_toe.png</strong> : Wikimedia Commons / Graham, Edwin Eldon</div>
+            <div>• <strong>rheumatoid_hands.png</strong> : Wikimedia Commons / Dr. G. Narasimhamurthy</div>
+            <div>• <strong>hemarthrosis_knee.png</strong> : Wikimedia Commons / James Heilman, MD</div>
+            <div>• <strong>kyphosis_dowagers_hump.png</strong> : Wikimedia Commons / BruceBlaus</div>
+            <div>• <strong>ankle_sprain_swelling.png</strong> : Wikimedia Commons / James Heilman, MD</div>
+
+            <strong style="color:var(--accent); display:block; margin-top:10px;"> Abdomen & Uro-Gyn</strong>
+            <div>• <strong>abdominal_distension.png</strong> : Wikimedia Commons / James Heilman, MD</div>
+            <div>• <strong>ascites_abdomen.png</strong> : Wikimedia Commons / Thomas Godart</div>
+            <div>• <strong>inguinal_hernia.png</strong> : Wikimedia Commons / IkeTheSloth</div>
+            <div>• <strong>bladder_distension.png</strong> : Wikimedia Commons / Treves & Hutchinson</div>
+            <div>• <strong>testicular_torsion_swelling.png</strong> : Wikimedia Commons / Javier.montero.arredondo</div>
+            <div>• <strong>anal_fistula.png</strong> : Open-i / Liaqat N. et al (2016)</div>
+
+            <strong style="color:var(--accent); display:block; margin-top:10px;"> Liquides Biologiques</strong>
+            <div>• <strong>hematuria_urine.png</strong> : Wikimedia Commons / Own Work</div>
+            <div>• <strong>gross_hematuria.png</strong> : Wikimedia Commons / James Heilman, MD</div>
+            <div>• <strong>melena_stool.png</strong> : Wikimedia Commons / Ahmed Shawky Mohammedin</div>
+            <div>• <strong>bloody_stool.png</strong> : Wikimedia Commons / Togabi</div>
+            <div>• <strong>pitting_edema.png</strong> : Wikimedia Commons / James Heilman, MD</div>
+            <div>• <strong>currant_jelly_stool.png</strong> : EMNote / jackcfchong</div>
+
+            <strong style="color:var(--accent); display:block; margin-top:10px;"> Imagerie & ECG</strong>
+            <div>• <strong>pneumonia_xray.png</strong> : Wikimedia Commons / Unknown user</div>
+            <div>• <strong>pneumothorax_xray.png</strong> : Open-i / Omar HR et al. (2011)</div>
+            <div>• <strong>afib_ecg.png</strong> : CardioNetworks / Drj</div>
+            <div>• <strong>pericarditis_ecg.png</strong> : Wikimedia Commons / James Heilman, MD</div>
+            <div>• <strong>bowel_obstruction_xray.png</strong> : Wikimedia Commons / James Heilman, MD</div>
+            <div>• <strong>subdural_hematoma_ct.png</strong> : Wikimedia Commons / Lucien Monfils</div>
+            <div>• <strong>epidural_hematoma_ct.png</strong> : Wikimedia Commons / James Heilman, MD</div>
+            <div>• <strong>hip_fracture_xray.png</strong> : Wikimedia Commons / Drvaram</div>
+            <div>• <strong>wrist_fracture_xray.png</strong> : Wikimedia Commons / Lucien Monfils</div>
+            <div>• <strong>vertebral_compression_xray.png</strong> : Wikimedia Commons / Dirk69CS</div>
+            <div>• <strong>osteoarthritis_xray.png</strong> : Wikimedia Commons / Jmarchn</div>
+            <div>• <strong>gout_erosion_xray.png</strong> : Open-i / Perez-Ruiz F et al. (2009)</div>
+            <div>• <strong>herniated_disc_mri.png</strong> : Wikimedia Commons / Miguel Tremblay</div>
+        </div>
+    `;
+
+    // On injecte le tout
+    card.innerHTML = `
+        <h2 style="color:var(--text-main); margin-bottom:15px;">Mentions Légales</h2>
+        <div style="text-align:left; line-height:1.6;">
+            <h3>1. Éditeur du site</h3>
+            <p>Le site Medicome.fr est édité à titre personnel. <br>Contact : via le formulaire de contact du site.</p>
+            <br>
+            <h3>2. Hébergement</h3>
+            <p>Hébergé par GitHub Pages (USA). Données stockées sur Google Firebase (Irlande).</p>
+            <br>
+            <h3>3. Données Personnelles</h3>
+            <p>Email uniquement pour authentification et traitement de données dans un objectif de recherche. Aucune revente.</p>
+            
+            ${creditsHtml}
+        </div>
+    `;
+
+    const btnBack = document.createElement('button');
+    btnBack.className = 'btn';
+    btnBack.textContent = 'Retour';
+    btnBack.style.marginTop = '20px';
+    btnBack.onclick = () => {
+        if (state.pseudo) renderHome();
+        else renderLogin();
+    };
+    card.appendChild(btnBack);
+    app.appendChild(card);
 }
 
 function renderCalendar(targetMonth = new Date()) {

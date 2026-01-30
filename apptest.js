@@ -43,7 +43,8 @@ let experimentState = {
     startTime: null,
     sessionId: null,
     hintsGiven: 0,
-    attempts: 0
+    attempts: 0,
+    signsFoundAtLastHint: 0
 };
 
 let cachedOpenAIKey = null;
@@ -679,6 +680,12 @@ JAMAIS {"detected_sign": null} sauf si la question est totalement incompréhensi
 function giveHint() {
     const targetPathology = experimentState.targetPathology;
     
+    // 1. Calculer combien de signes corrects sont trouvés ACTUELLEMENT
+    const currentCorrectSigns = experimentState.questionsAsked.filter(q => q.answer === true).length;
+    
+    // 2. Mémoriser ce nombre pour le verrouillage
+    experimentState.signsFoundAtLastHint = currentCorrectSigns;
+
     const askedSigns = experimentState.questionsAsked.map(q => q.sign);
     const availableHints = Object.entries(targetPathology.signes)
         .filter(([sign, weight]) => weight >= 20 && !askedSigns.includes(sign))
@@ -695,7 +702,7 @@ function giveHint() {
     experimentState.hintsGiven++;
     experimentState.wrongAnswers = 0;
     
-    alert(`💡 INDICE\n\nUn signe clé à rechercher :\n\n"${hintText}"\n\n(Pondération : ${hintWeight} points)`);
+    alert(`💡 INDICE ACTIVÉ\n\nCherchez du côté de :\n"${hintText}"\n\n⚠️ ATTENTION : Comme vous avez pris un indice, vous devez identifier 3 NOUVEAUX signes corrects avant de pouvoir proposer un diagnostic.`);
     
     updateCounters();
 }
@@ -705,11 +712,24 @@ function giveHint() {
 // ============================================================
 
 async function validateDiagnosis() {
-    const diagnosisInput = document.getElementById('diagnosisInput').value.trim();
-    if (!diagnosisInput) {
-        alert("⚠️ Veuillez entrer un diagnostic avant de valider.");
-        return;
-    }
+    const diagnosisInput = document.getElementById('diagnosisInput').value.trim();
+    if (!diagnosisInput) {
+        alert("⚠️ Veuillez entrer un diagnostic avant de valider.");
+        return;
+    }
+
+    // === VERROUILLAGE INDICE ===
+    if (experimentState.hintsGiven > 0) {
+        // Combien de signes corrects on a maintenant ?
+        const currentCorrectSigns = experimentState.questionsAsked.filter(q => q.answer === true).length;
+        // Combien on en a trouvé DEPUIS l'indice ?
+        const newSignsFound = currentCorrectSigns - experimentState.signsFoundAtLastHint;
+
+        if (newSignsFound < 3) {
+            alert(`🔒 DIAGNOSTIC BLOQUÉ\n\nVous avez utilisé un indice. Vous devez valider 3 nouveaux signes cliniques avant de conclure.\n\nProgression : ${newSignsFound} / 3 nouveaux signes.`);
+            return; // On arrête tout, on n'envoie pas le diagnostic
+        }
+    }
     
     const targetName = experimentState.targetPathology.name.toLowerCase();
     const userGuess = diagnosisInput.toLowerCase();

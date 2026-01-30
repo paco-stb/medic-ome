@@ -221,7 +221,11 @@ function renderModeChoices() {
                     <i class="ph-duotone ph-info"></i> À propos de cette étude
                 </div>
                 <div class="small" style="line-height: 1.6;">
-                    Cette interface permet de comparer l'efficacité pédagogique... (Données anonymisées).
+                   Cette interface permet de comparer l'efficacité pédagogique de deux approches :
+                    <br>• <strong>Génératif</strong> : Active la génération d'hypothèses (mode inversé)
+                    <br>• <strong>Classique</strong> : Interrogatoire diagnostique standard
+                    <br><br>
+                    Les données anonymisées (temps, questions, succès) seront collectées pour analyse statistique.
                 </div>
             </div>
 

@@ -395,49 +395,50 @@ function startGuestMode() {
     updateHeader(); renderHome(); return true;
 }
 
-// DANS app.js - Remplace TOUTE la fonction startAuthListener par ceci :
-
 function startAuthListener() {
     onAuthStateChanged(auth, async (user) => {
         
         // ============================================================
-        // 1. PRIORITÉ ABSOLUE : MODE EXPÉRIMENTAL (Via URL)
+        // 1. DÉTECTION MODE EXPÉRIMENTAL
         // ============================================================
         const urlParams = new URLSearchParams(window.location.search);
+        // On vérifie juste si on est en mode generatif
         const isExperimentMode = urlParams.get('mode') === 'generatif';
-        const useLLMFromURL = urlParams.get('useLLM') === 'true';
 
         if (isExperimentMode) {
-            console.log("🧪 Mode Expérimental détecté via URL (Prioritaire sur Auth)");
+            console.warn("🧪 APP.JS : MODE EXPÉRIMENTAL DÉTECTÉ !");
 
-            // Configuration forcée pour l'expérience
+            // --- CONFIGURATION FORCÉE ---
             state.isGuest = true;
-            state.isPremiumCode = true; // Pour éviter les blocages "invité limité"
+            state.isPremiumCode = true;
             state.pseudo = "Participant Étude";
-            state.useLLM = useLLMFromURL; // Active le mode IA (Questions ouvertes)
+            
+            // ICI : On force le mode IA sans vérifier l'URL
+            state.useLLM = true; 
+            console.log("✅ FORCE STATE.USELLM = TRUE (Mode IA Activé)");
+            
             state.dailyTarget = null;
-
-            // Réinitialisation de la progression pour l'étude (session vierge)
-            state.progression = {
-                correct: 0, incorrect: 0, streak: 0, mastery: {},
-                dailyStreak: 0, lastDaily: null, achievements: []
+            state.progression = { 
+                correct: 0, incorrect: 0, streak: 0, mastery: {}, 
+                dailyStreak: 0, lastDaily: null, achievements: [] 
             };
 
             updateHeader();
 
-            // LANCEMENT DIRECT : On saute l'accueil et on va sur le Terrain
+            // On lance DIRECTEMENT l'écran terrain
+            // On attend 500ms pour être sûr que le DOM est prêt et que state est bien pris en compte
             setTimeout(() => {
+                console.log("🚀 Lancement de renderDemographics()...");
                 renderDemographics();
-            }, 100);
+            }, 500);
 
-            return; // ON S'ARRÊTE ICI. On ne charge pas le profil utilisateur Firebase.
+            return; // ON S'ARRÊTE ICI.
         }
 
         // ============================================================
-        // 2. COMPORTEMENT STANDARD (Si pas d'expérience en cours)
+        // 2. COMPORTEMENT STANDARD (Si pas d'expérience)
         // ============================================================
         if (user) {
-            // --- UTILISATEUR CONNECTÉ ---
             state.currentUser = user;
             state.isGuest = false;
 
@@ -453,60 +454,36 @@ function startAuthListener() {
                     const data = docSnap.data();
                     if (data.pseudo) state.pseudo = data.pseudo;
                     state.progression = { ...state.progression, ...data.progression };
-
-                    // Petit message de retour sympa
+                    
+                    // Message de retour
                     if (data.lastUpdate && data.lastUpdate.seconds) {
                         const lastDate = new Date(data.lastUpdate.seconds * 1000);
-                        const now = new Date();
-                        const diffTime = Math.abs(now - lastDate);
-                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                        if (diffDays >= 3) {
-                            setTimeout(() => {
-                                showAlert(`👋 Bon retour ${state.pseudo} ! Ça faisait ${diffDays} jours.`, "success");
-                            }, 1000);
-                        }
+                        const diffDays = Math.ceil(Math.abs(new Date() - lastDate) / (1000 * 60 * 60 * 24));
+                        if (diffDays >= 3) setTimeout(() => showAlert(`👋 Bon retour ${state.pseudo} !`, "success"), 1000);
                     }
                     updateHeader();
                     updateStreakDisplay();
-                    renderHome(); // Vers l'accueil normal
+                    renderHome();
                 } else {
-                    // Création du profil s'il n'existe pas
                     saveProgression();
                     updateHeader();
                     renderHome();
                 }
             } catch (e) {
-                console.error("Erreur chargement profil:", e);
+                console.error("Erreur profil:", e);
                 renderHome();
             }
         } else {
-            // --- UTILISATEUR NON CONNECTÉ ---
-
-            // Vérification sauvegarde locale (Invité précédent)
+            // Utilisateur non connecté et pas en mode expérience
             const savedGuest = localStorage.getItem('medicome_guest_progression');
-            const savedPseudo = localStorage.getItem('medicome_guest_pseudo');
-
-            if (!state.isGuest && savedGuest && savedPseudo) {
+            if (!state.isGuest && savedGuest) {
                 state.isGuest = true;
-                state.pseudo = savedPseudo;
-                const parsed = JSON.parse(savedGuest);
-                state.progression = { ...state.progression, ...parsed };
-                if (state.progression.streak === undefined) state.progression.streak = 0;
-                if (!state.progression.mastery) state.progression.mastery = {};
+                state.pseudo = localStorage.getItem('medicome_guest_pseudo');
+                state.progression = { ...state.progression, ...JSON.parse(savedGuest) };
                 updateHeader();
-                updateStreakDisplay();
                 renderHome();
-                setTimeout(() => showAlert(`<i class="ph-duotone ph-party-popper"></i> Bon retour, ${state.pseudo} !`, 'success'), 500);
             } else {
-                // Vraiment personne -> Écran de connexion
                 state.currentUser = null;
-                state.pseudo = null;
-                state.progression = {
-                    correct: 0, incorrect: 0, streak: 0, mastery: {},
-                    dailyStreak: 0, lastDaily: null, achievements: [],
-                    bestTimes: {}, errorLog: {}, pdfDownloads: 0,
-                    speedWins: 0, socialDone: false, reviewDone: false
-                };
                 renderLogin();
                 updateHeader();
             }

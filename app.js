@@ -1094,23 +1094,16 @@ function renderCurrentQuestion() {
     if (state.isChrono) { setTimeout(startLiveTimer, 100); }
 
     if (state.useLLM && !state.confirmationMode) {
-        const chatContainer = document.createElement('div');
-        chatContainer.style.cssText = "margin: 20px 0; padding: 20px; background: rgba(102,126,234,0.1); border-radius: 16px; border: 2px solid rgba(102,126,234,0.3);";
-        chatContainer.innerHTML = `<div style="font-size: 0.9em; margin-bottom: 12px; color: var(--accent); font-weight:bold; text-transform:uppercase; letter-spacing:1.5px; text-align:center;"><i class="ph-duotone ph-brain"></i> Répondez librement à l'IA</div><div style="display: flex; gap: 10px;"><input type="text" id="aiInput" class="input" placeholder="Ex: Oui, j'ai une douleur qui serre..." style="margin:0; flex:1; font-size:16px;"><button id="aiSendBtn" class="btn" style="width: auto; padding: 0 20px; background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);"><i class="ph-bold ph-paper-plane-right"></i></button></div><div id="aiLoader" style="display:none; font-size: 0.85em; color: var(--text-muted); margin-top: 12px; text-align: center;"><i class="ph-bold ph-spinner ph-spin"></i> Analyse IA en cours...</div>`;
-        setTimeout(() => {
-            const inputField = document.getElementById('aiInput'); const sendBtn = document.getElementById('aiSendBtn'); const loader = document.getElementById('aiLoader');
-            const handleAiSubmit = async () => {
-                const text = inputField.value.trim(); if (!text) return;
-                inputField.disabled = true; sendBtn.disabled = true; loader.style.display = 'block';
-                const result = await analyzeResponseWithLLM(text, state.currentSign);
-                loader.style.display = 'none'; inputField.disabled = false; sendBtn.disabled = false; inputField.value = ''; inputField.focus();
-                if (result === true) { state.history.push(JSON.stringify({ answers: state.answers, asked: state.asked, currentSign: state.currentSign, confirmationMode: state.confirmationMode, confirmationQueue: state.confirmationQueue, confirmedPatho: state.confirmedPatho, priorityQueue: state.priorityQueue, isChrono: state.isChrono, startTime: state.startTime, dailyTarget: state.dailyTarget })); state.answers[state.currentSign] = true; if (REFINEMENTS[state.currentSign]) { let shuffled = [...REFINEMENTS[state.currentSign]].sort(() => Math.random() - 0.5); state.priorityQueue.push(...shuffled); } showAlert(`✅ L'IA a compris : OUI`, "success"); askNextQuestion(); } 
-                else if (result === false) { state.history.push(JSON.stringify({ answers: state.answers, asked: state.asked, currentSign: state.currentSign, confirmationMode: state.confirmationMode, confirmationQueue: state.confirmationQueue, confirmedPatho: state.confirmedPatho, priorityQueue: state.priorityQueue, isChrono: state.isChrono, startTime: state.startTime, dailyTarget: state.dailyTarget })); state.answers[state.currentSign] = false; showAlert(`❌ L'IA a compris : NON`, "error"); askNextQuestion(); } 
-                else { showAlert(`🤔 Réponse ambiguë. Reformulez (ex: "Oui" ou "Non, pas du tout")`, "error"); }
-            };
-            sendBtn.onclick = handleAiSubmit; inputField.onkeydown = (e) => { if(e.key === 'Enter') handleAiSubmit(); };
-        }, 50);
-        card.appendChild(chatContainer);
+       // MODE IA DÉSACTIVÉ après l'anamnèse : on ne pose plus de questions ouvertes
+// On utilise uniquement les boutons Oui/Non
+const btnGroup = document.createElement('div'); btnGroup.className = 'button-group';
+const btnOui = document.createElement('button'); btnOui.className = 'btn btn-success'; btnOui.innerHTML = '<i class="ph-bold ph-check"></i> OUI';
+btnOui.onclick = () => { state.history.push(JSON.stringify({ answers: state.answers, asked: state.asked, currentSign: state.currentSign, confirmationMode: state.confirmationMode, confirmationQueue: state.confirmationQueue, confirmedPatho: state.confirmedPatho, priorityQueue: state.priorityQueue, isChrono: state.isChrono, startTime: state.startTime, dailyTarget: state.dailyTarget })); state.answers[signe] = true; if (REFINEMENTS[signe]) { let shuffled = [...REFINEMENTS[signe]].sort(() => Math.random() - 0.5); state.priorityQueue.push(...shuffled); } askNextQuestion(); };
+btnGroup.appendChild(btnOui);
+const addOtherBtn = (txt, cls, val) => { const b = document.createElement('button'); b.className = cls; b.innerHTML = txt; b.onclick = () => { state.history.push(JSON.stringify({ answers: state.answers, asked: state.asked, currentSign: state.currentSign, confirmationMode: state.confirmationMode, confirmationQueue: state.confirmationQueue, confirmedPatho: state.confirmedPatho, priorityQueue: state.priorityQueue, isChrono: state.isChrono, startTime: state.startTime, dailyTarget: state.dailyTarget })); state.answers[signe] = val; askNextQuestion(); }; btnGroup.appendChild(b); };
+addOtherBtn('<i class="ph-bold ph-x"></i> NON', 'btn btn-error', false); 
+addOtherBtn('Je ne sais pas', 'link', null); 
+card.appendChild(btnGroup);
     } else {
         const btnGroup = document.createElement('div'); btnGroup.className = 'button-group';
         const btnOui = document.createElement('button'); btnOui.className = 'btn btn-success'; btnOui.innerHTML = '<i class="ph-bold ph-check"></i> OUI';

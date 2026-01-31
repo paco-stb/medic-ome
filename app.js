@@ -1152,76 +1152,210 @@ function showDiagnostic() {
         
         if (state.exam && state.exam.active && state.dailyTarget) {
             const targetName = state.dailyTarget.name; const foundName = top.patho.name; const isSuccess = (targetName === foundName);
-            if (isSuccess) { state.progression.correct++; state.progression.streak = (state.progression.streak || 0) + 1; if(!state.progression.mastery) state.progression.mastery = {}; let m = state.progression.mastery[targetName]; if(!m) m = { success: 0, failures: 0, missedSigns: {} }; if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} }; m.success++; state.progression.mastery[targetName] = m; const todayKey = getLocalDayKey(); if(!state.progression.dailyHistory) state.progression.dailyHistory = {}; if(!state.progression.dailyHistory[todayKey]) { state.progression.dailyHistory[todayKey] = { success: [], fail: [] }; } state.progression.dailyHistory[todayKey].success.push({ name: targetName, time: Date.now() }); if (state.isChrono && state.startTime) { const totalSeconds = (Date.now() - state.startTime) / 1000; if (totalSeconds < 30) { state.progression.speedWins = (state.progression.speedWins || 0) + 1; } const bestTime = state.progression.bestTimes || {}; if (!bestTime[targetName] || totalSeconds < bestTime[targetName]) { bestTime[targetName] = totalSeconds; state.progression.bestTimes = bestTime; } } } 
-            else { state.progression.incorrect++; state.progression.streak = 0; if(!state.progression.mastery) state.progression.mastery = {}; let m = state.progression.mastery[targetName]; if(!m) m = { success: 0, failures: 0, missedSigns: {} }; if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} }; m.failures++; state.progression.mastery[targetName] = m; const todayKey = getLocalDayKey(); if(!state.progression.dailyHistory) state.progression.dailyHistory = {}; if(!state.progression.dailyHistory[todayKey]) { state.progression.dailyHistory[todayKey] = { success: [], fail: [] }; } state.progression.dailyHistory[todayKey].fail.push({ name: targetName, time: Date.now() }); }
-            await saveProgression();
-            if (state.exam.results.length === state.exam.currentIndex) { state.exam.results.push({ target: targetName, found: foundName, success: isSuccess, questions: state.asked.length }); }
-            const resultBanner = document.createElement('div'); resultBanner.style.cssText = "width:100%; padding:15px; border-radius:12px; margin-top:20px; margin-bottom:20px; text-align:center; font-weight:bold;";
-            if (isSuccess) { playSound('success'); triggerConfetti(); resultBanner.style.background = "rgba(0, 255, 157, 0.15)"; resultBanner.style.border = "1px solid var(--success)"; resultBanner.style.color = "var(--success)"; resultBanner.innerHTML = `<div style="font-size:2em; margin-bottom:10px;"><i class="ph-fill ph-check-circle"></i></div><div>DIAGNOSTIC CORRECT</div><div class="small" style="opacity:0.8; font-weight:normal;">L'IA a bien trouvé la pathologie cible.</div>`; } 
-            else { playSound('error'); resultBanner.style.background = "rgba(255, 77, 77, 0.15)"; resultBanner.style.border = "1px solid var(--error)"; resultBanner.style.color = "var(--error)"; resultBanner.innerHTML = `<div style="font-size:2em; margin-bottom:10px;"><i class="ph-fill ph-x-circle"></i></div><div>DIAGNOSTIC INCORRECT</div><div class="small" style="opacity:0.8; font-weight:normal; margin-top:5px;">L'IA a proposé : <strong>${foundName}</strong><br>Il fallait faire deviner : <strong>${targetName}</strong></div>`; }
-            card.appendChild(resultBanner);
-            
-            // ===== NOUVEAU : VALIDATION RÉVISION SI MODE RÉVISION =====
-            if (state.isReviewMode && state.currentReviewDate && isSuccess) {
-                const reviewSchedule = state.progression.reviewSchedule || {};
-                const dateReviews = reviewSchedule[state.currentReviewDate];
-                
-                if (dateReviews) {
-                    const index = dateReviews.indexOf(targetName);
-                    if (index > -1) {
-                        dateReviews.splice(index, 1);
-                    }
-                    
-                    if (dateReviews.length === 0) {
-                        delete reviewSchedule[state.currentReviewDate];
-                    }
-                    
-                    await saveProgression();
-                    showAlert("✅ Révision validée !", "success");
+            if (isSuccess) { 
+                state.progression.correct++; 
+                state.progression.streak = (state.progression.streak || 0) + 1; 
+                if(!state.progression.mastery) state.progression.mastery = {}; 
+                let m = state.progression.mastery[targetName]; 
+                if(!m) m = { success: 0, failures: 0, missedSigns: {} }; 
+                if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} }; 
+                m.success++; 
+                state.progression.mastery[targetName] = m; 
+                const todayKey = getLocalDayKey(); 
+                if(!state.progression.dailyHistory) state.progression.dailyHistory = {}; 
+                if(!state.progression.dailyHistory[todayKey]) { 
+                    state.progression.dailyHistory[todayKey] = { success: [], fail: [] }; 
+                } 
+                state.progression.dailyHistory[todayKey].success.push({ name: targetName, time: Date.now() }); 
+                if (state.isChrono && state.startTime) { 
+                    const totalSeconds = (Date.now() - state.startTime) / 1000; 
+                    if (totalSeconds < 30) { 
+                        state.progression.speedWins = (state.progression.speedWins || 0) + 1; 
+                    } 
+                    const bestTime = state.progression.bestTimes || {}; 
+                    if (!bestTime[targetName] || totalSeconds < bestTime[targetName]) { 
+                        bestTime[targetName] = totalSeconds; 
+                        state.progression.bestTimes = bestTime; 
+                    } 
                 }
                 
-                state.isReviewMode = false;
-                state.currentReviewDate = null;
+                // ===== VALIDATION RÉVISION SI MODE RÉVISION =====
+                if (state.isReviewMode && state.currentReviewDate) {
+                    const reviewSchedule = state.progression.reviewSchedule || {};
+                    const dateReviews = reviewSchedule[state.currentReviewDate];
+                    
+                    if (dateReviews) {
+                        const index = dateReviews.indexOf(targetName);
+                        if (index > -1) {
+                            dateReviews.splice(index, 1);
+                            console.log(`✅ Révision du ${state.currentReviewDate} validée pour ${targetName}`);
+                        }
+                        
+                        // Nettoyer la date si vide
+                        if (dateReviews.length === 0) {
+                            delete reviewSchedule[state.currentReviewDate];
+                        }
+                    }
+                    
+                    state.isReviewMode = false;
+                    state.currentReviewDate = null;
+                }
+            } 
+            else { 
+                state.progression.incorrect++; 
+                state.progression.streak = 0; 
+                if(!state.progression.mastery) state.progression.mastery = {}; 
+                let m = state.progression.mastery[targetName]; 
+                if(!m) m = { success: 0, failures: 0, missedSigns: {} }; 
+                if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} }; 
+                m.failures++; 
+                state.progression.mastery[targetName] = m; 
+                const todayKey = getLocalDayKey(); 
+                if(!state.progression.dailyHistory) state.progression.dailyHistory = {}; 
+                if(!state.progression.dailyHistory[todayKey]) { 
+                    state.progression.dailyHistory[todayKey] = { success: [], fail: [] }; 
+                } 
+                state.progression.dailyHistory[todayKey].fail.push({ name: targetName, time: Date.now() }); 
             }
+            await saveProgression();
+            if (state.exam.results.length === state.exam.currentIndex) { 
+                state.exam.results.push({ target: targetName, found: foundName, success: isSuccess, questions: state.asked.length }); 
+            }
+            const resultBanner = document.createElement('div'); 
+            resultBanner.style.cssText = "width:100%; padding:15px; border-radius:12px; margin-top:20px; margin-bottom:20px; text-align:center; font-weight:bold;";
+            if (isSuccess) { 
+                playSound('success'); 
+                triggerConfetti(); 
+                resultBanner.style.background = "rgba(0, 255, 157, 0.15)"; 
+                resultBanner.style.border = "1px solid var(--success)"; 
+                resultBanner.style.color = "var(--success)"; 
+                resultBanner.innerHTML = `<div style="font-size:2em; margin-bottom:10px;"><i class="ph-fill ph-check-circle"></i></div><div>DIAGNOSTIC CORRECT</div><div class="small" style="opacity:0.8; font-weight:normal;">L'IA a bien trouvé la pathologie cible.</div>`; 
+                
+                // Message supplémentaire si révision validée
+                if (state.isReviewMode) {
+                    resultBanner.innerHTML += `<div class="small" style="margin-top:10px; color:var(--accent); font-weight:normal;">✅ Révision du jour validée ! Elle reste planifiée pour les prochaines dates.</div>`;
+                }
+            } 
+            else { 
+                playSound('error'); 
+                resultBanner.style.background = "rgba(255, 77, 77, 0.15)"; 
+                resultBanner.style.border = "1px solid var(--error)"; 
+                resultBanner.style.color = "var(--error)"; 
+                resultBanner.innerHTML = `<div style="font-size:2em; margin-bottom:10px;"><i class="ph-fill ph-x-circle"></i></div><div>DIAGNOSTIC INCORRECT</div><div class="small" style="opacity:0.8; font-weight:normal; margin-top:5px;">L'IA a proposé : <strong>${foundName}</strong><br>Il fallait faire deviner : <strong>${targetName}</strong></div>`; 
+            }
+            card.appendChild(resultBanner);
             
             const isLast = state.exam.currentIndex + 1 >= state.exam.queue.length;
-            const btnNext = document.createElement('button'); btnNext.className = 'btn'; btnNext.innerHTML = isLast ? '<i class="ph-bold ph-chart-line"></i> Voir les résultats finaux' : '<i class="ph-bold ph-arrow-right"></i> Cas Suivant';
+            const btnNext = document.createElement('button'); 
+            btnNext.className = 'btn'; 
+            btnNext.innerHTML = isLast ? '<i class="ph-bold ph-chart-line"></i> Voir les résultats finaux' : '<i class="ph-bold ph-arrow-right"></i> Cas Suivant';
             btnNext.onclick = () => { state.exam.currentIndex++; playNextExamCase(); };
             btnGroup.appendChild(btnNext);
         } else {
-            let finalTimeStr = ""; if(state.isChrono && state.startTime) { if (chronoInterval) clearInterval(chronoInterval); const totalSeconds = Math.floor((Date.now() - state.startTime) / 1000); const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0'); const s = (totalSeconds % 60).toString().padStart(2, '0'); finalTimeStr = `<div style="font-size:1.1rem; color:var(--text-main); margin-top:5px; font-weight:bold;"><i class="ph-bold ph-timer"></i> Temps : ${m}:${s}</div>`; }
-            const btnTrue = document.createElement('button'); btnTrue.className = 'btn btn-success'; btnTrue.innerHTML = '<i class="ph-bold ph-check"></i> Correct';
-            btnTrue.onclick = async () => { if (state.isGuest) { localStorage.setItem('medicome_guest_last_play', Date.now().toString()); } triggerConfetti(); playSound('success'); state.progression.correct++; state.progression.streak = (state.progression.streak || 0) + 1; if(!state.progression.mastery) state.progression.mastery = {}; let m = state.progression.mastery[top.patho.name]; if(!m) m = { success: 0, failures: 0, missedSigns: {} }; if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} }; m.success++; state.progression.mastery[top.patho.name] = m; const todayKey = getLocalDayKey(); if(!state.progression.dailyHistory) state.progression.dailyHistory = {}; if(!state.progression.dailyHistory[todayKey]) { state.progression.dailyHistory[todayKey] = { success: [], fail: [] }; } state.progression.dailyHistory[todayKey].success.push({ name: top.patho.name, time: Date.now() }); let finalTimeStr = ""; if(state.isChrono && state.startTime) { if (chronoInterval) clearInterval(chronoInterval); const totalSeconds = (Date.now() - state.startTime) / 1000; const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0'); const s = Math.floor(totalSeconds % 60).toString().padStart(2, '0'); finalTimeStr = `<div style="font-size:1.1rem; color:var(--text-main); margin-top:5px; font-weight:bold;"><i class="ph-bold ph-timer"></i> Temps : ${m}:${s}</div>`; if (totalSeconds < 30) { state.progression.speedWins = (state.progression.speedWins || 0) + 1; } const bestTime = state.progression.bestTimes || {}; if (!bestTime[top.patho.name] || totalSeconds < bestTime[top.patho.name]) { bestTime[top.patho.name] = totalSeconds; state.progression.bestTimes = bestTime; } } if (state.dailyTarget) { const todayStr = new Date().toDateString(); state.progression.lastDaily = todayStr; state.progression.dailyStreak = (state.progression.dailyStreak || 0) + 1; } 
-            
-            // ===== NOUVEAU : VALIDATION RÉVISION SI MODE RÉVISION (CAS NON-EXAMEN) =====
-            if (state.isReviewMode && state.currentReviewDate) {
-                const reviewSchedule = state.progression.reviewSchedule || {};
-                const dateReviews = reviewSchedule[state.currentReviewDate];
+            let finalTimeStr = ""; 
+            if(state.isChrono && state.startTime) { 
+                if (chronoInterval) clearInterval(chronoInterval); 
+                const totalSeconds = Math.floor((Date.now() - state.startTime) / 1000); 
+                const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0'); 
+                const s = (totalSeconds % 60).toString().padStart(2, '0'); 
+                finalTimeStr = `<div style="font-size:1.1rem; color:var(--text-main); margin-top:5px; font-weight:bold;"><i class="ph-bold ph-timer"></i> Temps : ${m}:${s}</div>`; 
+            }
+            const btnTrue = document.createElement('button'); 
+            btnTrue.className = 'btn btn-success'; 
+            btnTrue.innerHTML = '<i class="ph-bold ph-check"></i> Correct';
+            btnTrue.onclick = async () => { 
+                if (state.isGuest) { 
+                    localStorage.setItem('medicome_guest_last_play', Date.now().toString()); 
+                } 
+                triggerConfetti(); 
+                playSound('success'); 
+                state.progression.correct++; 
+                state.progression.streak = (state.progression.streak || 0) + 1; 
+                if(!state.progression.mastery) state.progression.mastery = {}; 
+                let m = state.progression.mastery[top.patho.name]; 
+                if(!m) m = { success: 0, failures: 0, missedSigns: {} }; 
+                if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} }; 
+                m.success++; 
+                state.progression.mastery[top.patho.name] = m; 
+                const todayKey = getLocalDayKey(); 
+                if(!state.progression.dailyHistory) state.progression.dailyHistory = {}; 
+                if(!state.progression.dailyHistory[todayKey]) { 
+                    state.progression.dailyHistory[todayKey] = { success: [], fail: [] }; 
+                } 
+                state.progression.dailyHistory[todayKey].success.push({ name: top.patho.name, time: Date.now() }); 
+                let finalTimeStr = ""; 
+                if(state.isChrono && state.startTime) { 
+                    if (chronoInterval) clearInterval(chronoInterval); 
+                    const totalSeconds = (Date.now() - state.startTime) / 1000; 
+                    const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0'); 
+                    const s = Math.floor(totalSeconds % 60).toString().padStart(2, '0'); 
+                    finalTimeStr = `<div style="font-size:1.1rem; color:var(--text-main); margin-top:5px; font-weight:bold;"><i class="ph-bold ph-timer"></i> Temps : ${m}:${s}</div>`; 
+                    if (totalSeconds < 30) { 
+                        state.progression.speedWins = (state.progression.speedWins || 0) + 1; 
+                    } 
+                    const bestTime = state.progression.bestTimes || {}; 
+                    if (!bestTime[top.patho.name] || totalSeconds < bestTime[top.patho.name]) { 
+                        bestTime[top.patho.name] = totalSeconds; 
+                        state.progression.bestTimes = bestTime; 
+                    } 
+                } 
+                if (state.dailyTarget) { 
+                    const todayStr = new Date().toDateString(); 
+                    state.progression.lastDaily = todayStr; 
+                    state.progression.dailyStreak = (state.progression.dailyStreak || 0) + 1; 
+                } 
                 
-                if (dateReviews) {
-                    const index = dateReviews.indexOf(top.patho.name);
-                    if (index > -1) {
-                        dateReviews.splice(index, 1);
+                // ===== VALIDATION RÉVISION SI MODE RÉVISION (CAS NON-EXAMEN) =====
+                if (state.isReviewMode && state.currentReviewDate) {
+                    const reviewSchedule = state.progression.reviewSchedule || {};
+                    const dateReviews = reviewSchedule[state.currentReviewDate];
+                    
+                    if (dateReviews) {
+                        const index = dateReviews.indexOf(top.patho.name);
+                        if (index > -1) {
+                            dateReviews.splice(index, 1);
+                            console.log(`✅ Révision du ${state.currentReviewDate} validée pour ${top.patho.name}`);
+                        }
+                        
+                        // Nettoyer la date si vide
+                        if (dateReviews.length === 0) {
+                            delete reviewSchedule[state.currentReviewDate];
+                        }
+                        
+                        showAlert("✅ Révision du jour validée ! Elle reste planifiée pour les prochaines dates.", "success");
                     }
                     
-                    if (dateReviews.length === 0) {
-                        delete reviewSchedule[state.currentReviewDate];
-                    }
-                    
-                    await saveProgression();
-                    showAlert("✅ Révision validée !", "success");
+                    state.isReviewMode = false;
+                    state.currentReviewDate = null;
                 }
                 
-                state.isReviewMode = false;
-                state.currentReviewDate = null;
+                await saveProgression(); 
+                showAlert(`<i class="ph-duotone ph-check-circle"></i> Diagnostic validé !<br>${finalTimeStr}`, 'success'); 
+                showDiagnosticDetails({ patho: top.patho }); 
+            };
+            const btnFalse = document.createElement('button'); 
+            btnFalse.className = 'btn btn-error'; 
+            btnFalse.innerHTML = '<i class="ph-bold ph-x"></i> Incorrect'; 
+            btnFalse.onclick = async () => { 
+                playSound('error'); 
+                showManualPathologySelection("incorrect_diagnosis"); 
+            };
+            if(finalTimeStr) { 
+                const timeDiv = document.createElement('div'); 
+                timeDiv.innerHTML = finalTimeStr; 
+                timeDiv.style.marginBottom = "15px"; 
+                timeDiv.style.textAlign = "center"; 
+                timeDiv.style.background = "rgba(0, 210, 255, 0.1)"; 
+                timeDiv.style.padding = "10px"; 
+                timeDiv.style.borderRadius = "8px"; 
+                timeDiv.style.border = "1px solid var(--accent)"; 
+                card.appendChild(timeDiv); 
             }
-            
-            await saveProgression(); showAlert(`<i class="ph-duotone ph-check-circle"></i> Diagnostic validé !<br>${finalTimeStr}`, 'success'); showDiagnosticDetails({ patho: top.patho }); };
-            const btnFalse = document.createElement('button'); btnFalse.className = 'btn btn-error'; btnFalse.innerHTML = '<i class="ph-bold ph-x"></i> Incorrect'; btnFalse.onclick = async () => { playSound('error'); showManualPathologySelection("incorrect_diagnosis"); };
-            if(finalTimeStr) { const timeDiv = document.createElement('div'); timeDiv.innerHTML = finalTimeStr; timeDiv.style.marginBottom = "15px"; timeDiv.style.textAlign = "center"; timeDiv.style.background = "rgba(0, 210, 255, 0.1)"; timeDiv.style.padding = "10px"; timeDiv.style.borderRadius = "8px"; timeDiv.style.border = "1px solid var(--accent)"; card.appendChild(timeDiv); }
-            btnGroup.appendChild(btnTrue); btnGroup.appendChild(btnFalse);
+            btnGroup.appendChild(btnTrue); 
+            btnGroup.appendChild(btnFalse);
         }
-        card.appendChild(btnGroup); app.appendChild(card);
+        card.appendChild(btnGroup); 
+        app.appendChild(card);
     }, 1500);
 }
 
@@ -1612,33 +1746,28 @@ function showDiagnosticDetails(data, wasManualError = false) {
 function scheduleReview(pathoName) {
     if (!state.progression.reviewSchedule) state.progression.reviewSchedule = {};
     
-    // Déterminer l'intervalle selon le nombre d'échecs
-    const errorLog = state.progression.errorLog || {};
-    const errorCount = errorLog[pathoName]?.count || 1;
+    // Planifier TOUTES les révisions futures : 7j, 14j, 25j, 50j
+    const intervals = [7, 14, 25, 50];
     
-    let daysToAdd;
-    if (errorCount === 1) daysToAdd = 7;
-    else if (errorCount === 2) daysToAdd = 14;
-    else if (errorCount === 3) daysToAdd = 25;
-    else daysToAdd = 50;
+    intervals.forEach(daysToAdd => {
+        // Calculer la date cible
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + daysToAdd);
+        const localDate = new Date(targetDate.getTime() - (targetDate.getTimezoneOffset() * 60000));
+        const dateKey = localDate.toISOString().split("T")[0];
+        
+        // Ajouter la pathologie à cette date
+        if (!state.progression.reviewSchedule[dateKey]) {
+            state.progression.reviewSchedule[dateKey] = [];
+        }
+        
+        // Éviter les doublons
+        if (!state.progression.reviewSchedule[dateKey].includes(pathoName)) {
+            state.progression.reviewSchedule[dateKey].push(pathoName);
+        }
+    });
     
-    // Calculer la date cible
-    const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + daysToAdd);
-    const localDate = new Date(targetDate.getTime() - (targetDate.getTimezoneOffset() * 60000));
-    const dateKey = localDate.toISOString().split("T")[0];
-    
-    // Ajouter la pathologie à cette date
-    if (!state.progression.reviewSchedule[dateKey]) {
-        state.progression.reviewSchedule[dateKey] = [];
-    }
-    
-    // Éviter les doublons
-    if (!state.progression.reviewSchedule[dateKey].includes(pathoName)) {
-        state.progression.reviewSchedule[dateKey].push(pathoName);
-    }
-    
-    console.log(`📅 Révision planifiée : ${pathoName} le ${dateKey} (dans ${daysToAdd}j)`);
+    console.log(`📅 Révisions planifiées pour ${pathoName} : dans 7j, 14j, 25j et 50j`);
 }
 
 function renderGlossary() {

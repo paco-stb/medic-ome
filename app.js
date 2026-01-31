@@ -60,12 +60,13 @@ let state = {
     
     // Données de progression
     progression: { 
-        correct: 0, incorrect: 0, streak: 0, mastery: {}, 
-        dailyStreak: 0, lastDaily: null, achievements: [], 
-        bestTimes: {}, errorLog: {}, pdfDownloads: 0, 
-        speedWins: 0, socialDone: false, reviewDone: false,
-        dailyHistory: {}
-    },
+    correct: 0, incorrect: 0, streak: 0, mastery: {}, 
+    dailyStreak: 0, lastDaily: null, achievements: [], 
+    bestTimes: {}, errorLog: {}, pdfDownloads: 0, 
+    speedWins: 0, socialDone: false, reviewDone: false,
+    dailyHistory: {},
+    reviewSchedule: {} 
+},
 
     // Partie en cours
     demo: {},               // Profil patient
@@ -941,6 +942,34 @@ function renderLogin() {
 function renderHome() {
     setDocTitle("Accueil"); window.scrollTo(0,0); const app = q('#app'); app.innerHTML='';
     const prog = state.progression;
+    
+    // ===== NOUVEAU : VÉRIFIER LES RÉVISIONS DU JOUR =====
+    const todayKey = getLocalDayKey();
+    const reviewSchedule = prog.reviewSchedule || {};
+    const todayReviews = reviewSchedule[todayKey] || [];
+    
+    // ===== NOTIFICATION RÉVISION =====
+    if (todayReviews.length > 0) {
+        const notifCard = document.createElement('div');
+        notifCard.className = 'card center';
+        notifCard.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        notifCard.style.color = 'white';
+        notifCard.style.marginBottom = '20px';
+        notifCard.innerHTML = `
+            <div style="font-size:2em; margin-bottom:10px;">⏰</div>
+            <h3 style="color:white; margin-bottom:10px;">Révisions du jour</h3>
+            <p style="margin-bottom:15px;">Vous avez <strong>${todayReviews.length}</strong> pathologie(s) à réviser aujourd'hui</p>
+            <button id="btnGoToCalendar" class="btn" style="background:white; color:#667eea; font-weight:bold;">
+                <i class="ph-bold ph-calendar-check"></i> Voir le calendrier
+            </button>
+        `;
+        app.appendChild(notifCard);
+        setTimeout(() => {
+            const btn = document.getElementById('btnGoToCalendar');
+            if (btn) btn.onclick = () => renderCalendar();
+        }, 100);
+    }
+    
     const card = document.createElement('div'); card.className='card center';
     let cloudBadge = state.isGuest ? '<span style="color:orange; font-size:0.8em; margin-bottom:10px"><i class="ph-duotone ph-floppy-disk"></i> Mode Local</span>' : '<span style="color:var(--success); font-size:0.8em; margin-bottom:10px"><i class="ph-duotone ph-cloud-check"></i> Sauvegarde activée</span>';
     const displayName = state.pseudo || '...';
@@ -1131,6 +1160,30 @@ function showDiagnostic() {
             if (isSuccess) { playSound('success'); triggerConfetti(); resultBanner.style.background = "rgba(0, 255, 157, 0.15)"; resultBanner.style.border = "1px solid var(--success)"; resultBanner.style.color = "var(--success)"; resultBanner.innerHTML = `<div style="font-size:2em; margin-bottom:10px;"><i class="ph-fill ph-check-circle"></i></div><div>DIAGNOSTIC CORRECT</div><div class="small" style="opacity:0.8; font-weight:normal;">L'IA a bien trouvé la pathologie cible.</div>`; } 
             else { playSound('error'); resultBanner.style.background = "rgba(255, 77, 77, 0.15)"; resultBanner.style.border = "1px solid var(--error)"; resultBanner.style.color = "var(--error)"; resultBanner.innerHTML = `<div style="font-size:2em; margin-bottom:10px;"><i class="ph-fill ph-x-circle"></i></div><div>DIAGNOSTIC INCORRECT</div><div class="small" style="opacity:0.8; font-weight:normal; margin-top:5px;">L'IA a proposé : <strong>${foundName}</strong><br>Il fallait faire deviner : <strong>${targetName}</strong></div>`; }
             card.appendChild(resultBanner);
+            
+            // ===== NOUVEAU : VALIDATION RÉVISION SI MODE RÉVISION =====
+            if (state.isReviewMode && state.currentReviewDate && isSuccess) {
+                const reviewSchedule = state.progression.reviewSchedule || {};
+                const dateReviews = reviewSchedule[state.currentReviewDate];
+                
+                if (dateReviews) {
+                    const index = dateReviews.indexOf(targetName);
+                    if (index > -1) {
+                        dateReviews.splice(index, 1);
+                    }
+                    
+                    if (dateReviews.length === 0) {
+                        delete reviewSchedule[state.currentReviewDate];
+                    }
+                    
+                    await saveProgression();
+                    showAlert("✅ Révision validée !", "success");
+                }
+                
+                state.isReviewMode = false;
+                state.currentReviewDate = null;
+            }
+            
             const isLast = state.exam.currentIndex + 1 >= state.exam.queue.length;
             const btnNext = document.createElement('button'); btnNext.className = 'btn'; btnNext.innerHTML = isLast ? '<i class="ph-bold ph-chart-line"></i> Voir les résultats finaux' : '<i class="ph-bold ph-arrow-right"></i> Cas Suivant';
             btnNext.onclick = () => { state.exam.currentIndex++; playNextExamCase(); };
@@ -1138,7 +1191,32 @@ function showDiagnostic() {
         } else {
             let finalTimeStr = ""; if(state.isChrono && state.startTime) { if (chronoInterval) clearInterval(chronoInterval); const totalSeconds = Math.floor((Date.now() - state.startTime) / 1000); const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0'); const s = (totalSeconds % 60).toString().padStart(2, '0'); finalTimeStr = `<div style="font-size:1.1rem; color:var(--text-main); margin-top:5px; font-weight:bold;"><i class="ph-bold ph-timer"></i> Temps : ${m}:${s}</div>`; }
             const btnTrue = document.createElement('button'); btnTrue.className = 'btn btn-success'; btnTrue.innerHTML = '<i class="ph-bold ph-check"></i> Correct';
-            btnTrue.onclick = async () => { if (state.isGuest) { localStorage.setItem('medicome_guest_last_play', Date.now().toString()); } triggerConfetti(); playSound('success'); state.progression.correct++; state.progression.streak = (state.progression.streak || 0) + 1; if(!state.progression.mastery) state.progression.mastery = {}; let m = state.progression.mastery[top.patho.name]; if(!m) m = { success: 0, failures: 0, missedSigns: {} }; if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} }; m.success++; state.progression.mastery[top.patho.name] = m; const todayKey = getLocalDayKey(); if(!state.progression.dailyHistory) state.progression.dailyHistory = {}; if(!state.progression.dailyHistory[todayKey]) { state.progression.dailyHistory[todayKey] = { success: [], fail: [] }; } state.progression.dailyHistory[todayKey].success.push({ name: top.patho.name, time: Date.now() }); let finalTimeStr = ""; if(state.isChrono && state.startTime) { if (chronoInterval) clearInterval(chronoInterval); const totalSeconds = (Date.now() - state.startTime) / 1000; const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0'); const s = Math.floor(totalSeconds % 60).toString().padStart(2, '0'); finalTimeStr = `<div style="font-size:1.1rem; color:var(--text-main); margin-top:5px; font-weight:bold;"><i class="ph-bold ph-timer"></i> Temps : ${m}:${s}</div>`; if (totalSeconds < 30) { state.progression.speedWins = (state.progression.speedWins || 0) + 1; } const bestTime = state.progression.bestTimes || {}; if (!bestTime[top.patho.name] || totalSeconds < bestTime[top.patho.name]) { bestTime[top.patho.name] = totalSeconds; state.progression.bestTimes = bestTime; } } if (state.dailyTarget) { const todayStr = new Date().toDateString(); state.progression.lastDaily = todayStr; state.progression.dailyStreak = (state.progression.dailyStreak || 0) + 1; } await saveProgression(); showAlert(`<i class="ph-duotone ph-check-circle"></i> Diagnostic validé !<br>${finalTimeStr}`, 'success'); showDiagnosticDetails({ patho: top.patho }); };
+            btnTrue.onclick = async () => { if (state.isGuest) { localStorage.setItem('medicome_guest_last_play', Date.now().toString()); } triggerConfetti(); playSound('success'); state.progression.correct++; state.progression.streak = (state.progression.streak || 0) + 1; if(!state.progression.mastery) state.progression.mastery = {}; let m = state.progression.mastery[top.patho.name]; if(!m) m = { success: 0, failures: 0, missedSigns: {} }; if(typeof m === 'number') m = { success: m, failures: 0, missedSigns: {} }; m.success++; state.progression.mastery[top.patho.name] = m; const todayKey = getLocalDayKey(); if(!state.progression.dailyHistory) state.progression.dailyHistory = {}; if(!state.progression.dailyHistory[todayKey]) { state.progression.dailyHistory[todayKey] = { success: [], fail: [] }; } state.progression.dailyHistory[todayKey].success.push({ name: top.patho.name, time: Date.now() }); let finalTimeStr = ""; if(state.isChrono && state.startTime) { if (chronoInterval) clearInterval(chronoInterval); const totalSeconds = (Date.now() - state.startTime) / 1000; const m = Math.floor(totalSeconds / 60).toString().padStart(2, '0'); const s = Math.floor(totalSeconds % 60).toString().padStart(2, '0'); finalTimeStr = `<div style="font-size:1.1rem; color:var(--text-main); margin-top:5px; font-weight:bold;"><i class="ph-bold ph-timer"></i> Temps : ${m}:${s}</div>`; if (totalSeconds < 30) { state.progression.speedWins = (state.progression.speedWins || 0) + 1; } const bestTime = state.progression.bestTimes || {}; if (!bestTime[top.patho.name] || totalSeconds < bestTime[top.patho.name]) { bestTime[top.patho.name] = totalSeconds; state.progression.bestTimes = bestTime; } } if (state.dailyTarget) { const todayStr = new Date().toDateString(); state.progression.lastDaily = todayStr; state.progression.dailyStreak = (state.progression.dailyStreak || 0) + 1; } 
+            
+            // ===== NOUVEAU : VALIDATION RÉVISION SI MODE RÉVISION (CAS NON-EXAMEN) =====
+            if (state.isReviewMode && state.currentReviewDate) {
+                const reviewSchedule = state.progression.reviewSchedule || {};
+                const dateReviews = reviewSchedule[state.currentReviewDate];
+                
+                if (dateReviews) {
+                    const index = dateReviews.indexOf(top.patho.name);
+                    if (index > -1) {
+                        dateReviews.splice(index, 1);
+                    }
+                    
+                    if (dateReviews.length === 0) {
+                        delete reviewSchedule[state.currentReviewDate];
+                    }
+                    
+                    await saveProgression();
+                    showAlert("✅ Révision validée !", "success");
+                }
+                
+                state.isReviewMode = false;
+                state.currentReviewDate = null;
+            }
+            
+            await saveProgression(); showAlert(`<i class="ph-duotone ph-check-circle"></i> Diagnostic validé !<br>${finalTimeStr}`, 'success'); showDiagnosticDetails({ patho: top.patho }); };
             const btnFalse = document.createElement('button'); btnFalse.className = 'btn btn-error'; btnFalse.innerHTML = '<i class="ph-bold ph-x"></i> Incorrect'; btnFalse.onclick = async () => { playSound('error'); showManualPathologySelection("incorrect_diagnosis"); };
             if(finalTimeStr) { const timeDiv = document.createElement('div'); timeDiv.innerHTML = finalTimeStr; timeDiv.style.marginBottom = "15px"; timeDiv.style.textAlign = "center"; timeDiv.style.background = "rgba(0, 210, 255, 0.1)"; timeDiv.style.padding = "10px"; timeDiv.style.borderRadius = "8px"; timeDiv.style.border = "1px solid var(--accent)"; card.appendChild(timeDiv); }
             btnGroup.appendChild(btnTrue); btnGroup.appendChild(btnFalse);
@@ -1473,7 +1551,12 @@ function showDiagnosticDetails(data, wasManualError = false) {
         Object.keys(top.signes).forEach(s => { if(state.answers[s] === false || state.answers[s] === null) { if(!m.missedSigns[s]) m.missedSigns[s] = 0; m.missedSigns[s]++; } });
         Object.keys(state.answers).forEach(s => { if (state.answers[s] === true && !top.signes[s]) { if(!m.missedSigns[s]) m.missedSigns[s] = 0; m.missedSigns[s]++; } });
         state.progression.mastery[top.name] = m;
-        if(!state.progression.errorLog) state.progression.errorLog = {}; state.progression.errorLog[top.name] = { date: Date.now(), count: (state.progression.errorLog[top.name]?.count || 0) + 1 }; saveProgression();
+        if(!state.progression.errorLog) state.progression.errorLog = {}; state.progression.errorLog[top.name] = { date: Date.now(), count: (state.progression.errorLog[top.name]?.count || 0) + 1 }; 
+        
+        // ===== NOUVEAU : PLANIFIER LA RÉVISION =====
+        scheduleReview(top.name);
+        
+        saveProgression();
     } else {
         card.innerHTML = `<h2><i class="ph-duotone ph-check-circle color-success"></i> Bravo ! C'est bien : ${top.name}</h2>`;
     }
@@ -1524,6 +1607,38 @@ function showDiagnosticDetails(data, wasManualError = false) {
         btnGroup.append(btnReplay, btnHome);
     }
     card.appendChild(btnGroup); app.appendChild(card);
+}
+
+function scheduleReview(pathoName) {
+    if (!state.progression.reviewSchedule) state.progression.reviewSchedule = {};
+    
+    // Déterminer l'intervalle selon le nombre d'échecs
+    const errorLog = state.progression.errorLog || {};
+    const errorCount = errorLog[pathoName]?.count || 1;
+    
+    let daysToAdd;
+    if (errorCount === 1) daysToAdd = 7;
+    else if (errorCount === 2) daysToAdd = 14;
+    else if (errorCount === 3) daysToAdd = 25;
+    else daysToAdd = 50;
+    
+    // Calculer la date cible
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() + daysToAdd);
+    const localDate = new Date(targetDate.getTime() - (targetDate.getTimezoneOffset() * 60000));
+    const dateKey = localDate.toISOString().split("T")[0];
+    
+    // Ajouter la pathologie à cette date
+    if (!state.progression.reviewSchedule[dateKey]) {
+        state.progression.reviewSchedule[dateKey] = [];
+    }
+    
+    // Éviter les doublons
+    if (!state.progression.reviewSchedule[dateKey].includes(pathoName)) {
+        state.progression.reviewSchedule[dateKey].push(pathoName);
+    }
+    
+    console.log(`📅 Révision planifiée : ${pathoName} le ${dateKey} (dans ${daysToAdd}j)`);
 }
 
 function renderGlossary() {
@@ -1785,21 +1900,154 @@ function renderCalendar(targetMonth = new Date()) {
     const grid = document.createElement('div'); grid.className = 'calendar-grid'; const daysShort = ['L', 'M', 'M', 'J', 'V', 'S', 'D']; daysShort.forEach(d => { const el = document.createElement('div'); el.className = 'cal-day-name'; el.textContent = d; grid.appendChild(el); });
     const firstDay = new Date(currentYear, currentMonth, 1); const lastDay = new Date(currentYear, currentMonth + 1, 0); const daysInMonth = lastDay.getDate(); let startDay = firstDay.getDay() - 1; if(startDay === -1) startDay = 6; 
     for(let i=0; i<startDay; i++) { const empty = document.createElement('div'); empty.className = 'cal-day empty'; grid.appendChild(empty); }
-    const history = state.progression.dailyHistory || {}; const todayStr = new Date().toISOString().split('T')[0];
-    for(let d=1; d<=daysInMonth; d++) { const dateObj = new Date(currentYear, currentMonth, d); const localDateStr = new Date(dateObj.getTime() - (dateObj.getTimezoneOffset() * 60000)).toISOString().split('T')[0]; const dayCell = document.createElement('div'); dayCell.className = 'cal-day'; dayCell.textContent = d; if(localDateStr === todayStr) dayCell.classList.add('today'); const dayData = history[localDateStr]; if(dayData) { const dots = document.createElement('div'); dots.className = 'dots-container'; const sCount = dayData.success ? dayData.success.length : 0; const fCount = dayData.fail ? dayData.fail.length : 0; for(let i=0; i<Math.min(sCount, 3); i++) { const dot = document.createElement('div'); dot.className = 'dot dot-success'; dots.appendChild(dot); } if(fCount > 0) { const dot = document.createElement('div'); dot.className = 'dot dot-error'; dots.appendChild(dot); } dayCell.appendChild(dots); dayCell.onclick = () => showDayDetails(localDateStr, dayData); } grid.appendChild(dayCell); } card.appendChild(grid);
+    const history = state.progression.dailyHistory || {};
+    const reviewSchedule = state.progression.reviewSchedule || {}; // NOUVEAU
+    const todayStr = new Date().toISOString().split('T')[0];
+    
+    for(let d=1; d<=daysInMonth; d++) { 
+        const dateObj = new Date(currentYear, currentMonth, d); 
+        const localDateStr = new Date(dateObj.getTime() - (dateObj.getTimezoneOffset() * 60000)).toISOString().split('T')[0]; 
+        const dayCell = document.createElement('div'); 
+        dayCell.className = 'cal-day'; 
+        dayCell.textContent = d; 
+        if(localDateStr === todayStr) dayCell.classList.add('today'); 
+        
+        const dayData = history[localDateStr]; 
+        const reviewData = reviewSchedule[localDateStr]; // NOUVEAU
+        
+        if(dayData || reviewData) { 
+            const dots = document.createElement('div'); 
+            dots.className = 'dots-container'; 
+            
+            // Historique passé
+            if (dayData) {
+                const sCount = dayData.success ? dayData.success.length : 0; 
+                const fCount = dayData.fail ? dayData.fail.length : 0; 
+                for(let i=0; i<Math.min(sCount, 3); i++) { 
+                    const dot = document.createElement('div'); 
+                    dot.className = 'dot dot-success'; 
+                    dots.appendChild(dot); 
+                } 
+                if(fCount > 0) { 
+                    const dot = document.createElement('div'); 
+                    dot.className = 'dot dot-error'; 
+                    dots.appendChild(dot); 
+                } 
+            }
+            
+            // NOUVEAU : Révisions planifiées
+            if (reviewData && reviewData.length > 0) {
+                const dot = document.createElement('div');
+                dot.className = 'dot dot-review'; // NOUVEAU STYLE
+                dot.style.background = '#667eea';
+                dot.style.animation = 'pulse 2s infinite';
+                dots.appendChild(dot);
+            }
+            
+            dayCell.appendChild(dots); 
+            dayCell.onclick = () => showDayDetails(localDateStr, dayData, reviewData); 
+        } 
+        grid.appendChild(dayCell); 
+    } 
+    card.appendChild(grid);
     const btnHome = document.createElement('button'); btnHome.className='btn'; btnHome.textContent='Retour'; btnHome.style.marginTop='20px'; btnHome.onclick=renderProfile; card.appendChild(btnHome); app.appendChild(card);
 }
 
-function showDayDetails(dateStr, data) {
-    const dateObj = new Date(dateStr); const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }; const niceDate = dateObj.toLocaleDateString('fr-FR', options);
+function showDayDetails(dateStr, data, reviewData) {
+    const dateObj = new Date(dateStr); 
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }; 
+    const niceDate = dateObj.toLocaleDateString('fr-FR', options);
     let content = `<h3 style="color:var(--accent); margin-bottom:15px; text-transform:capitalize;">${niceDate}</h3>`;
-    const getGroupedList = (arr) => { if (!arr || arr.length === 0) return []; const counts = {}; arr.forEach(item => { const name = (typeof item === 'string') ? item : item.name; counts[name] = (counts[name] || 0) + 1; }); return Object.entries(counts).sort((a, b) => b[1] - a[1]); };
-    const successGroups = getGroupedList(data.success); if(successGroups.length > 0) { const total = data.success.length; content += `<h4 style="color:var(--success); margin-top:10px; border-bottom:1px solid rgba(0,255,157,0.2); padding-bottom:5px;"><i class="ph-bold ph-check"></i> Réussites (${total})</h4><ul style="text-align:left; font-size:14px; margin-bottom:15px; color:var(--text-main); list-style:none; padding-left:5px;">`; successGroups.forEach(([name, count]) => { const countBadge = count > 1 ? `<span style="background:rgba(0,255,157,0.2); color:var(--success); padding:2px 8px; border-radius:10px; font-size:11px; margin-left:8px; font-weight:bold;">x${count}</span>` : ''; content += `<li style="padding:4px 0; border-bottom:1px dashed rgba(255,255,255,0.05);">${name} ${countBadge}</li>`; }); content += `</ul>`; }
-    const failGroups = getGroupedList(data.fail); if(failGroups.length > 0) { const total = data.fail.length; content += `<h4 style="color:var(--error); margin-top:10px; border-bottom:1px solid rgba(255,77,77,0.2); padding-bottom:5px;"><i class="ph-bold ph-x"></i> Erreurs (${total})</h4><ul style="text-align:left; font-size:14px; margin-bottom:15px; color:var(--text-main); list-style:none; padding-left:5px;">`; failGroups.forEach(([name, count]) => { const countBadge = count > 1 ? `<span style="background:rgba(255,77,77,0.2); color:var(--error); padding:2px 8px; border-radius:10px; font-size:11px; margin-left:8px; font-weight:bold;">x${count}</span>` : ''; content += `<li style="padding:4px 0; border-bottom:1px dashed rgba(255,255,255,0.05);">${name} ${countBadge}</li>`; }); content += `</ul>`; }
-    const total = (data.success?.length || 0) + (data.fail?.length || 0); const ratio = total > 0 ? Math.round(((data.success?.length || 0) / total) * 100) : 0;
-    content += `<div style="margin-top:20px; padding:12px; background:rgba(255,255,255,0.05); border-radius:12px; display:flex; justify-content:space-between; align-items:center;"><span>Efficacité du jour</span><strong style="color:${ratio >= 50 ? 'var(--success)' : 'var(--error)'}; font-size:1.2em;">${ratio}%</strong></div><button class="btn" style="margin-top:20px;" onclick="closeLightbox()">Fermer</button>`;
-    const lb = document.getElementById('lightbox'); lb.innerHTML = `<div class="card center" style="max-width:400px; max-height:85vh; overflow-y:auto;" onclick="event.stopPropagation()">${content}</div>`; lb.style.display = "flex";
+    
+    const getGroupedList = (arr) => { 
+        if (!arr || arr.length === 0) return []; 
+        const counts = {}; 
+        arr.forEach(item => { 
+            const name = (typeof item === 'string') ? item : item.name; 
+            counts[name] = (counts[name] || 0) + 1; 
+        }); 
+        return Object.entries(counts).sort((a, b) => b[1] - a[1]); 
+    };
+    
+    // ===== NOUVEAU : AFFICHER LES RÉVISIONS =====
+    if (reviewData && reviewData.length > 0) {
+        content += `<h4 style="color:#667eea; margin-top:10px; border-bottom:1px solid rgba(102,126,234,0.3); padding-bottom:5px;">
+            <i class="ph-bold ph-clock-countdown"></i> ⏰ À réviser (${reviewData.length})
+        </h4>`;
+        content += `<div style="text-align:left; margin-bottom:15px;">`;
+        
+        reviewData.forEach(pathoName => {
+            const patho = PATHOLOGIES.find(p => p.name === pathoName);
+            if (patho) {
+                content += `
+                    <div style="background:rgba(102,126,234,0.1); padding:12px; border-radius:8px; margin-bottom:8px; border-left:3px solid #667eea;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                            <strong style="color:var(--text-main);">${pathoName}</strong>
+                            <button class="btn" style="font-size:11px; padding:6px 12px; background:#667eea;" 
+                                    onclick='startReviewSession("${pathoName}", "${dateStr}")'>
+                                <i class="ph-bold ph-play"></i> Réviser
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+        
+        content += `</div>`;
+    }
+    
+    // Historique existant
+    if (data) {
+        const successGroups = getGroupedList(data.success); 
+        if(successGroups.length > 0) { 
+            const total = data.success.length; 
+            content += `<h4 style="color:var(--success); margin-top:10px; border-bottom:1px solid rgba(0,255,157,0.2); padding-bottom:5px;"><i class="ph-bold ph-check"></i> Réussites (${total})</h4><ul style="text-align:left; font-size:14px; margin-bottom:15px; color:var(--text-main); list-style:none; padding-left:5px;">`; 
+            successGroups.forEach(([name, count]) => { 
+                const countBadge = count > 1 ? `<span style="background:rgba(0,255,157,0.2); color:var(--success); padding:2px 8px; border-radius:10px; font-size:11px; margin-left:8px; font-weight:bold;">x${count}</span>` : ''; 
+                content += `<li style="padding:4px 0; border-bottom:1px dashed rgba(255,255,255,0.05);">${name} ${countBadge}</li>`; 
+            }); 
+            content += `</ul>`; 
+        }
+        const failGroups = getGroupedList(data.fail); 
+        if(failGroups.length > 0) { 
+            const total = data.fail.length; 
+            content += `<h4 style="color:var(--error); margin-top:10px; border-bottom:1px solid rgba(255,77,77,0.2); padding-bottom:5px;"><i class="ph-bold ph-x"></i> Erreurs (${total})</h4><ul style="text-align:left; font-size:14px; margin-bottom:15px; color:var(--text-main); list-style:none; padding-left:5px;">`; 
+            failGroups.forEach(([name, count]) => { 
+                const countBadge = count > 1 ? `<span style="background:rgba(255,77,77,0.2); color:var(--error); padding:2px 8px; border-radius:10px; font-size:11px; margin-left:8px; font-weight:bold;">x${count}</span>` : ''; 
+                content += `<li style="padding:4px 0; border-bottom:1px dashed rgba(255,255,255,0.05);">${name} ${countBadge}</li>`; 
+            }); 
+            content += `</ul>`; 
+        }
+        const total = (data.success?.length || 0) + (data.fail?.length || 0); 
+        const ratio = total > 0 ? Math.round(((data.success?.length || 0) / total) * 100) : 0;
+        content += `<div style="margin-top:20px; padding:12px; background:rgba(255,255,255,0.05); border-radius:12px; display:flex; justify-content:space-between; align-items:center;"><span>Efficacité du jour</span><strong style="color:${ratio >= 50 ? 'var(--success)' : 'var(--error)'}; font-size:1.2em;">${ratio}%</strong></div>`;
+    }
+    
+    content += `<button class="btn" style="margin-top:20px;" onclick="closeLightbox()">Fermer</button>`;
+    const lb = document.getElementById('lightbox'); 
+    lb.innerHTML = `<div class="card center" style="max-width:400px; max-height:85vh; overflow-y:auto;" onclick="event.stopPropagation()">${content}</div>`; 
+    lb.style.display = "flex";
 }
+window.startReviewSession = function(pathoName, dateStr) {
+    closeLightbox();
+    
+    // Trouver la pathologie
+    const patho = PATHOLOGIES.find(p => p.name === pathoName);
+    if (!patho) {
+        showAlert("Pathologie introuvable", "error");
+        return;
+    }
+    
+    // Configurer le mode révision
+    state.dailyTarget = patho;
+    state.isChrono = false;
+    state.isReviewMode = true; // NOUVEAU FLAG
+    state.currentReviewDate = dateStr; // Pour supprimer après succès
+    
+    // Lancer le cas
+    renderDemographics();
+};
+
 window.closeLightbox = function() { const lb = document.getElementById('lightbox'); if(lb) { lb.style.display = 'none'; lb.innerHTML = ''; } }
 
 // ============================================================

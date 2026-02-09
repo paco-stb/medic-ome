@@ -352,6 +352,33 @@ async function initApp() {
 // ============================================================
 // 6. LOGIQUE UTILISATEUR & GESTION
 // ============================================================
+// ============================================================
+// RÉCUPÉRATION SÉCURISÉE DE LA CLÉ OPENAI
+// ============================================================
+
+async function loadOpenAIKeyForPremiumUser() {
+    if (!state.isPremiumCode) {
+        console.log("❌ Utilisateur non premium, pas de clé OpenAI");
+        return null;
+    }
+    
+    try {
+        const configRef = doc(db, "config", "openai");
+        const configSnap = await getDoc(configRef);
+        
+        if (configSnap.exists()) {
+            const apiKey = configSnap.data().apiKey;
+            console.log("🔑 Clé OpenAI récupérée avec succès");
+            return apiKey;
+        } else {
+            console.error("❌ Configuration OpenAI introuvable dans Firebase");
+            return null;
+        }
+    } catch (error) {
+        console.error("❌ Erreur récupération clé OpenAI:", error);
+        return null;
+    }
+}
 
 function checkGuestAvailability() {
     const guestData = JSON.parse(sessionStorage.getItem('guestMode')) || { canPlay: true, timestamp: 0 };
@@ -407,15 +434,18 @@ function startAuthListener() {
         const isExperimentMode = urlParams.get('mode') === 'generatif';
 
         if (isExperimentMode) {
-            console.warn("🧪 APP.JS : MODE EXPÉRIMENTAL DÉTECTÉ !");
+    console.warn("🧪 APP.JS : MODE EXPÉRIMENTAL DÉTECTÉ !");
 
-            // --- CONFIGURATION FORCÉE ---
-            state.isGuest = true;
-            state.isPremiumCode = true;
-            state.pseudo = "Participant Étude";
-            
-            // ICI : On force le mode IA sans vérifier l'URL
-            state.useLLM = true; 
+    state.isGuest = true;
+    state.isPremiumCode = true;
+    state.pseudo = "Participant Étude";
+    state.useLLM = true; 
+    
+    // ✅ RÉCUPÉRATION SÉCURISÉE DE LA CLÉ OPENAI
+    cachedOpenAIKey = await loadOpenAIKeyForPremiumUser();
+    if (cachedOpenAIKey) {
+        console.log("🔑 Clé OpenAI chargée (Mode Expérimental)");
+    } 
             console.log("✅ FORCE STATE.USELLM = TRUE (Mode IA Activé)");
             
             state.dailyTarget = null;
@@ -934,7 +964,38 @@ function renderLogin() {
     const codeGroup = document.createElement('div'); codeGroup.style.display = "flex"; codeGroup.style.gap = "10px";
     const inputCode = document.createElement('input'); inputCode.placeholder = 'Code...'; inputCode.className = 'input'; inputCode.style.margin = "0";
     const btnCode = document.createElement('button'); btnCode.className = 'btn'; btnCode.textContent = 'OK'; btnCode.style.width = "auto"; btnCode.style.margin = "0";
-    btnCode.onclick = async () => { const codeSaisi = inputCode.value.trim(); if (!codeSaisi) return; try { const codeRef = doc(db, "access_codes", codeSaisi); const codeSnap = await getDoc(codeRef); if (codeSnap.exists() && codeSnap.data().active === true) { const data = codeSnap.data(); state.isGuest = true; state.isPremiumCode = true; state.pseudo = data.pseudo; state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyHistory: {} }; updateHeader(); renderHome(); showAlert(`Accès Partenaire : ${data.pseudo}`, 'success'); } else { showAlert('Code invalide ou expiré', 'error'); } } catch (e) { console.error(e); showAlert("Erreur de connexion", "error"); } };
+    btnCode.onclick = async () => { 
+        const codeSaisi = inputCode.value.trim(); 
+        if (!codeSaisi) return; 
+        try { 
+            const codeRef = doc(db, "access_codes", codeSaisi); 
+            const codeSnap = await getDoc(codeRef); 
+            if (codeSnap.exists() && codeSnap.data().active === true) { 
+                const data = codeSnap.data(); 
+                state.isGuest = true; 
+                state.isPremiumCode = true; 
+                state.pseudo = data.pseudo; 
+                state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyHistory: {} }; 
+                
+                // ✅ RÉCUPÉRATION SÉCURISÉE DE LA CLÉ OPENAI
+                cachedOpenAIKey = await loadOpenAIKeyForPremiumUser();
+                if (cachedOpenAIKey) {
+                    console.log("🔑 Clé OpenAI chargée avec succès pour le code d'accès");
+                } else {
+                    console.warn("⚠️ Impossible de charger la clé OpenAI");
+                }
+                
+                updateHeader(); 
+                renderHome(); 
+                showAlert(`Accès Partenaire : ${data.pseudo}`, 'success'); 
+            } else { 
+                showAlert('Code invalide ou expiré', 'error'); 
+            } 
+        } catch (e) { 
+            console.error(e); 
+            showAlert("Erreur de connexion", "error"); 
+        } 
+    };
     codeGroup.append(inputCode, btnCode); rightCol.appendChild(codeGroup); grid.appendChild(rightCol); app.appendChild(grid);
     setTimeout(() => { const heroBtn = document.getElementById('heroGuestBtn'); if(heroBtn) heroBtn.onclick = startGuestMode; }, 100);
 }
@@ -1373,7 +1434,17 @@ function renderPlaisantinEnd(type) {
 // ============================================================
 
 async function analyzeResponseWithLLM(userText, symptomContext) {
-    if (!cachedOpenAIKey) { cachedOpenAIKey = prompt("🔐 Mode IA : Colle ta clé API OpenAI (sk-...) pour activer le chat :"); if (!cachedOpenAIKey) return null; }
+    if (!cachedOpenAIKey) {
+        if (state.isPremiumCode) {
+            cachedOpenAIKey = await loadOpenAIKeyForPremiumUser();
+            if (!cachedOpenAIKey) {
+                alert("❌ Erreur : Impossible de charger la clé OpenAI.");
+                return null;
+            }
+        } else {
+            cachedOpenAIKey = prompt("🔐 Mode IA : Colle ta clé API OpenAI (sk-...) pour activer le chat :");
+            if (!cachedOpenAIKey) return null;
+        }
     const promptSysteme = `Tu es un moteur de diagnostic médical pour une simulation étudiante. Le système vérifie la présence du signe : "${symptomContext}". L'étudiant répond : "${userText}". Analyse l'intention et réponds UNIQUEMENT via ce JSON : {"result": true} (si OUI), {"result": false} (si NON), {"result": null} (si vague).`;
     try {
         const response = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${cachedOpenAIKey}` }, body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "system", content: promptSysteme }], temperature: 0 }) });
@@ -1386,7 +1457,17 @@ async function analyzeResponseWithLLM(userText, symptomContext) {
 }
 
 async function analyzeChiefComplaint(userText) {
-    if (!cachedOpenAIKey) { cachedOpenAIKey = prompt("🔐 Clé OpenAI requise pour l'analyse du motif :"); if (!cachedOpenAIKey) return null; }
+    if (!cachedOpenAIKey) {
+        if (state.isPremiumCode) {
+            cachedOpenAIKey = await loadOpenAIKeyForPremiumUser();
+            if (!cachedOpenAIKey) {
+                alert("❌ Erreur : Impossible de charger la clé OpenAI.");
+                return null;
+            }
+        } else {
+            cachedOpenAIKey = prompt("🔐 Mode IA : Colle ta clé API OpenAI (sk-...) pour activer le chat :");
+            if (!cachedOpenAIKey) return null;
+        }
     const possibleSymptoms = GENERAL_SYMPTOMS.join(", ");
     const promptSysteme = `Tu es un assistant médical pédagogique. L'utilisateur décrit son problème principal. Ta mission : Associer sa phrase à L'UN des symptômes généraux suivants : [${possibleSymptoms}]. 1. Si correspondance claire, renvoie UNIQUEMENT le code. 2. Si vague, renvoie "null". Phrase: "${userText}"`;
     try {
@@ -1399,7 +1480,17 @@ async function analyzeChiefComplaint(userText) {
 }
 
 async function analyzeDetailedSymptoms(userText) {
-    if (!cachedOpenAIKey) { cachedOpenAIKey = prompt("🔐 Clé OpenAI requise pour l'analyse :"); if (!cachedOpenAIKey) return []; }
+    if (!cachedOpenAIKey) {
+        if (state.isPremiumCode) {
+            cachedOpenAIKey = await loadOpenAIKeyForPremiumUser();
+            if (!cachedOpenAIKey) {
+                alert("❌ Erreur : Impossible de charger la clé OpenAI.");
+                return null;
+            }
+        } else {
+            cachedOpenAIKey = prompt("🔐 Mode IA : Colle ta clé API OpenAI (sk-...) pour activer le chat :");
+            if (!cachedOpenAIKey) return null;
+        }
     if(!state.allSigns || state.allSigns.length === 0) prepareSigns();
     const allSignsList = state.allSigns.join(", ");
     const promptSysteme = `Tu es un assistant médical. Analyse le récit et trouve les signes cliniques. Voici la liste EXACTE des codes autorisés : [${allSignsList}]. Règles: 1. Analyse "${userText}". 2. Renvoie un tableau JSON de chaînes (ex: ["fievre", "toux"]). 3. Uniquement le JSON brut.`;
@@ -1413,7 +1504,17 @@ async function analyzeDetailedSymptoms(userText) {
 }
 
 async function analyzeAnamnesis(userText) {
-    if (!cachedOpenAIKey) { cachedOpenAIKey = prompt("🔐 Clé OpenAI requise pour l'analyse :"); if (!cachedOpenAIKey) return null; }
+    if (!cachedOpenAIKey) {
+        if (state.isPremiumCode) {
+            cachedOpenAIKey = await loadOpenAIKeyForPremiumUser();
+            if (!cachedOpenAIKey) {
+                alert("❌ Erreur : Impossible de charger la clé OpenAI.");
+                return null;
+            }
+        } else {
+            cachedOpenAIKey = prompt("🔐 Mode IA : Colle ta clé API OpenAI (sk-...) pour activer le chat :");
+            if (!cachedOpenAIKey) return null;
+        }
     if (!state.allSigns || state.allSigns.length === 0) { let allSignsSet = new Set(); PATHOLOGIES.forEach(p => { Object.keys(p.signes).forEach(s => allSignsSet.add(s)); }); state.allSigns = Array.from(allSignsSet); }
     const signsList = state.allSigns.join(", ");
     const promptSysteme = `Tu es un assistant médical expert. Voici une liste de codes de symptômes possibles : [${signsList}]. L'utilisateur va décrire son histoire clinique. Ta mission : 1. Repère tous les symptômes de la liste PRÉSENTS. 2. Repère ceux ABSENTS. 3. Renvoie UNIQUEMENT un objet JSON valide : { "detected": ["code1"], "rejected": ["code2"] }.`;

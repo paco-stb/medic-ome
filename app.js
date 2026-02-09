@@ -1444,7 +1444,7 @@ async function analyzeResponseWithLLM(userText, symptomContext) {
         } else {
             cachedOpenAIKey = prompt("🔐 Mode IA : Colle ta clé API OpenAI (sk-...) pour activer le chat :");
             if (!cachedOpenAIKey) return null;
-        }
+        }}
     const promptSysteme = `Tu es un moteur de diagnostic médical pour une simulation étudiante. Le système vérifie la présence du signe : "${symptomContext}". L'étudiant répond : "${userText}". Analyse l'intention et réponds UNIQUEMENT via ce JSON : {"result": true} (si OUI), {"result": false} (si NON), {"result": null} (si vague).`;
     try {
         const response = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${cachedOpenAIKey}` }, body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "system", content: promptSysteme }], temperature: 0 }) });
@@ -1467,7 +1467,7 @@ async function analyzeChiefComplaint(userText) {
         } else {
             cachedOpenAIKey = prompt("🔐 Mode IA : Colle ta clé API OpenAI (sk-...) pour activer le chat :");
             if (!cachedOpenAIKey) return null;
-        }
+        }}
     const possibleSymptoms = GENERAL_SYMPTOMS.join(", ");
     const promptSysteme = `Tu es un assistant médical pédagogique. L'utilisateur décrit son problème principal. Ta mission : Associer sa phrase à L'UN des symptômes généraux suivants : [${possibleSymptoms}]. 1. Si correspondance claire, renvoie UNIQUEMENT le code. 2. Si vague, renvoie "null". Phrase: "${userText}"`;
     try {
@@ -1490,7 +1490,7 @@ async function analyzeDetailedSymptoms(userText) {
         } else {
             cachedOpenAIKey = prompt("🔐 Mode IA : Colle ta clé API OpenAI (sk-...) pour activer le chat :");
             if (!cachedOpenAIKey) return null;
-        }
+        }}
     if(!state.allSigns || state.allSigns.length === 0) prepareSigns();
     const allSignsList = state.allSigns.join(", ");
     const promptSysteme = `Tu es un assistant médical. Analyse le récit et trouve les signes cliniques. Voici la liste EXACTE des codes autorisés : [${allSignsList}]. Règles: 1. Analyse "${userText}". 2. Renvoie un tableau JSON de chaînes (ex: ["fievre", "toux"]). 3. Uniquement le JSON brut.`;
@@ -1514,7 +1514,7 @@ async function analyzeAnamnesis(userText) {
         } else {
             cachedOpenAIKey = prompt("🔐 Mode IA : Colle ta clé API OpenAI (sk-...) pour activer le chat :");
             if (!cachedOpenAIKey) return null;
-        }
+        }}
     if (!state.allSigns || state.allSigns.length === 0) { let allSignsSet = new Set(); PATHOLOGIES.forEach(p => { Object.keys(p.signes).forEach(s => allSignsSet.add(s)); }); state.allSigns = Array.from(allSignsSet); }
     const signsList = state.allSigns.join(", ");
     const promptSysteme = `Tu es un assistant médical expert. Voici une liste de codes de symptômes possibles : [${signsList}]. L'utilisateur va décrire son histoire clinique. Ta mission : 1. Repère tous les symptômes de la liste PRÉSENTS. 2. Repère ceux ABSENTS. 3. Renvoie UNIQUEMENT un objet JSON valide : { "detected": ["code1"], "rejected": ["code2"] }.`;

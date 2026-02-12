@@ -8,6 +8,8 @@ if (window.location.hostname.includes("github.io")) { window.location.href = "ht
 import { getFirestore, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, collection, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+// 👇 AJOUT DE L'IMPORT ANALYTICS (Crucial)
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js"; 
 
 const firebaseConfig = {
     apiKey: "AIzaSyCig9G4gYHU5h642YV1IZxthYm_IXp6vZU",
@@ -20,7 +22,8 @@ const firebaseConfig = {
 };
 
 // Initialisation de l'application
-    let app, auth, db;
+let app, auth, db, analytics; // <--- J'ai ajouté 'analytics' ici
+
 try {
     // Vérification : Est-ce que Firebase tourne déjà ? (Lancé par apptest.js ?)
     if (getApps().length === 0) {
@@ -34,6 +37,10 @@ try {
 
     auth = getAuth(app);
     db = getFirestore(app);
+    
+    // 👇 DÉMARRAGE DU TRACKING (Crucial)
+    analytics = getAnalytics(app); 
+    console.log("📊 Google Analytics initialisé !");
 
 } catch (error) {
     console.error("Erreur Firebase:", error);

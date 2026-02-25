@@ -512,6 +512,20 @@ function startAuthListener() {
                 renderHome();
             }
         } else {
+            // AJOUT : Vérifier si une session code d'accès existe
+    const savedCodeSession = localStorage.getItem('medicome_access_code_session');
+    if (savedCodeSession) {
+        const sessionData = JSON.parse(savedCodeSession);
+        state.isGuest = true;
+        state.isPremiumCode = true;
+        state.pseudo = sessionData.pseudo;
+        const savedProg = localStorage.getItem('medicome_guest_progression');
+        if (savedProg) state.progression = { ...state.progression, ...JSON.parse(savedProg) };
+        cachedOpenAIKey = await loadOpenAIKeyForPremiumUser();
+        updateHeader();
+        renderHome();
+        return;
+    }
             // Utilisateur non connecté et pas en mode expérience
             const savedGuest = localStorage.getItem('medicome_guest_progression');
             if (!state.isGuest && savedGuest) {
@@ -543,7 +557,7 @@ function updateHeader(){
     }
     homeBtn.onclick=renderHome;
     logoutBtn.onclick = () => {
-        localStorage.removeItem('medicome_guest_progression'); localStorage.removeItem('medicome_guest_pseudo');
+        localStorage.removeItem('medicome_guest_progression'); localStorage.removeItem('medicome_guest_pseudo'); localStorage.removeItem('medicome_access_code_session');
         state.isGuest = false; state.pseudo = null; state.currentUser = null; 
         state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0, lastDaily: null, achievements: [], bestTimes: {}, errorLog: {}, pdfDownloads: 0, speedWins: 0, socialDone: false, reviewDone: false }; 
         signOut(auth).then(() => { renderLogin(); updateHeader(); showAlert("Déconnecté", "success"); }).catch(() => { renderLogin(); updateHeader(); });
@@ -982,7 +996,13 @@ function renderLogin() {
                 state.isGuest = true; 
                 state.isPremiumCode = true; 
                 state.pseudo = data.pseudo; 
-                state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyHistory: {} }; 
+                state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyHistory: {} };
+
+                localStorage.setItem('medicome_access_code_session', JSON.stringify({
+    pseudo: data.pseudo,
+    isPremiumCode: true,
+    timestamp: Date.now()
+}));
                 
                 // ✅ RÉCUPÉRATION SÉCURISÉE DE LA CLÉ OPENAI
                 cachedOpenAIKey = await loadOpenAIKeyForPremiumUser();

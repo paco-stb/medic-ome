@@ -2120,7 +2120,7 @@ function renderLegalPage() {
         <h2 style="color:var(--text-main); margin-bottom:15px;">Mentions Légales</h2>
         <div style="text-align:left; line-height:1.6;">
             <h3>1. Éditeur du site</h3>
-            <p>Le site Medicome.fr est édité à titre personnel. <br>Contact : via le formulaire de contact du site.</p>
+            <p>Le site Medicome.fr est édité à titre personnel. Auteur : Paco Saint-Blanquet. <br>Contact : via le formulaire de contact du site.</p>
             <br>
             <h3>2. Hébergement</h3>
             <p>Hébergé par GitHub Pages (USA). Données stockées sur Google Firebase (Irlande).</p>

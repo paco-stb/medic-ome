@@ -195,7 +195,7 @@
         "name": "Pancreatite Aiguë",
         "short": "Inflammation pancréatique",
         "pdf": "fiches/pancreatite.pdf",
-        "signes": {"douleur_abdominale": 25, "douleur_epigastrique_transfixiante": 25, "vomissements": 15, "position_antalgique_chien_fusil": 15, "lipasemie_superieure_3N": 50, "ileus_reflexe": 10, "fievre": 4},
+        "signes": {"douleur_abdominale": 25, "douleur_epigastrique_transfixiante": 25, "vomissements": 15, "position_antalgique_chien_fusil": 15, "lipasemie_superieure_3N": 50, "ileus_reflexe": 10, "fievre": 4, "douleur_dos": 15, "langue_saburrale": 15},
         "paraclinique": ["lipasemie_superieure_3N"],
         "veto": ["douleur_abdominale"],
         "boost": ["lipasemie_superieure_3N"],

@@ -10,6 +10,8 @@ import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 // 👇 AJOUT DE L'IMPORT ANALYTICS (Crucial)
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js"; 
+// 🔒 AJOUT : Cloud Functions sécurisées (remplace l'appel direct à OpenAI depuis le client)
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCig9G4gYHU5h642YV1IZxthYm_IXp6vZU",
@@ -22,7 +24,7 @@ const firebaseConfig = {
 };
 
 // Initialisation de l'application
-let app, auth, db, analytics; // <--- J'ai ajouté 'analytics' ici
+let app, auth, db, analytics, functions, callAnalyzeSymptom; // <--- 'functions' ajouté ici
 
 try {
     // Vérification : Est-ce que Firebase tourne déjà ? (Lancé par apptest.js ?)
@@ -42,6 +44,10 @@ try {
     analytics = getAnalytics(app); 
     console.log("📊 Google Analytics initialisé !");
 
+    // 🔒 Cloud Function sécurisée pour les appels IA (remplace l'accès direct à OpenAI)
+    functions = getFunctions(app, "europe-west1"); // doit correspondre à la région déployée
+    callAnalyzeSymptom = httpsCallable(functions, "analyzeSymptom");
+
 } catch (error) {
     console.error("Erreur Firebase:", error);
     document.querySelector('#app').innerHTML = `<div class="alert alert-error">Erreur de configuration : ${error.message}</div>`;
@@ -55,7 +61,8 @@ let PATHOLOGIES = [];
 let GLOBAL_IMG_MAP = {};
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 let chronoInterval = null;
-let cachedOpenAIKey = null;
+// 🔒 SUPPRIMÉ : cachedOpenAIKey n'existe plus. La clé OpenAI ne transite
+// plus jamais par le navigateur — elle reste côté serveur (Cloud Function).
 
 // L'État (State) : Mémoire vive de l'application
 let state = {
@@ -359,33 +366,9 @@ async function initApp() {
 // ============================================================
 // 6. LOGIQUE UTILISATEUR & GESTION
 // ============================================================
-// ============================================================
-// RÉCUPÉRATION SÉCURISÉE DE LA CLÉ OPENAI
-// ============================================================
-
-async function loadOpenAIKeyForPremiumUser() {
-    if (!state.isPremiumCode) {
-        console.log("❌ Utilisateur non premium, pas de clé OpenAI");
-        return null;
-    }
-    
-    try {
-        const configRef = doc(db, "config", "openai");
-        const configSnap = await getDoc(configRef);
-        
-        if (configSnap.exists()) {
-            const apiKey = configSnap.data().apiKey;
-            console.log("🔑 Clé OpenAI récupérée avec succès");
-            return apiKey;
-        } else {
-            console.error("❌ Configuration OpenAI introuvable dans Firebase");
-            return null;
-        }
-    } catch (error) {
-        console.error("❌ Erreur récupération clé OpenAI:", error);
-        return null;
-    }
-}
+// 🔒 SUPPRIMÉ : loadOpenAIKeyForPremiumUser() n'existe plus.
+// La Cloud Function "analyzeSymptom" gère désormais elle-même
+// l'accès à la clé OpenAI, côté serveur uniquement.
 
 function checkGuestAvailability() {
     const guestData = JSON.parse(sessionStorage.getItem('guestMode')) || { canPlay: true, timestamp: 0 };
@@ -448,12 +431,10 @@ function startAuthListener() {
     state.pseudo = "Participant Étude";
     state.useLLM = true; 
     
-    // ✅ RÉCUPÉRATION SÉCURISÉE DE LA CLÉ OPENAI
-    cachedOpenAIKey = await loadOpenAIKeyForPremiumUser();
-    if (cachedOpenAIKey) {
-        console.log("🔑 Clé OpenAI chargée (Mode Expérimental)");
-    } 
-            console.log("✅ FORCE STATE.USELLM = TRUE (Mode IA Activé)");
+    // 🔒 SUPPRIMÉ : plus besoin de récupérer une clé OpenAI ici.
+    // La Cloud Function "analyzeSymptom" gère l'appel à OpenAI côté serveur ;
+    // le front n'a plus jamais besoin/accès à la clé elle-même.
+    console.log("✅ FORCE STATE.USELLM = TRUE (Mode IA Activé)");
             
             state.dailyTarget = null;
             state.progression = { 
@@ -521,7 +502,7 @@ function startAuthListener() {
         state.pseudo = sessionData.pseudo;
         const savedProg = localStorage.getItem('medicome_guest_progression');
         if (savedProg) state.progression = { ...state.progression, ...JSON.parse(savedProg) };
-        cachedOpenAIKey = await loadOpenAIKeyForPremiumUser();
+        // 🔒 SUPPRIMÉ : plus de récupération de clé ici, la Cloud Function s'en occupe.
         updateHeader();
         renderHome();
         return;
@@ -1004,13 +985,8 @@ function renderLogin() {
     timestamp: Date.now()
 }));
                 
-                // ✅ RÉCUPÉRATION SÉCURISÉE DE LA CLÉ OPENAI
-                cachedOpenAIKey = await loadOpenAIKeyForPremiumUser();
-                if (cachedOpenAIKey) {
-                    console.log("🔑 Clé OpenAI chargée avec succès pour le code d'accès");
-                } else {
-                    console.warn("⚠️ Impossible de charger la clé OpenAI");
-                }
+                // 🔒 SUPPRIMÉ : plus de récupération de clé OpenAI ici.
+                // La Cloud Function "analyzeSymptom" gère l'appel à OpenAI côté serveur.
                 
                 updateHeader(); 
                 renderHome(); 
@@ -1457,100 +1433,75 @@ function renderPlaisantinEnd(type) {
 }
 
 // ============================================================
-// 9. INTÉGRATION OPENAI (CHATGPT) & AI FUNCTIONS
+// 9. INTÉGRATION OPENAI — VERSION SÉCURISÉE (via Cloud Function)
 // ============================================================
+// 🔒 La clé OpenAI ne transite plus jamais par le navigateur.
+// Le front envoie uniquement le texte de l'utilisateur à la Cloud
+// Function "analyzeSymptom", qui appelle OpenAI côté serveur et
+// renvoie seulement le résultat (true/false/liste de signes).
 
 async function analyzeResponseWithLLM(userText, symptomContext) {
-    if (!cachedOpenAIKey) {
-        if (state.isPremiumCode) {
-            cachedOpenAIKey = await loadOpenAIKeyForPremiumUser();
-            if (!cachedOpenAIKey) {
-                alert("❌ Erreur : Impossible de charger la clé OpenAI.");
-                return null;
-            }
-        } else {
-            cachedOpenAIKey = prompt("🔐 Mode IA : Colle ta clé API OpenAI (sk-...) pour activer le chat :");
-            if (!cachedOpenAIKey) return null;
-        }}
-    const promptSysteme = `Tu es un moteur de diagnostic médical pour une simulation étudiante. Le système vérifie la présence du signe : "${symptomContext}". L'étudiant répond : "${userText}". Analyse l'intention et réponds UNIQUEMENT via ce JSON : {"result": true} (si OUI), {"result": false} (si NON), {"result": null} (si vague).`;
     try {
-        const response = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${cachedOpenAIKey}` }, body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "system", content: promptSysteme }], temperature: 0 }) });
-        if (!response.ok) { if(response.status === 401) alert("Clé API invalide."); throw new Error("Erreur API"); }
-        const data = await response.json();
-        let cleanContent = data.choices[0].message.content.replace(/```json/g, "").replace(/```/g, "").trim();
-        const jsonResponse = JSON.parse(cleanContent);
-        return jsonResponse.result;
-    } catch (error) { console.error("Erreur IA:", error); return null; }
+        const { data } = await callAnalyzeSymptom({
+            task: "checkSymptom",
+            userText,
+            symptomContext
+        });
+        return data.result;
+    } catch (error) {
+        console.error("Erreur IA:", error);
+        if (error.code === "resource-exhausted") {
+            showAlert("Limite quotidienne d'IA atteinte, réessayez demain.", "error");
+        }
+        return null;
+    }
 }
 
 async function analyzeChiefComplaint(userText) {
-    if (!cachedOpenAIKey) {
-        if (state.isPremiumCode) {
-            cachedOpenAIKey = await loadOpenAIKeyForPremiumUser();
-            if (!cachedOpenAIKey) {
-                alert("❌ Erreur : Impossible de charger la clé OpenAI.");
-                return null;
-            }
-        } else {
-            cachedOpenAIKey = prompt("🔐 Mode IA : Colle ta clé API OpenAI (sk-...) pour activer le chat :");
-            if (!cachedOpenAIKey) return null;
-        }}
     const possibleSymptoms = GENERAL_SYMPTOMS.join(", ");
-    const promptSysteme = `Tu es un assistant médical pédagogique. L'utilisateur décrit son problème principal. Ta mission : Associer sa phrase à L'UN des symptômes généraux suivants : [${possibleSymptoms}]. 1. Si correspondance claire, renvoie UNIQUEMENT le code. 2. Si vague, renvoie "null". Phrase: "${userText}"`;
     try {
-        const response = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${cachedOpenAIKey}` }, body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "system", content: promptSysteme }], temperature: 0 }) });
-        const data = await response.json();
-        const result = data.choices[0].message.content.trim().replace(/['"]+/g, '');
-        if (GENERAL_SYMPTOMS.includes(result)) return result;
+        const { data } = await callAnalyzeSymptom({
+            task: "chiefComplaint",
+            userText,
+            possibleSymptoms
+        });
+        return data.result;
+    } catch (error) {
+        console.error("Erreur IA Motif:", error);
         return null;
-    } catch (error) { console.error("Erreur IA Motif:", error); return null; }
+    }
 }
 
 async function analyzeDetailedSymptoms(userText) {
-    if (!cachedOpenAIKey) {
-        if (state.isPremiumCode) {
-            cachedOpenAIKey = await loadOpenAIKeyForPremiumUser();
-            if (!cachedOpenAIKey) {
-                alert("❌ Erreur : Impossible de charger la clé OpenAI.");
-                return null;
-            }
-        } else {
-            cachedOpenAIKey = prompt("🔐 Mode IA : Colle ta clé API OpenAI (sk-...) pour activer le chat :");
-            if (!cachedOpenAIKey) return null;
-        }}
-    if(!state.allSigns || state.allSigns.length === 0) prepareSigns();
+    if (!state.allSigns || state.allSigns.length === 0) prepareSigns();
     const allSignsList = state.allSigns.join(", ");
-    const promptSysteme = `Tu es un assistant médical. Analyse le récit et trouve les signes cliniques. Voici la liste EXACTE des codes autorisés : [${allSignsList}]. Règles: 1. Analyse "${userText}". 2. Renvoie un tableau JSON de chaînes (ex: ["fievre", "toux"]). 3. Uniquement le JSON brut.`;
     try {
-        const response = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${cachedOpenAIKey}` }, body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "system", content: promptSysteme }], temperature: 0 }) });
-        const data = await response.json();
-        let content = data.choices[0].message.content.replace(/```json/g, "").replace(/```/g, "").trim();
-        const foundSigns = JSON.parse(content);
-        return foundSigns.filter(s => state.allSigns.includes(s));
-    } catch (error) { console.error("Erreur Extraction IA:", error); return []; }
+        const { data } = await callAnalyzeSymptom({
+            task: "detailedSymptoms",
+            userText,
+            allSignsList
+        });
+        return data.result;
+    } catch (error) {
+        console.error("Erreur Extraction IA:", error);
+        return [];
+    }
 }
 
 async function analyzeAnamnesis(userText) {
-    if (!cachedOpenAIKey) {
-        if (state.isPremiumCode) {
-            cachedOpenAIKey = await loadOpenAIKeyForPremiumUser();
-            if (!cachedOpenAIKey) {
-                alert("❌ Erreur : Impossible de charger la clé OpenAI.");
-                return null;
-            }
-        } else {
-            cachedOpenAIKey = prompt("🔐 Mode IA : Colle ta clé API OpenAI (sk-...) pour activer le chat :");
-            if (!cachedOpenAIKey) return null;
-        }}
     if (!state.allSigns || state.allSigns.length === 0) { let allSignsSet = new Set(); PATHOLOGIES.forEach(p => { Object.keys(p.signes).forEach(s => allSignsSet.add(s)); }); state.allSigns = Array.from(allSignsSet); }
     const signsList = state.allSigns.join(", ");
-    const promptSysteme = `Tu es un assistant médical expert. Voici une liste de codes de symptômes possibles : [${signsList}]. L'utilisateur va décrire son histoire clinique. Ta mission : 1. Repère tous les symptômes de la liste PRÉSENTS. 2. Repère ceux ABSENTS. 3. Renvoie UNIQUEMENT un objet JSON valide : { "detected": ["code1"], "rejected": ["code2"] }.`;
     try {
-        const response = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${cachedOpenAIKey}` }, body: JSON.stringify({ model: "gpt-4o-mini", messages: [ { role: "system", content: promptSysteme }, { role: "user", content: userText } ], temperature: 0 }) });
-        const data = await response.json();
-        let cleanContent = data.choices[0].message.content.replace(/```json/g, "").replace(/```/g, "").trim();
-        return JSON.parse(cleanContent);
-    } catch (error) { console.error("Erreur Anamnèse IA:", error); return null; }
+        const { data } = await callAnalyzeSymptom({
+            task: "anamnesis",
+            userText,
+            signsList
+        });
+        return data;
+    } catch (error) {
+        console.error("Erreur Anamnèse IA:", error);
+        return null;
+    }
 }
 
 // ============================================================

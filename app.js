@@ -270,20 +270,108 @@ function getDailyPatho() {
 // 5. INITIALISATION
 // ============================================================
 
+// ============================================================
+// 4bis. SOURCE DES DONNÉES (Prototypique vs Réelle CHU)
+// ============================================================
+
+// Fichiers associés à chaque mode. 'real' doit garder EXACTEMENT le même
+// schéma que pathologies.json (mêmes clés name/signes/veto/boost/images).
+const DATA_SOURCES = {
+    proto: './pathologies.json',
+    real: './pathologies_real.json'
+};
+
+function getDataMode() {
+    const saved = localStorage.getItem('medicome_data_mode');
+    return (saved === 'real') ? 'real' : 'proto'; // 'proto' par défaut, valeur sûre
+}
+
+function updateDataModeIcon(mode) {
+    const btn = document.getElementById('dataModeBtn');
+    if (!btn) return;
+    if (mode === 'real') {
+        btn.innerHTML = '<i class="ph-duotone ph-hospital"></i>';
+        btn.title = 'Source des données : Hospitalière (CHU) — cas réels, souvent plus sévères/atypiques';
+    } else {
+        btn.innerHTML = '<i class="ph-duotone ph-book-open"></i>';
+        btn.title = 'Source des données : Manuel (présentations théoriques classiques)';
+    }
+}
+
+// Charge (ou recharge) PATHOLOGIES depuis le fichier correspondant au mode actuel.
+// Reconstruit aussi les caches dérivés (images, liste des signes).
+async function loadPathologies() {
+    const mode = state.dataMode || getDataMode();
+    const file = DATA_SOURCES[mode] || DATA_SOURCES.proto;
+
+    let response = await fetch(file);
+    let usedFallback = false;
+
+    // Garde-fou : si le fichier "réel" est absent/invalide, on retombe sur le
+    // mode théorique plutôt que de casser le site.
+    if (!response.ok && mode === 'real') {
+        usedFallback = true;
+        response = await fetch(DATA_SOURCES.proto);
+    }
+    if (!response.ok) throw new Error("Impossible de lire le fichier de données pathologies.json");
+
+    let data;
+    try {
+        data = await response.json();
+        if (!Array.isArray(data) || data.length === 0) throw new Error("Format de données invalide");
+    } catch (e) {
+        if (mode === 'real' && !usedFallback) {
+            // JSON corrompu en mode réel -> fallback théorique, ne pas planter le site
+            usedFallback = true;
+            const fb = await fetch(DATA_SOURCES.proto);
+            data = await fb.json();
+        } else {
+            throw e;
+        }
+    }
+
+    PATHOLOGIES = data;
+    state.dataMode = usedFallback ? 'proto' : mode;
+    localStorage.setItem('medicome_data_mode', state.dataMode);
+
+    GLOBAL_IMG_MAP = {};
+    PATHOLOGIES.forEach(p => {
+        if (p.images) {
+            for (const [signKey, imgUrl] of Object.entries(p.images)) {
+                GLOBAL_IMG_MAP[signKey] = imgUrl;
+            }
+        }
+    });
+    prepareSigns();
+    updateDataModeIcon(state.dataMode);
+
+    if (usedFallback) {
+        showAlert("Données hospitalières indisponibles pour le moment : retour au mode Manuel.", "error");
+    }
+}
+
+function toggleDataMode() {
+    // On évite de basculer en pleine question pour ne pas corrompre une partie en cours
+    if (q('.question-text')) {
+        showAlert("Termine ou quitte le cas en cours avant de changer de source de données.", "error");
+        return;
+    }
+    const newMode = (state.dataMode === 'real') ? 'proto' : 'real';
+    state.dataMode = newMode;
+    loadPathologies().then(() => {
+        showAlert(newMode === 'real' ? "Mode Hospitalier (CHU) activé." : "Mode Manuel (théorique) activé.", "success");
+        if (state.currentUser || state.isGuest) renderHome();
+    }).catch(err => {
+        console.error(err);
+        showAlert("Erreur lors du changement de source de données.", "error");
+    });
+}
+
 async function initApp() {
     try {
-        const response = await fetch('./pathologies.json');
-        if (!response.ok) throw new Error("Impossible de lire le fichier de données pathologies.json");
-        PATHOLOGIES = await response.json();
-        
-        PATHOLOGIES.forEach(p => {
-            if(p.images) {
-                for (const [signKey, imgUrl] of Object.entries(p.images)) {
-                    GLOBAL_IMG_MAP[signKey] = imgUrl;
-                }
-            }
-        });
-        
+        state.dataMode = getDataMode();
+        await loadPathologies();
+
         // Deep Linking
         const urlParams = new URLSearchParams(window.location.search);
         const ficheDemandee = urlParams.get('fiche');
@@ -302,6 +390,7 @@ async function initApp() {
         
         // Listeners boutons globaux
         const btnLegal = q('#legalLink'); if(btnLegal) btnLegal.onclick = renderLegalPage;
+        const dataModeBtn = q('#dataModeBtn'); if(dataModeBtn) dataModeBtn.onclick = toggleDataMode;
         const cLink = q('#contactLink'); if(cLink) cLink.onclick = renderContact;
         const rLink = q('#reviewsLink'); if(rLink) rLink.onclick = renderReviews;
         ['linkInsta', 'linkTiktok', 'linkX'].forEach(id => {

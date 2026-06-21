@@ -350,13 +350,47 @@ async function loadPathologies() {
     }
 }
 
-function toggleDataMode() {
+// Popup de confirmation (glassmorphism, cohérent avec le reste de l'UI) avant
+// de basculer la source de données. Retourne une Promise<boolean>.
+function confirmDataModeSwitch(newMode) {
+    return new Promise((resolve) => {
+        const title = newMode === 'real' ? "Passer en mode Hospitalier (CHU)" : "Passer en mode Manuel";
+        const message = newMode === 'real'
+            ? "Vous allez basculer vers des données réelles issues du CHU de Nantes. Ces présentations cliniques peuvent être plus atypiques ou sévères qu'en mode Manuel (biais hospitalier). Continuer ?"
+            : "Vous allez revenir aux présentations théoriques classiques (mode Manuel). Continuer ?";
+
+        const overlay = document.createElement('div');
+        overlay.className = 'dm-confirm-overlay';
+        overlay.innerHTML = `
+            <div class="dm-confirm-box">
+                <h3>${title}</h3>
+                <p>${message}</p>
+                <div class="dm-confirm-actions">
+                    <button class="dm-confirm-btn dm-cancel">Annuler</button>
+                    <button class="dm-confirm-btn dm-ok">Continuer</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        const cleanup = (result) => { overlay.remove(); resolve(result); };
+        overlay.querySelector('.dm-cancel').onclick = () => cleanup(false);
+        overlay.querySelector('.dm-ok').onclick = () => cleanup(true);
+        overlay.onclick = (e) => { if (e.target === overlay) cleanup(false); };
+    });
+}
+
+async function toggleDataMode() {
     // On évite de basculer en pleine question pour ne pas corrompre une partie en cours
     if (q('.question-text')) {
         showAlert("Termine ou quitte le cas en cours avant de changer de source de données.", "error");
         return;
     }
     const newMode = (state.dataMode === 'real') ? 'proto' : 'real';
+
+    const confirmed = await confirmDataModeSwitch(newMode);
+    if (!confirmed) return;
+
     state.dataMode = newMode;
     loadPathologies().then(() => {
         showAlert(newMode === 'real' ? "Mode Hospitalier (CHU) activé." : "Mode Manuel (théorique) activé.", "success");

@@ -743,6 +743,20 @@ function trackPdf() {
     saveProgression();
 }
 
+function trackVideo() {
+    if(state.isGuest) { showAlert("Les vidéos ne sont pas disponibles en mode invité.", "error"); return; }
+    state.progression.videoViews = (state.progression.videoViews || 0) + 1;
+    saveProgression();
+}
+
+function getVideoButton(patho) {
+    if (!patho || !patho.video) return '';
+    if (state.isGuest && !state.isPremiumCode) {
+        return `<button class="btn" style="background:rgba(125,125,125,0.1); border:1px dashed var(--text-muted); color:var(--text-muted); margin-top:10px; margin-left:10px; font-size:13px;" onclick="showAlert('Compte requis pour la vidéo', 'error')"><i class="ph-duotone ph-lock-key"></i> Vidéo (Verrouillée)</button>`;
+    }
+    return `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px; margin-left:10px;" href="${patho.video}" target="_blank" onclick="trackVideo()"><i class="ph-duotone ph-youtube-logo"></i> Voir la vidéo</a>`;
+}
+
 function trackSocial() {
     if(!state.progression.socialDone) { state.progression.socialDone = true; saveProgression(); }
 }
@@ -1334,7 +1348,8 @@ function showDiagnostic() {
         state.diagnosticShown = true; state.previousDiagnostics.push(top.patho.name); setDocTitle(`Diagnostic : ${top.patho.name}`); app.innerHTML = ''; const card = document.createElement('div'); card.className = 'card center';
         const title = document.createElement('h2'); title.innerHTML = '<i class="ph-duotone ph-lightbulb"></i> Diagnostic Proposé'; card.appendChild(title);
         let pdfButton = ''; if (top.patho.pdf && top.patho.pdf !== '#') { if (state.isGuest && !state.isPremiumCode) { pdfButton = `<button class="btn" style="background:rgba(125,125,125,0.1); border:1px dashed var(--text-muted); color:var(--text-muted); margin-top:10px; font-size:13px;" onclick="showAlert('Compte requis pour le PDF', 'error')"><i class="ph-duotone ph-lock-key"></i> Fiche PDF (Verrouillée)</button>`; } else { pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.patho.pdf}" target="_blank" onclick="trackPdf()"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF de révision</a>`; } } else { pdfButton = `<span class="small" style="opacity:0.5"><i class="ph-duotone ph-file-x"></i> Pas de fiche PDF</span>`; }
-        const diagDiv = document.createElement('div'); diagDiv.className = 'diagnostic-result'; diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div><div class="patho-desc" style="margin-top:8px">${top.patho.short}</div><br>${pdfButton}`; card.appendChild(diagDiv);
+        const videoButton = getVideoButton(top.patho);
+        const diagDiv = document.createElement('div'); diagDiv.className = 'diagnostic-result'; diagDiv.innerHTML = `<div class="diagnostic-name">${top.patho.name}</div><div class="patho-desc" style="margin-top:8px">${top.patho.short}</div><br>${pdfButton}${videoButton}`; card.appendChild(diagDiv);
         const btnGroup = document.createElement('div'); btnGroup.className = 'button-group';
         
         if (state.exam && state.exam.active && state.dailyTarget) {
@@ -1926,8 +1941,13 @@ function showDiagnosticDetails(data, wasManualError = false) {
     if (top.pdf && top.pdf !== '#') {
         if (state.isGuest && !state.isPremiumCode) { pdfButton = `<button class="btn" style="background:rgba(125,125,125,0.1); border:1px dashed var(--text-muted); color:var(--text-muted); margin-top:10px; font-size:13px;" onclick="showAlert('Compte requis pour le PDF', 'error')"><i class="ph-duotone ph-lock-key"></i> Fiche PDF (Verrouillée)</button>`; } 
         else { pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.pdf}" target="_blank" onclick="trackPdf()"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF de révision</a>`; }
-        const pdfContainer = document.createElement('div'); pdfContainer.style.textAlign = 'center'; pdfContainer.style.width = '100%'; pdfContainer.innerHTML = pdfButton; card.appendChild(pdfContainer); 
-    } else { card.innerHTML += `<div class="small" style="margin-top:10px; opacity:0.5; text-align:center;">Pas de fiche PDF disponible</div>`; }
+        const videoButton = getVideoButton(top);
+        const pdfContainer = document.createElement('div'); pdfContainer.style.textAlign = 'center'; pdfContainer.style.width = '100%'; pdfContainer.innerHTML = pdfButton + videoButton; card.appendChild(pdfContainer); 
+    } else {
+        const videoButton = getVideoButton(top);
+        if (videoButton) { const videoContainer = document.createElement('div'); videoContainer.style.textAlign = 'center'; videoContainer.style.width = '100%'; videoContainer.innerHTML = videoButton; card.appendChild(videoContainer); }
+        else { card.innerHTML += `<div class="small" style="margin-top:10px; opacity:0.5; text-align:center;">Pas de fiche PDF disponible</div>`; }
+    }
     const btnGroup = document.createElement('div'); btnGroup.className = 'button-group';
     if (state.exam && state.exam.active) {
         const isSuccess = (top.name === state.dailyTarget.name);
@@ -1996,8 +2016,17 @@ function renderGlossary() {
     }
     function createPathoCard(p) {
         const card = document.createElement('div'); card.className = 'patho-card';
-        card.innerHTML = `<div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>`;
-        card.onclick = () => { if(p.pdf && p.pdf !== '#') { trackPdf(); window.open(p.pdf,'_blank'); } else { showAlert('Fiche PDF non disponible','error'); } };
+        const hasPdf = p.pdf && p.pdf !== '#';
+        const hasVideo = !!p.video;
+        card.innerHTML = `<div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>
+            <div class="patho-card-actions" style="display:flex; gap:14px; margin-top:10px;">
+                ${hasPdf ? `<i class="ph-duotone ph-file-pdf patho-icon-btn" title="Fiche PDF" style="cursor:pointer; font-size:20px; color:var(--accent);"></i>` : ''}
+                ${hasVideo ? `<i class="ph-duotone ph-youtube-logo patho-icon-btn" title="Vidéo" style="cursor:pointer; font-size:20px; color:#ff0000;"></i>` : ''}
+            </div>`;
+        const pdfIcon = card.querySelector('.ph-file-pdf');
+        if (pdfIcon) { pdfIcon.onclick = (e) => { e.stopPropagation(); trackPdf(); window.open(p.pdf, '_blank'); }; }
+        const videoIcon = card.querySelector('.ph-youtube-logo');
+        if (videoIcon) { videoIcon.onclick = (e) => { e.stopPropagation(); trackVideo(); window.open(p.video, '_blank'); }; }
         return card;
     }
     renderGrid(sortedPathos, true);

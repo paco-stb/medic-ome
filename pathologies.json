@@ -3,7 +3,7 @@
         "name": "Infarctus du myocarde",
         "short": "SCA ST+ (Syndrome Coronarien Aigu)",
         "pdf": "fiches/infarctus.pdf",
-        "video": "https://www.youtube.com/watch?v=-ryNfrDCpmI&list=RD-ryNfrDCpmI&start_radio=1",
+        "video": "",
         "signes": {"douleur_thoracique": 20, "douleur_thoracique_constrictive": 25, "irradiation_bras_gauche_machoire": 20, "sueurs_froides": 10, "nausees_vomissements": 8, "angoisse_mort_imminente": 10, "dyspnee": 6, "troponine_elevee": 50, "sus_decalage_st_ecg": 50, "miroir_ecg": 20},
         "paraclinique": ["troponine_elevee", "sus_decalage_st_ecg", "miroir_ecg"],
         "veto": ["douleur_thoracique"],

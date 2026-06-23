@@ -2019,14 +2019,14 @@ function renderGlossary() {
         const hasPdf = p.pdf && p.pdf !== '#';
         const hasVideo = !!p.video;
         card.innerHTML = `<div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>
-            <div class="patho-card-actions" style="display:flex; gap:14px; margin-top:10px;">
-                ${hasPdf ? `<i class="ph-duotone ph-file-pdf patho-icon-btn" title="Fiche PDF" style="cursor:pointer; font-size:20px; color:var(--accent);"></i>` : ''}
-                ${hasVideo ? `<i class="ph-duotone ph-youtube-logo patho-icon-btn" title="Vidéo" style="cursor:pointer; font-size:20px; color:#ff0000;"></i>` : ''}
+            <div class="patho-card-actions" style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+                ${hasPdf ? `<button class="patho-pill-btn pdf" type="button"><i class="ph-duotone ph-file-pdf"></i> Fiche PDF</button>` : ''}
+                ${hasVideo ? `<button class="patho-pill-btn video" type="button"><i class="ph-duotone ph-youtube-logo"></i> Vidéo</button>` : ''}
             </div>`;
-        const pdfIcon = card.querySelector('.ph-file-pdf');
-        if (pdfIcon) { pdfIcon.onclick = (e) => { e.stopPropagation(); trackPdf(); window.open(p.pdf, '_blank'); }; }
-        const videoIcon = card.querySelector('.ph-youtube-logo');
-        if (videoIcon) { videoIcon.onclick = (e) => { e.stopPropagation(); trackVideo(); window.open(p.video, '_blank'); }; }
+        const pdfBtn = card.querySelector('.patho-pill-btn.pdf');
+        if (pdfBtn) { pdfBtn.onclick = (e) => { e.stopPropagation(); trackPdf(); window.open(p.pdf, '_blank'); }; }
+        const videoBtn = card.querySelector('.patho-pill-btn.video');
+        if (videoBtn) { videoBtn.onclick = (e) => { e.stopPropagation(); trackVideo(); window.open(p.video, '_blank'); }; }
         return card;
     }
     renderGrid(sortedPathos, true);

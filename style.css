@@ -140,10 +140,16 @@
          .glossary-content { flex: 1; width: 100%; }
          .letter-header { font-size: 2rem; font-weight: 800; color: var(--accent); margin: 30px 0 15px; border-bottom: 2px solid var(--glass-border); padding-bottom: 10px; width: 100%; }
          .letter-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-        .patho-card { background: var(--glass-bg); padding: 25px; border-radius: 16px; border: 1px solid var(--glass-border); transition: all 0.3s; position: relative; overflow: hidden; border-left: 4px solid var(--glass-border); }
-        .patho-card:hover { transform: translateY(-5px); border-left-color: var(--accent); background: rgba(125,125,125,0.1); box-shadow: var(--card-shadow); }
-        .patho-icon-btn { transition: transform 0.2s; }
-        .patho-icon-btn:hover { transform: scale(1.2); }
+         .patho-card { background: var(--glass-bg); padding: 25px; border-radius: 16px; border: 1px solid var(--glass-border); transition: all 0.3s; position: relative; overflow: hidden; border-left: 4px solid var(--glass-border); }
+         .patho-card:hover { transform: translateY(-5px); border-left-color: var(--accent); background: rgba(125,125,125,0.1); box-shadow: var(--card-shadow); }
+         .patho-icon-btn { transition: transform 0.2s; }
+         .patho-icon-btn:hover { transform: scale(1.2); }
+         .patho-pill-btn { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:20px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid var(--glass-border); background:rgba(125,125,125,0.08); color:var(--text-main); transition:all 0.2s; }
+         .patho-pill-btn:hover { transform: translateY(-2px); box-shadow: var(--card-shadow); }
+         .patho-pill-btn.pdf { border-color: var(--accent); color: var(--accent); }
+         .patho-pill-btn.pdf:hover { background: var(--accent); color: #fff; }
+         .patho-pill-btn.video { border-color: #ff0000; color: #ff0000; }
+         .patho-pill-btn.video:hover { background: #ff0000; color: #fff; }
          .patho-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 8px; color: var(--text-main); }
          .patho-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.4; }
          .stat-box { background: rgba(125,125,125,0.1); padding:20px; border-radius:12px; margin:10px 0; border: 1px solid var(--glass-border); text-align:center; }

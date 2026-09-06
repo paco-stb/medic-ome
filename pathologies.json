@@ -15,6 +15,7 @@
         "name": "Embolie pulmonaire",
         "short": "Obstruction artère pulmonaire",
         "pdf": "fiches/embolie.pdf",
+        "video": "https://youtu.be/Hp6MUxVlf50",
         "signes": {"douleur_thoracique": 15, "dyspnee": 15, "douleur_thoracique_basithoracique": 15, "dyspnee_brutale": 20, "hemoptysie": 12, "douleur_unilaterale_mollet": 18, "tachycardie": 12, "discordance_pouls_temperature": 15, "malaise_syncope": 10, "signe_s1q3_ecg": 30, "d_dimeres_positifs": 30, "occlusion_arterielle_angioscanner": 50},
         "paraclinique": ["signe_s1q3_ecg", "d_dimeres_positifs"],
         "veto": ["dyspnee"],

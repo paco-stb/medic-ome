@@ -4,9 +4,9 @@
 // ============================================================
 
 import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-// AJOUT DE getApps ICI :
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; // ajout de signInAnonymously
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js"; // nouveau
 
 const firebaseConfig = {
     apiKey: "AIzaSyCig9G4gYHU5h642YV1IZxthYm_IXp6vZU",
@@ -27,6 +27,8 @@ if (getApps().length === 0) {
 
 const auth = getAuth(app);
 const db = getFirestore(app);
+const functions = getFunctions(app, "europe-west1"); // même région que ta Cloud Function
+const callAnalyzeSymptom = httpsCallable(functions, "analyzeSymptom");
 
 // ============================================================
 // VARIABLES GLOBALES
@@ -47,8 +49,6 @@ let experimentState = {
     attempts: 0,
     signsFoundAtLastHint: 0
 };
-
-let cachedOpenAIKey = null;
 
 // ============================================================
 // INITIALISATION
@@ -161,9 +161,12 @@ async function validateStudyCode() {
         const codeSnap = await getDoc(codeRef);
 
         if (codeSnap.exists() && codeSnap.data().active === true) {
-            isAdminSession = false; // C'est un étudiant, pas de bouton export
-            renderModeChoices();
-        } else {
+    if (!auth.currentUser) {
+        await signInAnonymously(auth); // connexion anonyme requise pour appeler analyzeSymptom
+    }
+    isAdminSession = false;
+    renderModeChoices();
+} else {
             alert("❌ Code invalide ou expiré.");
             btn.innerHTML = '<i class="ph-bold ph-check"></i> Valider';
             btn.disabled = false;
@@ -622,77 +625,29 @@ async function handleQuestion() {
 // ============================================================
 
 async function analyzeQuestion(questionText) {
-    if (!cachedOpenAIKey) {
-        cachedOpenAIKey = prompt("🔐 Clé OpenAI requise pour le mode expérimental (sk-...) :");
-        if (!cachedOpenAIKey) return null;
-    }
-
     const targetPathology = experimentState.targetPathology;
     const presentSignsKeys = Object.keys(targetPathology.signes).join(", ");
 
-    const systemPrompt = `Tu es un moteur sémantique médical. Le patient souffre de "${targetPathology.name}".
-Signes PRÉSENTS dans la pathologie : [${presentSignsKeys}]
-
-L'étudiant pose : "${questionText}"
-
-Ta mission :
-1. Identifie le symptôme/signe médical visé
-2. Si le signe correspond à un code de la liste (même approximativement), utilise ce code EXACT
-3. Si le signe n'est PAS dans la liste, génère quand même un code snake_case standard (ex: "ictere", "boiterie", "prurit")
-4. Si l'input contient des INSULTES, des VULGARITÉS (ex: "merde", "putain", "connard") ou du TEXTE ALÉATOIRE sans sens médical, tu DOIS renvoyer null.
-5. IMPORTANT : Tu dois TOUJOURS renvoyer un code, même si le signe est absent de la pathologie
-
-Réponds UNIQUEMENT en JSON :
-{"detected_sign": "code_du_signe"}
-
-JAMAIS {"detected_sign": null} sauf si la question est totalement incompréhensible.`;
-
     try {
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${cachedOpenAIKey}`
-            },
-            body: JSON.stringify({
-                model: "gpt-4o-mini",
-                messages: [{ role: "system", content: systemPrompt }],
-                temperature: 0
-            })
+        const { data } = await callAnalyzeSymptom({
+            task: "controlQuestion",
+            userText: questionText,
+            pathologyName: targetPathology.name,
+            presentSignsKeys
         });
 
-        if (!response.ok) {
-            if (response.status === 401) {
-                alert("❌ Clé API invalide.");
-                cachedOpenAIKey = null;
-            }
-            throw new Error(`Erreur API: ${response.status}`);
-        }
+        if (!data.detected_sign) return null;
 
-        const data = await response.json();
-        let cleanContent = data.choices[0].message.content
-            .replace(/```json/g, "")
-            .replace(/```/g, "")
-            .trim();
-
-        const result = JSON.parse(cleanContent);
-
-        if (!result.detected_sign) {
-            return null;
-        }
-
-        const signDataInJson = targetPathology.signes[result.detected_sign];
+        const signDataInJson = targetPathology.signes[data.detected_sign];
         const isPresent = signDataInJson !== undefined;
         const weight = isPresent ? signDataInJson : 0;
 
-        return {
-            sign: result.detected_sign,
-            answer: isPresent,
-            weight: weight
-        };
-
+        return { sign: data.detected_sign, answer: isPresent, weight };
     } catch (error) {
         console.error("Erreur critique LLM:", error);
+        if (error.code === "resource-exhausted") {
+            alert("Limite quotidienne d'IA atteinte, réessayez demain.");
+        }
         return null;
     }
 }

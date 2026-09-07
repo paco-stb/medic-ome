@@ -25,6 +25,27 @@
             <img src="logo.png" alt="Medicome Logo" class="logo-img">
             <h1 class="sr-only">Medicome — Étude IMPACT-R2C</h1>
          </div>
+         <div class="top-right">
+            <button class="theme-btn" id="themeBtn" title="Changer le thème">
+            <i class="ph-duotone ph-moon"></i>
+            </button>
+            <button class="theme-btn" id="dataModeBtn" title="Source des données : Manuel (théorique)">
+            <i class="ph-duotone ph-book-open"></i>
+            </button>
+            <button class="notif-btn" id="notifBtn" title="Nouveautés">
+               <i class="ph-duotone ph-bell"></i>
+               <div class="notif-badge" id="notifBadge"></div>
+            </button>
+            <div class="notif-modal" id="notifModal">
+               <h4 style="color:var(--text-main); border-bottom:1px solid var(--glass-border); padding-bottom:10px; margin-bottom:10px;"><i class="ph-duotone ph-bell-ringing"></i> Actualités</h4>
+               <div id="notifContent">
+                  <div class="small">Chargement...</div>
+               </div>
+            </div>
+            <button id="homeBtn" class="link" style="display:none;">Accueil</button>
+            <div id="pseudoBox" class="pseudo" style="display:none;">Utilisateur</div>
+            <button id="logoutBtn" class="link" style="display:none;">Déconnexion</button>
+         </div>
       </header>
 
       <main id="app">

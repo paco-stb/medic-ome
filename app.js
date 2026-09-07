@@ -1141,6 +1141,14 @@ function renderLogin() {
 }
 
 function renderHome() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('mode') === 'generatif' && !state.studyModeHandled) {
+        state.studyModeHandled = true; // évite de reboucler si l'étudiant revient à l'accueil plus tard
+        state.useLLM = true;
+        state.dailyTarget = null;
+        renderDemographics();
+        return;
+    }
     setDocTitle("Accueil"); window.scrollTo(0,0); const app = q('#app'); app.innerHTML='';
     const prog = state.progression;
     

@@ -33,22 +33,13 @@ const db = getFirestore(app);
 // (voir study-auth.js), pour ne jamais toucher à la session Firebase Auth normale.
 
 // ============================================================
-// 🧪 DEBUG ADMIN — à retirer une fois le problème identifié
+// DÉTECTION ADMIN RÉACTIVE
 // ============================================================
-// La restauration de session Firebase Auth est ASYNCHRONE au chargement de la page :
-// auth.currentUser peut être `null` pendant quelques centaines de ms, même si vous
-// êtes normalement connecté. Ce listener log l'état réel dès qu'il est connu, et
-// bascule automatiquement en mode admin si besoin (sans attendre un clic).
-let authReady = false;
+// La restauration de session Firebase Auth est asynchrone au chargement de la page :
+// auth.currentUser peut être `null` pendant quelques centaines de ms, même si
+// l'admin est normalement connecté. Ce listener bascule en mode admin dès que
+// l'état d'auth réel est connu, sans attendre un clic.
 onAuthStateChanged(auth, (user) => {
-    authReady = true;
-    console.log("🔍 [DEBUG apptest.js] onAuthStateChanged déclenché.");
-    console.log("🔍 [DEBUG] Domaine actuel :", window.location.hostname);
-    console.log("🔍 [DEBUG] Utilisateur détecté :", user ? { uid: user.uid, email: user.email, anonyme: user.isAnonymous } : null);
-    console.log("🔍 [DEBUG] ADMIN_UID attendu :", ADMIN_UID);
-    console.log("🔍 [DEBUG] Match admin ?", !!(user && user.uid === ADMIN_UID));
-    window.__medicomeDebugAuth = user; // inspectable dans la console : tapez `__medicomeDebugAuth`
-
     if (user && user.uid === ADMIN_UID && !isAdminSession) {
         isAdminSession = true;
         // Si le menu de sélection est déjà affiché, on le redessine avec le bouton admin
@@ -57,6 +48,7 @@ onAuthStateChanged(auth, (user) => {
         }
     }
 });
+
 
 // ============================================================
 // VARIABLES GLOBALES
@@ -422,12 +414,12 @@ function renderClassiqueInterface() {
     // la difficulté d'entrée (le chef de file seul était souvent insuffisant pour démarrer).
     const hintSigns = (experimentState.initialHints || []).map(formatSymptomName);
     const initialHintsHtml = hintSigns.length > 0 ? `
-                    <div class="info-card hints-card" style="border-left: 3px solid #4dabf7;">
+                    <div class="info-card hints-card" style="border-left: 3px solid var(--accent);">
                         <div class="card-label"><i class="ph-duotone ph-lightbulb"></i> Signes d'orientation</div>
                         <div class="card-value">
-                            ${hintSigns.map(s => `<span class="hint-chip" style="display:inline-block; margin:2px 4px 2px 0; padding:2px 8px; background:#e7f5ff; border-radius:12px; font-size:0.85em;">${s}</span>`).join('')}
+                            ${hintSigns.map(s => `<span class="hint-chip" style="display:inline-block; margin:2px 4px 2px 0; padding:2px 10px; background:var(--inner-bg); color:var(--text-main); border:1px solid var(--glass-border); border-radius:12px; font-size:0.85em;">${s}</span>`).join('')}
                         </div>
-                        <div style="font-size:0.75em; opacity:0.7; margin-top:4px;">Signes secondaires connus d'emblée — à vous d'explorer le reste.</div>
+                        <div style="font-size:0.75em; color:var(--text-muted); margin-top:4px;">Signes secondaires connus d'emblée — à vous d'explorer le reste.</div>
                     </div>` : '';
     
     app.innerHTML = `
@@ -765,15 +757,34 @@ async function validateDiagnosis() {
         }
     }
     
-    const targetName = experimentState.targetPathology.name.toLowerCase();
-    const userGuess = diagnosisInput.toLowerCase();
-    
-    experimentState.attempts++;
-    
-    // Comparaison stricte ou similarité
-    const isCorrect = targetName === userGuess || 
-                      targetName.includes(userGuess) || 
-                      userGuess.includes(targetName);
+    const targetName = experimentState.targetPathology.name;
+    const targetShort = experimentState.targetPathology.short || '';
+
+    experimentState.attempts++;
+
+    // 🐛 FIX : la comparaison stricte (===, includes) rejetait les synonymes et formes
+    // proches ("état dépressif" vs "Dépression", "Diabète 1" vs "Diabète Type 1").
+    // On juge maintenant l'équivalence médicale via l'IA (comme pour l'interrogatoire),
+    // avec un repli local tolérant aux accents/casse si l'appel IA échoue.
+    let isCorrect;
+    try {
+        const { data } = await callStudyAnalyzeSymptom({
+            task: "checkDiagnosis",
+            userText: diagnosisInput,
+            targetName,
+            targetShort
+        });
+        isCorrect = data.result === true;
+    } catch (error) {
+        console.error("Erreur IA checkDiagnosis, repli sur comparaison locale:", error);
+        const normalize = (s) => s.toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .replace(/\s+/g, ' ').trim();
+        const nTarget = normalize(targetName);
+        const nGuess = normalize(diagnosisInput);
+        isCorrect = nTarget === nGuess || nTarget.includes(nGuess) || nGuess.includes(nTarget);
+    }
     
     const endTime = Date.now();
     const totalTime = Math.round((endTime - experimentState.startTime) / 1000);

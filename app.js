@@ -557,6 +557,7 @@ function startAuthListener() {
     state.pseudo = "Participant Étude";
     state.useLLM = true; 
     state.startTime = Date.now(); // 🧪 chrono forcé pour l'étude, même hors mode Chrono
+    state.sessionId = Date.now().toString(); // 🐛 FIX : n'existait pas côté app.js, colonne "Session ID" vide dans l'export
     // 🐛 FIX : on retire ?mode=generatif de l'URL tout de suite. Sinon, chaque changement
     // d'état d'auth (y compris celui déclenché par la Déconnexion) relit l'URL et
     // renvoie de force en mode étude : boucle impossible à quitter.
@@ -704,6 +705,7 @@ async function saveGroupAExperimentData(top) {
         await addDoc(collection(db, "experiment_results"), {
             mode: 'generatif',
             code: sessionStorage.getItem('medicome_study_code') || 'inconnu',
+            sessionId: state.sessionId || null,
             studyUid,
             targetPathologyGuessed: top.patho.name,
             score: top.score,

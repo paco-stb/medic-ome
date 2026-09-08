@@ -5,7 +5,7 @@
 
 import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; // ajout de signInAnonymously
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; // ajout de signInAnonymously
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js"; // nouveau
 // 🧪 AJOUT ÉTUDE : auth anonyme dédiée, indépendante du compte principal
 import { ensureStudyAuth } from './study-auth.js';
@@ -31,6 +31,32 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const functions = getFunctions(app, "europe-west1"); // même région que ta Cloud Function
 const callAnalyzeSymptom = httpsCallable(functions, "analyzeSymptom");
+
+// ============================================================
+// 🧪 DEBUG ADMIN — à retirer une fois le problème identifié
+// ============================================================
+// La restauration de session Firebase Auth est ASYNCHRONE au chargement de la page :
+// auth.currentUser peut être `null` pendant quelques centaines de ms, même si vous
+// êtes normalement connecté. Ce listener log l'état réel dès qu'il est connu, et
+// bascule automatiquement en mode admin si besoin (sans attendre un clic).
+let authReady = false;
+onAuthStateChanged(auth, (user) => {
+    authReady = true;
+    console.log("🔍 [DEBUG apptest.js] onAuthStateChanged déclenché.");
+    console.log("🔍 [DEBUG] Domaine actuel :", window.location.hostname);
+    console.log("🔍 [DEBUG] Utilisateur détecté :", user ? { uid: user.uid, email: user.email, anonyme: user.isAnonymous } : null);
+    console.log("🔍 [DEBUG] ADMIN_UID attendu :", ADMIN_UID);
+    console.log("🔍 [DEBUG] Match admin ?", !!(user && user.uid === ADMIN_UID));
+    window.__medicomeDebugAuth = user; // inspectable dans la console : tapez `__medicomeDebugAuth`
+
+    if (user && user.uid === ADMIN_UID && !isAdminSession) {
+        isAdminSession = true;
+        // Si le menu de sélection est déjà affiché, on le redessine avec le bouton admin
+        if (document.getElementById('validateCodeBtn')) {
+            renderModeChoices();
+        }
+    }
+});
 
 // ============================================================
 // VARIABLES GLOBALES

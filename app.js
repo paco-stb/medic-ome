@@ -12,6 +12,8 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, si
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js"; 
 // 🔒 AJOUT : Cloud Functions sécurisées (remplace l'appel direct à OpenAI depuis le client)
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js";
+// 🧪 AJOUT ÉTUDE : auth anonyme dédiée, indépendante du compte principal
+import { ensureStudyAuth } from './study-auth.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyCig9G4gYHU5h642YV1IZxthYm_IXp6vZU",
@@ -551,8 +553,10 @@ function startAuthListener() {
 
     state.isGuest = true;
     state.isPremiumCode = true;
+    state.isExperimentMode = true; // 🧪 flag persistant utilisé pour la sauvegarde des résultats
     state.pseudo = "Participant Étude";
     state.useLLM = true; 
+    state.startTime = Date.now(); // 🧪 chrono forcé pour l'étude, même hors mode Chrono
     
     // 🔒 SUPPRIMÉ : plus besoin de récupérer une clé OpenAI ici.
     // La Cloud Function "analyzeSymptom" gère l'appel à OpenAI côté serveur ;
@@ -676,6 +680,30 @@ function updateStreakDisplay() {
     const streakDisplay = currentStreak > 0 ? ` <span style="color:#ff9f43; margin-left:8px; display:inline-flex; align-items:center; gap:4px;"><i class="ph-duotone ph-fire"></i> ${currentStreak}</span>` : '';
     const guestLabel = state.isGuest ? " (Local)" : "";
     pseudoBox.innerHTML = state.pseudo + guestLabel + streakDisplay;
+}
+
+// ============================================================
+// 🧪 SAUVEGARDE DES RÉSULTATS D'ÉTUDE — GROUPE A (Mode Génératif)
+// ============================================================
+async function saveGroupAExperimentData(top) {
+    try {
+        const studyUid = await ensureStudyAuth(); // identité anonyme dédiée à l'étude, distincte du vrai compte
+        await addDoc(collection(db, "experiment_results"), {
+            mode: 'generatif',
+            code: sessionStorage.getItem('medicome_study_code') || 'inconnu',
+            studyUid,
+            targetPathologyGuessed: top.patho.name,
+            score: top.score,
+            questionsAsked: state.asked.length,
+            answersDetail: state.answers,
+            terrain: state.demo || null,
+            totalTimeSeconds: state.startTime ? Math.round((Date.now() - state.startTime) / 1000) : null,
+            timestamp: new Date()
+        });
+        console.log("✅ Données expérimentales Groupe A sauvegardées");
+    } catch (error) {
+        console.error("❌ Erreur sauvegarde expérimentale Groupe A:", error);
+    }
 }
 
 async function saveProgression() {
@@ -1353,7 +1381,9 @@ function showDiagnostic() {
         rankPathologies();
         const top = state.ranked.length > 0 ? state.ranked[0] : null;
         if (!top) { app.innerHTML = `<div class="card center"><h2 style="color:var(--error)">Aucun diagnostic trouvé</h2><p>L'IA n'a pas pu trancher. Essayez de donner plus de symptômes.</p><button class="btn" onclick="renderHome()">Retour Accueil</button></div>`; return; }
-        state.diagnosticShown = true; state.previousDiagnostics.push(top.patho.name); setDocTitle(`Diagnostic : ${top.patho.name}`); app.innerHTML = ''; const card = document.createElement('div'); card.className = 'card center';
+        state.diagnosticShown = true;
+        if (state.isExperimentMode) { saveGroupAExperimentData(top); } // 🧪 sauvegarde étude Groupe A
+        state.previousDiagnostics.push(top.patho.name); setDocTitle(`Diagnostic : ${top.patho.name}`); app.innerHTML = ''; const card = document.createElement('div'); card.className = 'card center';
         const title = document.createElement('h2'); title.innerHTML = '<i class="ph-duotone ph-lightbulb"></i> Diagnostic Proposé'; card.appendChild(title);
         let pdfButton = ''; if (top.patho.pdf && top.patho.pdf !== '#') { if (state.isGuest && !state.isPremiumCode) { pdfButton = `<button class="btn" style="background:rgba(125,125,125,0.1); border:1px dashed var(--text-muted); color:var(--text-muted); margin-top:10px; font-size:13px;" onclick="showAlert('Compte requis pour le PDF', 'error')"><i class="ph-duotone ph-lock-key"></i> Fiche PDF (Verrouillée)</button>`; } else { pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.patho.pdf}" target="_blank" onclick="trackPdf()"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF de révision</a>`; } } else { pdfButton = `<span class="small" style="opacity:0.5"><i class="ph-duotone ph-file-x"></i> Pas de fiche PDF</span>`; }
         const videoButton = getVideoButton(top.patho);

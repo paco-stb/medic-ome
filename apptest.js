@@ -7,6 +7,8 @@ import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs } from "
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; // ajout de signInAnonymously
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js"; // nouveau
+// 🧪 AJOUT ÉTUDE : auth anonyme dédiée, indépendante du compte principal
+import { ensureStudyAuth } from './study-auth.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyCig9G4gYHU5h642YV1IZxthYm_IXp6vZU",
@@ -164,6 +166,7 @@ async function validateStudyCode() {
     if (!auth.currentUser) {
         await signInAnonymously(auth); // connexion anonyme requise pour appeler analyzeSymptom
     }
+    sessionStorage.setItem('medicome_study_code', code); // 🧪 mémorisé pour retrouver les données ensuite
     isAdminSession = false;
     renderModeChoices();
 } else {
@@ -999,22 +1002,22 @@ function addQuestionToHistory(question, answer) {
 // ============================================================
 
 async function saveExperimentData(data) {
-    try {
-        const currentUser = auth.currentUser;
-        const experimentData = {
-            ...data,
-            userId: currentUser ? currentUser.uid : 'anonymous',
-            userEmail: currentUser ? currentUser.email : null,
-            questionsDetail: experimentState.questionsAsked,
-            patientProfile: experimentState.patientProfile,
-            chiefComplaint: experimentState.chiefComplaint
-        };
-        
-        await addDoc(collection(db, "experiment_results"), experimentData);
-        console.log("✅ Données expérimentales sauvegardées");
-    } catch (error) {
-        console.error("❌ Erreur sauvegarde données:", error);
-    }
+    try {
+        const studyUid = await ensureStudyAuth(); // identité anonyme dédiée à l'étude, jamais le vrai compte
+        const experimentData = {
+            ...data,
+            code: sessionStorage.getItem('medicome_study_code') || 'inconnu',
+            studyUid,
+            questionsDetail: experimentState.questionsAsked,
+            patientProfile: experimentState.patientProfile,
+            chiefComplaint: experimentState.chiefComplaint
+        };
+
+        await addDoc(collection(db, "experiment_results"), experimentData);
+        console.log("✅ Données expérimentales sauvegardées");
+    } catch (error) {
+        console.error("❌ Erreur sauvegarde données:", error);
+    }
 }
 
 // ============================================================
@@ -1113,7 +1116,7 @@ async function downloadExperimentData() {
 
         // Préparation du CSV
         let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
-        csvContent += "Date;Session ID;Mode;Pathologie Cible;Diagnostic Joueur;Succès;Nb Questions;Nb Indices;Nb Erreurs;Temps (sec)\n";
+        csvContent += "Date;Code;Mode;Session ID;Pathologie Cible;Diagnostic Joueur;Succès/Score;Nb Questions;Nb Indices;Nb Erreurs;Temps (sec)\n";
 
         querySnapshot.forEach((doc) => {
             const data = doc.data();
@@ -1125,13 +1128,15 @@ async function downloadExperimentData() {
 
             const clean = (txt) => (txt ? String(txt).replace(/;/g, ",").replace(/\n/g, " ") : "");
 
+            // Groupe B (classique) : targetPathology/userGuess/success. Groupe A (génératif) : targetPathologyGuessed/score.
             const row = [
                 dateStr,
-                clean(data.sessionId),
+                clean(data.code),
                 clean(data.mode),
-                clean(data.targetPathology),
+                clean(data.sessionId),
+                clean(data.targetPathology || data.targetPathologyGuessed),
                 clean(data.userGuess),
-                data.success ? "OUI" : "NON",
+                data.mode === 'generatif' ? (data.score ?? '') : (data.success ? "OUI" : "NON"),
                 data.questionsAsked || 0,
                 data.hintsGiven || 0,
                 data.wrongAnswers || 0,

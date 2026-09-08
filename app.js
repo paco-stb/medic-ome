@@ -13,7 +13,7 @@ import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase
 // 🔒 AJOUT : Cloud Functions sécurisées (remplace l'appel direct à OpenAI depuis le client)
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js";
 // 🧪 AJOUT ÉTUDE : auth anonyme dédiée, indépendante du compte principal
-import { ensureStudyAuth } from './study-auth.js';
+import { ensureStudyAuth, callStudyAnalyzeSymptom } from './study-auth.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyCig9G4gYHU5h642YV1IZxthYm_IXp6vZU",
@@ -557,6 +557,16 @@ function startAuthListener() {
     state.pseudo = "Participant Étude";
     state.useLLM = true; 
     state.startTime = Date.now(); // 🧪 chrono forcé pour l'étude, même hors mode Chrono
+    // 🐛 FIX : on retire ?mode=generatif de l'URL tout de suite. Sinon, chaque changement
+    // d'état d'auth (y compris celui déclenché par la Déconnexion) relit l'URL et
+    // renvoie de force en mode étude : boucle impossible à quitter.
+    window.history.replaceState({}, '', window.location.pathname);
+    
+    // 🐛 FIX : les appels IA du Groupe A doivent utiliser l'identité anonyme dédiée
+    // à l'étude (study-auth.js), jamais la session Firebase Auth principale — sinon
+    // on retombe sur le même problème de pollution du compte réel de l'étudiant.
+    ensureStudyAuth().catch(e => console.error("Erreur auth étude:", e));
+    callAnalyzeSymptom = callStudyAnalyzeSymptom;
     
     // 🔒 SUPPRIMÉ : plus besoin de récupérer une clé OpenAI ici.
     // La Cloud Function "analyzeSymptom" gère l'appel à OpenAI côté serveur ;
@@ -666,9 +676,12 @@ function updateHeader(){
     homeBtn.onclick=renderHome;
     logoutBtn.onclick = () => {
         localStorage.removeItem('medicome_guest_progression'); localStorage.removeItem('medicome_guest_pseudo'); localStorage.removeItem('medicome_access_code_session');
-        state.isGuest = false; state.pseudo = null; state.currentUser = null; 
-        state.progression = { correct: 0, incorrect: 0, streak: 0, mastery: {}, dailyStreak: 0, lastDaily: null, achievements: [], bestTimes: {}, errorLog: {}, pdfDownloads: 0, speedWins: 0, socialDone: false, reviewDone: false }; 
-        signOut(auth).then(() => { renderLogin(); updateHeader(); showAlert("Déconnecté", "success"); }).catch(() => { renderLogin(); updateHeader(); });
+        signOut(auth).finally(() => {
+            // 🐛 FIX : rechargement complet, sans paramètres d'URL, pour repartir sur un état
+            // totalement propre (sinon un ?mode=generatif oublié dans l'URL, ou un reliquat
+            // de session anonyme d'étude en mémoire, pouvait re-piéger l'utilisateur).
+            window.location.href = window.location.origin + window.location.pathname;
+        });
     };
     checkAdminAccess();
 }

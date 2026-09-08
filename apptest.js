@@ -5,10 +5,10 @@
 
 import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"; // ajout de signInAnonymously
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js"; // nouveau
 // 🧪 AJOUT ÉTUDE : auth anonyme dédiée, indépendante du compte principal
-import { ensureStudyAuth } from './study-auth.js';
+import { ensureStudyAuth, callStudyAnalyzeSymptom } from './study-auth.js';
 
 const firebaseConfig = {
     apiKey: "AIzaSyCig9G4gYHU5h642YV1IZxthYm_IXp6vZU",
@@ -29,8 +29,8 @@ if (getApps().length === 0) {
 
 const auth = getAuth(app);
 const db = getFirestore(app);
-const functions = getFunctions(app, "europe-west1"); // même région que ta Cloud Function
-const callAnalyzeSymptom = httpsCallable(functions, "analyzeSymptom");
+// 🐛 FIX : plus de Functions liée à l'app principale ici — tout passe par l'app "study"
+// (voir study-auth.js), pour ne jamais toucher à la session Firebase Auth normale.
 
 // ============================================================
 // 🧪 DEBUG ADMIN — à retirer une fois le problème identifié
@@ -189,9 +189,10 @@ async function validateStudyCode() {
         const codeSnap = await getDoc(codeRef);
 
         if (codeSnap.exists() && codeSnap.data().active === true) {
-    if (!auth.currentUser) {
-        await signInAnonymously(auth); // connexion anonyme requise pour appeler analyzeSymptom
-    }
+    // 🐛 FIX : on ne touche plus jamais à `auth` (session principale) ici.
+    // L'identité anonyme nécessaire pour appeler l'IA est gérée à part par
+    // ensureStudyAuth() / callStudyAnalyzeSymptom() (voir study-auth.js).
+    await ensureStudyAuth();
     sessionStorage.setItem('medicome_study_code', code); // 🧪 mémorisé pour retrouver les données ensuite
     isAdminSession = false;
     renderModeChoices();
@@ -391,6 +392,17 @@ function generatePatientProfile(pathology) {
     }
     
     experimentState.chiefComplaint = chiefComplaint || 'douleur_abdominale';
+
+    // 🧪 AJOUT : signes d'orientation donnés d'emblée (faible poids, hors chef de file/pathognomoniques)
+    // Objectif : réduire la difficulté d'entrée du Mode Classique sans donner le diagnostic.
+    const veto = pathology.veto || [];
+    const boost = pathology.boost || [];
+    const excluded = new Set([experimentState.chiefComplaint, ...veto, ...boost]);
+    const candidates = Object.entries(signes)
+        .filter(([key, weight]) => weight > 0 && !excluded.has(key))
+        .sort((a, b) => a[1] - b[1]); // poids croissant = signes les moins spécifiques d'abord
+
+    experimentState.initialHints = candidates.slice(0, 3).map(([key]) => key);
 }
 
 // ============================================================
@@ -405,6 +417,18 @@ function renderClassiqueInterface() {
     const terrainText = (profile && profile.terrain && profile.terrain.length > 0)
         ? profile.terrain.join(', ') 
         : "Aucun antécédent notable";
+
+    // 🧪 AJOUT : signes d'orientation à faible poids, affichés d'emblée pour réduire
+    // la difficulté d'entrée (le chef de file seul était souvent insuffisant pour démarrer).
+    const hintSigns = (experimentState.initialHints || []).map(formatSymptomName);
+    const initialHintsHtml = hintSigns.length > 0 ? `
+                    <div class="info-card hints-card" style="border-left: 3px solid #4dabf7;">
+                        <div class="card-label"><i class="ph-duotone ph-lightbulb"></i> Signes d'orientation</div>
+                        <div class="card-value">
+                            ${hintSigns.map(s => `<span class="hint-chip" style="display:inline-block; margin:2px 4px 2px 0; padding:2px 8px; background:#e7f5ff; border-radius:12px; font-size:0.85em;">${s}</span>`).join('')}
+                        </div>
+                        <div style="font-size:0.75em; opacity:0.7; margin-top:4px;">Signes secondaires connus d'emblée — à vous d'explorer le reste.</div>
+                    </div>` : '';
     
     app.innerHTML = `
         <div class="card center" style="max-width: 1000px; width: 95%; padding: 0; background: transparent; box-shadow: none;">
@@ -425,6 +449,8 @@ function renderClassiqueInterface() {
                         <div class="card-label"><i class="ph-duotone ph-clipboard-text"></i> Terrain & Antécédents</div>
                         <div class="card-value">${terrainText}</div>
                     </div>
+
+                    ${initialHintsHtml}
                     
                     <div class="stats-row">
                         <div class="mini-stat">
@@ -658,7 +684,7 @@ async function analyzeQuestion(questionText) {
     const presentSignsKeys = Object.keys(targetPathology.signes).join(", ");
 
     try {
-        const { data } = await callAnalyzeSymptom({
+        const { data } = await callStudyAnalyzeSymptom({
             task: "controlQuestion",
             userText: questionText,
             pathologyName: targetPathology.name,

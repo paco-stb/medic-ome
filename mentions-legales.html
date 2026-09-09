@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Mentions légales & Politique de confidentialité — Medicome</title>
+   <meta name="robots" content="noindex">
+
+   <link rel="icon" type="image/png" sizes="32x32" href="./favicon.png">
+   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+   <script src="https://unpkg.com/@phosphor-icons/web"></script>
+   <link rel="stylesheet" href="style.css">
+
+   <style>
+      .legal-wrap { max-width: 780px; margin: 0 auto; padding: 100px 20px 80px; }
+      .legal-wrap h1 { font-size: 1.8em; color: var(--text-main); margin-bottom: 6px; }
+      .legal-wrap .subtitle { color: var(--text-muted); margin-bottom: 40px; font-size: 0.95em; }
+      .legal-wrap h2 { font-size: 1.25em; color: var(--accent); margin-top: 40px; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid var(--glass-border); }
+      .legal-wrap h3 { font-size: 1.05em; color: var(--text-main); margin-top: 24px; margin-bottom: 10px; }
+      .legal-wrap p, .legal-wrap li { color: var(--text-muted); line-height: 1.7; font-size: 0.96em; }
+      .legal-wrap ul { padding-left: 22px; margin-bottom: 14px; }
+      .legal-wrap li { margin-bottom: 6px; }
+      .legal-wrap a { color: var(--accent); text-decoration: none; }
+      .legal-wrap a:hover { text-decoration: underline; }
+      .todo {
+         background: rgba(255, 159, 67, 0.1);
+         border: 1px dashed #ff9f43;
+         color: #ff9f43;
+         padding: 12px 16px;
+         border-radius: 10px;
+         font-size: 0.9em;
+         margin: 10px 0 18px;
+      }
+      .todo strong { color: #ff9f43; }
+      .toc { background: rgba(125,125,125,0.08); border: 1px solid var(--glass-border); border-radius: 12px; padding: 18px 24px; margin-bottom: 10px; }
+      .toc a { display: block; padding: 4px 0; color: var(--text-muted); }
+      .toc a:hover { color: var(--accent); }
+      .back-link { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 24px; color: var(--accent); text-decoration: none; font-size: 0.9em; }
+   </style>
+</head>
+<body>
+
+   <div class="legal-wrap">
+      <a href="index.html" class="back-link"><i class="ph-duotone ph-arrow-left"></i> Retour à Medicome</a>
+
+      <h1>Mentions légales & Politique de confidentialité</h1>
+      <div class="subtitle">Dernière mise à jour : <span id="lastUpdate">09/09/2026</span></div>
+
+      <div class="toc">
+         <a href="#editeur">1. Éditeur du site</a>
+         <a href="#hebergement">2. Hébergement</a>
+         <a href="#propriete">3. Propriété intellectuelle</a>
+         <a href="#donnees">4. Données personnelles collectées</a>
+         <a href="#ia">5. Recours à l'intelligence artificielle</a>
+         <a href="#etude">6. Participation à l'étude de recherche IMPACT-R2C</a>
+         <a href="#cookies">7. Cookies</a>
+         <a href="#droits">8. Vos droits (RGPD)</a>
+      </div>
+
+      <h2 id="editeur">1. Éditeur du site</h2>
+      <p>Ce site est édité à titre non professionnel, conformément à l'article 1-1 de la loi n°2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN). À ce titre, l'éditeur exerce son droit de préserver son anonymat vis-à-vis du public : son identité complète est communiquée à l'hébergeur du site (voir section 2), qui ne peut la divulguer que sur réquisition de l'autorité judiciaire.</p>
+      <ul>
+         <li>Contact : paco.medicome@gmail.com</li>
+      </ul>
+
+      <h2 id="hebergement">2. Hébergement</h2>
+      <p>Le site Medicome.fr et ses bases de données sont hébergés par :</p>
+      <ul>
+         <li>Google Ireland Limited (Firebase Hosting), Gordon House, Barrow Street, Dublin 4, Irlande</li>
+      </ul>
+            <h2 id="propriete">3. Propriété intellectuelle</h2>
+      <p>L'ensemble des contenus présents sur Medicome (textes, structure des cas cliniques, base de données de pathologies, code source, identité visuelle, logo) est la propriété de l'éditeur du site, sauf mention contraire. Toute reproduction, représentation, modification ou exploitation, totale ou partielle, sans autorisation préalable est interdite.</p>
+
+      <h2 id="donnees">4. Données personnelles collectées</h2>
+      <p>Dans le cadre de l'utilisation normale de Medicome (hors participation à l'étude de recherche, voir section 6), les données suivantes peuvent être collectées :</p>
+      <ul>
+         <li>Données de compte : pseudonyme, adresse email (si création d'un compte)</li>
+         <li>Données de progression : cas traités, scores, séries de connexion, succès obtenus</li>
+         <li>Données techniques : identifiant de connexion Firebase, journaux d'utilisation à des fins de sécurité et de lutte contre les abus (quota anti-abus)</li>
+      </ul>
+      <p>Ces données sont stockées via Firebase (Google) et ne sont ni vendues, ni cédées à des tiers à des fins commerciales.</p>
+
+      <h2 id="ia">5. Recours à l'intelligence artificielle</h2>
+      <p>Medicome utilise un modèle de langage (LLM, fourni par OpenAI) pour interpréter le sens de vos réponses en texte libre (ex. reconnaissance de symptômes que vous décrivez avec vos propres mots). Ce traitement est strictement limité à la compréhension du langage naturel. Les décisions médicales (scoring, validation d'un diagnostic) reposent sur un système déterministe interne, distinct du modèle de langage, garantissant l'absence d'hallucination médicale dans le résultat qui vous est présenté.</p>
+      <p>Le texte transmis à OpenAI dans ce cadre n'est, à notre connaissance, pas utilisé par ce prestataire pour ré-entraîner ses modèles (traitement via API, hors interface grand public).</p>
+
+      <h2 id="etude">6. Participation à l'étude de recherche IMPACT-R2C</h2>
+      <p>Certains utilisateurs de Medicome, dans le cadre de leur cursus universitaire, sont invités à participer à une étude de recherche en pédagogie médicale (étude IMPACT-R2C). Cette participation est distincte de l'utilisation normale du site, encadrée par une notice d'information et un consentement spécifiques, et fait l'objet d'un traitement anonymisé des données recueillies (identifiant technique aléatoire, non rattaché à votre compte personnel ni à votre identité).</p>
+      <p>Pour le détail de ce traitement spécifique, reportez-vous à la notice d'information et au formulaire de consentement qui vous sont remis avant toute participation à cette étude.</p>
+
+      <h2 id="cookies">7. Cookies</h2>
+      <p>Medicome utilise des cookies et technologies de stockage local (localStorage) strictement nécessaires au fonctionnement du site (maintien de la connexion, préférences d'affichage). Aucun cookie publicitaire ou de traçage tiers n'est utilisé.</p>
+
+      <h2 id="droits">8. Vos droits (RGPD)</h2>
+      <p>Conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi Informatique et Libertés, vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation du traitement, d'opposition et de portabilité de vos données personnelles.</p>
+      <p>Vous pouvez exercer ces droits en nous contactant à l'adresse indiquée en section 9. Vous disposez également du droit d'introduire une réclamation auprès de la Commission Nationale de l'Informatique et des Libertés (CNIL) — <a href="https://www.cnil.fr" target="_blank" rel="noopener">www.cnil.fr</a>.</p>
+
+        </div>
+
+</body>
+</html>

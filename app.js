@@ -425,7 +425,9 @@ async function initApp() {
         fetchNotifications();
         
         // Listeners boutons globaux
-        const btnLegal = q('#legalLink'); if(btnLegal) btnLegal.onclick = renderLegalPage;
+        // 🐛 FIX : renvoie vers la page mentions-legales.html (à jour et complète : étude, IA, RGPD)
+        // au lieu de l'ancienne renderLegalPage() interne, restée minimaliste et obsolète.
+        const btnLegal = q('#legalLink'); if(btnLegal) btnLegal.onclick = () => { window.location.href = 'mentions-legales.html'; };
         const dataModeBtn = q('#dataModeBtn'); if(dataModeBtn) dataModeBtn.onclick = toggleDataMode;
         const cLink = q('#contactLink'); if(cLink) cLink.onclick = renderContact;
         const rLink = q('#reviewsLink'); if(rLink) rLink.onclick = renderReviews;

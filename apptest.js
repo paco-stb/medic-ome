@@ -1088,9 +1088,6 @@ const currentMode = params.get('mode');
 console.log("Routeur APPTEST - Mode détecté :", currentMode);
 
 if (currentMode === 'generatif') {
-    // correction 210 IQ
-    // On charge dynamiquement le moteur principal (app.js)
-    // Cela débloque le chargement infini
  console.log("Mode Génératif : Chargement dynamique de app.js...");
     import('./app.js')
  .then(() => console.log("Medicome Engine (app.js) chargé avec succès."))

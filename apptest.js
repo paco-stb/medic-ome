@@ -1,40 +1,36 @@
-// ============================================================
-// APPTEST.JS - MODE EXPÉRIMENTAL POUR ÉTUDE SCIENTIFIQUE
-// Comparaison : Raisonnement Génératif Inversé vs Classique
-// ============================================================
+// apptest.js : mode expérimental pour l'étude scientifique
+// (comparaison raisonnement génératif inversé vs classique)
 
 import { getFirestore, doc, getDoc, setDoc, addDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js"; // nouveau
-// 🧪 AJOUT ÉTUDE : auth anonyme dédiée, indépendante du compte principal
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js";
+// auth anonyme dédiée, indépendante du compte principal
 import { ensureStudyAuth, callStudyAnalyzeSymptom } from './study-auth.js';
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCig9G4gYHU5h642YV1IZxthYm_IXp6vZU",
-    authDomain: "medicome-paco.firebaseapp.com",
-    projectId: "medicome-paco",
-    storageBucket: "medicome-paco.firebasestorage.app",
-    messagingSenderId: "332171806096",
-    appId: "1:332171806096:web:36889325196a7a718b5f15"
+    apiKey: "AIzaSyCig9G4gYHU5h642YV1IZxthYm_IXp6vZU",
+    authDomain: "medicome-paco.firebaseapp.com",
+    projectId: "medicome-paco",
+    storageBucket: "medicome-paco.firebasestorage.app",
+    messagingSenderId: "332171806096",
+    appId: "1:332171806096:web:36889325196a7a718b5f15"
 };
 
-// CORRECTION : On vérifie si une app existe déjà pour éviter le crash
+// On vérifie si une app existe déjà pour éviter le crash
 let app;
 if (getApps().length === 0) {
-    app = initializeApp(firebaseConfig);
+    app = initializeApp(firebaseConfig);
 } else {
-    app = getApps()[0];
+    app = getApps()[0];
 }
 
 const auth = getAuth(app);
 const db = getFirestore(app);
-// 🐛 FIX : plus de Functions liée à l'app principale ici — tout passe par l'app "study"
+// plus de Functions liée à l'app principale ici — tout passe par l'app "study"
 // (voir study-auth.js), pour ne jamais toucher à la session Firebase Auth normale.
 
-// ============================================================
-// DÉTECTION ADMIN RÉACTIVE
-// ============================================================
+// --- Détection admin réactive ---
 // La restauration de session Firebase Auth est asynchrone au chargement de la page :
 // auth.currentUser peut être `null` pendant quelques centaines de ms, même si
 // l'admin est normalement connecté. Ce listener bascule en mode admin dès que
@@ -50,49 +46,43 @@ onAuthStateChanged(auth, (user) => {
 });
 
 
-// ============================================================
-// VARIABLES GLOBALES
-// ============================================================
+// Variables globales
 const ADMIN_UID = "Kj5oyJpA4nXLDrjh3YqWCwlXEda2"; // Ton ID unique
 let isAdminSession = false; // Par défaut, c'est caché
 let PATHOLOGIES = [];
 let experimentState = {
-    mode: null, // 'generatif' ou 'classique'
-    targetPathology: null,
-    patientProfile: {},
-    chiefComplaint: null,
-    questionsAsked: [],
-    wrongAnswers: 0,
-    startTime: null,
-    sessionId: null,
-    hintsGiven: 0,
-    attempts: 0,
+    mode: null, // 'generatif' ou 'classique'
+    targetPathology: null,
+    patientProfile: {},
+    chiefComplaint: null,
+    questionsAsked: [],
+    wrongAnswers: 0,
+    startTime: null,
+    sessionId: null,
+    hintsGiven: 0,
+    attempts: 0,
     signsFoundAtLastHint: 0
 };
 
-// ============================================================
-// INITIALISATION
-// ============================================================
+// Initialisation
 
 async function initExperiment() {
-    try {
-        const response = await fetch('./pathologies.json');
-        PATHOLOGIES = await response.json();
-        renderModeSelection();
-    } catch (error) {
-        console.error("Erreur chargement pathologies:", error);
-        document.getElementById('app').innerHTML = `
+    try {
+        const response = await fetch('./pathologies.json');
+        PATHOLOGIES = await response.json();
+        renderModeSelection();
+    } catch (error) {
+ console.error("Erreur chargement pathologies:", error);
+        document.getElementById('app').innerHTML = `
             <div class="card center">
                 <h2 style="color:var(--error)">Erreur de chargement</h2>
                 <p class="small">${error.message}</p>
             </div>
         `;
-    }
+    }
 }
 
-// ============================================================
-// SÉLECTION DU MODE EXPÉRIMENTAL
-// ============================================================
+// --- Sélection du mode expérimental ---
 
 function renderModeSelection() {
     const app = document.getElementById('app');
@@ -161,7 +151,7 @@ async function validateStudyCode() {
     // --- DETECTION AUTOMATIQUE ADMIN ---
     // Si l'utilisateur connecté est TOI, on ouvre tout de suite
     if (auth.currentUser && auth.currentUser.uid === ADMIN_UID) {
-        console.log("👑 Admin identifié :", auth.currentUser.email);
+ console.log("Admin identifié :", auth.currentUser.email);
         isAdminSession = true; 
         renderModeChoices(); // On affiche le menu avec le bouton secret
         return;
@@ -181,11 +171,11 @@ async function validateStudyCode() {
         const codeSnap = await getDoc(codeRef);
 
         if (codeSnap.exists() && codeSnap.data().active === true) {
-    // 🐛 FIX : on ne touche plus jamais à `auth` (session principale) ici.
+    // on ne touche plus jamais à `auth` (session principale) ici.
     // L'identité anonyme nécessaire pour appeler l'IA est gérée à part par
     // ensureStudyAuth() / callStudyAnalyzeSymptom() (voir study-auth.js).
     await ensureStudyAuth();
-    sessionStorage.setItem('medicome_study_code', code); // 🧪 mémorisé pour retrouver les données ensuite
+    sessionStorage.setItem('medicome_study_code', code); // mémorisé pour retrouver les données ensuite
     isAdminSession = false;
     renderModeChoices();
 } else {
@@ -194,7 +184,7 @@ async function validateStudyCode() {
             btn.disabled = false;
         }
     } catch (error) {
-        console.error(error);
+ console.error(error);
         alert("❌ Erreur de connexion.");
         btn.innerHTML = '<i class="ph-bold ph-check"></i> Valider';
         btn.disabled = false;
@@ -269,9 +259,7 @@ function renderModeChoices() {
     `;
 }
 
-// ============================================================
-// MODE GÉNÉRATIF INVERSÉ (MODE ACTUEL)
-// ============================================================
+// Mode génératif inversé (mode actuel)
 
 window.startGeneratifMode = function() {
     experimentState.mode = 'generatif';
@@ -282,110 +270,106 @@ window.startGeneratifMode = function() {
     window.location.href = window.location.pathname + '?mode=generatif&useLLM=true';
 }
 
-// ============================================================
-// MODE CLASSIQUE (NOUVEAU - EXPÉRIMENTAL)
-// ============================================================
+// Mode classique (nouveau - expérimental)
 
 window.startClassiqueMode = function() {
-    experimentState.mode = 'classique';
-    experimentState.sessionId = Date.now().toString();
-    experimentState.startTime = Date.now();
-    experimentState.questionsAsked = [];
-    experimentState.wrongAnswers = 0;
-    experimentState.hintsGiven = 0;
-    experimentState.attempts = 0;
-    
-    // Sélection aléatoire d'une pathologie
-    experimentState.targetPathology = PATHOLOGIES[Math.floor(Math.random() * PATHOLOGIES.length)];
-    
-    // Génération du profil patient
-    generatePatientProfile(experimentState.targetPathology);
-    
-    renderClassiqueInterface();
+    experimentState.mode = 'classique';
+    experimentState.sessionId = Date.now().toString();
+    experimentState.startTime = Date.now();
+    experimentState.questionsAsked = [];
+    experimentState.wrongAnswers = 0;
+    experimentState.hintsGiven = 0;
+    experimentState.attempts = 0;
+    
+    // Sélection aléatoire d'une pathologie
+    experimentState.targetPathology = PATHOLOGIES[Math.floor(Math.random() * PATHOLOGIES.length)];
+    
+    // Génération du profil patient
+    generatePatientProfile(experimentState.targetPathology);
+    
+    renderClassiqueInterface();
 }
 
-// ============================================================
-// GÉNÉRATION DU PROFIL PATIENT
-// ============================================================
+// Génération du profil patient
 
 function generatePatientProfile(pathology) {
-    const profile = {
-        age: "Adulte (45 ans)",  // ✅ Valeur par défaut
-        gender: Math.random() > 0.5 ? "Homme" : "Femme",  // ✅ Valeur par défaut
-        terrain: []
-    };
-    
-    // ✅ Récupération sécurisée des facteurs
-    const facteurs = pathology.facteurs || {};
-    
-    // Détermination de l'âge basée sur les facteurs (si disponibles)
-    if (facteurs['nourrisson_moins_2ans'] || facteurs['nourrisson']) {
-        profile.age = "Nourrisson (< 2 ans)";
-    } else if (facteurs['enfant'] || facteurs['enfant_3_15ans']) {
-        profile.age = "Enfant (8 ans)";
-    } else if (facteurs['adolescent'] || facteurs['sujet_jeune']) {
-        profile.age = "Adolescent (16 ans)";
-    } else if (facteurs['adulte_jeune'] || facteurs['jeune']) {
-        profile.age = "Jeune adulte (28 ans)";
-    } else if (facteurs['plus_de_50ans'] || facteurs['adulte']) {
-        profile.age = "Adulte (55 ans)";
-    } else if (facteurs['sujet_age'] || facteurs['age_>65ans']) {
-        profile.age = "Senior (72 ans)";
-    }
-    
-    // Détermination du genre basée sur les facteurs (si disponibles)
-    if (facteurs['homme'] || facteurs['homme_age'] || facteurs['homme_jeune']) {
-        profile.gender = "Homme";
-    } else if (facteurs['femme'] || facteurs['femme_jeune'] || facteurs['femme_age_procreer']) {
-        profile.gender = "Femme";
-    }
-    
-    // Terrain médical (basé sur les facteurs si disponibles)
-    if (facteurs['tabac'] || facteurs['tabagisme']) {
-        profile.terrain.push("Tabagisme actif");
-    }
-    if (facteurs['diabete']) {
-        profile.terrain.push("Diabète de type 2");
-    }
-    if (facteurs['hta']) {
-        profile.terrain.push("HTA");
-    }
-    if (facteurs['alcoolisme_chronique'] || facteurs['alcool']) {
-        profile.terrain.push("Éthylisme chronique");
-    }
-    if (facteurs['surpoids'] || facteurs['obesite']) {
-        profile.terrain.push("Obésité (IMC 32)");
-    }
-    if (facteurs['immunodepression']) {
-        profile.terrain.push("Immunodépression");
-    }
-    if (facteurs['grossesse']) {
-        profile.terrain.push("Grossesse (28 SA)");
-    }
-    
-    // ✅ IMPORTANT : Sauvegarder AVANT d'accéder aux signes
-    experimentState.patientProfile = profile;
-    
-    // Identification du chef de file
-    const signes = pathology.signes || {};
-    const generalSymptoms = [
-        'douleur_thoracique', 'douleur_abdominale', 'fievre', 'dyspnee', 
-        'cephalees', 'troubles_neuro', 'anomalie_peau', 'genes_urinaires',
-        'douleur_membre_traumatisme', 'douleur_dos', 'trouble_psy', 'toux'
-    ];
-    
-    let maxWeight = 0;
-    let chiefComplaint = null;
-    for (const symptom of generalSymptoms) {
-        if (signes[symptom] && signes[symptom] > maxWeight) {
-            maxWeight = signes[symptom];
-            chiefComplaint = symptom;
-        }
-    }
-    
-    experimentState.chiefComplaint = chiefComplaint || 'douleur_abdominale';
+    const profile = {
+        age: "Adulte (45 ans)",  // valeur par défaut
+        gender: Math.random() > 0.5 ? "Homme" : "Femme",  // valeur par défaut
+        terrain: []
+    };
+    
+    // Récupération sécurisée des facteurs
+    const facteurs = pathology.facteurs || {};
+    
+    // Détermination de l'âge basée sur les facteurs (si disponibles)
+    if (facteurs['nourrisson_moins_2ans'] || facteurs['nourrisson']) {
+        profile.age = "Nourrisson (< 2 ans)";
+    } else if (facteurs['enfant'] || facteurs['enfant_3_15ans']) {
+        profile.age = "Enfant (8 ans)";
+    } else if (facteurs['adolescent'] || facteurs['sujet_jeune']) {
+        profile.age = "Adolescent (16 ans)";
+    } else if (facteurs['adulte_jeune'] || facteurs['jeune']) {
+        profile.age = "Jeune adulte (28 ans)";
+    } else if (facteurs['plus_de_50ans'] || facteurs['adulte']) {
+        profile.age = "Adulte (55 ans)";
+    } else if (facteurs['sujet_age'] || facteurs['age_>65ans']) {
+        profile.age = "Senior (72 ans)";
+    }
+    
+    // Détermination du genre basée sur les facteurs (si disponibles)
+    if (facteurs['homme'] || facteurs['homme_age'] || facteurs['homme_jeune']) {
+        profile.gender = "Homme";
+    } else if (facteurs['femme'] || facteurs['femme_jeune'] || facteurs['femme_age_procreer']) {
+        profile.gender = "Femme";
+    }
+    
+    // Terrain médical (basé sur les facteurs si disponibles)
+    if (facteurs['tabac'] || facteurs['tabagisme']) {
+        profile.terrain.push("Tabagisme actif");
+    }
+    if (facteurs['diabete']) {
+        profile.terrain.push("Diabète de type 2");
+    }
+    if (facteurs['hta']) {
+        profile.terrain.push("HTA");
+    }
+    if (facteurs['alcoolisme_chronique'] || facteurs['alcool']) {
+        profile.terrain.push("Éthylisme chronique");
+    }
+    if (facteurs['surpoids'] || facteurs['obesite']) {
+        profile.terrain.push("Obésité (IMC 32)");
+    }
+    if (facteurs['immunodepression']) {
+        profile.terrain.push("Immunodépression");
+    }
+    if (facteurs['grossesse']) {
+        profile.terrain.push("Grossesse (28 SA)");
+    }
+    
+    // Sauvegarder AVANT d'accéder aux signes
+    experimentState.patientProfile = profile;
+    
+    // Identification du chef de file
+    const signes = pathology.signes || {};
+    const generalSymptoms = [
+        'douleur_thoracique', 'douleur_abdominale', 'fievre', 'dyspnee', 
+        'cephalees', 'troubles_neuro', 'anomalie_peau', 'genes_urinaires',
+        'douleur_membre_traumatisme', 'douleur_dos', 'trouble_psy', 'toux'
+    ];
+    
+    let maxWeight = 0;
+    let chiefComplaint = null;
+    for (const symptom of generalSymptoms) {
+        if (signes[symptom] && signes[symptom] > maxWeight) {
+            maxWeight = signes[symptom];
+            chiefComplaint = symptom;
+        }
+    }
+    
+    experimentState.chiefComplaint = chiefComplaint || 'douleur_abdominale';
 
-    // 🧪 AJOUT : signes d'orientation donnés d'emblée (faible poids, hors chef de file/pathognomoniques)
+    // signes d'orientation donnés d'emblée (faible poids, hors chef de file/pathognomoniques)
     // Objectif : réduire la difficulté d'entrée du Mode Classique sans donner le diagnostic.
     const veto = pathology.veto || [];
     const boost = pathology.boost || [];
@@ -397,9 +381,7 @@ function generatePatientProfile(pathology) {
     experimentState.initialHints = candidates.slice(0, 3).map(([key]) => key);
 }
 
-// ============================================================
-// INTERFACE MODE CLASSIQUE
-// ============================================================
+// --- Interface mode classique ---
 
 function renderClassiqueInterface() {
     const app = document.getElementById('app');
@@ -410,7 +392,7 @@ function renderClassiqueInterface() {
         ? profile.terrain.join(', ') 
         : "Aucun antécédent notable";
 
-    // 🧪 AJOUT : signes d'orientation à faible poids, affichés d'emblée pour réduire
+    // signes d'orientation à faible poids, affichés d'emblée pour réduire
     // la difficulté d'entrée (le chef de file seul était souvent insuffisant pour démarrer).
     const hintSigns = (experimentState.initialHints || []).map(formatSymptomName);
     const initialHintsHtml = hintSigns.length > 0 ? `
@@ -607,7 +589,7 @@ function renderClassiqueInterface() {
         </style>
     `;
     
-    // Réattachement des événements (Crucial !)
+    // Réattachement des événements
     document.getElementById('askBtn').onclick = handleQuestion;
     document.getElementById('submitDiagnosisBtn').onclick = validateDiagnosis;
     
@@ -619,57 +601,53 @@ function renderClassiqueInterface() {
     };
 }
 
-// ============================================================
-// TRAITEMENT DES QUESTIONS (LLM)
-// ============================================================
+// Traitement des questions (llm)
 
 async function handleQuestion() {
-    const questionText = document.getElementById('questionInput').value.trim();
-    if (!questionText) return;
-    
-    const btn = document.getElementById('askBtn');
-    btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> Analyse en cours...';
-    btn.disabled = true;
-    
-    // Analyse de la question via LLM
-    const result = await analyzeQuestion(questionText);
-    
-    btn.innerHTML = '<i class="ph-bold ph-paper-plane-right"></i> Envoyer la question';
-    btn.disabled = false;
-    
-    if (result === null) {
-        alert("❌ Question non comprise ou trop vague. Reformulez de manière plus précise.\n\nExemple : 'Le patient a-t-il une douleur constrictive ?'");
-        return;
-    }
-    
-    // Enregistrement de la question
-    experimentState.questionsAsked.push({
-        question: questionText,
-        sign: result.sign,
-        answer: result.answer,
-        timestamp: Date.now() - experimentState.startTime
-    });
-    
-    updateCounters();
-    addQuestionToHistory(questionText, result.answer);
-    
-    // Gestion des mauvaises réponses consécutives
-    if (!result.answer) {
-        experimentState.wrongAnswers++;
-        if (experimentState.wrongAnswers >= 5) {
-            giveHint();
-        }
-    } else {
-        experimentState.wrongAnswers = 0; // Reset si bonne réponse
-    }
-    
-    document.getElementById('questionInput').value = '';
-    document.getElementById('questionInput').focus();
+    const questionText = document.getElementById('questionInput').value.trim();
+    if (!questionText) return;
+    
+    const btn = document.getElementById('askBtn');
+    btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> Analyse en cours...';
+    btn.disabled = true;
+    
+    // Analyse de la question via LLM
+    const result = await analyzeQuestion(questionText);
+    
+    btn.innerHTML = '<i class="ph-bold ph-paper-plane-right"></i> Envoyer la question';
+    btn.disabled = false;
+    
+    if (result === null) {
+        alert("❌ Question non comprise ou trop vague. Reformulez de manière plus précise.\n\nExemple : 'Le patient a-t-il une douleur constrictive ?'");
+        return;
+    }
+    
+    // Enregistrement de la question
+    experimentState.questionsAsked.push({
+        question: questionText,
+        sign: result.sign,
+        answer: result.answer,
+        timestamp: Date.now() - experimentState.startTime
+    });
+    
+    updateCounters();
+    addQuestionToHistory(questionText, result.answer);
+    
+    // Gestion des mauvaises réponses consécutives
+    if (!result.answer) {
+        experimentState.wrongAnswers++;
+        if (experimentState.wrongAnswers >= 5) {
+            giveHint();
+        }
+    } else {
+        experimentState.wrongAnswers = 0; // Reset si bonne réponse
+    }
+    
+    document.getElementById('questionInput').value = '';
+    document.getElementById('questionInput').focus();
 }
 
-// ============================================================
-// ANALYSE DE LA QUESTION PAR LLM (CORRIGÉE & OPTIMISÉE)
-// ============================================================
+// Analyse de la question par llm (corrigée & optimisée)
 
 async function analyzeQuestion(questionText) {
     const targetPathology = experimentState.targetPathology;
@@ -691,7 +669,7 @@ async function analyzeQuestion(questionText) {
 
         return { sign: data.detected_sign, answer: isPresent, weight };
     } catch (error) {
-        console.error("Erreur critique LLM:", error);
+ console.error("Erreur critique LLM:", error);
         if (error.code === "resource-exhausted") {
             alert("Limite quotidienne d'IA atteinte, réessayez demain.");
         }
@@ -699,9 +677,7 @@ async function analyzeQuestion(questionText) {
     }
 }
 
-// ============================================================
-// SYSTÈME D'INDICES
-// ============================================================
+// --- Système d'indices ---
 
 function giveHint() {
     const targetPathology = experimentState.targetPathology;
@@ -733,9 +709,7 @@ function giveHint() {
     updateCounters();
 }
 
-// ============================================================
-// VALIDATION DU DIAGNOSTIC
-// ============================================================
+// Validation du diagnostic
 
 async function validateDiagnosis() {
     const diagnosisInput = document.getElementById('diagnosisInput').value.trim();
@@ -756,13 +730,13 @@ async function validateDiagnosis() {
             return; // On arrête tout, on n'envoie pas le diagnostic
         }
     }
-    
+    
     const targetName = experimentState.targetPathology.name;
     const targetShort = experimentState.targetPathology.short || '';
 
     experimentState.attempts++;
 
-    // 🐛 FIX : la comparaison stricte (===, includes) rejetait les synonymes et formes
+    // la comparaison stricte (===, includes) rejetait les synonymes et formes
     // proches ("état dépressif" vs "Dépression", "Diabète 1" vs "Diabète Type 1").
     // On juge maintenant l'équivalence médicale via l'IA (comme pour l'interrogatoire),
     // avec un repli local tolérant aux accents/casse si l'appel IA échoue.
@@ -776,7 +750,7 @@ async function validateDiagnosis() {
         });
         isCorrect = data.result === true;
     } catch (error) {
-        console.error("Erreur IA checkDiagnosis, repli sur comparaison locale:", error);
+ console.error("Erreur IA checkDiagnosis, repli sur comparaison locale:", error);
         const normalize = (s) => s.toLowerCase()
             .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
             .replace(/[^a-z0-9\s]/g, ' ')
@@ -785,35 +759,33 @@ async function validateDiagnosis() {
         const nGuess = normalize(diagnosisInput);
         isCorrect = nTarget === nGuess || nTarget.includes(nGuess) || nGuess.includes(nTarget);
     }
-    
-    const endTime = Date.now();
-    const totalTime = Math.round((endTime - experimentState.startTime) / 1000);
-    
-    // Sauvegarde des données expérimentales
-    await saveExperimentData({
-        mode: 'classique',
-        sessionId: experimentState.sessionId,
-        targetPathology: experimentState.targetPathology.name,
-        userGuess: diagnosisInput,
-        success: isCorrect,
-        questionsAsked: experimentState.questionsAsked.length,
-        wrongAnswers: experimentState.wrongAnswers,
-        hintsGiven: experimentState.hintsGiven,
-        attempts: experimentState.attempts,
-        totalTimeSeconds: totalTime,
-        timestamp: new Date()
-    });
-    
-    if (isCorrect) {
-        renderSuccessScreen(totalTime);
-    } else {
-        renderFailureScreen(diagnosisInput);
-    }
+    
+    const endTime = Date.now();
+    const totalTime = Math.round((endTime - experimentState.startTime) / 1000);
+    
+    // Sauvegarde des données expérimentales
+    await saveExperimentData({
+        mode: 'classique',
+        sessionId: experimentState.sessionId,
+        targetPathology: experimentState.targetPathology.name,
+        userGuess: diagnosisInput,
+        success: isCorrect,
+        questionsAsked: experimentState.questionsAsked.length,
+        wrongAnswers: experimentState.wrongAnswers,
+        hintsGiven: experimentState.hintsGiven,
+        attempts: experimentState.attempts,
+        totalTimeSeconds: totalTime,
+        timestamp: new Date()
+    });
+    
+    if (isCorrect) {
+        renderSuccessScreen(totalTime);
+    } else {
+        renderFailureScreen(diagnosisInput);
+    }
 }
 
-// ============================================================
-// ÉCRANS DE RÉSULTAT
-// ============================================================
+// Écrans de résultat
 
 function renderSuccessScreen(totalTime) {
     const app = document.getElementById('app');
@@ -994,45 +966,43 @@ function renderFailureScreen(userGuess) {
     `;
 }
 
-// ============================================================
-// UTILITAIRES
-// ============================================================
+// Utilitaires
 
 function formatSymptomName(sign) {
-    // SÉCURITÉ : Si le signe est vide (null/undefined), on renvoie un texte par défaut
-    if (!sign) return "Motif non spécifié";
-    
-    return sign.replace(/_/g, ' ')
-               .replace(/\b\w/g, c => c.toUpperCase());
+    // SÉCURITÉ : Si le signe est vide (null/undefined), on renvoie un texte par défaut
+    if (!sign) return "Motif non spécifié";
+    
+    return sign.replace(/_/g, ' ')
+               .replace(/\b\w/g, c => c.toUpperCase());
 }
 
 function updateCounters() {
-    const questionsCount = document.getElementById('questionsCount');
-    const wrongCount = document.getElementById('wrongCount');
-    const hintsCount = document.getElementById('hintsCount');
-    
-    if (questionsCount) questionsCount.textContent = experimentState.questionsAsked.length;
-    if (wrongCount) wrongCount.textContent = experimentState.wrongAnswers;
-    if (hintsCount) hintsCount.textContent = experimentState.hintsGiven;
+    const questionsCount = document.getElementById('questionsCount');
+    const wrongCount = document.getElementById('wrongCount');
+    const hintsCount = document.getElementById('hintsCount');
+    
+    if (questionsCount) questionsCount.textContent = experimentState.questionsAsked.length;
+    if (wrongCount) wrongCount.textContent = experimentState.wrongAnswers;
+    if (hintsCount) hintsCount.textContent = experimentState.hintsGiven;
 }
 
 function addQuestionToHistory(question, answer) {
-    const historyList = document.getElementById('historyList');
-    
-    // Supprime le message "Aucune question"
-    if (experimentState.questionsAsked.length === 1) {
-        historyList.innerHTML = '';
-    }
-    
-    const answerIcon = answer 
-        ? '<i class="ph-fill ph-check-circle" style="color: var(--success);"></i>' 
-        : '<i class="ph-fill ph-x-circle" style="color: var(--error);"></i>';
-    
-    const answerText = answer ? 'OUI' : 'NON';
-    const answerColor = answer ? 'var(--success)' : 'var(--error)';
-    
-    const questionItem = document.createElement('div');
-    questionItem.style.cssText = `
+    const historyList = document.getElementById('historyList');
+    
+    // Supprime le message "Aucune question"
+    if (experimentState.questionsAsked.length === 1) {
+        historyList.innerHTML = '';
+    }
+    
+    const answerIcon = answer 
+        ? '<i class="ph-fill ph-check-circle" style="color: var(--success);"></i>' 
+        : '<i class="ph-fill ph-x-circle" style="color: var(--error);"></i>';
+    
+    const answerText = answer ? 'OUI' : 'NON';
+    const answerColor = answer ? 'var(--success)' : 'var(--error)';
+    
+    const questionItem = document.createElement('div');
+    questionItem.style.cssText = `
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -1043,8 +1013,8 @@ function addQuestionToHistory(question, answer) {
         border-radius: 8px;
         animation: fadeIn 0.3s ease;
     `;
-    
-    questionItem.innerHTML = `
+    
+    questionItem.innerHTML = `
         <div style="flex: 1; text-align: left; color: var(--text-main);">
             <strong style="color: var(--accent);">Q${experimentState.questionsAsked.length}.</strong> ${question}
         </div>
@@ -1053,16 +1023,14 @@ function addQuestionToHistory(question, answer) {
             <strong style="color: ${answerColor}; font-size: 14px; min-width: 40px;">${answerText}</strong>
         </div>
     `;
-    
-    historyList.appendChild(questionItem);
-    
-    // Scroll automatique vers le bas
-    historyList.scrollTop = historyList.scrollHeight;
+    
+    historyList.appendChild(questionItem);
+    
+    // Scroll automatique vers le bas
+    historyList.scrollTop = historyList.scrollHeight;
 }
 
-// ============================================================
-// SAUVEGARDE DES DONNÉES EXPÉRIMENTALES
-// ============================================================
+// --- Sauvegarde des données expérimentales ---
 
 async function saveExperimentData(data) {
     try {
@@ -1077,19 +1045,15 @@ async function saveExperimentData(data) {
         };
 
         await addDoc(collection(db, "experiment_results"), experimentData);
-        console.log("✅ Données expérimentales sauvegardées");
+ console.log("Données expérimentales sauvegardées");
     } catch (error) {
-        console.error("❌ Erreur sauvegarde données:", error);
+ console.error("Erreur sauvegarde données:", error);
     }
 }
 
-// ============================================================
-// POINT D'ENTRÉE & ROUTAGE
-// ============================================================
+// Point d'entrée & routage
 
-// ============================================================
-// POINT D'ENTRÉE & ROUTAGE (FIN DU FICHIER apptest.js)
-// ============================================================
+// Point d'entrée & routage (fin du fichier apptest.js)
 
 window.renderModeSelection = renderModeSelection;
 
@@ -1121,20 +1085,20 @@ window.startClassiqueMode = function() {
 const params = new URLSearchParams(window.location.search);
 const currentMode = params.get('mode');
 
-console.log("🔍 Routeur APPTEST - Mode détecté :", currentMode);
+console.log("Routeur APPTEST - Mode détecté :", currentMode);
 
 if (currentMode === 'generatif') {
-    // === CORRECTION 210 IQ ===
+    // correction 210 IQ
     // On charge dynamiquement le moteur principal (app.js)
     // Cela débloque le chargement infini
-    console.log("✅ Mode Génératif : Chargement dynamique de app.js...");
+ console.log("Mode Génératif : Chargement dynamique de app.js...");
     import('./app.js')
-        .then(() => console.log("🚀 Medicome Engine (app.js) chargé avec succès."))
-        .catch(err => console.error("❌ Erreur fatale au chargement de app.js :", err));
+ .then(() => console.log("Medicome Engine (app.js) chargé avec succès."))
+ .catch(err => console.error("Erreur fatale au chargement de app.js :", err));
 } 
 else if (currentMode === 'classique') {
-    // Mode Classique → Lancement immédiat
-    console.log("🕵️ Mode Classique (Lancement immédiat).");
+    // Mode Classique Lancement immédiat
+ console.log("Mode Classique (Lancement immédiat).");
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
             initExperiment().then(() => {
@@ -1148,8 +1112,8 @@ else if (currentMode === 'classique') {
     }
 }
 else {
-    // Aucun mode → Menu de sélection
-    console.log("🧪 Menu de sélection.");
+    // Aucun mode Menu de sélection
+ console.log("Menu de sélection.");
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', initExperiment);
     } else {
@@ -1157,10 +1121,7 @@ else {
     }
 }
 
-// ============================================================
-// 4. FONCTION ADMIN : EXPORT CSV
-// (À coller tout en bas du fichier, hors des autres fonctions)
-// ============================================================
+// Export CSV (admin)
 
 async function downloadExperimentData() {
     const btn = document.getElementById('btnExportData');
@@ -1225,11 +1186,11 @@ async function downloadExperimentData() {
         }, 3000);
 
     } catch (error) {
-        console.error("Erreur Export:", error);
+ console.error("Erreur Export:", error);
         alert("Erreur lors de l'export : " + error.message);
         if(btn) btn.innerHTML = 'Erreur';
     }
 }
 
-// IMPORTANT : Cette ligne permet au bouton HTML de trouver la fonction
+// Cette ligne permet au bouton HTML de trouver la fonction
 window.downloadExperimentData = downloadExperimentData;

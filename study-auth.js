@@ -1,10 +1,7 @@
-// ============================================================
-// 🧪 STUDY-AUTH.JS
-// Instance Firebase Auth SECONDAIRE, dédiée uniquement à l'étude IMPACT-R2C.
+// study-auth.js : instance Firebase Auth secondaire, dédiée à l'étude IMPACT-R2C.
 // Objectif : produire un UID anonyme pour experiment_results, sans jamais
 // lire ni modifier la session de connexion principale de l'étudiant
 // (son compte perso Medicome reste inchangé, connecté ou non).
-// ============================================================
 
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";

@@ -1,6 +1,4 @@
-// ============================================================
-// 1. CONFIGURATION & IMPORTS
-// ============================================================
+// Configuration & imports
 // Redirection si lancé depuis GitHub (Sécurité)
 if (window.location.hostname.includes("github.io")) { window.location.href = "https://medicome.fr"; }
 
@@ -8,11 +6,11 @@ if (window.location.hostname.includes("github.io")) { window.location.href = "ht
 import { getFirestore, doc, getDoc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, collection, query, orderBy, limit, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-// 👇 AJOUT DE L'IMPORT ANALYTICS (Crucial)
+// Import du module Analytics
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js"; 
-// 🔒 AJOUT : Cloud Functions sécurisées (remplace l'appel direct à OpenAI depuis le client)
+// Cloud Functions sécurisées (remplace l'appel direct à OpenAI depuis le client)
 import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js";
-// 🧪 AJOUT ÉTUDE : auth anonyme dédiée, indépendante du compte principal
+// auth anonyme dédiée, indépendante du compte principal
 import { ensureStudyAuth, callStudyAnalyzeSymptom } from './study-auth.js';
 
 const firebaseConfig = {
@@ -26,7 +24,7 @@ const firebaseConfig = {
 };
 
 // Initialisation de l'application
-let app, auth, db, analytics, functions, callAnalyzeSymptom; // <--- 'functions' ajouté ici
+let app, auth, db, analytics, functions, callAnalyzeSymptom;
 
 try {
     // Vérification : Est-ce que Firebase tourne déjà ? (Lancé par apptest.js ?)
@@ -36,34 +34,32 @@ try {
     } else {
         // Oui, on récupère l'instance existante
         app = getApps()[0];
-        console.log("🔄 app.js : Récupération de l'instance Firebase existante.");
+ console.log("app.js : Récupération de l'instance Firebase existante.");
     }
 
     auth = getAuth(app);
     db = getFirestore(app);
     
-    // 👇 DÉMARRAGE DU TRACKING (Crucial)
+    // DÉMARRAGE DU TRACKING
     analytics = getAnalytics(app); 
-    console.log("📊 Google Analytics initialisé !");
+ console.log("Google Analytics initialisé !");
 
-    // 🔒 Cloud Function sécurisée pour les appels IA (remplace l'accès direct à OpenAI)
+    // Cloud Function sécurisée pour les appels IA (remplace l'accès direct à OpenAI)
     functions = getFunctions(app, "europe-west1"); // doit correspondre à la région déployée
     callAnalyzeSymptom = httpsCallable(functions, "analyzeSymptom");
 
 } catch (error) {
-    console.error("Erreur Firebase:", error);
+ console.error("Erreur Firebase:", error);
     document.querySelector('#app').innerHTML = `<div class="alert alert-error">Erreur de configuration : ${error.message}</div>`;
 }
 
-// ============================================================
-// 2. VARIABLES GLOBALES (ÉTAT DU JEU)
-// ============================================================
+// Variables globales (état du jeu)
 
 let PATHOLOGIES = [];
 let GLOBAL_IMG_MAP = {};
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 let chronoInterval = null;
-// 🔒 SUPPRIMÉ : cachedOpenAIKey n'existe plus. La clé OpenAI ne transite
+// cachedOpenAIKey n'existe plus. La clé OpenAI ne transite
 // plus jamais par le navigateur — elle reste côté serveur (Cloud Function).
 
 // L'État (State) : Mémoire vive de l'application
@@ -111,9 +107,7 @@ let state = {
     }
 };
 
-// ============================================================
-// 3. DONNÉES MÉDICALES (CONSTANTES)
-// ============================================================
+// --- Données médicales (constantes) ---
 
 const REFINEMENTS = {
     "douleur_thoracique": ["douleur_thoracique_constrictive", "douleur_thoracique_dechirante", "douleur_latero_thoracique_brutale", "douleur_thoracique_respiratoire", "douleur_thoracique_basithoracique", "irradiation_bras_gauche_machoire", "irradiation_dorsale_interscapulaire", "soulage_position_penche_avant", "douleur_thoracique_atypique"],
@@ -192,9 +186,7 @@ const ACHIEVEMENTS = [
     { id: "speed_100", title: "Voyageur Temporel", desc: "100 diagnostics en moins de 30s", iconClass: "ph-duotone ph-hourglass color-accent" }
 ];
 
-// ============================================================
-// 4. FONCTIONS UTILITAIRES
-// ============================================================
+// Fonctions utilitaires
 
 function getLocalDayKey() {
     const date = new Date();
@@ -268,13 +260,9 @@ function getDailyPatho() {
     return PATHOLOGIES[index];
 }
 
-// ============================================================
-// 5. INITIALISATION
-// ============================================================
+// Initialisation
 
-// ============================================================
-// 4bis. SOURCE DES DONNÉES (Prototypique vs Réelle CHU)
-// ============================================================
+// --- Source des données (prototypique vs réelle chu) ---
 
 // Fichiers associés à chaque mode. 'real' doit garder EXACTEMENT le même
 // schéma que pathologies.json (mêmes clés name/signes/veto/boost/images).
@@ -398,7 +386,7 @@ async function toggleDataMode() {
         showAlert(newMode === 'real' ? "Mode Hospitalier (CHU) activé." : "Mode Manuel (théorique) activé.", "success");
         if (state.currentUser || state.isGuest) renderHome();
     }).catch(err => {
-        console.error(err);
+ console.error(err);
         showAlert("Erreur lors du changement de source de données.", "error");
     });
 }
@@ -425,7 +413,7 @@ async function initApp() {
         fetchNotifications();
         
         // Listeners boutons globaux
-        // 🐛 FIX : renvoie vers la page mentions-legales.html (à jour et complète : étude, IA, RGPD)
+        // renvoie vers la page mentions-legales.html (à jour et complète : étude, IA, RGPD)
         // au lieu de l'ancienne renderLegalPage() interne, restée minimaliste et obsolète.
         const btnLegal = q('#legalLink'); if(btnLegal) btnLegal.onclick = () => { window.location.href = 'mentions-legales.html'; };
         const dataModeBtn = q('#dataModeBtn'); if(dataModeBtn) dataModeBtn.onclick = toggleDataMode;
@@ -485,15 +473,13 @@ async function initApp() {
         });
 
     } catch (err) {
-        console.error(err);
+ console.error(err);
         document.querySelector('#app').innerHTML = `<div class="card center"><h2 style="color:var(--error)">Erreur de chargement</h2><div class="small" style="color:orange">${err.message}</div></div>`;
     }
 }
 
-// ============================================================
-// 6. LOGIQUE UTILISATEUR & GESTION
-// ============================================================
-// 🔒 SUPPRIMÉ : loadOpenAIKeyForPremiumUser() n'existe plus.
+// Logique utilisateur & gestion
+// loadOpenAIKeyForPremiumUser() n'existe plus.
 // La Cloud Function "analyzeSymptom" gère désormais elle-même
 // l'accès à la clé OpenAI, côté serveur uniquement.
 
@@ -508,7 +494,7 @@ function checkGuestLimit() {
     // Si l'utilisateur est connecté, pas de limite
     if (!state.isGuest) return { allowed: true };
     
-    // CORRECTION ICI : Si c'est un code Premium ou le Mode Étude, on autorise tout
+    // Si c'est un code Premium ou le Mode Étude, on autorise tout
     if (state.isPremiumCode) return { allowed: true };
 
     // Sinon, on applique la limite de temps classique (2h)
@@ -543,38 +529,36 @@ function startGuestMode() {
 function startAuthListener() {
     onAuthStateChanged(auth, async (user) => {
         
-        // ============================================================
-        // 1. DÉTECTION MODE EXPÉRIMENTAL
-        // ============================================================
+        // Détection mode expérimental
         const urlParams = new URLSearchParams(window.location.search);
         // On vérifie juste si on est en mode generatif
         const isExperimentMode = urlParams.get('mode') === 'generatif';
 
         if (isExperimentMode) {
-    console.warn("🧪 APP.JS : MODE EXPÉRIMENTAL DÉTECTÉ !");
+ console.warn("APP.JS : MODE EXPÉRIMENTAL DÉTECTÉ !");
 
     state.isGuest = true;
     state.isPremiumCode = true;
-    state.isExperimentMode = true; // 🧪 flag persistant utilisé pour la sauvegarde des résultats
+    state.isExperimentMode = true; // flag utilisé pour la sauvegarde des résultats
     state.pseudo = "Participant Étude";
     state.useLLM = true; 
-    state.startTime = Date.now(); // 🧪 chrono forcé pour l'étude, même hors mode Chrono
-    state.sessionId = Date.now().toString(); // 🐛 FIX : n'existait pas côté app.js, colonne "Session ID" vide dans l'export
-    // 🐛 FIX : on retire ?mode=generatif de l'URL tout de suite. Sinon, chaque changement
+    state.startTime = Date.now(); // chrono forcé pour l'étude, même hors mode Chrono
+    state.sessionId = Date.now().toString(); // colonne Session ID vide côté export sinon
+    // on retire ?mode=generatif de l'URL tout de suite. Sinon, chaque changement
     // d'état d'auth (y compris celui déclenché par la Déconnexion) relit l'URL et
     // renvoie de force en mode étude : boucle impossible à quitter.
     window.history.replaceState({}, '', window.location.pathname);
     
-    // 🐛 FIX : les appels IA du Groupe A doivent utiliser l'identité anonyme dédiée
+    // les appels IA du Groupe A doivent utiliser l'identité anonyme dédiée
     // à l'étude (study-auth.js), jamais la session Firebase Auth principale — sinon
     // on retombe sur le même problème de pollution du compte réel de l'étudiant.
-    ensureStudyAuth().catch(e => console.error("Erreur auth étude:", e));
+ ensureStudyAuth().catch(e => console.error("Erreur auth étude:", e));
     callAnalyzeSymptom = callStudyAnalyzeSymptom;
     
-    // 🔒 SUPPRIMÉ : plus besoin de récupérer une clé OpenAI ici.
+    // plus besoin de récupérer une clé OpenAI ici.
     // La Cloud Function "analyzeSymptom" gère l'appel à OpenAI côté serveur ;
     // le front n'a plus jamais besoin/accès à la clé elle-même.
-    console.log("✅ FORCE STATE.USELLM = TRUE (Mode IA Activé)");
+ console.log("FORCE STATE.USELLM = TRUE (Mode IA Activé)");
             
             state.dailyTarget = null;
             state.progression = { 
@@ -587,16 +571,14 @@ function startAuthListener() {
             // On lance DIRECTEMENT l'écran terrain
             // On attend 500ms pour être sûr que le DOM est prêt et que state est bien pris en compte
             setTimeout(() => {
-                console.log("🚀 Lancement de renderDemographics()...");
+ console.log("Lancement de renderDemographics()...");
                 renderDemographics();
             }, 500);
 
             return; // ON S'ARRÊTE ICI.
         }
 
-        // ============================================================
-        // 2. COMPORTEMENT STANDARD (Si pas d'expérience)
-        // ============================================================
+        // Comportement standard (si pas d'expérience)
         if (user) {
             state.currentUser = user;
             state.isGuest = false;
@@ -629,11 +611,11 @@ function startAuthListener() {
                     renderHome();
                 }
             } catch (e) {
-                console.error("Erreur profil:", e);
+ console.error("Erreur profil:", e);
                 renderHome();
             }
         } else {
-            // AJOUT : Vérifier si une session code d'accès existe
+            // Vérifier si une session code d'accès existe
     const savedCodeSession = localStorage.getItem('medicome_access_code_session');
     if (savedCodeSession) {
         const sessionData = JSON.parse(savedCodeSession);
@@ -642,7 +624,7 @@ function startAuthListener() {
         state.pseudo = sessionData.pseudo;
         const savedProg = localStorage.getItem('medicome_guest_progression');
         if (savedProg) state.progression = { ...state.progression, ...JSON.parse(savedProg) };
-        // 🔒 SUPPRIMÉ : plus de récupération de clé ici, la Cloud Function s'en occupe.
+        // plus de récupération de clé ici, la Cloud Function s'en occupe.
         updateHeader();
         renderHome();
         return;
@@ -680,7 +662,7 @@ function updateHeader(){
     logoutBtn.onclick = () => {
         localStorage.removeItem('medicome_guest_progression'); localStorage.removeItem('medicome_guest_pseudo'); localStorage.removeItem('medicome_access_code_session');
         signOut(auth).finally(() => {
-            // 🐛 FIX : rechargement complet, sans paramètres d'URL, pour repartir sur un état
+            // rechargement complet, sans paramètres d'URL, pour repartir sur un état
             // totalement propre (sinon un ?mode=generatif oublié dans l'URL, ou un reliquat
             // de session anonyme d'étude en mémoire, pouvait re-piéger l'utilisateur).
             window.location.href = window.location.origin + window.location.pathname;
@@ -698,9 +680,7 @@ function updateStreakDisplay() {
     pseudoBox.innerHTML = state.pseudo + guestLabel + streakDisplay;
 }
 
-// ============================================================
-// 🧪 SAUVEGARDE DES RÉSULTATS D'ÉTUDE — GROUPE A (Mode Génératif)
-// ============================================================
+// Sauvegarde des résultats d'étude : groupe a (mode génératif)
 async function saveGroupAExperimentData(top) {
     try {
         const studyUid = await ensureStudyAuth(); // identité anonyme dédiée à l'étude, distincte du vrai compte
@@ -717,9 +697,9 @@ async function saveGroupAExperimentData(top) {
             totalTimeSeconds: state.startTime ? Math.round((Date.now() - state.startTime) / 1000) : null,
             timestamp: new Date()
         });
-        console.log("✅ Données expérimentales Groupe A sauvegardées");
+ console.log("Données expérimentales Groupe A sauvegardées");
     } catch (error) {
-        console.error("❌ Erreur sauvegarde expérimentale Groupe A:", error);
+ console.error("Erreur sauvegarde expérimentale Groupe A:", error);
     }
 }
 
@@ -827,7 +807,7 @@ async function fetchNotifications() {
         const lastReadId = localStorage.getItem('medicome_last_read_notif');
         if(badge && latestNotifId !== lastReadId) { badge.style.display = 'block'; } 
         else if (badge) { badge.style.display = 'none'; }
-    } catch (e) { console.log("Erreur notifs", e); }
+ } catch (e) { console.log("Erreur notifs", e); }
 }
 
 function toggleTheme() {
@@ -851,9 +831,7 @@ function loadTheme() {
     if(btn) btn.onclick = toggleTheme;
 }
 
-// ============================================================
-// 7. MOTEUR DE JEU & DIAGNOSTIC
-// ============================================================
+// Moteur de jeu & diagnostic
 
 function prepareSigns() {
     let allSignsSet = new Set();
@@ -1106,9 +1084,7 @@ function getRandomNonLeaderSign() {
     return nonLeaders[Math.floor(Math.random() * nonLeaders.length)];
 }
 
-// ============================================================
-// 8. INTERFACE & AFFICHAGE (RENDERING)
-// ============================================================
+// Interface & affichage (rendering)
 
 function renderLogin() {
     setDocTitle(null); window.scrollTo(0, 0); const app = q('#app'); app.innerHTML = '';
@@ -1167,7 +1143,7 @@ function renderLogin() {
     timestamp: Date.now()
 }));
                 
-                // 🔒 SUPPRIMÉ : plus de récupération de clé OpenAI ici.
+                // plus de récupération de clé OpenAI ici.
                 // La Cloud Function "analyzeSymptom" gère l'appel à OpenAI côté serveur.
                 
                 updateHeader(); 
@@ -1177,7 +1153,7 @@ function renderLogin() {
                 showAlert('Code invalide ou expiré', 'error'); 
             } 
         } catch (e) { 
-            console.error(e); 
+ console.error(e); 
             showAlert("Erreur de connexion", "error"); 
         } 
     };
@@ -1197,12 +1173,12 @@ function renderHome() {
     setDocTitle("Accueil"); window.scrollTo(0,0); const app = q('#app'); app.innerHTML='';
     const prog = state.progression;
     
-    // ===== NOUVEAU : VÉRIFIER LES RÉVISIONS DU JOUR =====
+    // vérifier les révisions du jour
     const todayKey = getLocalDayKey();
     const reviewSchedule = prog.reviewSchedule || {};
     const todayReviews = reviewSchedule[todayKey] || [];
     
-    // ===== NOTIFICATION RÉVISION =====
+    // notification révision
     if (todayReviews.length > 0) {
         const notifCard = document.createElement('div');
         notifCard.className = 'card center';
@@ -1399,7 +1375,7 @@ function showDiagnostic() {
         const top = state.ranked.length > 0 ? state.ranked[0] : null;
         if (!top) { app.innerHTML = `<div class="card center"><h2 style="color:var(--error)">Aucun diagnostic trouvé</h2><p>L'IA n'a pas pu trancher. Essayez de donner plus de symptômes.</p><button class="btn" onclick="renderHome()">Retour Accueil</button></div>`; return; }
         state.diagnosticShown = true;
-        if (state.isExperimentMode) { saveGroupAExperimentData(top); } // 🧪 sauvegarde étude Groupe A
+        if (state.isExperimentMode) { saveGroupAExperimentData(top); } // sauvegarde étude Groupe A
         state.previousDiagnostics.push(top.patho.name); setDocTitle(`Diagnostic : ${top.patho.name}`); app.innerHTML = ''; const card = document.createElement('div'); card.className = 'card center';
         const title = document.createElement('h2'); title.innerHTML = '<i class="ph-duotone ph-lightbulb"></i> Diagnostic Proposé'; card.appendChild(title);
         let pdfButton = ''; if (top.patho.pdf && top.patho.pdf !== '#') { if (state.isGuest && !state.isPremiumCode) { pdfButton = `<button class="btn" style="background:rgba(125,125,125,0.1); border:1px dashed var(--text-muted); color:var(--text-muted); margin-top:10px; font-size:13px;" onclick="showAlert('Compte requis pour le PDF', 'error')"><i class="ph-duotone ph-lock-key"></i> Fiche PDF (Verrouillée)</button>`; } else { pdfButton = `<a class="link" style="color:var(--accent); border-color:var(--accent); display:inline-block; margin-top:10px;" href="${top.patho.pdf}" target="_blank" onclick="trackPdf()"><i class="ph-duotone ph-file-pdf"></i> Voir fiche PDF de révision</a>`; } } else { pdfButton = `<span class="small" style="opacity:0.5"><i class="ph-duotone ph-file-x"></i> Pas de fiche PDF</span>`; }
@@ -1436,7 +1412,7 @@ function showDiagnostic() {
                     } 
                 }
                 
-                // ===== VALIDATION RÉVISION SI MODE RÉVISION =====
+                // validation révision si mode révision
                 if (state.isReviewMode && state.currentReviewDate) {
                     const reviewSchedule = state.progression.reviewSchedule || {};
                     const dateReviews = reviewSchedule[state.currentReviewDate];
@@ -1445,7 +1421,7 @@ function showDiagnostic() {
                         const index = dateReviews.indexOf(targetName);
                         if (index > -1) {
                             dateReviews.splice(index, 1);
-                            console.log(`✅ Révision du ${state.currentReviewDate} validée pour ${targetName}`);
+ console.log(`Révision du ${state.currentReviewDate} validée pour ${targetName}`);
                         }
                         
                         // Nettoyer la date si vide
@@ -1562,7 +1538,7 @@ function showDiagnostic() {
                     state.progression.dailyStreak = (state.progression.dailyStreak || 0) + 1; 
                 } 
                 
-                // ===== VALIDATION RÉVISION SI MODE RÉVISION (CAS NON-EXAMEN) =====
+                // validation révision si mode révision (cas non-examen)
                 if (state.isReviewMode && state.currentReviewDate) {
                     const reviewSchedule = state.progression.reviewSchedule || {};
                     const dateReviews = reviewSchedule[state.currentReviewDate];
@@ -1571,7 +1547,7 @@ function showDiagnostic() {
                         const index = dateReviews.indexOf(top.patho.name);
                         if (index > -1) {
                             dateReviews.splice(index, 1);
-                            console.log(`✅ Révision du ${state.currentReviewDate} validée pour ${top.patho.name}`);
+ console.log(`Révision du ${state.currentReviewDate} validée pour ${top.patho.name}`);
                         }
                         
                         // Nettoyer la date si vide
@@ -1625,10 +1601,8 @@ function renderPlaisantinEnd(type) {
     card.appendChild(btn); app.appendChild(card);
 }
 
-// ============================================================
-// 9. INTÉGRATION OPENAI — VERSION SÉCURISÉE (via Cloud Function)
-// ============================================================
-// 🔒 La clé OpenAI ne transite plus jamais par le navigateur.
+// --- Intégration openai : version sécurisée (via cloud function) ---
+// La clé OpenAI ne transite plus jamais par le navigateur.
 // Le front envoie uniquement le texte de l'utilisateur à la Cloud
 // Function "analyzeSymptom", qui appelle OpenAI côté serveur et
 // renvoie seulement le résultat (true/false/liste de signes).
@@ -1642,7 +1616,7 @@ async function analyzeResponseWithLLM(userText, symptomContext) {
         });
         return data.result;
     } catch (error) {
-        console.error("Erreur IA:", error);
+ console.error("Erreur IA:", error);
         if (error.code === "resource-exhausted") {
             showAlert("Limite quotidienne d'IA atteinte, réessayez demain.", "error");
         }
@@ -1660,7 +1634,7 @@ async function analyzeChiefComplaint(userText) {
         });
         return data.result;
     } catch (error) {
-        console.error("Erreur IA Motif:", error);
+ console.error("Erreur IA Motif:", error);
         return null;
     }
 }
@@ -1676,7 +1650,7 @@ async function analyzeDetailedSymptoms(userText) {
         });
         return data.result;
     } catch (error) {
-        console.error("Erreur Extraction IA:", error);
+ console.error("Erreur Extraction IA:", error);
         return [];
     }
 }
@@ -1692,14 +1666,12 @@ async function analyzeAnamnesis(userText) {
         });
         return data;
     } catch (error) {
-        console.error("Erreur Anamnèse IA:", error);
+ console.error("Erreur Anamnèse IA:", error);
         return null;
     }
 }
 
-// ============================================================
-// 10. PAGES & MODES (EXAMEN, PROFIL, ETC)
-// ============================================================
+// Pages & modes (examen, profil, etc)
 
 function renderChiefComplaintInput() {
     setDocTitle("Motif de consultation"); window.scrollTo(0,0); const app = q('#app'); app.innerHTML='';
@@ -1801,7 +1773,7 @@ function renderAnamnesisInput(chiefComplaint) {
             }
             
             setTimeout(() => {
-                // IMPORTANT : On passe maintenant aux questions binaires
+                // On passe maintenant aux questions binaires
                 askNextQuestion();
             }, 1500);
         } else {
@@ -1947,7 +1919,7 @@ function renderProfile() {
 
 function showDiagnosticDetails(data, wasManualError = false) {
     if (chronoInterval) clearInterval(chronoInterval);
-    if (!data || !data.patho) { console.error("Erreur : Aucune pathologie."); return; }
+ if (!data || !data.patho) { console.error("Erreur : Aucune pathologie."); return; }
     window.scrollTo(0, 0); const top = data.patho; setDocTitle(top.name); const app = q('#app'); app.innerHTML = '';
     const card = document.createElement('div'); card.className = 'card';
     if (wasManualError) {
@@ -1959,7 +1931,7 @@ function showDiagnosticDetails(data, wasManualError = false) {
         state.progression.mastery[top.name] = m;
         if(!state.progression.errorLog) state.progression.errorLog = {}; state.progression.errorLog[top.name] = { date: Date.now(), count: (state.progression.errorLog[top.name]?.count || 0) + 1 }; 
         
-        // ===== NOUVEAU : PLANIFIER LA RÉVISION =====
+        // planifier la révision
         scheduleReview(top.name);
         
         saveProgression();
@@ -2044,7 +2016,7 @@ function scheduleReview(pathoName) {
         }
     });
     
-    console.log(`📅 Révisions planifiées pour ${pathoName} : dans 7j, 14j, 25j et 50j`);
+ console.log(`Révisions planifiées pour ${pathoName} : dans 7j, 14j, 25j et 50j`);
 }
 
 function renderGlossary() {
@@ -2095,7 +2067,7 @@ async function renderReviews() {
     const formDiv = document.createElement('div'); formDiv.style.background = 'rgba(125,125,125,0.1)'; formDiv.style.padding='15px'; formDiv.style.borderRadius='10px'; formDiv.style.width='100%'; formDiv.style.marginBottom='20px';
     formDiv.innerHTML = `<h4 style="margin-bottom:10px; color:var(--accent);">Laisser un avis</h4><div class="star-rating"><input type="radio" id="5-stars" name="rating" value="5" /><label for="5-stars"><i class="ph-fill ph-star"></i></label><input type="radio" id="4-stars" name="rating" value="4" /><label for="4-stars"><i class="ph-fill ph-star"></i></label><input type="radio" id="3-stars" name="rating" value="3" /><label for="3-stars"><i class="ph-fill ph-star"></i></label><input type="radio" id="2-stars" name="rating" value="2" /><label for="2-stars"><i class="ph-fill ph-star"></i></label><input type="radio" id="1-star" name="rating" value="1" /><label for="1-star"><i class="ph-fill ph-star"></i></label></div><textarea id="reviewText" class="input" placeholder="Votre commentaire..." style="min-height:60px;"></textarea><button id="submitReviewBtn" class="btn" style="width:100%; font-size:13px;">Envoyer</button>`;
     card.appendChild(formDiv); const reviewsContainer = document.createElement('div'); reviewsContainer.className = 'reviews-container';
-    try { const qRev = query(collection(db, "reviews"), where("approved", "==", true), orderBy("date", "desc"), limit(10)); const snap = await getDocs(qRev); snap.forEach(doc => { const r = doc.data(); let stars = ""; for(let i=0; i<5; i++) { if(i < r.rating) stars += '<i class="ph-fill ph-star"></i>'; else stars += '<i class="ph-duotone ph-star"></i>'; } const div = document.createElement('div'); div.className = 'review-card'; div.innerHTML = `<div class="review-header"><div><div class="review-name">${r.pseudo}</div><div class="review-stars" style="color:var(--gold)">${stars}</div></div></div><div class="review-text">${r.text}</div>`; reviewsContainer.insertBefore(div, reviewsContainer.firstChild); }); } catch(e) { console.log("Erreur avis", e); }
+ try { const qRev = query(collection(db, "reviews"), where("approved", "==", true), orderBy("date", "desc"), limit(10)); const snap = await getDocs(qRev); snap.forEach(doc => { const r = doc.data(); let stars = ""; for(let i=0; i<5; i++) { if(i < r.rating) stars += '<i class="ph-fill ph-star"></i>'; else stars += '<i class="ph-duotone ph-star"></i>'; } const div = document.createElement('div'); div.className = 'review-card'; div.innerHTML = `<div class="review-header"><div><div class="review-name">${r.pseudo}</div><div class="review-stars" style="color:var(--gold)">${stars}</div></div></div><div class="review-text">${r.text}</div>`; reviewsContainer.insertBefore(div, reviewsContainer.firstChild); }); } catch(e) { console.log("Erreur avis", e); }
     card.appendChild(reviewsContainer); const btnBack = document.createElement('button'); btnBack.className='btn'; btnBack.textContent='Retour'; btnBack.style.marginTop = '20px'; btnBack.onclick = () => { if(state.pseudo) renderHome(); else renderLogin(); }; card.appendChild(btnBack); app.appendChild(card);
     setTimeout(() => { const submitBtn = q('#submitReviewBtn'); if(submitBtn){ submitBtn.onclick = async () => { const text = q('#reviewText').value; const ratingEl = document.querySelector('input[name="rating"]:checked'); if(!text || !ratingEl) return showAlert("Note et message requis", "error"); try { await addDoc(collection(db, "reviews"), { pseudo: state.pseudo || "Anonyme", text, rating: parseInt(ratingEl.value), date: new Date(), approved: false }); showAlert("Avis envoyé ! Il sera visible après validation.", "success"); if(!state.progression.reviewDone) { state.progression.reviewDone = true; saveProgression(); } q('#reviewText').value = ''; } catch(e) { showAlert("Erreur d'envoi", "error"); } }; } }, 100);
 }
@@ -2316,7 +2288,7 @@ function renderCalendar(targetMonth = new Date()) {
     const firstDay = new Date(currentYear, currentMonth, 1); const lastDay = new Date(currentYear, currentMonth + 1, 0); const daysInMonth = lastDay.getDate(); let startDay = firstDay.getDay() - 1; if(startDay === -1) startDay = 6; 
     for(let i=0; i<startDay; i++) { const empty = document.createElement('div'); empty.className = 'cal-day empty'; grid.appendChild(empty); }
     const history = state.progression.dailyHistory || {};
-    const reviewSchedule = state.progression.reviewSchedule || {}; // NOUVEAU
+    const reviewSchedule = state.progression.reviewSchedule || {};
     const todayStr = new Date().toISOString().split('T')[0];
     
     for(let d=1; d<=daysInMonth; d++) { 
@@ -2328,7 +2300,7 @@ function renderCalendar(targetMonth = new Date()) {
         if(localDateStr === todayStr) dayCell.classList.add('today'); 
         
         const dayData = history[localDateStr]; 
-        const reviewData = reviewSchedule[localDateStr]; // NOUVEAU
+        const reviewData = reviewSchedule[localDateStr];
         
         if(dayData || reviewData) { 
             const dots = document.createElement('div'); 
@@ -2350,10 +2322,10 @@ function renderCalendar(targetMonth = new Date()) {
                 } 
             }
             
-            // NOUVEAU : Révisions planifiées
+            // Révisions planifiées
             if (reviewData && reviewData.length > 0) {
                 const dot = document.createElement('div');
-                dot.className = 'dot dot-review'; // NOUVEAU STYLE
+                dot.className = 'dot dot-review';
                 dot.style.background = '#667eea';
                 dot.style.animation = 'pulse 2s infinite';
                 dots.appendChild(dot);
@@ -2384,7 +2356,7 @@ function showDayDetails(dateStr, data, reviewData) {
         return Object.entries(counts).sort((a, b) => b[1] - a[1]); 
     };
     
-    // ===== NOUVEAU : AFFICHER LES RÉVISIONS =====
+    // afficher les révisions
     if (reviewData && reviewData.length > 0) {
         content += `<h4 style="color:#667eea; margin-top:10px; border-bottom:1px solid rgba(102,126,234,0.3); padding-bottom:5px;">
             <i class="ph-bold ph-clock-countdown"></i> ⏰ À réviser (${reviewData.length})
@@ -2456,7 +2428,7 @@ window.startReviewSession = function(pathoName, dateStr) {
     // Configurer le mode révision
     state.dailyTarget = patho;
     state.isChrono = false;
-    state.isReviewMode = true; // NOUVEAU FLAG
+    state.isReviewMode = true;
     state.currentReviewDate = dateStr; // Pour supprimer après succès
     
     // Lancer le cas
@@ -2465,9 +2437,7 @@ window.startReviewSession = function(pathoName, dateStr) {
 
 window.closeLightbox = function() { const lb = document.getElementById('lightbox'); if(lb) { lb.style.display = 'none'; lb.innerHTML = ''; } }
 
-// ============================================================
-// 11. ADMIN (EXPORT)
-// ============================================================
+// Admin (export)
 const ADMIN_UID = "Kj5oyJpA4nXLDrjh3YqWCwlXEda2"; 
 function checkAdminAccess() {
     if (state.currentUser && state.currentUser.uid === ADMIN_UID) {
@@ -2493,10 +2463,8 @@ async function exportUsersToCSV() {
         });
         const encodedUri = encodeURI(csvContent); const link = document.createElement("a"); link.setAttribute("href", encodedUri); const timeId = new Date().toLocaleTimeString().replace(/:/g, "h"); link.setAttribute("download", `Suivi_Medicome_${timeId}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link);
         if(btn) { btn.innerHTML = '<i class="ph-duotone ph-check"></i> Export Réussi !'; setTimeout(() => btn.innerHTML = '<i class="ph-duotone ph-file-csv"></i> ADMIN : Suivi Élèves', 3000); }
-    } catch (error) { console.error("Erreur Export:", error); alert("Erreur export."); if(btn) btn.innerHTML = 'Erreur'; }
+ } catch (error) { console.error("Erreur Export:", error); alert("Erreur export."); if(btn) btn.innerHTML = 'Erreur'; }
 }
 
-// ============================================================
-// LANCEMENT DE L'APPLICATION
-// ============================================================
+// Lancement de l'application
 initApp();

@@ -77,7 +77,8 @@ let state = {
     bestTimes: {}, errorLog: {}, pdfDownloads: 0, 
     speedWins: 0, socialDone: false, reviewDone: false,
     dailyHistory: {},
-    reviewSchedule: {} 
+    reviewSchedule: {},
+    favorites: []
 },
 
     // Partie en cours
@@ -784,6 +785,23 @@ function getVideoButton(patho) {
 
 function trackSocial() {
     if(!state.progression.socialDone) { state.progression.socialDone = true; saveProgression(); }
+}
+
+function isFavorite(pathoName) {
+    return (state.progression.favorites || []).includes(pathoName);
+}
+
+function toggleFavorite(pathoName) {
+    if (!state.progression.favorites) state.progression.favorites = [];
+    const idx = state.progression.favorites.indexOf(pathoName);
+    if (idx === -1) {
+        state.progression.favorites.push(pathoName);
+        showAlert(`<i class="ph-fill ph-star"></i> Ajouté aux favoris`, 'success');
+    } else {
+        state.progression.favorites.splice(idx, 1);
+        showAlert(`Retiré des favoris`, 'success');
+    }
+    saveProgression();
 }
 
 async function fetchNotifications() {
@@ -2045,19 +2063,46 @@ function renderGlossary() {
         const card = document.createElement('div'); card.className = 'patho-card';
         const hasPdf = p.pdf && p.pdf !== '#';
         const hasVideo = !!p.video;
-        card.innerHTML = `<div class="patho-name">${p.name}</div><div class="patho-desc">${p.short}</div>
+        const favActive = isFavorite(p.name);
+        card.innerHTML = `<div class="patho-card-top">
+                <div class="patho-name">${p.name}</div>
+                <button class="patho-icon-btn patho-fav-btn ${favActive ? 'active' : ''}" type="button" title="Ajouter aux favoris"><i class="ph-${favActive ? 'fill' : 'duotone'} ph-star"></i></button>
+            </div>
+            <div class="patho-desc">${p.short}</div>
             <div class="patho-card-actions" style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
                 ${hasPdf ? `<button class="patho-pill-btn pdf" type="button"><i class="ph-duotone ph-file-pdf"></i> Fiche PDF</button>` : ''}
                 ${hasVideo ? `<button class="patho-pill-btn video" type="button"><i class="ph-duotone ph-youtube-logo"></i> Vidéo</button>` : ''}
             </div>`;
+        const favBtn = card.querySelector('.patho-fav-btn');
+        favBtn.onclick = (e) => {
+            e.stopPropagation();
+            toggleFavorite(p.name);
+            const nowActive = isFavorite(p.name);
+            favBtn.classList.toggle('active', nowActive);
+            favBtn.querySelector('i').className = `ph-${nowActive ? 'fill' : 'duotone'} ph-star`;
+            if (favoritesOnly && !nowActive) applyFilters();
+        };
         const pdfBtn = card.querySelector('.patho-pill-btn.pdf');
         if (pdfBtn) { pdfBtn.onclick = (e) => { e.stopPropagation(); trackPdf(); window.open(p.pdf, '_blank'); }; }
         const videoBtn = card.querySelector('.patho-pill-btn.video');
         if (videoBtn) { videoBtn.onclick = (e) => { e.stopPropagation(); trackVideo(); window.open(p.video, '_blank'); }; }
         return card;
     }
-    renderGrid(sortedPathos, true);
-    searchInput.addEventListener('input', (e) => { const term = e.target.value.toLowerCase(); if(term.length > 0) { sidebar.style.display = 'none'; const filtered = sortedPathos.filter(p => p.name.toLowerCase().includes(term)); renderGrid(filtered, false); } else { sidebar.style.display = 'flex'; renderGrid(sortedPathos, true); } });
+    const filterRow = document.createElement('div'); filterRow.style.cssText = 'display:flex; justify-content:center; margin-bottom:20px;';
+    const filterBtn = document.createElement('button'); filterBtn.type = 'button'; filterBtn.className = 'patho-pill-btn favorites-toggle'; filterBtn.innerHTML = '<i class="ph-duotone ph-star"></i> Mes favoris';
+    filterRow.appendChild(filterBtn); app.appendChild(filterRow);
+    let favoritesOnly = false;
+    function applyFilters() {
+        const term = searchInput.value.toLowerCase();
+        let list = favoritesOnly ? sortedPathos.filter(p => isFavorite(p.name)) : sortedPathos;
+        if (term.length > 0) list = list.filter(p => p.name.toLowerCase().includes(term));
+        const showHeaders = term.length === 0;
+        sidebar.style.display = showHeaders ? 'flex' : 'none';
+        renderGrid(list, showHeaders);
+    }
+    applyFilters();
+    searchInput.addEventListener('input', applyFilters);
+    filterBtn.addEventListener('click', () => { favoritesOnly = !favoritesOnly; filterBtn.classList.toggle('active', favoritesOnly); applyFilters(); });
     wrapper.appendChild(content); app.appendChild(wrapper);
 }
 

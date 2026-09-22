@@ -323,7 +323,7 @@
         "name": "Crise d'Épilepsie",
         "short": "Crise tonicoclonique généralisée",
         "pdf": "fiches/epilepsie.pdf",
-        "video": "https://www.youtube.com/watch?v=zUcmPmgkGrA",
+        "video": "https://www.youtube.com/watch?v=-DeIdU9F1nw",
         "signes": {"troubles_neuro": 25, "perte_connaissance_brutale": 15, "phase_tonique_clonique": 25, "morsure_laterale_langue": 20, "perte_urines": 12, "respiration_stertoreuse_post_critique": 15, "confusion_post_critique": 12, "amnesie_evenement": 10},
         "paraclinique": [],
         "veto": ["troubles_neuro"],

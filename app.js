@@ -1108,7 +1108,7 @@ function renderLogin() {
     setDocTitle(null); window.scrollTo(0, 0); const app = q('#app'); app.innerHTML = '';
     const grid = document.createElement('div'); grid.className = 'landing-grid';
     const leftCol = document.createElement('div'); leftCol.className = 'landing-info';
-    leftCol.innerHTML = `<h1>Maîtrisez le Diagnostic Médical</h1><p>Medicome est le simulateur interactif conçu pour les étudiants en médecine (ECOS, EDN, R2C). Confrontez-vous à une IA pédagogique.</p><div class="feature-list"><div class="feature-item"><i class="ph-duotone ph-brain feature-icon"></i><span>Pédagogie Inversée</span></div><div class="feature-item"><i class="ph-duotone ph-check-circle feature-icon"></i><span>+100 Pathologies</span></div><div class="feature-item"><i class="ph-duotone ph-images feature-icon"></i><span>Imagerie & ECG</span></div><div class="feature-item"><i class="ph-duotone ph-chart-line-up feature-icon"></i><span>Suivi de progression</span></div></div><div style="display:flex; flex-direction:column; align-items:flex-start; gap:8px;"><button id="heroGuestBtn" class="btn-guest-hero"><i class="ph-duotone ph-user-circle"></i> Tester sans connexion</button><div class="small" style="opacity:0.7; width:100%; text-align:center; max-width:280px;">Mode invité limité</div></div>`;
+    leftCol.innerHTML = `<h1>Maîtrisez le Diagnostic Médical</h1><p>Medicome est le simulateur interactif conçu pour les étudiants en médecine (ECOS, EDN, R2C). Confrontez-vous à une IA pédagogique.</p><div class="feature-list"><div class="feature-item"><i class="ph-duotone ph-brain feature-icon"></i><span>Pédagogie Inversée</span></div><div class="feature-item"><i class="ph-duotone ph-check-circle feature-icon"></i><span>+100 Pathologies</span></div><div class="feature-item"><i class="ph-duotone ph-images feature-icon"></i><span>Imagerie & ECG</span></div><div class="feature-item"><i class="ph-duotone ph-chart-line-up feature-icon"></i><span>Suivi de progression</span></div></div><div style="display:flex; flex-direction:column; align-items:flex-start; gap:8px;"><button id="howItWorksBtn" class="btn-guest-hero" style="border-color:#667eea; color:#667eea;"><i class="ph-duotone ph-play-circle"></i> Voir comment ça marche</button><button id="heroGuestBtn" class="btn-guest-hero"><i class="ph-duotone ph-user-circle"></i> Tester sans connexion</button><div class="small" style="opacity:0.7; width:100%; text-align:center; max-width:280px;">Mode invité limité</div></div>`;
     grid.appendChild(leftCol);
     const rightCol = document.createElement('div'); rightCol.className = 'landing-auth-card';
     const tabsDiv = document.createElement('div'); tabsDiv.className = 'auth-tabs';
@@ -1176,7 +1176,26 @@ function renderLogin() {
         } 
     };
     codeGroup.append(inputCode, btnCode); rightCol.appendChild(codeGroup); grid.appendChild(rightCol); app.appendChild(grid);
-    setTimeout(() => { const heroBtn = document.getElementById('heroGuestBtn'); if(heroBtn) heroBtn.onclick = startGuestMode; }, 100);
+    setTimeout(() => {
+    const heroBtn = document.getElementById('heroGuestBtn'); if(heroBtn) heroBtn.onclick = startGuestMode;
+    const videoBtn = document.getElementById('howItWorksBtn');
+    if(videoBtn) videoBtn.onclick = () => openHowItWorksModal();
+}, 100);
+}
+
+function openHowItWorksModal() {
+    let modal = document.getElementById('howItWorksModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'howItWorksModal';
+        modal.style.cssText = "display:flex; position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:2000; align-items:center; justify-content:center;";
+        modal.innerHTML = `<div style="background:var(--glass-bg); backdrop-filter:blur(15px); padding:16px; border-radius:16px; max-width:90%; width:640px; position:relative; border:1px solid var(--glass-border);"><button id="closeHowItWorks" style="position:absolute; top:8px; right:12px; background:none; border:none; color:var(--text-main); font-size:26px; cursor:pointer;">&times;</button><div style="position:relative; padding-top:56.25%;"><iframe src="https://www.youtube.com/embed/MWBAkmxqdW0" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0; border-radius:10px;" allow="autoplay; encrypted-media" allowfullscreen></iframe></div></div>`;
+        document.body.appendChild(modal);
+        modal.querySelector('#closeHowItWorks').onclick = () => modal.style.display = 'none';
+        modal.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+    } else {
+        modal.style.display = 'flex';
+    }
 }
 
 function renderHome() {

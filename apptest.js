@@ -177,7 +177,17 @@ async function validateStudyCode() {
     await ensureStudyAuth();
     sessionStorage.setItem('medicome_study_code', code); // mémorisé pour retrouver les données ensuite
     isAdminSession = false;
-    renderModeChoices();
+    // Si le code porte un groupe assigné (randomisation faite en amont), on route
+    // directement vers le bon mode, sans laisser le participant choisir lui-même.
+    // Un code sans champ "groupe" (démo, code premium...) garde l'ancien menu de choix.
+    const groupeAssigne = codeSnap.data().groupe;
+    if (groupeAssigne === 'A') {
+        window.startGeneratifMode();
+    } else if (groupeAssigne === 'B') {
+        window.startClassiqueMode();
+    } else {
+        renderModeChoices();
+    }
 } else {
             alert("❌ Code invalide ou expiré.");
             btn.innerHTML = '<i class="ph-bold ph-check"></i> Valider';
